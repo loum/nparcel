@@ -6,17 +6,49 @@ from nparcel.utils.log import class_logging
 @class_logging
 class Parser(object):
     """1250 file parser.
+
+    .. attribute:: fields
+
+        A dictionary based data structure that identifies the elements
+        of interest.
+
     """
 
-    def __init__(self):
+    def __init__(self,
+                 fields=None):
         """Parser initialisation.
         """
-        self._tokens = None
+        if fields is not None:
+            self._fields = fields
+        else:
+            self._fields = {}
+
+    def parse_line(self, line):
+        """
+        **Args:**
+            **line:** string of characters to extract fields from.
+
+        **Returns:**
+
+        """
+        result = {}
+
+        for field_name, field_settings  in self.fields.iteritems():
+            start = field_settings.get('offset')
+            end = start + field_settings.get('length')
+            value = line[start:end].rstrip()
+            result[field_name] = value
+
+        return result
 
     @property
-    def tokens(self):
-        return self._tokens
+    def fields(self):
+        return self._fields
 
-    @tokens.setter
-    def tokens(self, value):
-        self._tokens = value
+    @fields.setter
+    def fields(self, value):
+        if isinstance(value, dict):
+            for k, v in value.iteritems():
+                self._fields[k] = v
+        else:
+            raise TypeError('Token assignment expected dictionary')
