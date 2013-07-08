@@ -10,6 +10,26 @@ class TestParser(unittest2.TestCase):
         cls._p = nparcel.Parser()
         cls._field = {'dummy field': {'offset': 0,
                                       'length': 20}}
+        cls._fields = {'Conn Note': {'offset': 0,
+                                     'length': 20},
+                       'Identifier': {'offset': 21,
+                                      'length': 20},
+                       'Consumer Name': {'offset': 41,
+                                         'length': 30},
+                       'Consumer Address 1': {'offset': 81,
+                                              'length': 30},
+                       'Consumer Address 2': {'offset': 111,
+                                              'length': 30},
+                       'Suburb': {'offset': 141,
+                                  'length': 30},
+                       'Post code': {'offset': 171,
+                                     'length': 4},
+                       'Bar code': {'offset': 438,
+                                    'length': 15},
+                       'Agent Id': {'offset': 453,
+                                    'length': 4},
+                       'Pieces': {'offset': 588,
+                                  'length': 5}}
         cls._line = """006499335802          YMLML11TOLP130413  Hannah Sewell                           51 Westbourne St.             Stanmore                      Sydney                        2048                                                                                                                 Hannah Sewell                             RUSTIN AND MALLORY RETAIL LTD REDDITCH                                                                      4156778061     N014                                                                                                                                   00001000001                                                                      Parcels Overnight                   UNIT 27 DUNLOP ROAD           HUNT END INDUSTRIAL ESTATE                                                                                           N014                                                                                                       GB                            AUSTRALIA                                                                                                                                                                                                         Ne                                               """
 
     def test_init(self):
@@ -169,7 +189,26 @@ class TestParser(unittest2.TestCase):
         msg = 'Pieces field parse incorrect'
         self.assertEqual(received, expected, msg)
 
+    def test_parse_all(self):
+        """Line parse with all fields.
+        """
+        p = nparcel.Parser(fields=self._fields)
+        received = p.parse_line(self._line)
+        expected = {'Conn Note': '006499335802',
+                    'Identifier': ' YMLML11TOLP130413',
+                    'Consumer Name': 'Hannah Sewell',
+                    'Consumer Address 1': '51 Westbourne St.',
+                    'Consumer Address 2': 'Stanmore',
+                    'Suburb': 'Sydney',
+                    'Post code': '2048',
+                    'Bar code': '4156778061',
+                    'Agent Id': 'N014',
+                    'Pieces': '00001'}
+        msg = 'All field parse incorrect'
+        self.assertEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._p = None
         cls._line = None
+        cls._fields = None
