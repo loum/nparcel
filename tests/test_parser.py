@@ -51,14 +51,7 @@ class TestParser(unittest2.TestCase):
     def test_set_non_dictionary_based_field(self):
         """Set field with non-dictionary value.
         """
-        with self.assertRaises(TypeError) as cm:
-            self._p.fields = ''
-
-        exception = cm.exception
-        received = str(exception)
-        expected = 'Token assignment expected dictionary'
-        msg = 'Setting field with non-dictionary should raise TypeError.'
-        self.assertEqual(received, expected, msg)
+        self.assertRaises(TypeError, self._p.set_fields, '')
 
     def test_init_valid_field(self):
         """Set field with valid dictionary value.
@@ -66,7 +59,7 @@ class TestParser(unittest2.TestCase):
         fields = {'Conn Note': {'offset': 0,
                                 'length': 20}}
         parser = nparcel.Parser(fields=fields)
-        received = parser.fields
+        received = parser.get_fields()
         expected = fields
         msg = 'Fields initialisation property setter/getter error.'
         self.assertEqual(received, expected, msg)
