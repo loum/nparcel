@@ -1,7 +1,7 @@
 PY=/usr/bin/env python
 PYTHONPATH=..
 LOG_CONF=nparcel/utils/conf
-NOSE=/usr/bin/nosetests1.1 -s -v --with-coverage --cover-package nparcel
+NOSE=/usr/bin/nosetests -s -v
 GIT=/usr/bin/git
 
 # The TEST variable can be set to allow you to control which tests

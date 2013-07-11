@@ -1,9 +1,8 @@
 __all__ = [
     "Parser",
 ]
-from nparcel.utils.log import class_logging
 
-@class_logging
+
 class Parser(object):
     """1250 file parser.
 
@@ -33,7 +32,7 @@ class Parser(object):
         """
         result = {}
 
-        for field_name, field_settings  in self.fields.iteritems():
+        for field_name, field_settings in self.get_fields().iteritems():
             start = field_settings.get('offset')
             end = start + field_settings.get('length')
             value = line[start:end].rstrip()
@@ -41,12 +40,10 @@ class Parser(object):
 
         return result
 
-    @property
-    def fields(self):
+    def get_fields(self):
         return self._fields
 
-    @fields.setter
-    def fields(self, value):
+    def set_fields(self, value):
         if isinstance(value, dict):
             for k, v in value.iteritems():
                 self._fields[k] = v
