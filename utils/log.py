@@ -7,8 +7,6 @@ __all__ = [
 import logging
 import logging.config
 import os
-import functools
-import types
 import inspect
 
 
@@ -30,63 +28,17 @@ locations = [
     os.path.expanduser("~"),
     "/etc/myproject",
     os.environ.get("LOG_CONF"),
-    os.path.join("utils", "conf")
 ]
 
 for loc in locations:
     try:
-        with open(os.path.join(loc, "log.conf")) as source:
-            logging.config.fileConfig(source)
+        source = open(os.path.join(loc, "log.conf"))
+        logging.config.fileConfig(source)
+        source.close()
     except:
         pass
 
 log = logging.getLogger()
-
-def logger(f):
-    def wrapper():
-        log.info('starting %s' % f.__name__)
-        f()
-        log.info('ending %s' % f.__name__)
-
-    return wrapper
-
-def class_logging(c):
-    """Class decorator that adds logging to all "public" class methods.
-    """
-    method_p = lambda m: not m.startswith('_') and \
-                         isinstance(getattr(c, m), types.MethodType)
-    public_methods = filter(method_p, dir(c))
- 
-    for method_name in public_methods:
-        class_method = getattr(c, method_name)
- 
-        def helper(mname, method):
-            @functools.wraps(method)
-            def wrapper(*a, **kw):
-                msg = '{0}({1}, {2})'.format(mname, a, kw)
-                log.debug(msg)
-                try:
-                    response = method(*a, **kw)
-                except Exception as e:
-                    error_message = 'no additional information'
-                    if hasattr(e, 'args'):
-                        error_message = str(e)
-                    msg = '{0} raised {1}, {2}'.format(mname,
-                                                       type(e),
-                                                       error_message)
-                    log.debug(msg)
-                    raise
-                else:
-                    msg = '{0} returned {1}'.format(mname, response)
-                    log.debug(msg)
- 
-                return response
-            return wrapper
-         
-        fn = types.MethodType(helper(method_name, class_method), None, c)
-        setattr(c, method_name, fn)
-
-    return c
 
 def set_log_level(level='INFO'):
     """
@@ -102,7 +54,6 @@ def suppress_logging():
     """
     """
     logging.disable(logging.ERROR)
-
 
 def autolog(message):
     """Automatically log the current function details.
