@@ -5,7 +5,9 @@ import nparcel
 from nparcel.utils.log import log
 
 FIELDS = {'Bar code': {'offset': 438,
-                       'length': 15}}
+                       'length': 15},
+          'Agent Id': {'offset': 453,
+                       'length': 4}}
 
 class Loader(object):
     """Nparcel Loader object.
@@ -52,6 +54,10 @@ class Loader(object):
 
         if not fields.get('Bar code'):
             raise ValueError('Missing barcode')
+            status = False
+
+        if status and not fields.get('Agent Id'):
+            raise ValueError('Missing Agent Id')
             status = False
 
         return status

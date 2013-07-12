@@ -5,6 +5,10 @@ import nparcel
 VALID_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111     N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
 
 INVALID_BARCODE_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                                              N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
+
+INVALID_AGENTID_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111                                                                                                                                            00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
+
+
 class TestLoader(unittest2.TestCase):
 
     @classmethod
@@ -49,8 +53,29 @@ class TestLoader(unittest2.TestCase):
         """Validate record with valid barcode.
         """
         l = nparcel.Loader()
-        result = {'Bar code': '4156536111'}
+        result = {'Bar code': '4156536111',
+                  'Agent Id': 'dummy'}
         msg = 'Loader validation with valid Bar code should return True'
+        self.assertTrue(l.validate(fields=result), msg)
+
+    def test_validation_missing_agent_id(self):
+        """Validate record with missing agent id.
+        """
+        l = nparcel.Loader()
+        result = {'Bar code': 'dummy',
+                  'Agent Id': ''}
+        self.assertRaisesRegexp(ValueError,
+                                'Missing Agent Id',
+                                l.validate,
+                                fields=result)
+
+    def test_validation_valid_agent_id(self):
+        """Validate record with valid barcode.
+        """
+        l = nparcel.Loader()
+        result = {'Bar code': 'dummy',
+                  'Agent Id': 'N031'}
+        msg = 'Loader validation with valid Agent Id should return True'
         self.assertTrue(l.validate(fields=result), msg)
 
     def test_processor_valid_record(self):
@@ -66,6 +91,13 @@ class TestLoader(unittest2.TestCase):
         l = nparcel.Loader()
         msg = 'T1250 record with invalid barcode should fail processing'
         self.assertFalse(l.process(INVALID_BARCODE_LINE), msg)
+
+    def test_processor_invalid_agent_id_record(self):
+        """Process valid raw T1250 line with an invalid barcode.
+        """
+        l = nparcel.Loader()
+        msg = 'T1250 record with invalid Agent Id should fail processing'
+        self.assertFalse(l.process(INVALID_AGENTID_LINE), msg)
 
     @classmethod
     def tearDownClass(cls):
