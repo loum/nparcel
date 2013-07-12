@@ -25,6 +25,6 @@ class Job(object):
     def check_barcode(self, barcode):
         """
         """
-        exists = False
+        sql = """SELECT id FROM job WHERE card_ref_nbr='%s'""" % barcode
 
-        sql = """SELECT * FROM job"""
+        return sql

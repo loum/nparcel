@@ -3,11 +3,6 @@ import os
 
 import nparcel
 
-JOB_SCHEMA = """
-CREATE TABLE job (
-    id INTEGER PRIMARY KEY,
-    card_ref_nbr CHAR(15))"""
-
 
 class TestJob(unittest2.TestCase):
 
@@ -22,19 +17,19 @@ class TestJob(unittest2.TestCase):
     def test_check_barcode(self):
         """Bar code check.
         """
+        bc = '4156778061'
         sql = """
 INSERT INTO job (card_ref_nbr)
-VALUES ('4156778061')"""
+VALUES ("%s")""" % bc
         self._db(sql)
 
-        sql = """SELECT * FROM job"""
-        self._db(sql)
+        self._db(self._job.check_barcode(barcode=bc))
         received = []
         for row in self._db.rows():
-            received.append(row[1])
-        expected = ['4156778061']
+            received.append(row[0])
+        expected = [1]
         msg = 'Barcode value not returned from "job" table'
-        self.assertListEqual(expected, received, msg)
+        self.assertListEqual(received, expected, msg)
 
     @classmethod
     def tearDownClass(cls):
