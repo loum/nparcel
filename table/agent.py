@@ -14,6 +14,13 @@ class Agent(object):
         self.id = None
         self.code = None
 
+    def check_agent_id(self, agent_id):
+        """
+        """
+        sql = """SELECT id FROM agent WHERE code='%s'""" % agent_id
+
+        return sql
+
     @property
     def schema(self):
         return ["id INTEGER PRIMARY KEY",
