@@ -1,6 +1,6 @@
 PY=/usr/bin/env python
 PYTHONPATH=..
-LOG_CONF=nparcel/utils/conf
+LOG_CONF=utils/conf
 NOSE=/usr/bin/nosetests -s -v
 GIT=/usr/bin/git
 
