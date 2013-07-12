@@ -14,8 +14,8 @@ class Job(object):
         """
         """
 
-        id = None
-        card_ref_nbr = None
+        self.id = None
+        self.card_ref_nbr = None
 
     @property
     def schema(self):

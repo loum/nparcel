@@ -1,7 +1,10 @@
 __all__ = [
     "Loader",
 ]
+import nparcel
 
+FIELDS = {'Bar code': {'offset': 438,
+                       'length': 15}}
 
 class Loader(object):
     """Nparcel Loader object.
@@ -10,5 +13,4 @@ class Loader(object):
     def __init__(self):
         """
         """
-
-        pass
+        self.parser = nparcel.Parser(fields=FIELDS)
