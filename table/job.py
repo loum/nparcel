@@ -20,7 +20,16 @@ class Job(object):
     @property
     def schema(self):
         return ["id INTEGER PRIMARY KEY",
-                "card_ref_nbr CHAR(15)"]
+                "bu_id INTEGER",
+                "agent_id INTEGER",
+                "job_ts TIMESTAMP",
+                "card_ref_nbr CHAR(15)",
+                "address_1 CHAR(30)",
+                "address_2 CHAR(30)",
+                "suburb CHAR(30)",
+                "postcode CHAR(4)",
+                "state CHAR(3)",
+                "status INTEGER"]
 
     def check_barcode(self, barcode):
         """

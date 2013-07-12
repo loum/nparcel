@@ -47,7 +47,7 @@ class Loader(object):
     def validate(self, fields):
         """Perform some T1250 validations around:
 
-        Barcode should exist.
+        Barcode and Agent ID should exist.
 
         """
         status = True

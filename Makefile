@@ -16,7 +16,10 @@ GIT=/usr/bin/git
 #
 # Note: for this to work you will need to import the test class into
 # the current namespace via "tests/__init__.py"
-TEST=
+TEST=tests:TestLoader \
+	 tests:TestParser \
+	 tests:TestDbSession \
+	 table.tests
 
 docs:
 	PYTHONPATH=$(PYTHONPATH) sphinx-build -b html ./doc/source ./doc/build
