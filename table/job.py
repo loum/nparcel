@@ -1,5 +1,5 @@
 __all__ = [
-    "job",
+    "Job",
 ]
 import os
 import nparcel
