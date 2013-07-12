@@ -1,5 +1,5 @@
 __all__ = [
-    "job",
+    "Job",
 ]
 import os
 import nparcel
@@ -14,8 +14,8 @@ class Job(object):
         """
         """
 
-        id = None
-        card_ref_nbr = None
+        self.id = None
+        self.card_ref_nbr = None
 
     @property
     def schema(self):
@@ -25,6 +25,6 @@ class Job(object):
     def check_barcode(self, barcode):
         """
         """
-        exists = False
+        sql = """SELECT id FROM job WHERE card_ref_nbr='%s'""" % barcode
 
-        sql = """SELECT * FROM job"""
+        return sql
