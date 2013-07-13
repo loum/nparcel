@@ -13,27 +13,24 @@ class TestLoader(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        pass
+        cls._loader = nparcel.Loader()
 
     def test_init(self):
         """Initialise a Loader object.
         """
-        l = nparcel.Loader()
         msg = 'Object is not an nparcel.Loader'
-        self.assertIsInstance(l, nparcel.Loader, msg)
+        self.assertIsInstance(self._loader, nparcel.Loader, msg)
 
     def test_parser_integration(self):
         """Parser object integration.
         """
-        l = nparcel.Loader()
         msg = 'Loader object does not have a valid Parser object'
-        self.assertIsInstance(l.parser, nparcel.Parser, msg)
+        self.assertIsInstance(self._loader.parser, nparcel.Parser, msg)
 
     def test_valid_barcode_extract(self):
         """Extract valid barvcode.
         """
-        l = nparcel.Loader()
-        result = l.parser.parse_line(VALID_LINE)
+        result = self._loader.parser.parse_line(VALID_LINE)
         received = result.get('Bar code')
         expected = '4156536111'
         msg = 'Loader Bar code parse should return "%s"' % expected
@@ -42,63 +39,80 @@ class TestLoader(unittest2.TestCase):
     def test_validation_missing_barcode(self):
         """Validate record with missing barcode.
         """
-        l = nparcel.Loader()
         result = {'Bar code': ''}
         self.assertRaisesRegexp(ValueError,
                                 'Missing barcode',
-                                l.validate,
+                                self._loader.validate,
                                 fields=result)
 
     def test_validation_valid_barcode(self):
         """Validate record with valid barcode.
         """
-        l = nparcel.Loader()
         result = {'Bar code': '4156536111',
                   'Agent Id': 'dummy'}
         msg = 'Loader validation with valid Bar code should return True'
-        self.assertTrue(l.validate(fields=result), msg)
+        self.assertTrue(self._loader.validate(fields=result), msg)
 
     def test_validation_missing_agent_id(self):
         """Validate record with missing agent id.
         """
-        l = nparcel.Loader()
         result = {'Bar code': 'dummy',
                   'Agent Id': ''}
         self.assertRaisesRegexp(ValueError,
                                 'Missing Agent Id',
-                                l.validate,
+                                self._loader.validate,
                                 fields=result)
 
     def test_validation_valid_agent_id(self):
         """Validate record with valid barcode.
         """
-        l = nparcel.Loader()
         result = {'Bar code': 'dummy',
                   'Agent Id': 'N031'}
         msg = 'Loader validation with valid Agent Id should return True'
-        self.assertTrue(l.validate(fields=result), msg)
+        self.assertTrue(self._loader.validate(fields=result), msg)
 
     def test_processor_valid_record(self):
         """Process valid raw T1250 line.
         """
-        l = nparcel.Loader()
         msg = 'Valid T1250 record should process successfully'
-        self.assertTrue(l.process(VALID_LINE), msg)
+        self.assertTrue(self._loader.process(VALID_LINE), msg)
 
     def test_processor_invalid_barcode_record(self):
         """Process valid raw T1250 line with an invalid barcode.
         """
-        l = nparcel.Loader()
         msg = 'T1250 record with invalid barcode should fail processing'
-        self.assertFalse(l.process(INVALID_BARCODE_LINE), msg)
+        self.assertFalse(self._loader.process(INVALID_BARCODE_LINE), msg)
 
     def test_processor_invalid_agent_id_record(self):
         """Process valid raw T1250 line with an invalid barcode.
         """
-        l = nparcel.Loader()
         msg = 'T1250 record with invalid Agent Id should fail processing'
-        self.assertFalse(l.process(INVALID_AGENTID_LINE), msg)
+        self.assertFalse(self._loader.process(INVALID_AGENTID_LINE), msg)
+
+    def test_table_column_map(self):
+        """Map parser fields to table columns.
+        """
+        fields = {'Field 1': 'field 1 value',
+                  'Field 2': 'field 2 value'}
+        map = {'Field 1': 'field_1',
+               'Field 2': 'field_2'}
+        received = self._loader.table_column_map(fields, map)
+        expected = {'field_1': 'field 1 value',
+                    'field_2': 'field 2 value'}
+        msg = 'Table to column map incorrect'
+        self.assertDictEqual(received, expected, msg)
+
+    def test_table_column_map_extra_fields(self):
+        """Map extra parser fields to table columns.
+        """
+        fields = {'Field 1': 'field 1 value',
+                  'Field 2': 'field 2 value'}
+        map = {'Field 1': 'field_1'}
+        self.assertRaisesRegexp(ValueError,
+                                'Cannot map fields "Field 2',
+                                self._loader.table_column_map,
+                                fields, map)
 
     @classmethod
     def tearDownClass(cls):
-        pass
+        cls._loader = None
