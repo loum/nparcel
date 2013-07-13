@@ -1,12 +1,10 @@
 __all__ = [
     "Job",
 ]
-import os
 import nparcel
-from nparcel.utils.log import log
 
 
-class Job(object):
+class Job(nparcel.Table):
     """Nparcel DB Job table ORM.
     """
 
@@ -16,6 +14,7 @@ class Job(object):
 
         self.id = None
         self.card_ref_nbr = None
+        super(Job, self).__init__('job')
 
     @property
     def schema(self):

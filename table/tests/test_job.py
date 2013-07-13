@@ -1,6 +1,7 @@
 import unittest2
 
 import nparcel
+import sqlite
 
 
 class TestJob(unittest2.TestCase):
