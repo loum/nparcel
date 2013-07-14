@@ -4,10 +4,49 @@ __all__ = [
 import nparcel
 from nparcel.utils.log import log
 
-FIELDS = {'Bar code': {'offset': 438,
+FIELDS = {'Conn Note': {'offset': 0,
+                        'length': 20},
+          'Identifier': {'offset': 21,
+                         'length': 20},
+          'Consumer Name': {'offset': 41,
+                            'length': 30},
+          'Consumer Address 1': {'offset': 81,
+                                 'length': 30},
+          'Consumer Address 2': {'offset': 111,
+                                 'length': 30},
+          'Suburb': {'offset': 141,
+                     'length': 30},
+          'Post code': {'offset': 171,
+                        'length': 4},
+          'Bar code': {'offset': 438,
                        'length': 15},
           'Agent Id': {'offset': 453,
-                       'length': 4}}
+                       'length': 4},
+          'Pieces': {'offset': 588,
+                     'length': 5}}
+JOB_MAP = {'Agent Id': {
+               'column': 'agent_id',
+               'required': True},
+           'Bar code': {
+               'column': 'card_ref_nbr',
+               'required': True},
+           'Identifier': {
+               'column': 'bu_id'},
+           'Consumer Address 1': {
+               'column': 'address_1'},
+           'Consumer Address 2': {
+               'column': 'address_2'},
+           'Suburb': {
+               'column': 'suburb'},
+           'Post code': {
+               'column': 'postcode'},
+           'state': {
+               'column': 'state'},
+           'status': {
+               'column': 'status',
+               'required': True,
+               'default': 1}}
+
 
 class Loader(object):
     """Nparcel Loader object.
@@ -89,11 +128,16 @@ class Loader(object):
         """
         columns = {}
 
-        extra_items = [x for x in fields.keys() if x not in map.keys()]
-        if extra_items:
-            raise ValueError('Cannot map fields "%s"' %
-                             ", ".join(extra_items))
-        else:
-            columns = dict((map.get(k), v) for (k, v) in fields.iteritems())
+        for field_name, v in map.iteritems():
+            if (v.get('required') and
+                not fields.get(field_name) and
+                not v.get('default')):
+                raise ValueError('Field "%s" is required' % field_name)
+
+            if not fields.get(field_name):
+                fields[field_name] = v.get('default')
+
+        columns = dict((map.get(k).get('column'),
+                        fields.get(k)) for (k, v) in map.iteritems())
 
         return columns

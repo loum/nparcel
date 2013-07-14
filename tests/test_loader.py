@@ -3,7 +3,6 @@ import unittest2
 import nparcel
 
 VALID_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111     N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
-
 INVALID_BARCODE_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                                              N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
 
 INVALID_AGENTID_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111                                                                                                                                            00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
@@ -94,24 +93,66 @@ class TestLoader(unittest2.TestCase):
         """
         fields = {'Field 1': 'field 1 value',
                   'Field 2': 'field 2 value'}
-        map = {'Field 1': 'field_1',
-               'Field 2': 'field_2'}
+        map = {'Field 1': {
+                   'column': 'field_1',
+                   'required': True},
+               'Field 2': {
+                   'column': 'field_2',
+                   'required': True}}
         received = self._loader.table_column_map(fields, map)
         expected = {'field_1': 'field 1 value',
                     'field_2': 'field 2 value'}
         msg = 'Table to column map incorrect'
         self.assertDictEqual(received, expected, msg)
 
-    def test_table_column_map_extra_fields(self):
-        """Map extra parser fields to table columns.
+    def test_table_column_map_missing_required_field_exception(self):
+        """Table column map missing required field exception -- no default.
         """
-        fields = {'Field 1': 'field 1 value',
-                  'Field 2': 'field 2 value'}
-        map = {'Field 1': 'field_1'}
+        fields = {'Field 2': 'field 2 value'}
+        map = {'Field 1': {
+                   'column': 'field_1',
+                   'required': True},
+               'Field 2': {
+                   'value': 'field_2',
+                   'required': False}}
         self.assertRaisesRegexp(ValueError,
-                                'Cannot map fields "Field 2',
+                                'Field "Field 1" is required',
                                 self._loader.table_column_map,
                                 fields, map)
+
+    def test_table_column_map_missing_required_field_with_default(self):
+        """Table column map missing required field value with default.
+        """
+        fields = {'Field 2': 'field 2 value'}
+        map = {'Field 1': {
+                   'column': 'field_1',
+                   'required': True,
+                   'default': 'field_1_default'},
+               'Field 2': {
+                   'column': 'field_2',
+                   'required': False}}
+        received = self._loader.table_column_map(fields, map)
+        expected = {'field_1': 'field_1_default',
+                    'field_2': 'field 2 value'}
+        msg = 'Table to column map with missing required field error'
+        self.assertDictEqual(received, expected, msg)
+
+    def test_table_column_map_for_a_valid_raw_record(self):
+        """Process valid raw T1250 line.
+        """
+        fields = self._loader.parser.parse_line(VALID_LINE)
+        received = self._loader.table_column_map(fields, nparcel.loader.JOB_MAP)
+        expected = {'address_1': '31 Bridge st,',
+                    'address_2': 'Lane Cove,',
+                    'agent_id': 'N031',
+                    'bu_id': ' YMLML11TOLP130413',
+                    'card_ref_nbr': '4156536111',
+                    'postcode': '2066',
+                    'state': None,
+                    'status': 1,
+                    'suburb': 'Australia Other'}
+        msg = 'Valid record Job table translation error'
+        self.assertDictEqual(received, expected, msg)
 
     @classmethod
     def tearDownClass(cls):
