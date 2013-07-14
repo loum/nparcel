@@ -145,7 +145,7 @@ class TestLoader(unittest2.TestCase):
         expected = {'address_1': '31 Bridge st,',
                     'address_2': 'Lane Cove,',
                     'agent_id': 'N031',
-                    'bu_id': ' YMLML11TOLP130413',
+                    'bu_id': 1,
                     'card_ref_nbr': '4156536111',
                     'postcode': '2066',
                     'state': None,
@@ -153,6 +153,24 @@ class TestLoader(unittest2.TestCase):
                     'suburb': 'Australia Other'}
         msg = 'Valid record Job table translation error'
         self.assertDictEqual(received, expected, msg)
+
+    def test_valid_bu_id(self):
+        """Convert identifier to business unit code.
+        """
+        bu_id = ' YMLML11TOLP130413'
+        received = self._loader.translate_bu_id(bu_id)
+        expected = 1
+        msg = 'BU translation error -- valid BU'
+        self.assertEqual(received, expected, msg)
+
+    def test_invalid_bu_id(self):
+        """Convert identifier to business unit code -- invalid.
+        """
+        bu_id = ' YMLML11TOLZ130413'
+        received = self._loader.translate_bu_id(bu_id)
+        expected = None
+        msg = 'BU translation error -- invalid BU'
+        self.assertEqual(received, expected, msg)
 
     @classmethod
     def tearDownClass(cls):

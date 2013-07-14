@@ -1,6 +1,8 @@
 __all__ = [
     "Loader",
 ]
+import re
+
 import nparcel
 from nparcel.utils.log import log
 
@@ -31,7 +33,9 @@ JOB_MAP = {'Agent Id': {
                'column': 'card_ref_nbr',
                'required': True},
            'Identifier': {
-               'column': 'bu_id'},
+               'column': 'bu_id',
+               'required': True,
+               'callback': 'translate_bu_id'},
            'Consumer Address 1': {
                'column': 'address_1'},
            'Consumer Address 2': {
@@ -46,6 +50,9 @@ JOB_MAP = {'Agent Id': {
                'column': 'status',
                'required': True,
                'default': 1}}
+BU_MAP = {'TOLP': 1,
+          'TOLF': 2,
+          'TOLI': 3}
 
 
 class Loader(object):
@@ -129,6 +136,11 @@ class Loader(object):
         columns = {}
 
         for field_name, v in map.iteritems():
+            # Check for callbacks.
+            if v.get('callback'):
+                callback = getattr(self, v.get('callback'))
+                fields[field_name] = callback(fields[field_name])
+
             if (v.get('required') and
                 not fields.get(field_name) and
                 not v.get('default')):
@@ -141,3 +153,17 @@ class Loader(object):
                         fields.get(k)) for (k, v) in map.iteritems())
 
         return columns
+
+    def translate_bu_id(self, value):
+        """
+        """
+        bu_id = None
+
+        log.debug('Translating "%s" to BU ...' % value)
+        m = re.search(' YMLML11(TOL.).*', value)
+        bu_id = BU_MAP.get(m.group(1))
+
+        if bu_id is None:
+            log.error('Unable to extract BU from "%s"' % value)
+
+        return bu_id
