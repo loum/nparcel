@@ -147,7 +147,7 @@ class TestLoader(unittest2.TestCase):
                     'agent_id': 'N031',
                     'bu_id': 1,
                     'card_ref_nbr': '4156536111',
-                    'postcode': '2066',
+                    'postcode': 'NSW',
                     'state': None,
                     'status': 1,
                     'suburb': 'Australia Other'}
@@ -170,6 +170,33 @@ class TestLoader(unittest2.TestCase):
         received = self._loader.translate_bu_id(bu_id)
         expected = None
         msg = 'BU translation error -- invalid BU'
+        self.assertEqual(received, expected, msg)
+
+    def test_valid_translate_postcode_range_based(self):
+        """Translate postcode to state -- valid, range-based.
+        """
+        postcode = 2000
+        received = self._loader.translate_postcode(postcode)
+        expected = 'NSW'
+        msg = 'Valid postcode translation to state failed -- valid'
+        self.assertEqual(received, expected, msg)
+
+    def test_invalid_translate_postcode_range_based(self):
+        """Translate postcode to state -- invalid, range-based.
+        """
+        postcode = -1
+        received = self._loader.translate_postcode(postcode)
+        expected = None
+        msg = 'Invalid postcode translation to state failed -- invalid'
+        self.assertEqual(received, expected, msg)
+
+    def test_valid_translate_postcode_exception_based(self):
+        """Translate postcode to state -- valid, exception-based.
+        """
+        postcode = 2899
+        received = self._loader.translate_postcode(postcode)
+        expected = 'NSW'
+        msg = 'Valid postcode translation to state failed -- exceptions'
         self.assertEqual(received, expected, msg)
 
     @classmethod
