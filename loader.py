@@ -2,6 +2,7 @@ __all__ = [
     "Loader",
 ]
 import re
+import datetime
 
 import nparcel
 from nparcel.utils.log import log
@@ -51,6 +52,20 @@ JOB_MAP = {'Agent Id': {
                'column': 'status',
                'required': True,
                'default': 1}}
+JOB_ITEM_MAP = {'Conn Note': {
+                    'column': 'connote_nbr'},
+                'Consumer Name': {
+                    'column': 'consumer_name'},
+                'Pieces': {
+                    'column': 'pieces'},
+                'status': {
+                    'column': 'status',
+                    'required': True,
+                    'default': 1},
+                'created_ts': {
+                    'column': 'created_ts',
+                    'required': True,
+                    'callback': 'date_now'}}
 BU_MAP = {'TOLP': 1,
           'TOLF': 2,
           'TOLI': 3}
@@ -179,7 +194,7 @@ class Loader(object):
             # Check for callbacks.
             if v.get('callback'):
                 callback = getattr(self, v.get('callback'))
-                fields[field_name] = callback(fields[field_name])
+                fields[field_name] = callback(fields.get(field_name))
 
             if (v.get('required') and
                 not fields.get(field_name) and
@@ -232,3 +247,8 @@ class Loader(object):
                   (postcode, state))
 
         return state
+
+    def date_now(self, *args):
+        """
+        """
+        return datetime.datetime.now()
