@@ -138,10 +138,11 @@ class TestLoader(unittest2.TestCase):
         self.assertDictEqual(received, expected, msg)
 
     def test_table_column_map_for_a_valid_raw_record(self):
-        """Process valid raw T1250 line.
+        """Process valid raw T1250 line and map job table elements.
         """
         fields = self._loader.parser.parse_line(VALID_LINE)
-        received = self._loader.table_column_map(fields, nparcel.loader.JOB_MAP)
+        received = self._loader.table_column_map(fields,
+                                                 nparcel.loader.JOB_MAP)
         expected = {'address_1': '31 Bridge st,',
                     'address_2': 'Lane Cove,',
                     'agent_id': 'N031',
@@ -198,6 +199,22 @@ class TestLoader(unittest2.TestCase):
         expected = 'NSW'
         msg = 'Valid postcode translation to state failed -- exceptions'
         self.assertEqual(received, expected, msg)
+
+    def test_job_item_table_column_map_for_a_valid_raw_record(self):
+        """Process valid raw T1250 line and map job_item table elements.
+        """
+        fields = self._loader.parser.parse_line(VALID_LINE)
+        received = self._loader.table_column_map(fields,
+                                                 nparcel.loader.JOB_ITEM_MAP)
+        # Null out the time created.
+        received['created_ts'] = None
+        expected = {'connote_nbr': '218501217863',
+                    'consumer_name': 'Diane Donohoe',
+                    'pieces': '00001',
+                    'status': 1,
+                    'created_ts': None}
+        msg = 'Valid record "job_item" table translation error'
+        self.assertDictEqual(received, expected, msg)
 
     @classmethod
     def tearDownClass(cls):
