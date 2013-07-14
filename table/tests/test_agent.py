@@ -39,4 +39,3 @@ VALUES ("%s")""" % a_id
     def tearDownClass(cls):
         cls._db.close()
         cls._db = None
-
