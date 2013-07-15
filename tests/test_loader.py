@@ -220,6 +220,29 @@ class TestLoader(unittest2.TestCase):
         msg = 'Valid record "job_item" table translation error'
         self.assertDictEqual(received, expected, msg)
 
+    def test_barcode_exists_with_missing_barcode(self):
+        """Check barcode status -- missing barcode.
+        """
+        msg = 'Missing barcode should return False'
+        self.assertFalse(self._loader.barcode_exists('xxx'), msg)
+
+    def test_barcode_exists_with_existing_barcode(self):
+        """Check barcode status -- existing barcode.
+        """
+        test_barcode = '4156778061'
+
+        # Seed the barcode.
+        sql = """
+INSERT INTO job (card_ref_nbr)
+VALUES ("%s")""" % test_barcode
+        self._loader.db(sql)
+
+        msg = 'Existing barcode should return True'
+        self.assertTrue(self._loader.barcode_exists(test_barcode), msg)
+
+        # Restore DB state.
+        self._loader.db.connection.rollback()
+
     @classmethod
     def tearDownClass(cls):
         cls._loader = None

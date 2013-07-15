@@ -142,6 +142,18 @@ class Loader(object):
 
         return status
 
+    def barcode_exists(self, barcode):
+        """
+        """
+        status = False
+
+        log.info('Checking if barcode "%s" exists in system' % barcode)
+        self.db(self.db._job.check_barcode(barcode=barcode))
+        if self.db.row:
+            status = True
+
+        return status
+
     def validate(self, fields):
         """Perform some T1250 validations around:
 
