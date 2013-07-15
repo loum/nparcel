@@ -11,7 +11,7 @@ class JobItem(nparcel.Table):
     def __init__(self):
         """
         """
-        super(JobItem, self).__init__('job')
+        super(JobItem, self).__init__('job_item')
 
     @property
     def schema(self):
