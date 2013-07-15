@@ -30,6 +30,10 @@ class DbSession(object):
         for row in self.cursor.fetchall():
             yield row
 
+    @property
+    def row(self):
+        return self.cursor.fetchone()
+
     def commit(self):
         """
         """
