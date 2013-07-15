@@ -136,9 +136,13 @@ class Loader(object):
         job_data = self.table_column_map(fields, JOB_MAP)
         job_item_data = self.table_column_map(fields, JOB_ITEM_MAP)
 
-        log.debug('Creating Nparcel record for barcode "%s"' %
-                  job_data.get('card_ref_nbr'))
-        self.db.create(job_data, job_item_data)
+        barcode = job_data.get('card_ref_nbr')
+
+        if self.barcode_exists(barcode=barcode):
+            log.info('Updating Nparcel record for barcode "%s"' % barcode)
+        else:
+            log.info('Creating Nparcel record for barcode "%s"' % barcode)
+            self.db.create(job_data, job_item_data)
 
         return status
 
