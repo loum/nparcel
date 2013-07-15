@@ -11,8 +11,6 @@ class TestJobItem(unittest2.TestCase):
         cls._job_item = nparcel.JobItem()
         cls._db = nparcel.DbSession()
         cls._db.connect()
-        cls._db.create_table(name="job_item",
-                             schema=cls._job_item.schema)
 
     def test_jobitem_table_insert_with_valid_nparcel_data(self):
         """Insert valid Nparcel data into "job_item" table.
