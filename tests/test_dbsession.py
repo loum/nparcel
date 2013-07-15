@@ -13,12 +13,20 @@ class TestDbSession(unittest2.TestCase):
     def setUpClass(cls):
         cls._db = nparcel.DbSession()
         cls._db.connect()
+        cls._db.create_table(name='dummy', schema=DUMMY_SCHEMA)
 
-    def test_create_table(self):
-        """Dummy placeholder to ensure that the DB is created.
+    def test_insert(self):
+        """Insert into the DB table.
         """
-        self._db.create_table(name='dummy',
-                              schema=DUMMY_SCHEMA)
+        sql = """INSERT INTO dummy (dummy_field)
+VALUES ('xxx')"""
+        received = self._db.insert(sql)
+        expected = 1
+        msg = 'Insert should return the row ID'
+        self.assertEqual(received, expected, msg)
+
+        # and clean up.
+        self._db.connection.rollback()
 
     @classmethod
     def tearDownClass(cls):
