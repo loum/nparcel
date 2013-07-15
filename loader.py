@@ -21,6 +21,8 @@ FIELDS = {'Conn Note': {'offset': 0,
                      'length': 30},
           'Post code': {'offset': 171,
                         'length': 4},
+          'state': {'offset': 171,
+                    'length': 4},
           'Bar code': {'offset': 438,
                        'length': 15},
           'Agent Id': {'offset': 453,
@@ -44,10 +46,10 @@ JOB_MAP = {'Agent Id': {
            'Suburb': {
                'column': 'suburb'},
            'Post code': {
-               'column': 'postcode',
-               'callback': 'translate_postcode'},
+               'column': 'postcode'},
            'state': {
-               'column': 'state'},
+               'column': 'state',
+               'callback': 'translate_postcode'},
            'status': {
                'column': 'status',
                'required': True,

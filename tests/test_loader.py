@@ -148,8 +148,8 @@ class TestLoader(unittest2.TestCase):
                     'agent_id': 'N031',
                     'bu_id': 1,
                     'card_ref_nbr': '4156536111',
-                    'postcode': 'NSW',
-                    'state': None,
+                    'postcode': '2066',
+                    'state': 'NSW',
                     'status': 1,
                     'suburb': 'Australia Other'}
         msg = 'Valid record Job table translation error'

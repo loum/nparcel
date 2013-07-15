@@ -30,6 +30,23 @@ VALUES ("%s")""" % bc
         msg = 'Barcode value not returned from "job" table'
         self.assertListEqual(received, expected, msg)
 
+    def test_job_table_insert_with_valid_nparcel_data(self):
+        """Insert valid Nparcel data.
+        """
+        kwargs = {'address_1': '31 Bridge st,',
+                  'address_2': 'Lane Cove,',
+                  'agent_id': 'N031',
+                  'bu_id': 1,
+                  'card_ref_nbr': '4156536111',
+                  'status': 1,
+                  'suburb': 'Australia Other'}
+        self._db(self._job.insert(kwargs))
+
+        # Do a query to see if the record is returned.
+        #sql = """
+#SELECT last_insert_rowid()"""
+#        self._db(sql)
+
     @classmethod
     def tearDownClass(cls):
         cls._db.close()
