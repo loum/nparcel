@@ -1,4 +1,5 @@
 import unittest2
+import datetime
 
 import nparcel
 
@@ -13,10 +14,20 @@ class TestJobItem(unittest2.TestCase):
         cls._db.create_table(name="job_item",
                              schema=cls._job_item.schema)
 
-    def test_init(self):
-        """Placeholder test to make sure the "job_item" table is created.
+    def test_jobitem_table_insert_with_valid_nparcel_data(self):
+        """Insert valid Nparcel data into "job_item" table.
         """
-        pass
+        kwargs = {'connote_nbr': '218501217863',
+                  'consumer_name': 'Diane Donohoe',
+                  'pieces': '00001',
+                  'status': 1,
+                  'created_ts': datetime.datetime.now().isoformat()}
+        received = self._db.insert(self._job_item.insert(kwargs))
+        expected = 1
+        msg = '"job_item" table insert returned unexpected row_id'
+        self.assertEqual(received, expected, msg)
+
+        self._db.connection.rollback()
 
     @classmethod
     def tearDownClass(cls):
