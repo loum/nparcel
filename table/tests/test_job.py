@@ -10,8 +10,6 @@ class TestJob(unittest2.TestCase):
         cls._job = nparcel.Job()
         cls._db = nparcel.DbSession()
         cls._db.connect()
-        cls._db.create_table(name="job",
-                             schema=cls._job.schema)
 
     def test_check_barcode(self):
         """Bar code check.
@@ -42,12 +40,8 @@ VALUES ("%s")""" % bc
                   'suburb': 'Australia Other'}
         self._db(self._job.insert(kwargs))
 
-        # Do a query to see if the record is returned.
-        #sql = """
-#SELECT last_insert_rowid()"""
-#        self._db(sql)
-
     @classmethod
     def tearDownClass(cls):
         cls._db.close()
         cls._db = None
+        cls._job = None

@@ -120,6 +120,8 @@ class Loader(object):
         """
         """
         self.parser = nparcel.Parser(fields=FIELDS)
+        self.db = nparcel.DbSession()
+        self.db.connect()
 
     def process(self, raw_record):
         """
@@ -130,20 +132,13 @@ class Loader(object):
         """
         status = True
 
-        try:
-            fields = self.parser.parse_line(raw_record)
-        except Exception, err:
-            # TODO -- handle the error alerting
-            status = False
-            log.error(err)
+        fields = self.parser.parse_line(raw_record)
+        job_data = self.table_column_map(fields, JOB_MAP)
+        job_item_data = self.table_column_map(fields, JOB_ITEM_MAP)
 
-        if status:
-            try:
-                self.validate(fields)
-            except ValueError, err:
-                # TODO -- handle the error alerting
-                status = False
-                log.error(err)
+        log.debug('Creating Nparcel record for barcode "%s"' %
+                  job_data.get('card_ref_nbr'))
+        self.db.create(job_data, job_item_data)
 
         return status
 
@@ -253,4 +248,4 @@ class Loader(object):
     def date_now(self, *args):
         """
         """
-        return datetime.datetime.now()
+        return datetime.datetime.now().isoformat()

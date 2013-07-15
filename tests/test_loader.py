@@ -79,14 +79,18 @@ class TestLoader(unittest2.TestCase):
     def test_processor_invalid_barcode_record(self):
         """Process valid raw T1250 line with an invalid barcode.
         """
-        msg = 'T1250 record with invalid barcode should fail processing'
-        self.assertFalse(self._loader.process(INVALID_BARCODE_LINE), msg)
+        self.assertRaisesRegexp(ValueError,
+                                'Field "Bar code" is required',
+                                self._loader.process,
+                                INVALID_BARCODE_LINE)
 
     def test_processor_invalid_agent_id_record(self):
         """Process valid raw T1250 line with an invalid barcode.
         """
-        msg = 'T1250 record with invalid Agent Id should fail processing'
-        self.assertFalse(self._loader.process(INVALID_AGENTID_LINE), msg)
+        self.assertRaisesRegexp(ValueError,
+                                'Field "Agent Id" is required',
+                                self._loader.process,
+                                INVALID_AGENTID_LINE)
 
     def test_table_column_map(self):
         """Map parser fields to table columns.
