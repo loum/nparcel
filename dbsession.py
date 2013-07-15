@@ -16,7 +16,7 @@ class DbSession(object):
         self._cursor = None
 
     def __call__(self, sql):
-        log.debug('Executing SQL: %s' % sql)
+        log.debug('Executing SQL:\n%s' % sql)
         if self.host == 'localhost':
             self.cursor.execute(sql)
 
@@ -77,3 +77,15 @@ class DbSession(object):
     def close(self):
         if self.connection is not None:
             self.connection.close()
+
+    def insert(self, sql):
+        """
+        """
+        id = None
+
+        if self.host == 'localhost':
+            self(sql)
+            self('SELECT last_insert_rowid()')
+            id = self.cursor.fetchone()[0]
+
+        return id

@@ -31,7 +31,7 @@ class TestTable(unittest2.TestCase):
         """
         kwargs = {'sample_char': 'dummy',
                   'sample_int': 1}
-        self._db(self._table.insert(kwargs))
+        id = self._db.insert(self._table.insert(kwargs))
 
     @classmethod
     def tearDownClass(cls):
