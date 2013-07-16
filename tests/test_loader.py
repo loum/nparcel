@@ -256,6 +256,29 @@ VALUES ("%s")""" % test_barcode
         # Restore DB state.
         self._loader.db.connection.rollback()
 
+    def test_agent_id_with_missing_agent_id(self):
+        """Agent ID check with missing Agent ID.
+        """
+        msg = 'Missing Agent ID should return False'
+        self.assertFalse(self._loader.agent_exists('xxx'), msg)
+
+    def test_agent_id_existing_agent_id(self):
+        """Valid agent ID check.
+        """
+        test_agent_id = 'N014'
+
+        # Seed the Agent Id.
+        sql = """
+INSERT INTO agent (code)
+VALUES ("%s")""" % test_agent_id
+        self._loader.db(sql)
+
+        msg = 'Existing barcode should return True'
+        self.assertTrue(self._loader.agent_exists(test_agent_id), msg)
+
+        # Restore DB state.
+        self._loader.db.connection.rollback()
+
     @classmethod
     def tearDownClass(cls):
         cls._loader = None

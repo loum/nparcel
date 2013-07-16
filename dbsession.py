@@ -18,6 +18,7 @@ class DbSession(object):
         self._cursor = None
         self._job = nparcel.Job()
         self._job_item = nparcel.JobItem()
+        self._agent = nparcel.Agent()
 
     def __call__(self, sql):
         log.debug('Executing SQL:\n%s' % sql)
@@ -89,6 +90,7 @@ class DbSession(object):
         """
         self.create_table("job", self._job.schema)
         self.create_table("job_item", self._job_item.schema)
+        self.create_table("agent", self._agent.schema)
 
     def close(self):
         if self.connection is not None:
