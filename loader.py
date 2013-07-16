@@ -158,6 +158,18 @@ class Loader(object):
 
         return status
 
+    def agent_exists(self, agent):
+        """Helper method to verify if an Agent ID is defined.
+        """
+        status = False
+
+        log.info('Checking if Agent ID "%s" exists in system' % agent)
+        self.db(self.db._agent.check_agent_id(agent_id=agent))
+        if self.db.row:
+            status = True
+
+        return status
+
     def validate(self, fields):
         """Perform some T1250 validations around:
 
