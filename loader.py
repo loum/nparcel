@@ -31,7 +31,8 @@ FIELDS = {'Conn Note': {'offset': 0,
                      'length': 5}}
 JOB_MAP = {'Agent Id': {
                'column': 'agent_id',
-               'required': True},
+               'required': True,
+               'callback': 'get_agent_id'},
            'Bar code': {
                'column': 'card_ref_nbr',
                'required': True},
@@ -137,11 +138,6 @@ class Loader(object):
         job_item_data = self.table_column_map(fields, JOB_ITEM_MAP)
 
         barcode = job_data.get('card_ref_nbr')
-        agent_id = job_data.get('agent_id')
-
-        # We need an existing Agent Id.
-        if not self.agent_exists(agent_id):
-            status = False
 
         if status:
             if self.barcode_exists(barcode=barcode):
@@ -166,20 +162,21 @@ class Loader(object):
 
         return status
 
-    def agent_exists(self, agent):
+    def get_agent_id(self, agent):
         """Helper method to verify if an Agent ID is defined.
         """
-        status = False
-
         log.info('Checking if Agent Id "%s" exists in system ...' % agent)
         self.db(self.db._agent.check_agent_id(agent_id=agent))
-        if self.db.row:
-            log.info('Agent Id "%s" exists.' % agent)
-            status = True
+
+        agent_id_row_id = self.db.row
+        if agent_id_row_id is not None:
+            agent_id_row_id = agent_id_row_id[0]
+            log.info('Agent Id "%s" exists -- %s.' % (agent,
+                                                      agent_id_row_id))
         else:
             log.error('Agent Id "%s" does not exist.' % agent)
 
-        return status
+        return agent_id_row_id
 
     def validate(self, fields):
         """Perform some T1250 validations around:

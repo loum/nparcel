@@ -87,10 +87,12 @@ VALUES ("%s")""" % test_agent_id
     def test_processor_missing_agent_id_record(self):
         """Process valid raw T1250 line -- missing Agent Id.
         """
-        test_agent_id = 'N014'
+        #test_agent_id = 'N014'
 
-        msg = 'Valid T1250 record should process should fail'
-        self.assertFalse(self._loader.process(VALID_LINE), msg)
+        self.assertRaisesRegexp(ValueError,
+                                'Field "Agent Id" is required',
+                                self._loader.process,
+                                VALID_LINE)
 
     def test_processor_valid_record_existing_barcode(self):
         """Process valid raw T1250 line -- existing barcode.
@@ -176,7 +178,7 @@ VALUES ("%s")""" % VALID_LINE_BARCODE
                                                  nparcel.loader.JOB_MAP)
         expected = {'address_1': '31 Bridge st,',
                     'address_2': 'Lane Cove,',
-                    'agent_id': 'N031',
+                    'agent_id': 1,
                     'bu_id': 1,
                     'card_ref_nbr': '4156536111',
                     'postcode': '2066',
@@ -272,8 +274,8 @@ VALUES ("%s")""" % test_barcode
     def test_agent_id_with_missing_agent_id(self):
         """Agent ID check with missing Agent ID.
         """
-        msg = 'Missing Agent ID should return False'
-        self.assertFalse(self._loader.agent_exists('xxx'), msg)
+        msg = 'Missing Agent ID should return None'
+        self.assertIsNone(self._loader.get_agent_id('xxx'), msg)
 
     def test_agent_id_existing_agent_id(self):
         """Valid agent ID check.
@@ -285,8 +287,10 @@ VALUES ("%s")""" % test_barcode
 VALUES ("%s")""" % test_agent_id
         self._loader.db(sql)
 
-        msg = 'Existing barcode should return True'
-        self.assertTrue(self._loader.agent_exists(test_agent_id), msg)
+        msg = 'Existing barcode should not return None'
+        received = self._loader.get_agent_id(test_agent_id)
+        expected = 1
+        self.assertEqual(received, expected, msg)
 
         # Restore DB state.
         self._loader.db.connection.rollback()
