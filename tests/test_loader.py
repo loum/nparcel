@@ -74,15 +74,29 @@ class TestLoader(unittest2.TestCase):
     def test_processor_valid_record(self):
         """Process valid raw T1250 line.
         """
+        test_agent_id = 'N031'
+
+        # Seed the Agent Id.
+        sql = """INSERT INTO agent (code)
+VALUES ("%s")""" % test_agent_id
+        self._loader.db(sql)
+
         msg = 'Valid T1250 record should process successfully'
         self.assertTrue(self._loader.process(VALID_LINE), msg)
+
+    def test_processor_missing_agent_id_record(self):
+        """Process valid raw T1250 line -- missing Agent Id.
+        """
+        test_agent_id = 'N014'
+
+        msg = 'Valid T1250 record should process should fail'
+        self.assertFalse(self._loader.process(VALID_LINE), msg)
 
     def test_processor_valid_record_existing_barcode(self):
         """Process valid raw T1250 line -- existing barcode.
         """
         # Seed the barcode.
-        sql = """
-INSERT INTO job (card_ref_nbr)
+        sql = """INSERT INTO job (card_ref_nbr)
 VALUES ("%s")""" % VALID_LINE_BARCODE
         self._loader.db(sql)
 
@@ -245,8 +259,7 @@ VALUES ("%s")""" % VALID_LINE_BARCODE
         test_barcode = VALID_LINE_BARCODE
 
         # Seed the barcode.
-        sql = """
-INSERT INTO job (card_ref_nbr)
+        sql = """INSERT INTO job (card_ref_nbr)
 VALUES ("%s")""" % test_barcode
         self._loader.db(sql)
 
@@ -268,8 +281,7 @@ VALUES ("%s")""" % test_barcode
         test_agent_id = 'N014'
 
         # Seed the Agent Id.
-        sql = """
-INSERT INTO agent (code)
+        sql = """INSERT INTO agent (code)
 VALUES ("%s")""" % test_agent_id
         self._loader.db(sql)
 

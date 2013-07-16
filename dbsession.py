@@ -113,9 +113,9 @@ class DbSession(object):
         """
         log.debug('Creating Nparcel record with following data ...')
         job_id = self.insert(self._job.insert(job_data))
-        log.debug('"job.id" created %d' % job_id)
+        log.debug('"job.id" %d created' % job_id)
 
         # Set the "job_item" table's foreign key.
         job_item_data['job_id'] = job_id
         job_item_id = self.insert(self._job_item.insert(job_item_data))
-        log.debug('"job_item.id" created %d' % job_item_id)
+        log.debug('"job_item.id" %d created' % job_item_id)
