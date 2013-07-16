@@ -226,6 +226,8 @@ class Loader(object):
         for field_name, v in map.iteritems():
             # Check for callbacks.
             if v.get('callback'):
+                log.debug('Executing "%s" callback: "%s" ...' %
+                          (field_name, v.get('callback')))
                 callback = getattr(self, v.get('callback'))
                 fields[field_name] = callback(fields.get(field_name))
 
@@ -235,7 +237,8 @@ class Loader(object):
                 raise ValueError('Field "%s" is required' % field_name)
 
             if not fields.get(field_name):
-                fields[field_name] = v.get('default')
+                if v.get('default') is not None:
+                    fields[field_name] = v.get('default')
 
         columns = dict((map.get(k).get('column'),
                         fields.get(k)) for (k, v) in map.iteritems())
@@ -259,25 +262,27 @@ class Loader(object):
     def translate_postcode(self, postcode):
         """Translate postcode information to state.
         """
-        state = None
-        postcode = int(postcode)
+        log.debug('Translating postcode: "%s" ...' % str(postcode))
+        state = ''
 
-        log.debug('Translating postcode: %d ...' % postcode)
-        for postcode_state, postcode_ranges in POSTCODE_MAP.iteritems():
-            for range in postcode_ranges.get('ranges'):
-                if postcode >= range[0] and postcode <= range[1]:
-                    state = postcode_state
+        if postcode:
+            postcode = int(postcode)
+
+            for postcode_state, postcode_ranges in POSTCODE_MAP.iteritems():
+                for range in postcode_ranges.get('ranges'):
+                    if postcode >= range[0] and postcode <= range[1]:
+                        state = postcode_state
+                        break
+                for exception in  postcode_ranges.get('exceptions'):
+                    if postcode == exception:
+                        state = postcode_state
+                        break
+
+                if state:
                     break
-            for exception in  postcode_ranges.get('exceptions'):
-                if postcode == exception:
-                    state = postcode_state
-                    break
 
-            if state is not None:
-                break
-
-        log.debug('Postcode %d translation produced: "%s"' %
-                  (postcode, state))
+        log.debug('Postcode "%s" translation produced: "%s"' %
+                (str(postcode), state))
 
         return state
 

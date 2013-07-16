@@ -111,7 +111,6 @@ class DbSession(object):
     def create(self, job_data, job_item_data):
         """
         """
-        log.debug('Creating Nparcel record with following data ...')
         job_id = self.insert(self._job.insert(job_data))
         log.debug('"job.id" %d created' % job_id)
 

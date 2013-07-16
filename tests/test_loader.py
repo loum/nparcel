@@ -8,6 +8,7 @@ INVALID_BARCODE_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe
 
 INVALID_AGENTID_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111                                                                                                                                            00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
 
+INVALID_POSTCODE_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other                                                                                                                                    Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111     N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
 
 class TestLoader(unittest2.TestCase):
 
@@ -74,9 +75,8 @@ class TestLoader(unittest2.TestCase):
     def test_processor_valid_record(self):
         """Process valid raw T1250 line.
         """
-        test_agent_id = 'N031'
-
         # Seed the Agent Id.
+        test_agent_id = 'N031'
         sql = """INSERT INTO agent (code)
 VALUES ("%s")""" % test_agent_id
         self._loader.db(sql)
@@ -84,11 +84,27 @@ VALUES ("%s")""" % test_agent_id
         msg = 'Valid T1250 record should process successfully'
         self.assertTrue(self._loader.process(VALID_LINE), msg)
 
+        # Restore DB state.
+        self._loader.db.connection.rollback()
+
+    def test_processor_invalid_postcode_record(self):
+        """Process valid raw T1250 line -- missing Postcode.
+        """
+        # Seed the Agent Id.
+        test_agent_id = 'N031'
+        sql = """INSERT INTO agent (code)
+VALUES ("%s")""" % test_agent_id
+        self._loader.db(sql)
+
+        msg = 'T1250 record should process successfully -- missing postcode'
+        self.assertTrue(self._loader.process(INVALID_POSTCODE_LINE), msg)
+
+        # Restore DB state.
+        self._loader.db.connection.rollback()
+
     def test_processor_missing_agent_id_record(self):
         """Process valid raw T1250 line -- missing Agent Id.
         """
-        #test_agent_id = 'N014'
-
         self.assertRaisesRegexp(ValueError,
                                 'Field "Agent Id" is required',
                                 self._loader.process,
@@ -102,8 +118,17 @@ VALUES ("%s")""" % test_agent_id
 VALUES ("%s")""" % VALID_LINE_BARCODE
         self._loader.db(sql)
 
-        msg = 'Valid T1250 record should process successfully -- existing barcode'
+        # Seed the Agent Id.
+        test_agent_id = 'N031'
+        sql = """INSERT INTO agent (code)
+VALUES ("%s")""" % test_agent_id
+        self._loader.db(sql)
+
+        msg = 'T1250 record should process successfully -- existing barcode'
         self.assertTrue(self._loader.process(VALID_LINE), msg)
+
+        # Restore DB state.
+        self._loader.db.connection.rollback()
 
     def test_processor_invalid_barcode_record(self):
         """Process valid raw T1250 line with an invalid barcode.
@@ -173,6 +198,12 @@ VALUES ("%s")""" % VALID_LINE_BARCODE
     def test_table_column_map_for_a_valid_raw_record(self):
         """Process valid raw T1250 line and map job table elements.
         """
+        # Seed the Agent Id.
+        test_agent_id = 'N031'
+        sql = """INSERT INTO agent (code)
+VALUES ("%s")""" % test_agent_id
+        self._loader.db(sql)
+
         fields = self._loader.parser.parse_line(VALID_LINE)
         received = self._loader.table_column_map(fields,
                                                  nparcel.loader.JOB_MAP)
@@ -220,7 +251,7 @@ VALUES ("%s")""" % VALID_LINE_BARCODE
         """
         postcode = -1
         received = self._loader.translate_postcode(postcode)
-        expected = None
+        expected = ''
         msg = 'Invalid postcode translation to state failed -- invalid'
         self.assertEqual(received, expected, msg)
 
