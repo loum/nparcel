@@ -137,12 +137,20 @@ class Loader(object):
         job_item_data = self.table_column_map(fields, JOB_ITEM_MAP)
 
         barcode = job_data.get('card_ref_nbr')
+        agent_id = job_data.get('agent_id')
 
-        if self.barcode_exists(barcode=barcode):
-            log.info('Updating Nparcel record for barcode "%s"' % barcode)
-        else:
-            log.info('Creating Nparcel record for barcode "%s"' % barcode)
-            self.db.create(job_data, job_item_data)
+        # We need an existing Agent Id.
+        if not self.agent_exists(agent_id):
+            status = False
+
+        if status:
+            if self.barcode_exists(barcode=barcode):
+                log.info('Updating Nparcel record for barcode "%s"' %
+                         barcode)
+            else:
+                log.info('Creating Nparcel record for barcode "%s"' %
+                         barcode)
+                self.db.create(job_data, job_item_data)
 
         return status
 
@@ -163,10 +171,13 @@ class Loader(object):
         """
         status = False
 
-        log.info('Checking if Agent ID "%s" exists in system' % agent)
+        log.info('Checking if Agent Id "%s" exists in system ...' % agent)
         self.db(self.db._agent.check_agent_id(agent_id=agent))
         if self.db.row:
+            log.info('Agent Id "%s" exists.' % agent)
             status = True
+        else:
+            log.error('Agent Id "%s" does not exist.' % agent)
 
         return status
 
