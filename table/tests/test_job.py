@@ -38,7 +38,7 @@ VALUES ("%s")""" % bc
                   'card_ref_nbr': '4156536111',
                   'status': 1,
                   'suburb': 'Australia Other'}
-        self._db(self._job.insert(kwargs))
+        self._db(self._job.insert_sql(kwargs))
 
     @classmethod
     def tearDownClass(cls):

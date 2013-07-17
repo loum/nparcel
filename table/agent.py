@@ -4,7 +4,7 @@ __all__ = [
 import nparcel
 
 
-class Agent(object):
+class Agent(nparcel.Table):
     """Nparcel DB Agent table ORM.
     """
 
@@ -13,6 +13,7 @@ class Agent(object):
         """
         self.id = None
         self.code = None
+        super(Agent, self).__init__(name='agent')
 
     def check_agent_id(self, agent_id):
         """

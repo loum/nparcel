@@ -8,6 +8,7 @@ INVALID_BARCODE_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe
 
 INVALID_AGENTID_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111                                                                                                                                            00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
 
+INVALID_POSTCODE_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other                                                                                                                                    Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111     N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
 
 class TestLoader(unittest2.TestCase):
 
@@ -36,90 +37,66 @@ class TestLoader(unittest2.TestCase):
         msg = 'Loader Bar code parse should return "%s"' % expected
         self.assertEqual(received, expected, msg)
 
-    def test_validation_missing_barcode(self):
-        """Validate record with missing barcode.
-        """
-        result = {'Bar code': ''}
-        self.assertRaisesRegexp(ValueError,
-                                'Missing barcode',
-                                self._loader.validate,
-                                fields=result)
-
-    def test_validation_valid_barcode(self):
-        """Validate record with valid barcode.
-        """
-        result = {'Bar code': '4156536111',
-                  'Agent Id': 'dummy'}
-        msg = 'Loader validation with valid Bar code should return True'
-        self.assertTrue(self._loader.validate(fields=result), msg)
-
-    def test_validation_missing_agent_id(self):
-        """Validate record with missing agent id.
-        """
-        result = {'Bar code': 'dummy',
-                  'Agent Id': ''}
-        self.assertRaisesRegexp(ValueError,
-                                'Missing Agent Id',
-                                self._loader.validate,
-                                fields=result)
-
-    def test_validation_valid_agent_id(self):
-        """Validate record with valid barcode.
-        """
-        result = {'Bar code': 'dummy',
-                  'Agent Id': 'N031'}
-        msg = 'Loader validation with valid Agent Id should return True'
-        self.assertTrue(self._loader.validate(fields=result), msg)
-
     def test_processor_valid_record(self):
         """Process valid raw T1250 line.
         """
-        test_agent_id = 'N031'
-
         # Seed the Agent Id.
-        sql = """INSERT INTO agent (code)
-VALUES ("%s")""" % test_agent_id
-        self._loader.db(sql)
+        agent_fields = {'code': 'N031'}
+        self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
 
         msg = 'Valid T1250 record should process successfully'
         self.assertTrue(self._loader.process(VALID_LINE), msg)
 
+        # Restore DB state.
+        self._loader.db.connection.rollback()
+
+    def test_processor_invalid_postcode_record(self):
+        """Process valid raw T1250 line -- missing Postcode.
+        """
+        # Seed the Agent Id.
+        agent_fields = {'code': 'N031'}
+        self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
+
+        msg = 'T1250 record should process successfully -- missing postcode'
+        self.assertTrue(self._loader.process(INVALID_POSTCODE_LINE), msg)
+
+        # Restore DB state.
+        self._loader.db.connection.rollback()
+
     def test_processor_missing_agent_id_record(self):
         """Process valid raw T1250 line -- missing Agent Id.
         """
-        #test_agent_id = 'N014'
-
-        self.assertRaisesRegexp(ValueError,
-                                'Field "Agent Id" is required',
-                                self._loader.process,
-                                VALID_LINE)
+        msg = 'Missing Agent Id should fail processing'
+        self.assertFalse(self._loader.process(VALID_LINE), msg)
 
     def test_processor_valid_record_existing_barcode(self):
         """Process valid raw T1250 line -- existing barcode.
         """
         # Seed the barcode.
-        sql = """INSERT INTO job (card_ref_nbr)
-VALUES ("%s")""" % VALID_LINE_BARCODE
-        self._loader.db(sql)
+        barcode_fields = {'card_ref_nbr': VALID_LINE_BARCODE}
+        self._loader.db(self._loader.db._job.insert_sql(barcode_fields))
 
-        msg = 'Valid T1250 record should process successfully -- existing barcode'
+        # Seed the Agent Id.
+        agent_fields = {'code': 'N031'}
+        self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
+
+        msg = 'T1250 record should process successfully -- existing barcode'
         self.assertTrue(self._loader.process(VALID_LINE), msg)
+
+        # Restore DB state.
+        self._loader.db.connection.rollback()
 
     def test_processor_invalid_barcode_record(self):
         """Process valid raw T1250 line with an invalid barcode.
         """
-        self.assertRaisesRegexp(ValueError,
-                                'Field "Bar code" is required',
-                                self._loader.process,
-                                INVALID_BARCODE_LINE)
+        msg = 'Invalid barcode processing should return False'
+        self.assertFalse(self._loader.process(INVALID_BARCODE_LINE), msg)
 
     def test_processor_invalid_agent_id_record(self):
         """Process valid raw T1250 line with an invalid barcode.
         """
-        self.assertRaisesRegexp(ValueError,
-                                'Field "Agent Id" is required',
-                                self._loader.process,
-                                INVALID_AGENTID_LINE)
+        msg = 'Invalid Agent Id processing should return False'
+        self.assertFalse(self._loader.process(INVALID_AGENTID_LINE), msg)
 
     def test_table_column_map(self):
         """Map parser fields to table columns.
@@ -173,6 +150,10 @@ VALUES ("%s")""" % VALID_LINE_BARCODE
     def test_table_column_map_for_a_valid_raw_record(self):
         """Process valid raw T1250 line and map job table elements.
         """
+        # Seed the Agent Id.
+        agent_fields = {'code': 'N031'}
+        self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
+
         fields = self._loader.parser.parse_line(VALID_LINE)
         received = self._loader.table_column_map(fields,
                                                  nparcel.loader.JOB_MAP)
@@ -220,7 +201,7 @@ VALUES ("%s")""" % VALID_LINE_BARCODE
         """
         postcode = -1
         received = self._loader.translate_postcode(postcode)
-        expected = None
+        expected = ''
         msg = 'Invalid postcode translation to state failed -- invalid'
         self.assertEqual(received, expected, msg)
 
@@ -258,15 +239,13 @@ VALUES ("%s")""" % VALID_LINE_BARCODE
     def test_barcode_exists_with_existing_barcode(self):
         """Check barcode status -- existing barcode.
         """
-        test_barcode = VALID_LINE_BARCODE
-
         # Seed the barcode.
-        sql = """INSERT INTO job (card_ref_nbr)
-VALUES ("%s")""" % test_barcode
-        self._loader.db(sql)
+        barcode_fields = {'card_ref_nbr': VALID_LINE_BARCODE}
+        self._loader.db(self._loader.db._job.insert_sql(barcode_fields))
 
         msg = 'Existing barcode should return True'
-        self.assertTrue(self._loader.barcode_exists(test_barcode), msg)
+        self.assertTrue(self._loader.barcode_exists(VALID_LINE_BARCODE),
+                        msg)
 
         # Restore DB state.
         self._loader.db.connection.rollback()
@@ -280,12 +259,10 @@ VALUES ("%s")""" % test_barcode
     def test_agent_id_existing_agent_id(self):
         """Valid agent ID check.
         """
-        test_agent_id = 'N014'
-
         # Seed the Agent Id.
-        sql = """INSERT INTO agent (code)
-VALUES ("%s")""" % test_agent_id
-        self._loader.db(sql)
+        test_agent_id = 'N014'
+        agent_fields = {'code': test_agent_id}
+        self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
 
         msg = 'Existing barcode should not return None'
         received = self._loader.get_agent_id(test_agent_id)

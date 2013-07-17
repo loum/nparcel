@@ -24,14 +24,14 @@ class TestTable(unittest2.TestCase):
         self.assertRaisesRegexp(sqlite.DatabaseError,
                                 'table dummy has no column named dummy',
                                 self._db,
-                                self._table.insert(kwargs))
+                                self._table.insert_sql(kwargs))
 
     def test_insert_valid_fields(self):
         """Insert valid fields into DB.
         """
         kwargs = {'sample_char': 'dummy',
                   'sample_int': 1}
-        id = self._db.insert(self._table.insert(kwargs))
+        id = self._db.insert(self._table.insert_sql(kwargs))
 
     @classmethod
     def tearDownClass(cls):
