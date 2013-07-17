@@ -19,6 +19,7 @@ GIT=/usr/bin/git
 TEST=tests:TestLoader \
 	 tests:TestParser \
 	 tests:TestDbSession \
+	 tests:TestReporter \
 	 table.tests
 
 docs:

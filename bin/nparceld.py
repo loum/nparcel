@@ -8,6 +8,7 @@ def main():
     """
     """
     loader = nparcel.Loader()
+    reporter = nparcel.Reporter()
 
     file = 'T1250_TOLP_20130413135756.txt'
 
@@ -15,13 +16,17 @@ def main():
     try:
         f = open(file, 'r')
 
+        reporter.reset()
+        loader.reset()
         for line in f:
             record = line.rstrip('\r\n')
             if record == '%%EOF':
                 log.info('EOF found')
-                # TODO -- generate report.
+                reporter.end()
+                reporter.set_failed_log(loader.alerts)
+                reporter.report()
             else:
-                loader.process(record)
+                reporter(loader.process(record))
 
         f.close()
     except IOError, e:

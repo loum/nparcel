@@ -123,6 +123,7 @@ class Loader(object):
         self.parser = nparcel.Parser(fields=FIELDS)
         self.db = nparcel.DbSession()
         self.db.connect()
+        self.alerts = []
 
     def process(self, raw_record):
         """
@@ -143,7 +144,9 @@ class Loader(object):
             log.info('Barcode "%s" OK.' % barcode)
         except ValueError, e:
             status = False
-            log.error('Barcode "%s" error: %s' % (barcode, e))
+            msg = 'Barcode "%s" error: %s' % (barcode, e)
+            log.error(msg)
+            self.set_alert(msg)
 
         if status:
             if self.barcode_exists(barcode=barcode):
@@ -303,3 +306,11 @@ class Loader(object):
         """
         """
         return datetime.datetime.now().isoformat()
+
+    def set_alert(self, alert):
+        self.alerts.append(alert)
+
+    def reset(self):
+        """Reset the alert list.
+        """
+        del self.alerts[:]
