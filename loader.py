@@ -134,18 +134,22 @@ class Loader(object):
         status = True
 
         fields = self.parser.parse_line(raw_record)
-        job_data = self.table_column_map(fields, JOB_MAP)
-        job_item_data = self.table_column_map(fields, JOB_ITEM_MAP)
+        barcode = fields.get('Bar code')
 
-        barcode = job_data.get('card_ref_nbr')
+        try:
+            log.info('Barcode "%s" processing ...' % barcode)
+            job_data = self.table_column_map(fields, JOB_MAP)
+            job_item_data = self.table_column_map(fields, JOB_ITEM_MAP)
+            log.info('Barcode "%s" OK.' % barcode)
+        except ValueError, e:
+            status = False
+            log.error('Barcode "%s" error: %s' % (barcode, e))
 
         if status:
             if self.barcode_exists(barcode=barcode):
-                log.info('Updating Nparcel record for barcode "%s"' %
-                         barcode)
+                log.info('Updating Nparcel barcode "%s"' % barcode)
             else:
-                log.info('Creating Nparcel record for barcode "%s"' %
-                         barcode)
+                log.info('Creating Nparcel barcode "%s"' % barcode)
                 self.db.create(job_data, job_item_data)
 
         return status
@@ -171,30 +175,39 @@ class Loader(object):
         agent_id_row_id = self.db.row
         if agent_id_row_id is not None:
             agent_id_row_id = agent_id_row_id[0]
-            log.info('Agent Id "%s" exists -- %s.' % (agent,
-                                                      agent_id_row_id))
+            log.info('Agent Id "%s" found: %s' % (agent, agent_id_row_id))
         else:
-            log.error('Agent Id "%s" does not exist.' % agent)
+            log.error('Agent Id "%s" does not exist' % agent)
+
+            # For testing only, create the record.
+            # First insert will fail the test -- subsequent checks should
+            # be OK.  This will ensure we get a mix during testing.
+            if self.db.host == 'localhost':
+                log.debug('TEST: Creating Agent Id "%s" record ...' % agent)
+                agent_fields = {'code': agent}
+                sql = self.db._agent.insert_sql(agent_fields)
+                # Just consume the new row id.
+                id = self.db.insert(sql)
 
         return agent_id_row_id
 
-    def validate(self, fields):
-        """Perform some T1250 validations around:
-
-        Barcode and Agent ID should exist.
-
-        """
-        status = True
-
-        if not fields.get('Bar code'):
-            raise ValueError('Missing barcode')
-            status = False
-
-        if status and not fields.get('Agent Id'):
-            raise ValueError('Missing Agent Id')
-            status = False
-
-        return status
+#    def validate(self, fields):
+#        """Perform some T1250 validations around:
+#
+#        Barcode and Agent ID should exist.
+#
+#        """
+#        status = True
+#
+#        if not fields.get('Bar code'):
+#            raise ValueError('Missing barcode')
+#            status = False
+#
+#        if status and not fields.get('Agent Id'):
+#            raise ValueError('Missing Agent Id')
+#            status = False
+#
+#        return status
 
     def table_column_map(self, fields, map):
         """Convert the parser fields to Nparcel table column names in

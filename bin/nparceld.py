@@ -19,12 +19,9 @@ def main():
             record = line.rstrip('\r\n')
             if record == '%%EOF':
                 log.info('EOF found')
+                # TODO -- generate report.
             else:
-                log.debug("processing line: %s" % record)
-                try:
-                    loader.process(record)
-                except ValueError, e:
-                    log.error('Error: "%s"' % e)
+                loader.process(record)
 
         f.close()
     except IOError, e:

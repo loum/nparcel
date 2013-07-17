@@ -11,7 +11,7 @@ class Table(object):
     def __init__(self, name):
         self.name = name
 
-    def insert(self, kwargs):
+    def insert_sql(self, kwargs):
         """
         """
         columns = kwargs.keys()
@@ -26,11 +26,9 @@ class Table(object):
 
             cleansed_values.append(new_value)
 
-        sql = """
-INSERT INTO %s (%s)
+        sql = """INSERT INTO %s (%s)
 VALUES (%s)""" % (self.name,
-                    ", ".join(columns),
-                    ', '.join(map(str, cleansed_values)))
-        log.debug('"%s" table generated SQL: "%s"' % (self.name, sql))
+                  ', '.join(columns),
+                  ', '.join(map(str, cleansed_values)))
 
         return sql

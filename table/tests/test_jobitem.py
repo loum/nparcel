@@ -20,7 +20,7 @@ class TestJobItem(unittest2.TestCase):
                   'pieces': '00001',
                   'status': 1,
                   'created_ts': datetime.datetime.now().isoformat()}
-        received = self._db.insert(self._job_item.insert(kwargs))
+        received = self._db.insert(self._job_item.insert_sql(kwargs))
         expected = 1
         msg = '"job_item" table insert returned unexpected row_id'
         self.assertEqual(received, expected, msg)

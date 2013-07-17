@@ -111,10 +111,10 @@ class DbSession(object):
     def create(self, job_data, job_item_data):
         """
         """
-        job_id = self.insert(self._job.insert(job_data))
+        job_id = self.insert(self._job.insert_sql(job_data))
         log.debug('"job.id" %d created' % job_id)
 
         # Set the "job_item" table's foreign key.
         job_item_data['job_id'] = job_id
-        job_item_id = self.insert(self._job_item.insert(job_item_data))
+        job_item_id = self.insert(self._job_item.insert_sql(job_item_data))
         log.debug('"job_item.id" %d created' % job_item_id)
