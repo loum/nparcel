@@ -123,6 +123,8 @@ class Loader(object):
         self.parser = nparcel.Parser(fields=FIELDS)
         self.alerts = []
 
+        if db is None:
+            db = {}
         self.db = nparcel.DbSession(**db)
         self.db.connect()
 
@@ -293,7 +295,12 @@ class Loader(object):
     def set_alert(self, alert):
         self.alerts.append(alert)
 
-    def reset(self):
+    def reset(self, commit=False):
         """Reset the alert list.
         """
         del self.alerts[:]
+
+        if commit:
+            log.info('Committing transaction state to the DB ...')
+            self.db.commit()
+            log.info('Commit OK')
