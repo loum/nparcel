@@ -117,11 +117,11 @@ class Loader(object):
     """Nparcel Loader object.
     """
 
-    def __init__(self):
+    def __init__(self, db=None):
         """
         """
         self.parser = nparcel.Parser(fields=FIELDS)
-        self.db = nparcel.DbSession()
+        self.db = nparcel.DbSession(**db)
         self.db.connect()
         self.alerts = []
 
@@ -185,7 +185,7 @@ class Loader(object):
             # For testing only, create the record.
             # First insert will fail the test -- subsequent checks should
             # be OK.  This will ensure we get a mix during testing.
-            if self.db.host == 'localhost':
+            if self.db.host is None:
                 log.debug('TEST: Creating Agent Id "%s" record ...' % agent)
                 agent_fields = {'code': agent}
                 sql = self.db._agent.insert_sql(agent_fields)
@@ -193,24 +193,6 @@ class Loader(object):
                 id = self.db.insert(sql)
 
         return agent_id_row_id
-
-#    def validate(self, fields):
-#        """Perform some T1250 validations around:
-#
-#        Barcode and Agent ID should exist.
-#
-#        """
-#        status = True
-#
-#        if not fields.get('Bar code'):
-#            raise ValueError('Missing barcode')
-#            status = False
-#
-#        if status and not fields.get('Agent Id'):
-#            raise ValueError('Missing Agent Id')
-#            status = False
-#
-#        return status
 
     def table_column_map(self, fields, map):
         """Convert the parser fields to Nparcel table column names in

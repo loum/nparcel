@@ -3,11 +3,18 @@
 import nparcel
 from nparcel.utils.log import log
 
+KWARGS = {'driver': 'FreeTDS',
+          'host': 'SQVDBAUT07',
+          'database': 'Nparcel',
+          'user': 'npscript',
+          'password': 'UX3O5#ujn-dk',
+          'port': 1442}
+
 
 def main():
     """
     """
-    loader = nparcel.Loader()
+    loader = nparcel.Loader(db=KWARGS)
     reporter = nparcel.Reporter()
 
     file = 'T1250_TOLP_20130413135756.txt'

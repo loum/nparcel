@@ -2,6 +2,7 @@ __all__ = [
     "dbsession",
 ]
 import sqlite
+import pyodbc
 from nparcel.utils.log import log
 
 import nparcel
@@ -11,9 +12,14 @@ class DbSession(object):
     """Nparcel DB session manager.
     """
 
-    def __init__(self,
-                 host='localhost'):
-        self._host = host
+    def __init__(self, **kwargs):
+        self._host = kwargs.get('host')
+        self._driver = kwargs.get('driver')
+        self._database = kwargs.get('database')
+        self._user = kwargs.get('user')
+        self._password = kwargs.get('password')
+        self._port = kwargs.get('port')
+
         self._connection = None
         self._cursor = None
         self._job = nparcel.Job()
@@ -22,8 +28,27 @@ class DbSession(object):
 
     def __call__(self, sql):
         log.debug('Executing SQL:\n%s' % sql)
-        if self.host == 'localhost':
-            self.cursor.execute(sql)
+        self.cursor.execute(sql)
+
+    @property
+    def driver(self):
+        return self._driver
+
+    @property
+    def database(self):
+        return self._database
+
+    @property
+    def user(self):
+        return self._user
+
+    @property
+    def password(self):
+        return self._password
+
+    @property
+    def port(self):
+        return self._port
 
     def rows(self):
         """
@@ -62,19 +87,37 @@ class DbSession(object):
         """Create a database session connection based on class attributes.
 
         """
-        try:
-            if self.host == 'localhost':
-                self.set_connection(sqlite.connect(':memory:'))
-                self.set_cursor(self.connection.cursor())
-                log.info('sqlite DB session creation OK')
+        status = False
 
+        try:
+            if self.host is None:
+                log.info('DB session (sqlite) -- starting ...')
+                self.set_connection(sqlite.connect(':memory:'))
+            else:
+                log.info('DB session (MSSQL) -- starting ...')
+                conn_string = ('%s;%s;%s;%s;%s;%s;%s' %
+                               ('DRIVER={%s}' % self.driver,
+                                'Server=%s' % self.host,
+                                'Database=%s' % self.database,
+                                'UID=%s' % self.user,
+                                'PWD=%s' % self.password,
+                                'port=%d' % self.port,
+                                'autocommit=False'))
+                self.set_connection(pyodbc.connect(conn_string))
+
+            self.set_cursor(self.connection.cursor())
+            log.info('DB session creation OK')
+
+            if self.host is None:
                 # For testing, create the tables.
                 self.create_test_table()
-            else:
-                log.info('MSSQL DB session creation OK -- TODO')
-        except Exception, e:
+
+            status = True
+        except pyodbc.Error, e:
             log.error('Database session creation failed: "%s"' % str(e))
             pass
+
+        return status
 
     def create_table(self, name, schema):
         """We'd only expect to create tables for testing purposes only.
@@ -101,7 +144,7 @@ class DbSession(object):
         """
         id = None
 
-        if self.host == 'localhost':
+        if self.host is None:
             self(sql)
             self('SELECT last_insert_rowid()')
             id = self.cursor.fetchone()[0]
