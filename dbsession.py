@@ -26,9 +26,20 @@ class DbSession(object):
         self._job_item = nparcel.JobItem()
         self._agent = nparcel.Agent()
 
-    def __call__(self, sql):
-        log.debug('Executing SQL:\n%s' % sql)
-        self.cursor.execute(sql)
+    def __call__(self, sql=None):
+        if sql is not None:
+            try:
+                log.debug('Executing SQL:\n%s' % sql)
+                self.cursor.execute(sql)
+            except pyodbc.ProgrammingError, e:
+                if self.connection is not None:
+                    log.error('ODBC error: %s' % str(e))
+                    # Gracefully close the connection.
+                    self.close()
+                pass
+        else:
+            # This is a link check.
+            return self.connection is not None
 
     @property
     def driver(self):
@@ -137,7 +148,9 @@ class DbSession(object):
 
     def close(self):
         if self.connection is not None:
+            self._cursor = None
             self.connection.close()
+            self._connection = None
 
     def insert(self, sql):
         """

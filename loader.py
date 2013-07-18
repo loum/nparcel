@@ -121,9 +121,10 @@ class Loader(object):
         """
         """
         self.parser = nparcel.Parser(fields=FIELDS)
+        self.alerts = []
+
         self.db = nparcel.DbSession(**db)
         self.db.connect()
-        self.alerts = []
 
     def process(self, raw_record):
         """
