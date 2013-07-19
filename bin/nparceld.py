@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+import re
+import time
+import datetime
 from optparse import OptionParser
 
 import nparcel
@@ -55,6 +58,7 @@ def start(file=None, dry=False):
         if loader.db():
             try:
                 f = open(file, 'r')
+                file_timestamp = validate_file(file)
 
                 reporter.reset()
                 for line in f:
@@ -66,13 +70,28 @@ def start(file=None, dry=False):
                         reporter.set_failed_log(loader.alerts)
                         reporter.report()
                     else:
-                        reporter(loader.process(record))
+                        reporter(loader.process(file_timestamp, record))
                 f.close()
 
             except IOError, e:
                 log.error('Error opening file "%s": %s' % (file, str(e)))
         else:
             log.error('ODBC connection failure -- aborting')
+
+
+def validate_file(filename=None):
+    """
+    """
+    log.debug('Validating filename: "%s"' % filename)
+    m = re.search('T1250_TOL._(\d{14})\.txt', filename)
+    file_timestamp = m.group(1)
+
+    parsed_time = time.strptime(file_timestamp, "%Y%m%d%H%M%S")
+    log.debug('parsed_time: %s' % parsed_time)
+    dt = datetime.datetime.fromtimestamp(time.mktime(parsed_time))
+    dt_formatted = dt.isoformat(' ')
+
+    return dt_formatted
 
 if __name__ == '__main__':
     main()

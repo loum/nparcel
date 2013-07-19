@@ -17,6 +17,7 @@ class TestLoader(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._loader = nparcel.Loader()
+        cls._job_ts = cls._loader.date_now()
 
     def test_init(self):
         """Initialise a Loader object.
@@ -47,7 +48,7 @@ class TestLoader(unittest2.TestCase):
         self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
 
         msg = 'Valid T1250 record should process successfully'
-        self.assertTrue(self._loader.process(VALID_LINE), msg)
+        self.assertTrue(self._loader.process(self._job_ts, VALID_LINE), msg)
 
         # Restore DB state.
         self._loader.db.connection.rollback()
@@ -62,9 +63,10 @@ class TestLoader(unittest2.TestCase):
         self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
 
         msg = 'Valid T1250 record should process successfully'
-        self.assertTrue(self._loader.process(VALID_LINE), msg)
+        self.assertTrue(self._loader.process(self._job_ts, VALID_LINE), msg)
         msg = 'Valid T1250 record update should process successfully'
-        self.assertTrue(self._loader.process(VALID_LINE_AGENT_UPD), msg)
+        self.assertTrue(self._loader.process(self._job_ts,
+                                             VALID_LINE_AGENT_UPD), msg)
 
         # Restore DB state.
         self._loader.db.connection.rollback()
@@ -77,7 +79,8 @@ class TestLoader(unittest2.TestCase):
         self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
 
         msg = 'T1250 record should process successfully -- missing postcode'
-        self.assertTrue(self._loader.process(INVALID_POSTCODE_LINE), msg)
+        self.assertTrue(self._loader.process(self._job_ts,
+                                             INVALID_POSTCODE_LINE), msg)
 
         # Restore DB state.
         self._loader.db.connection.rollback()
@@ -86,13 +89,15 @@ class TestLoader(unittest2.TestCase):
         """Process valid raw T1250 line -- missing Agent Id.
         """
         msg = 'Missing Agent Id should fail processing'
-        self.assertFalse(self._loader.process(VALID_LINE), msg)
+        self.assertFalse(self._loader.process(self._job_ts,
+                                              VALID_LINE), msg)
 
     def test_processor_valid_record_existing_barcode(self):
         """Process valid raw T1250 line -- existing barcode.
         """
         # Seed the barcode.
-        barcode_fields = {'card_ref_nbr': VALID_LINE_BARCODE}
+        barcode_fields = {'card_ref_nbr': VALID_LINE_BARCODE,
+                          'job_ts': self._job_ts}
         self._loader.db(self._loader.db._job.insert_sql(barcode_fields))
 
         # Seed the Agent Id.
@@ -100,7 +105,7 @@ class TestLoader(unittest2.TestCase):
         self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
 
         msg = 'T1250 record should process successfully -- existing barcode'
-        self.assertTrue(self._loader.process(VALID_LINE), msg)
+        self.assertTrue(self._loader.process(self._job_ts, VALID_LINE), msg)
 
         # Restore DB state.
         self._loader.db.connection.rollback()
@@ -109,13 +114,15 @@ class TestLoader(unittest2.TestCase):
         """Process valid raw T1250 line with an invalid barcode.
         """
         msg = 'Invalid barcode processing should return False'
-        self.assertFalse(self._loader.process(INVALID_BARCODE_LINE), msg)
+        self.assertFalse(self._loader.process(self._job_ts,
+                                              INVALID_BARCODE_LINE), msg)
 
     def test_processor_invalid_agent_id_record(self):
         """Process valid raw T1250 line with an invalid barcode.
         """
         msg = 'Invalid Agent Id processing should return False'
-        self.assertFalse(self._loader.process(INVALID_AGENTID_LINE), msg)
+        self.assertFalse(self._loader.process(self._job_ts,
+                                              INVALID_AGENTID_LINE), msg)
 
     def test_table_column_map(self):
         """Map parser fields to table columns.
@@ -174,6 +181,7 @@ class TestLoader(unittest2.TestCase):
         self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
 
         fields = self._loader.parser.parse_line(VALID_LINE)
+        fields['job_ts'] = self._job_ts
         received = self._loader.table_column_map(fields,
                                                  nparcel.loader.JOB_MAP)
         expected = {'address_1': '31 Bridge st,',
@@ -181,6 +189,7 @@ class TestLoader(unittest2.TestCase):
                     'agent_id': 1,
                     'bu_id': 1,
                     'card_ref_nbr': '4156536111',
+                    'job_ts': self._job_ts,
                     'postcode': '2066',
                     'state': 'NSW',
                     'status': 1,
@@ -259,7 +268,8 @@ class TestLoader(unittest2.TestCase):
         """Check barcode status -- existing barcode.
         """
         # Seed the barcode.
-        barcode_fields = {'card_ref_nbr': VALID_LINE_BARCODE}
+        barcode_fields = {'card_ref_nbr': VALID_LINE_BARCODE,
+                          'job_ts': self._job_ts}
         self._loader.db(self._loader.db._job.insert_sql(barcode_fields))
 
         msg = 'Existing barcode should return True'
@@ -294,3 +304,4 @@ class TestLoader(unittest2.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls._loader = None
+        cls._job_ts = None

@@ -1,4 +1,5 @@
 import unittest2
+import datetime
 
 import nparcel
 
@@ -10,14 +11,17 @@ class TestJob(unittest2.TestCase):
         cls._job = nparcel.Job()
         cls._db = nparcel.DbSession()
         cls._db.connect()
+        cls._job_ts = datetime.datetime.now().isoformat()
 
     def test_check_barcode(self):
         """Bar code check.
         """
         bc = '4156778061'
+        fields = {'card_ref_nbr': bc,
+                  'job_ts': self._job_ts}
         sql = """
-INSERT INTO job (card_ref_nbr)
-VALUES ("%s")""" % bc
+INSERT INTO job (card_ref_nbr, job_ts)
+VALUES ("%s", "%s")""" % (bc, self._job_ts)
         self._db(sql)
 
         self._db(self._job.check_barcode(barcode=bc))
@@ -36,6 +40,7 @@ VALUES ("%s")""" % bc
                   'agent_id': 'N031',
                   'bu_id': 1,
                   'card_ref_nbr': '4156536111',
+                  'job_ts': self._job_ts,
                   'status': 1,
                   'suburb': 'Australia Other'}
         self._db(self._job.insert_sql(kwargs))
@@ -45,3 +50,4 @@ VALUES ("%s")""" % bc
         cls._db.close()
         cls._db = None
         cls._job = None
+        cls._job_ts = None
