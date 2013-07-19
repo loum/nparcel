@@ -21,7 +21,7 @@ class Job(nparcel.Table):
         return ["id INTEGER PRIMARY KEY",
                 "bu_id INTEGER",
                 "agent_id INTEGER",
-                "job_ts TIMESTAMP",
+                "job_ts TIMESTAMP NOT NULL",
                 "card_ref_nbr CHAR(15)",
                 "address_1 CHAR(30)",
                 "address_2 CHAR(30)",

@@ -54,7 +54,10 @@ JOB_MAP = {'Agent Id': {
            'status': {
                'column': 'status',
                'required': True,
-               'default': 1}}
+               'default': 1},
+           'job_ts': {
+               'column': 'job_ts',
+               'required': True}}
 JOB_ITEM_MAP = {'Conn Note': {
                     'column': 'connote_nbr'},
                 'Consumer Name': {
@@ -128,7 +131,7 @@ class Loader(object):
         self.db = nparcel.DbSession(**db)
         self.db.connect()
 
-    def process(self, raw_record):
+    def process(self, time, raw_record):
         """
         Extracts, validates and inserts an Nparcel record.
 
@@ -137,7 +140,10 @@ class Loader(object):
         """
         status = True
 
+        # Parse the raw record and set the job timestamp.
         fields = self.parser.parse_line(raw_record)
+        fields['job_ts'] = time
+
         barcode = fields.get('Bar code')
         agent_id = fields.get('Agent Id')
 
@@ -294,14 +300,17 @@ class Loader(object):
                     break
 
         log.debug('Postcode "%s" translation produced: "%s"' %
-                (str(postcode), state))
+                  (str(postcode), state))
 
         return state
 
     def date_now(self, *args):
         """
         """
-        return datetime.datetime.now().isoformat()
+        time = datetime.datetime.now().isoformat()
+
+        # Strip of last 3 digits of precision for MSSQL.
+        return time[:-3]
 
     def set_alert(self, alert):
         self.alerts.append(alert)
