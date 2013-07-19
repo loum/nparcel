@@ -6,7 +6,7 @@ import datetime
 from optparse import OptionParser
 
 import nparcel
-from nparcel.utils.log import log
+from nparcel.utils.log import log, set_log_level
 
 KWARGS = {'driver': 'FreeTDS',
           'host': 'SQVDBAUT07',
@@ -20,6 +20,11 @@ def main():
     """Nparcel daemoniser.
     """
     parser = OptionParser()
+    parser.add_option("-v", "--verbose",
+                      dest="verbose",
+                      action="count",
+                      default=0,
+                      help="raise logging verbosity")
     parser.add_option('-f', '--file',
                       dest='file',
                       help='file to process inline')
@@ -29,19 +34,27 @@ def main():
                       help='dry run - show what would have been done')
     (options, args) = parser.parse_args()
 
+    # Enable detailed logging if required.
+    if options.verbose == 0:
+        set_log_level('INFO')
+        log.info('Logging verbosity set to "INFO" level')
+
+    # Check if a filename was provided on the command line.
     file = None
     if options.file:
         file = options.file
 
+    # Commit to the DB?
     dry = options.dry is not None
     log.info('Processing dry run %s' % dry)
 
+    # OK, start processing.
     start(file=file, dry=dry)
 
 
 def start(file=None, dry=False):
-    loader = nparcel.Loader(db=KWARGS)
-    #loader = nparcel.Loader()
+    #loader = nparcel.Loader(db=KWARGS)
+    loader = nparcel.Loader()
     reporter = nparcel.Reporter()
 
     commit = True

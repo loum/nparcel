@@ -140,7 +140,10 @@ class Loader(object):
         """
         status = True
 
+        connote = raw_record[0:20].rstrip()
+
         # Parse the raw record and set the job timestamp.
+        log.info('Conn Note: "%s" start parse ...' % connote)
         fields = self.parser.parse_line(raw_record)
         fields['job_ts'] = time
 
@@ -148,13 +151,13 @@ class Loader(object):
         agent_id = fields.get('Agent Id')
 
         try:
-            log.info('Barcode "%s" processing ...' % barcode)
+            log.info('Barcode "%s" start mapping ...' % barcode)
             job_data = self.table_column_map(fields, JOB_MAP)
             job_item_data = self.table_column_map(fields, JOB_ITEM_MAP)
-            log.info('Barcode "%s" OK.' % barcode)
+            log.info('Barcode "%s" mapping OK' % barcode)
         except ValueError, e:
             status = False
-            msg = 'Barcode "%s" error: %s' % (barcode, e)
+            msg = 'Barcode "%s" mapping error: %s' % (barcode, e)
             log.error(msg)
             self.set_alert(msg)
 
@@ -173,6 +176,8 @@ class Loader(object):
                 log.info('Creating Nparcel barcode "%s"' % barcode)
                 self.db.create(job_data, job_item_data)
 
+        log.info('Conn Note: "%s" parse complete' % connote)
+
         return status
 
     def barcode_exists(self, barcode):
@@ -180,12 +185,15 @@ class Loader(object):
         """
         barcode_list = []
 
-        log.info('Checking if barcode "%s" exists in system' % barcode)
+        log.info('Checking if barcode "%s" exists in "job" table ...' %
+                 barcode)
         self.db(self.db._job.check_barcode(barcode=barcode))
+
         for row in self.db.rows():
             barcode_list.append(row[0])
 
-        log.debug('"job" table barcode row IDs: %s' % str(barcode_list))
+        log.info('"job" records with barcode "%s": %s' %
+                 (barcode, str(barcode_list)))
 
         return barcode_list
 
