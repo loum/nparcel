@@ -139,6 +139,7 @@ class Loader(object):
 
         fields = self.parser.parse_line(raw_record)
         barcode = fields.get('Bar code')
+        agent_id = fields.get('Agent Id')
 
         try:
             log.info('Barcode "%s" processing ...' % barcode)
@@ -152,8 +153,16 @@ class Loader(object):
             self.set_alert(msg)
 
         if status:
-            if self.barcode_exists(barcode=barcode):
-                log.info('Updating Nparcel barcode "%s"' % barcode)
+            barcodes = self.barcode_exists(barcode=barcode)
+            agent_id_row_id = job_data.get('agent_id')
+
+            if barcodes:
+                job_id_to_update = barcodes[0]
+                log.info('Updating Nparcel barcode "%s" agent ID "%s"' % (
+                         (barcode, agent_id)))
+                sql = self.db._job.update_sql(job_id_to_update,
+                                              agent_id_row_id)
+                self.db(sql)
             else:
                 log.info('Creating Nparcel barcode "%s"' % barcode)
                 self.db.create(job_data, job_item_data)
@@ -163,14 +172,16 @@ class Loader(object):
     def barcode_exists(self, barcode):
         """
         """
-        status = False
+        barcode_list = []
 
         log.info('Checking if barcode "%s" exists in system' % barcode)
         self.db(self.db._job.check_barcode(barcode=barcode))
-        if self.db.row:
-            status = True
+        for row in self.db.rows():
+            barcode_list.append(row[0])
 
-        return status
+        log.debug('"job" table barcode row IDs: %s' % str(barcode_list))
+
+        return barcode_list
 
     def get_agent_id(self, agent):
         """Helper method to verify if an Agent ID is defined.
@@ -304,3 +315,7 @@ class Loader(object):
             log.info('Committing transaction state to the DB ...')
             self.db.commit()
             log.info('Commit OK')
+        else:
+            log.info('Rolling back transaction state to the DB ...')
+            self.db.rollback()
+            log.info('Rollback OK')

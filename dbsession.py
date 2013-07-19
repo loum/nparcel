@@ -74,7 +74,22 @@ class DbSession(object):
     def commit(self):
         """
         """
-        self.connection.commit()
+        if self.host is None:
+            # sqlite.
+            self.connection.commit()
+        else:
+            # MSSQL.
+            self('COMMIT TRANSACTION')
+
+    def rollback(self):
+        """
+        """
+        if self.host is None:
+            # sqlite.
+            self.connection.rollback()
+        else:
+            # MSSQL.
+            self('ROLLBACK TRANSACTION')
 
     @property
     def host(self):
@@ -122,6 +137,9 @@ class DbSession(object):
             if self.host is None:
                 # For testing, create the tables.
                 self.create_test_table()
+            else:
+                # For MSSQL, we want to control commits.
+                self('SET IMPLICIT_TRANSACTIONS ON')
 
             status = True
         except pyodbc.Error, e:
@@ -157,10 +175,15 @@ class DbSession(object):
         """
         id = None
 
+        self(sql)
+
+        # sqlite and MSSQL implement this differently.
         if self.host is None:
-            self(sql)
             self('SELECT last_insert_rowid()')
-            id = self.cursor.fetchone()[0]
+        else:
+            self('SELECT SCOPE_IDENTITY()')
+
+        id = self.cursor.fetchone()[0]
 
         return id
 
