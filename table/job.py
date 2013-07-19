@@ -33,6 +33,18 @@ class Job(nparcel.Table):
     def check_barcode(self, barcode):
         """
         """
-        sql = """SELECT id FROM job WHERE card_ref_nbr='%s'""" % barcode
+        sql = """SELECT id, job_ts
+FROM job
+WHERE card_ref_nbr='%s'
+ORDER by job_ts DESC""" % barcode
+
+        return sql
+
+    def update_sql(self, job_id, agent_id_row_id):
+        """
+        """
+        sql = """UPDATE job
+SET agent_id=%d
+WHERE id=%d""" % (agent_id_row_id, job_id)
 
         return sql

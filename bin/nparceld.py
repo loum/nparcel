@@ -37,9 +37,13 @@ def main():
 
 
 def start(file=None, dry=False):
-    #loader = nparcel.Loader(db=KWARGS)
-    loader = nparcel.Loader()
+    loader = nparcel.Loader(db=KWARGS)
+    #loader = nparcel.Loader()
     reporter = nparcel.Reporter()
+
+    commit = True
+    if dry:
+        commit = False
 
     files = []
     if file is not None:
@@ -57,7 +61,7 @@ def start(file=None, dry=False):
                     record = line.rstrip('\r\n')
                     if record == '%%EOF':
                         log.info('EOF found')
-                        loader.reset(commit=dry)
+                        loader.reset(commit=commit)
                         reporter.end()
                         reporter.set_failed_log(loader.alerts)
                         reporter.report()

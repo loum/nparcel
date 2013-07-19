@@ -4,11 +4,13 @@ import nparcel
 
 VALID_LINE_BARCODE = '4156536111'
 VALID_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111     N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
+VALID_LINE_AGENT_UPD = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111     N014                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N014                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
 INVALID_BARCODE_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                                              N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
 
 INVALID_AGENTID_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111                                                                                                                                            00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
 
 INVALID_POSTCODE_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other                                                                                                                                    Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111     N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
+
 
 class TestLoader(unittest2.TestCase):
 
@@ -46,6 +48,23 @@ class TestLoader(unittest2.TestCase):
 
         msg = 'Valid T1250 record should process successfully'
         self.assertTrue(self._loader.process(VALID_LINE), msg)
+
+        # Restore DB state.
+        self._loader.db.connection.rollback()
+
+    def test_processor_valid_record_update(self):
+        """Process valid raw T1250 line with a "job" item Agent Id update.
+        """
+        # Seed the Agent Ids.
+        agent_fields = {'code': 'N031'}
+        self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
+        agent_fields = {'code': 'N014'}
+        self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
+
+        msg = 'Valid T1250 record should process successfully'
+        self.assertTrue(self._loader.process(VALID_LINE), msg)
+        msg = 'Valid T1250 record update should process successfully'
+        self.assertTrue(self._loader.process(VALID_LINE_AGENT_UPD), msg)
 
         # Restore DB state.
         self._loader.db.connection.rollback()
