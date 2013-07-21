@@ -19,11 +19,9 @@ import os
 import atexit
 import signal
 import time
-import multiprocessing
-from abc import ABCMeta, abstractmethod
+import threading
 
 from nparcel.utils.log import log, autolog
-from nparcel.utils.files import is_writable
 
 
 class Daemon(object):
@@ -44,7 +42,7 @@ class Daemon(object):
     ...         while True:
     ...             time.sleep(5)
     ...
-    >>> d = DummyDaemon(pidfile=None)
+    >>> d = DummyDaemon(pidfile='/var/tmp/pidfile')
     >>> d.start()
     True
     ...
@@ -64,19 +62,17 @@ class Daemon(object):
         All public attribute access is implemented in a Pythonic property
         decorator style.
 
-    .. attribute:: exit_event (:class:`multiprocessing.Event`)
+    .. attribute:: exit_event (:class:`threading.Event`)
 
         Internal semaphore that when set, signals that the server process
         is to be terminated.
-
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self,
                  pidfile,
-                 stdin='/dev/null',
-                 stdout='/dev/null',
-                 stderr='/dev/null',
+                 stdin=os.devnull,
+                 stdout=os.devnull,
+                 stderr=os.devnull,
                  term_parent=True):
         """Daemon class initialiser.
 
@@ -110,7 +106,8 @@ class Daemon(object):
         self.stdout = stdout
         self.stderr = stderr
         self._term_parent = term_parent
-        self._exit_event = multiprocessing.Event()
+
+        self._exit_event = threading.Event()
 
         self.pid = None
         self.pidfs = None
@@ -123,8 +120,7 @@ class Daemon(object):
     def pidfile(self):
         return self._pidfile
 
-    @pidfile.setter
-    def pidfile(self, value):
+    def set_pidfile(self, value):
         self._pidfile = value
 
     @property
@@ -135,11 +131,9 @@ class Daemon(object):
     def exit_event(self):
         return self._exit_event
 
-    @exit_event.setter
-    def exit_event(self, value):
+    def set_exit_event(self, value):
         self._exit_event = value
 
-    @abstractmethod
     def _start(self):
         """Define this method within your class generalisation with logic
         that invokes your process to benefit from the daemonisation
@@ -153,8 +147,8 @@ class Daemon(object):
         environment for you.  From within your class, all you need to do
         is call the :meth:`nparcel.utils.Daemon.start` method.
 
-        **Kargs:**
-            event (:mod:`multiprocessing.Event`): Internal semaphore that
+        **Kwargs:**
+            event (:mod:`threading.Event`): Internal semaphore that
             can be set via the :mod:`signal.signal.SIGTERM` signal event
             to perform a function within the running proess.
 
@@ -188,7 +182,7 @@ class Daemon(object):
             try:
                 self.pid = int(file(self.pidfile, 'r').read().strip())
                 autolog('Stored PID is: %d' % self.pid)
-            except ValueError as err:
+            except ValueError, err:
                 raise DaemonError('Error reading PID file: %s' % err)
 
     def start(self):
@@ -197,7 +191,7 @@ class Daemon(object):
         Invokes the server in one of two ways:
 
         * As a daemon
-        * Inline using the :mod:`multiprocessing.Event` module
+        * Inline using the :mod:`threading.Event` module
 
         Typically, the daemon instance will be used in a production
         environment and the inline instance for testing or via the
@@ -220,10 +214,7 @@ class Daemon(object):
         """
         start_status = False
 
-        if self.pidfile is not None:
-            start_status = self._start_daemon()
-        else:
-            start_status = self._start_inline()
+        start_status = self._start_daemon()
 
         return start_status
 
@@ -266,12 +257,11 @@ class Daemon(object):
             # Check if PID file is writable to save hassles later on.
             autolog('No PID file -- creating handle')
             try:
-                self.pidfs = is_writable(self.pidfile)
                 autolog('starting daemon')
                 self.daemonize()
                 self._start(self.exit_event)
                 start_status = True
-            except IOError as err:
+            except IOError, err:
                 err_msg = 'Cannot write to PID file: IOError "%s"' % err
                 raise DaemonError(err_msg)
 
@@ -328,7 +318,7 @@ class Daemon(object):
             sys.exit(1)
 
         # Redirect standard file descriptors.
-        if self.term_parent:
+        if not self.term_parent:
             sys.stdout.flush()
             sys.stderr.flush()
             si = file(self.stdin, 'r')
@@ -367,7 +357,7 @@ class Daemon(object):
 
             try:
                 os.kill(int(self.pid), signal.SIGTERM)
-            except OSError as err:
+            except OSError, err:
                 log.warn('err: %s' % str(err))
                 log.warn('PID "%s" does not exist' % self.pid)
                 if err.errno == 3:
@@ -416,43 +406,6 @@ class Daemon(object):
         """
         autolog('Removing PID file at "%s"' % self.pidfile)
         os.remove(self.pidfile)
-
-    def _start_inline(self):
-        """The inline variant of the :meth:`start` method.
-
-        This inline variant of the ITT server start process is based on the
-        :mod:`multiprocessing` module.  The server process is spawned,
-        creating a :class:`multiprocessing.Process` object.
-
-        :meth:`_start_inline` is better suited to testing procedures and
-        the Python interpreter as it does not attempt to kill and detach
-        from the parent process.  Also, the PID of the child is
-        self-contained so you don't have to worry about the PID file.
-
-        **Returns:**
-            boolean::
-
-                ``True`` -- success
-                ``False`` -- failure
-
-        """
-        start_status = False
-
-        log_msg = '%s server process' % type(self).__name__
-        log.info('%s - starting inline ...' % log_msg)
-        self.proc = multiprocessing.Process(target=self._start,
-                                            args=(self.exit_event,))
-        self.proc.start()
-        log.info('%s - started with PID %d' % (log_msg, self.proc.pid))
-
-        time.sleep(0.1)         # can do better -- check TODO.
-
-        # Flag the server as being operational.
-        if self.proc.is_alive():
-            self.pid = self.proc.pid
-            start_status = True
-
-        return start_status
 
     def status(self):
         """
