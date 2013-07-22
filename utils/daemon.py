@@ -15,13 +15,17 @@ __all__ = [
 ]
 
 import sys
+import logging
 import os
+import resource
 import atexit
 import signal
 import time
 import threading
 
 from nparcel.utils.log import log, autolog
+
+MAXFD = 1024
 
 
 class Daemon(object):
@@ -70,9 +74,6 @@ class Daemon(object):
 
     def __init__(self,
                  pidfile,
-                 stdin=os.devnull,
-                 stdout=os.devnull,
-                 stderr=os.devnull,
                  term_parent=True):
         """Daemon class initialiser.
 
@@ -102,9 +103,6 @@ class Daemon(object):
 
         """
         self._pidfile = pidfile
-        self.stdin = stdin
-        self.stdout = stdout
-        self.stderr = stderr
         self._term_parent = term_parent
 
         self._exit_event = threading.Event()
@@ -317,16 +315,29 @@ class Daemon(object):
                                                             e.strerror))
             sys.exit(1)
 
-        # Redirect standard file descriptors.
-        if not self.term_parent:
-            sys.stdout.flush()
-            sys.stderr.flush()
-            si = file(self.stdin, 'r')
-            so = file(self.stdout, 'a+')
-            se = file(self.stderr, 'a+', 0)
-            os.dup2(si.fileno(), sys.stdin.fileno())
-            os.dup2(so.fileno(), sys.stdout.fileno())
-            os.dup2(se.fileno(), sys.stderr.fileno())
+        # Close all file descriptors except from non-console logging
+        # handlers.
+        maxfd = resource.getrlimit(resource.RLIMIT_NOFILE)[1]
+        if (maxfd == resource.RLIM_INFINITY):
+            maxfd = MAXFD
+
+        filenos = []
+        for handler in logging.root.handlers:
+            if (hasattr(handler, 'stream') and
+                hasattr(handler.stream, 'fileno') and
+                handler.stream.fileno() > 2):
+                filenos.append(handler.stream.fileno())
+            for fd in range(0, maxfd):
+                try:
+                    if fd not in filenos:
+                        os.close(fd)
+                except OSError:
+                    pass
+
+        # Redirect stdin, stdout, stderr to null
+        os.open(os.devnull, os.O_RDWR)
+        os.dup2(0, 1)
+        os.dup2(0, 2)
 
         # Write out to pidfile.
         child_pid = str(os.getpid())
