@@ -1,9 +1,11 @@
 #!/usr/bin/python
 
+import os
+import inspect
 from optparse import OptionParser
 
 import nparcel
-from nparcel.utils.log import log, set_log_level
+from nparcel.utils.log import log, set_log_level, suppress_logging
 
 
 def main():
@@ -47,12 +49,21 @@ def main():
     np = nparcel.Daemon(pidfile='/var/tmp/nparceld.pid',
                         file=file,
                         dry=dry)
+
+    script_name = inspect.getfile(inspect.currentframe())
+    scrip_name = os.path.basename(script_name)
     if args[0] == 'start':
-        log.debug('starting loader')
-        np.start()
+        if dry:
+            print('Starting %s inline ...' % script_name)
+            np._start(np.exit_event)
+        else:
+            print('Starting %s as daemon ...' % script_name)
+            np.start()
     elif args[0] == 'stop':
-        log.debug('stopping loader')
+        suppress_logging()
+        print('Stopping %s ...' % script_name)
         np.stop()
+        print('OK')
 
 if __name__ == '__main__':
     main()

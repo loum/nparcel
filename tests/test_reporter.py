@@ -12,7 +12,13 @@ class TestReporter(unittest2.TestCase):
     def test_init(self):
         """Initialise a Reporter object.
         """
-        pass
+        identifier = 'tester'
+        r = nparcel.Reporter(identifier=identifier)
+
+        msg = 'Object is not an nparcel.Reporter'
+        self.assertIsInstance(r, nparcel.Reporter, msg)
+
+        r.report()
 
     @classmethod
     def tearDownClass(cls):

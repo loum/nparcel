@@ -20,6 +20,7 @@ TEST=tests:TestLoader \
 	 tests:TestParser \
 	 tests:TestDbSession \
 	 tests:TestReporter \
+	 tests:TestDaemon \
 	 table.tests
 
 docs:
