@@ -189,9 +189,32 @@ class DbSession(object):
 
     def create(self, job_data, job_item_data):
         """
+        **Args:**
+            job_data: dictionary of the "job" table fields
+
+            job_item_data: dictionary of the "job_item" table fields
+
         """
         job_id = self.insert(self._job.insert_sql(job_data))
         log.debug('"job.id" %d created' % job_id)
+
+        # Set the "job_item" table's foreign key.
+        job_item_data['job_id'] = job_id
+        job_item_id = self.insert(self._job_item.insert_sql(job_item_data))
+        log.debug('"job_item.id" %d created' % job_item_id)
+
+    def update(self, job_id, agent_id, job_item_data):
+        """
+        **Args:**
+            job_id: row ID of the "job" table
+
+            agent_id: row ID of the "agent" table
+
+            job_item_data: dictionary of the "job_item" table fields
+
+        """
+        sql = self._job.update_sql(job_id, agent_id)
+        self(sql)
 
         # Set the "job_item" table's foreign key.
         job_item_data['job_id'] = job_id
