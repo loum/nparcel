@@ -169,9 +169,9 @@ class Loader(object):
                 job_id_to_update = barcodes[0]
                 log.info('Updating Nparcel barcode "%s" agent ID "%s"' % (
                          (barcode, agent_id)))
-                sql = self.db._job.update_sql(job_id_to_update,
-                                              agent_id_row_id)
-                self.db(sql)
+                self.db.update(job_id_to_update,
+                               agent_id_row_id,
+                               job_item_data)
             else:
                 log.info('Creating Nparcel barcode "%s"' % barcode)
                 self.db.create(job_data, job_item_data)
