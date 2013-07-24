@@ -129,8 +129,8 @@ class Daemon(object):
     def exit_event(self):
         return self._exit_event
 
-    def set_exit_event(self, value):
-        self._exit_event = value
+    def set_exit_event(self):
+        self._exit_event.set()
 
     def _start(self):
         """Define this method within your class generalisation with logic

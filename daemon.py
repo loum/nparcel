@@ -1,11 +1,14 @@
 __all__ = [
     "Daemon",
 ]
+import os
 import re
 import time
 import datetime
-import nparcel
+import fnmatch
+import signal
 
+import nparcel
 from nparcel.utils.log import log
 
 KWARGS = {'driver': 'FreeTDS',
@@ -14,6 +17,9 @@ KWARGS = {'driver': 'FreeTDS',
           'user': 'npscript',
           'password': 'UX3O5#ujn-dk',
           'port': 1442}
+IN_DIRS = ['/var/ftp/pub/nparcel/priority/in']
+ARCHIVE = '/data/nparcel/archive'
+PROCESSING_LOOP = 30
 
 
 class Daemon(nparcel.utils.Daemon):
@@ -27,6 +33,8 @@ class Daemon(nparcel.utils.Daemon):
         super(Daemon, self).__init__(pidfile=pidfile)
 
     def _start(self, event):
+        signal.signal(signal.SIGTERM, self._exit_handler)
+
         #loader = nparcel.Loader(db=KWARGS)
         loader = nparcel.Loader()
         reporter = nparcel.Reporter()
@@ -35,43 +43,118 @@ class Daemon(nparcel.utils.Daemon):
         if self.dry:
             commit = False
 
-        files = []
-        if self.file is not None:
-            files.append(self.file)
-
-        log.info('Processing files: "%s" ...' % str(files))
-
-        for file in files:
-            log.info('Processing file: "%s" ...' % file)
-
-            if loader.db():
-                try:
-                    f = open(file, 'r')
-                    file_timestamp = self.validate_file(file)
-
-                    reporter.reset()
-                    for line in f:
-                        record = line.rstrip('\r\n')
-                        if record == '%%EOF':
-                            log.info('EOF found')
-                            loader.reset(commit=commit)
-                            reporter.end()
-                            reporter.set_failed_log(loader.alerts)
-                            reporter.report()
-                        else:
-                            reporter(loader.process(file_timestamp, record))
-                    f.close()
-
-                except IOError, e:
-                    log.error('Error opening file "%s": %s' % (file, str(e)))
+        while not event.isSet():
+            files = []
+            if self.file is not None:
+                files.append(self.file)
             else:
-                log.error('ODBC connection failure -- aborting')
+                files.extend(self.get_files())
 
-            time.sleep(30)
+            for file in files:
+                log.info('Processing file: "%s" ...' % file)
+
+                if loader.db():
+                    status = False
+
+                    try:
+                        f = open(file, 'r')
+                        file_timestamp = self.validate_file(file)
+
+                        reporter.reset(identifier=file)
+                        for line in f:
+                            record = line.rstrip('\r\n')
+                            if record == '%%EOF':
+                                log.info('EOF found')
+                                status = True
+                            else:
+                                reporter(loader.process(file_timestamp,
+                                                        record))
+                        f.close()
+
+                    except IOError, e:
+                        log.error('Error opening file "%s": %s' %
+                                  (file, str(e)))
+
+                    # Report the results.
+                    if status:
+                        log.info('%s processing OK.' % file)
+                        loader.reset(commit=commit)
+                        self.archive(file)
+
+                        # Report.
+                        reporter.end()
+                        reporter.set_failed_log(loader.alerts)
+                        reporter.report()
+                    else:
+                        log.error('%s processing failed.' % file)
+                else:
+                    log.error('ODBC connection failure -- aborting')
+                    self.set_exit_event()
+
+            if not event.isSet():
+                time.sleep(PROCESSING_LOOP)
 
     def _exit_handler(self, signal, frame):
         log_msg = '%s --' % type(self).__name__
         log.info('%s SIGTERM intercepted' % log_msg)
+        self.set_exit_event()
+
+    def get_files(self):
+        """
+        """
+        files_to_process = []
+
+        for dir in IN_DIRS:
+            log.info('Looking for files at: %s ...' % dir)
+            for file in self.files(dir):
+                if self.check_filename(file) and self.check_eof_flag(file):
+                    log.info('Found file: "%s" ' % file)
+
+                    # Check that it's not in the archive already.
+                    archive_path = self.get_customer_archive(file)
+                    if os.path.exists(archive_path):
+                        log.error('File %s is archived' % file)
+                    else:
+                        files_to_process.append(file)
+
+        return files_to_process
+
+    def files(self, path):
+        for file in os.listdir(path):
+            file = os.path.join(path, file)
+            if os.path.isfile(file):
+                yield file
+
+    def check_filename(self, file):
+        """
+        """
+        status = False
+
+        if fnmatch.fnmatch(os.path.basename(file), 'T1250_TOL*.txt'):
+            status = True
+        else:
+            log.error('Filename "%s" did not match filtering rules' % file)
+
+        return status
+
+    def check_eof_flag(self, file):
+        """
+        """
+        status = False
+
+        fh = open(file, 'r')
+        fh.seek(-7, 2)
+        eof_search = fh.readline()
+        fh.close()
+
+        eof_search = eof_search.rstrip('\r\n')
+        if eof_search == '%%EOF':
+            log.debug('File "%s" EOF found' % file)
+            status = True
+        else:
+            log.debug('File "%s" EOF NOT found' % file)
+
+        return status
 
     def validate_file(self, filename=None):
         """
@@ -86,3 +169,42 @@ class Daemon(nparcel.utils.Daemon):
         dt_formatted = dt.isoformat(' ')
 
         return dt_formatted
+
+    def archive(self, file):
+        """
+        """
+        archive_path = self.get_customer_archive(file)
+        archive_base = os.path.dirname(archive_path)
+
+        log.info('Archiving "%s" to "%s"' % (file, archive_path))
+
+        if not os.path.exists(archive_base):
+            log.info('Creating archive directory: %s' % archive_base)
+            os.makedirs(archive_base)
+
+        log.info('Rename: %s to %s' % (file, archive_path))
+        try:
+            os.rename(file, archive_path)
+        except OSError, err:
+            log.error('Rename: %s to %s failed -- %s' % (file,
+                                                         archive_path,
+                                                         err))
+            pass
+
+    def get_customer_archive(self, file):
+        customer = self.get_customer(file)
+        filename = os.path.basename(file)
+        m = re.search('T1250_TOL._(\d{8})\d{6}\.txt', filename)
+        file_timestamp = m.group(1)
+
+        archive_dir = os.path.join(ARCHIVE, customer, file_timestamp)
+
+        return os.path.join(archive_dir, filename)
+
+    def get_customer(self, file):
+        """
+        """
+        dirname = os.path.dirname(file)
+        (head, customer) = os.path.split(os.path.dirname(dirname))
+
+        return customer
