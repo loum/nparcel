@@ -2,6 +2,7 @@ __all__ = [
     "log",
     "set_log_level",
     "suppress_logging",
+    "set_console_logger",
 ]
 
 import logging
@@ -40,6 +41,7 @@ for loc in locations:
 
 log = logging.getLogger()
 
+
 def set_log_level(level='INFO'):
     """
     """
@@ -50,10 +52,12 @@ def set_log_level(level='INFO'):
 
     log.setLevel(level_map[level])
 
+
 def suppress_logging():
     """
     """
     logging.disable(logging.ERROR)
+
 
 def autolog(message):
     """Automatically log the current function details.
@@ -66,7 +70,7 @@ def autolog(message):
         lineno = inspect.currentframe().f_back.f_lineno
 
         # Dump the message function details to the log.
-        logging.debug("%s: %s in %s:%i" % (message, 
-                                           f.co_name, 
-                                           f.co_filename, 
+        logging.debug("%s: %s in %s:%i" % (message,
+                                           f.co_name,
+                                           f.co_filename,
                                            lineno))

@@ -11,6 +11,10 @@ from nparcel.utils.log import log, set_log_level, suppress_logging
 def main():
     """Nparcel daemoniser.
     """
+    config = os.path.join(os.path.expanduser('~'),
+                          '.nparceld',
+                          'nparceld.conf')
+
     usage = "usage: %prog [options] start|stop|status"
     parser = OptionParser(usage=usage)
     parser.set_usage
@@ -26,6 +30,10 @@ def main():
                       dest='dry',
                       action='store_true',
                       help='dry run - show what would have been done')
+    parser.add_option('-c', '--config',
+                      dest='config',
+                      default=config,
+                      help='override default config "%s"' % config)
     (options, args) = parser.parse_args()
     if len(args) != 1:
         parser.error("incorrect number of arguments")
@@ -48,7 +56,8 @@ def main():
     # OK, start processing.
     np = nparcel.Daemon(pidfile='/var/tmp/nparceld.pid',
                         file=file,
-                        dry=dry)
+                        dry=dry,
+                        config=options.config)
 
     script_name = inspect.getfile(inspect.currentframe())
     scrip_name = os.path.basename(script_name)
@@ -64,6 +73,12 @@ def main():
         print('Stopping %s ...' % script_name)
         np.stop()
         print('OK')
+    elif args[0] == 'status':
+        suppress_logging()
+        if np.status():
+            print('%s is running with PID %d' % (script_name, np.pid))
+        else:
+            print('%s is idle' % script_name)
 
 if __name__ == '__main__':
     main()
