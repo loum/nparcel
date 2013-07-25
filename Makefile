@@ -1,6 +1,5 @@
 PY=/usr/bin/env python
-PYTHONPATH=..
-LOG_CONF=utils/conf
+LOG_CONF=nparcel/utils/conf
 NOSE=/usr/bin/nosetests -s -v
 GIT=/usr/bin/git
 
@@ -16,18 +15,21 @@ GIT=/usr/bin/git
 #
 # Note: for this to work you will need to import the test class into
 # the current namespace via "tests/__init__.py"
-TEST=tests:TestLoader \
-	 tests:TestParser \
-	 tests:TestDbSession \
-	 tests:TestReporter \
-	 tests:TestDaemon \
-	 table.tests
+TEST=nparcel.tests:TestLoader \
+	 nparcel.tests:TestParser \
+	 nparcel.tests:TestDbSession \
+	 nparcel.tests:TestReporter \
+	 nparcel.tests:TestDaemon \
+	 nparcel.table.tests
+
+sdist:
+	$(PY) setup.py sdist
 
 docs:
-	PYTHONPATH=$(PYTHONPATH) sphinx-build -b html ./doc/source ./doc/build
+	sphinx-build -b html nparcel/doc/source nparcel/doc/build
 
 test:
-	PYTHONPATH=$(PYTHONPATH) LOG_CONF=$(LOG_CONF) $(NOSE) $(TEST)
+	LOG_CONF=$(LOG_CONF) $(NOSE) $(TEST)
 
 clean:
 	$(GIT) clean -xdf

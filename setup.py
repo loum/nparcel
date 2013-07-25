@@ -6,4 +6,5 @@ setup(name='python-nparcel',
       author='Lou Markovski',
       author_email='lou.markovski@tollgroup.com',
       url='https://nparcel.tollgroup.com',
-      packages=['nparcel'],)
+      scripts=['nparcel/bin/nparceld.py'],
+      packages=['nparcel', 'nparcel.table', 'nparcel.utils'],)
