@@ -2,24 +2,16 @@ __all__ = [
     "Daemon",
 ]
 import os
+import sys
 import re
 import time
 import datetime
 import fnmatch
 import signal
+import ConfigParser
 
 import nparcel
 from nparcel.utils.log import log
-
-KWARGS = {'driver': 'FreeTDS',
-          'host': 'SQVDBAUT07',
-          'database': 'Nparcel',
-          'user': 'npscript',
-          'password': 'UX3O5#ujn-dk',
-          'port': 1442}
-IN_DIRS = ['/var/ftp/pub/nparcel/priority/in']
-ARCHIVE = '/data/nparcel/archive'
-PROCESSING_LOOP = 30
 
 
 class Daemon(nparcel.utils.Daemon):
@@ -27,16 +19,48 @@ class Daemon(nparcel.utils.Daemon):
     def __init__(self,
                  pidfile,
                  file=None,
-                 dry=False):
+                 dry=False,
+                 config='nparcel.conf'):
+        super(Daemon, self).__init__(pidfile=pidfile)
+
         self.file = file
         self.dry = dry
-        super(Daemon, self).__init__(pidfile=pidfile)
+
+        self.config = ConfigParser.SafeConfigParser()
+        if os.path.exists(config):
+            log.info('Parsing config file: "%s"' % config)
+            self.config.read(config)
+        else:
+            log.critical('Unable to locate config file: "%s"' % config)
+            sys.exit(1)
+
+        # Parse required fields from config.
+        self.dirs_to_check = []
+        self.archive = None
+        try:
+            self.dirs_to_check = self.config.get('dirs', 'in').split(',')
+            log.info('Directories to check %s' % str(self.dirs_to_check))
+            self.archive = self.config.get('dirs', 'archive')
+            log.info('Archive directory %s' % self.archive)
+        except ConfigParser.NoOptionError, err:
+            log.error('Missing required config: %s' % err)
+            sys.exit(1)
+
+        # Defaulted configs.
+        self.processing_loop = 30
+        try:
+            self.processing_loop = int(self.config.get('timeout',
+                                                       'processing'))
+            log.info('File check timeout set at %d (seconds)' %
+                     self.processing_loop)
+        except ConfigParser.NoOptionError, err:
+            log.error('No processing loop time defined: %s' % err)
+            pass
 
     def _start(self, event):
         signal.signal(signal.SIGTERM, self._exit_handler)
 
-        #loader = nparcel.Loader(db=KWARGS)
-        loader = nparcel.Loader()
+        loader = nparcel.Loader(db=self.db_kwargs)
         reporter = nparcel.Reporter()
 
         commit = True
@@ -92,19 +116,43 @@ class Daemon(nparcel.utils.Daemon):
                     self.set_exit_event()
 
             if not event.isSet():
-                time.sleep(PROCESSING_LOOP)
+                time.sleep(self.processing_loop)
 
     def _exit_handler(self, signal, frame):
         log_msg = '%s --' % type(self).__name__
         log.info('%s SIGTERM intercepted' % log_msg)
         self.set_exit_event()
 
+    @property
+    def db_kwargs(self):
+        kwargs = None
+
+        # Base assumptions on "host" keyword.
+        # No "host" means this must be a test scenario.
+        try:
+            host = self.config.get('db', 'host')
+            driver = self.config.get('db', 'driver')
+            database = self.config.get('db', 'database')
+            user = self.config.get('db', 'user')
+            password = self.config.get('db', 'password')
+            port = self.config.get('db', 'port')
+            kwargs = {'driver': driver,
+                      'host': host,
+                      'database': database,
+                      'user': user,
+                      'password': password,
+                      'port': int(port)}
+        except ConfigParser.NoOptionError, err:
+            log.error('Missing DB key via config: %s' % err)
+
+        return kwargs
+
     def get_files(self):
         """
         """
         files_to_process = []
 
-        for dir in IN_DIRS:
+        for dir in self.dirs_to_check:
             log.info('Looking for files at: %s ...' % dir)
             for file in self.files(dir):
                 if self.check_filename(file) and self.check_eof_flag(file):
@@ -197,7 +245,7 @@ class Daemon(nparcel.utils.Daemon):
         m = re.search('T1250_TOL._(\d{8})\d{6}\.txt', filename)
         file_timestamp = m.group(1)
 
-        archive_dir = os.path.join(ARCHIVE, customer, file_timestamp)
+        archive_dir = os.path.join(self.archive, customer, file_timestamp)
 
         return os.path.join(archive_dir, filename)
 
