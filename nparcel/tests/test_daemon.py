@@ -12,7 +12,8 @@ class TestDaemon(unittest2.TestCase):
     def test_init(self):
         """Intialise a Daemon object.
         """
-        d = nparcel.Daemon(pidfile=None)
+        d = nparcel.Daemon(pidfile=None,
+                           config='nparcel/conf/nparceld.conf')
         msg = 'Not a nparcel.Daemon object'
         self.assertIsInstance(d, nparcel.Daemon, msg)
 
