@@ -22,7 +22,7 @@ class Table(object):
         for value in values:
             new_value = value
             if isinstance(value, str):
-                new_value = '"%s"' % value
+                new_value = "'%s'" % value
 
             cleansed_values.append(new_value)
 

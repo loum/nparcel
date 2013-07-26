@@ -25,6 +25,9 @@ TEST=nparcel.tests:TestLoader \
 sdist:
 	$(PY) setup.py sdist
 
+rpm:
+	$(PY) setup.py bdist_rpm
+
 docs:
 	sphinx-build -b html nparcel/doc/source nparcel/doc/build
 

@@ -103,7 +103,8 @@ class Daemon(nparcel.utils.Daemon):
                     if status:
                         log.info('%s processing OK.' % file)
                         loader.reset(commit=commit)
-                        self.archive(file)
+                        if not self.dry:
+                            self.archive_file(file)
 
                         # Report.
                         reporter.end()
@@ -113,10 +114,15 @@ class Daemon(nparcel.utils.Daemon):
                         log.error('%s processing failed.' % file)
                 else:
                     log.error('ODBC connection failure -- aborting')
-                    self.set_exit_event()
+                    event.set()
 
             if not event.isSet():
-                time.sleep(self.processing_loop)
+                # Only makes sense to do one iteration of a dry run.
+                if self.dry:
+                    log.info('Dry run iteration complete -- aborting')
+                    event.set()
+                else:
+                    time.sleep(self.processing_loop)
 
     def _exit_handler(self, signal, frame):
         log_msg = '%s --' % type(self).__name__
@@ -218,7 +224,7 @@ class Daemon(nparcel.utils.Daemon):
 
         return dt_formatted
 
-    def archive(self, file):
+    def archive_file(self, file):
         """
         """
         archive_path = self.get_customer_archive(file)
