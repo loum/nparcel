@@ -20,6 +20,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestDbSession \
 	 nparcel.tests:TestReporter \
 	 nparcel.tests:TestDaemon \
+	 nparcel.tests:TestExporter \
 	 nparcel.table.tests
 
 sdist:
