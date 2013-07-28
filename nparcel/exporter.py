@@ -10,7 +10,7 @@ class Exporter(object):
     """
 
     def __init__(self, db=None):
-        """Exporter oject initialiser.
+        """Exporter object initialiser.
         """
         log.debug('Creating an Exporter object')
         if db is None:

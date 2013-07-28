@@ -21,6 +21,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestReporter \
 	 nparcel.tests:TestDaemon \
 	 nparcel.tests:TestExporter \
+	 nparcel.tests:TestCache \
 	 nparcel.table.tests:TestAgent \
 	 nparcel.table.tests:TestJob \
 	 nparcel.table.tests:TestJobItem \
