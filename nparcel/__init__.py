@@ -4,6 +4,7 @@ from nparcel.loader import Loader
 from nparcel.dbsession import DbSession
 from nparcel.reporter import Reporter
 from nparcel.exporter import Exporter
+from nparcel.cache import Cache
 from table import Table
 from table.job import Job
 from table.jobitem import JobItem
