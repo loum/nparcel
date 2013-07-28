@@ -23,7 +23,7 @@ class DbSession(object):
         self._connection = None
         self._cursor = None
         self._job = nparcel.Job()
-        self._job_item = nparcel.JobItem()
+        self._jobitem = nparcel.JobItem()
         self._agent = nparcel.Agent()
 
     def __call__(self, sql=None):
@@ -71,26 +71,6 @@ class DbSession(object):
     def row(self):
         return self.cursor.fetchone()
 
-    def commit(self):
-        """
-        """
-        if self.host is None:
-            # sqlite.
-            self.connection.commit()
-        else:
-            # MSSQL.
-            self('COMMIT TRANSACTION')
-
-    def rollback(self):
-        """
-        """
-        if self.host is None:
-            # sqlite.
-            self.connection.rollback()
-        else:
-            # MSSQL.
-            self('ROLLBACK TRANSACTION')
-
     @property
     def host(self):
         return self._host
@@ -105,6 +85,10 @@ class DbSession(object):
     @property
     def connection(self):
         return self._connection
+
+    @property
+    def jobitem(self):
+        return self._jobitem
 
     def set_connection(self, value):
         self._connection = value
@@ -161,7 +145,7 @@ class DbSession(object):
         """
         """
         self.create_table("job", self._job.schema)
-        self.create_table("job_item", self._job_item.schema)
+        self.create_table("jobitem", self.jobitem.schema)
         self.create_table("agent", self._agent.schema)
 
     def close(self):
@@ -187,36 +171,56 @@ class DbSession(object):
 
         return id
 
-    def create(self, job_data, job_item_data):
+    def create(self, job_data, jobitem_data):
         """
         **Args:**
             job_data: dictionary of the "job" table fields
 
-            job_item_data: dictionary of the "job_item" table fields
+            jobitem_data: dictionary of the "jobitem" table fields
 
         """
         job_id = self.insert(self._job.insert_sql(job_data))
         log.debug('"job.id" %d created' % job_id)
 
-        # Set the "job_item" table's foreign key.
-        job_item_data['job_id'] = job_id
-        job_item_id = self.insert(self._job_item.insert_sql(job_item_data))
-        log.debug('"job_item.id" %d created' % job_item_id)
+        # Set the "jobitem" table's foreign key.
+        jobitem_data['job_id'] = job_id
+        jobitem_id = self.insert(self.jobitem.insert_sql(jobitem_data))
+        log.debug('"jobitem.id" %d created' % jobitem_id)
 
-    def update(self, job_id, agent_id, job_item_data):
+    def update(self, job_id, agent_id, jobitem_data):
         """
         **Args:**
             job_id: row ID of the "job" table
 
             agent_id: row ID of the "agent" table
 
-            job_item_data: dictionary of the "job_item" table fields
+            jobitem_data: dictionary of the "jobitem" table fields
 
         """
         sql = self._job.update_sql(job_id, agent_id)
         self(sql)
 
-        # Set the "job_item" table's foreign key.
-        job_item_data['job_id'] = job_id
-        job_item_id = self.insert(self._job_item.insert_sql(job_item_data))
-        log.debug('"job_item.id" %d created' % job_item_id)
+        # Set the "jobitem" table's foreign key.
+        jobitem_data['job_id'] = job_id
+        jobitem_id = self.insert(self.jobitem.insert_sql(jobitem_data))
+        log.debug('"jobitem.id" %d created' % jobitem_id)
+
+    def commit(self):
+        """
+        """
+        if self.host is None:
+            # sqlite.
+            self.connection.commit()
+        else:
+            # MSSQL.
+            self('COMMIT TRANSACTION')
+
+    def rollback(self):
+        """
+        """
+        if self.host is None:
+            # sqlite.
+            self.connection.rollback()
+        else:
+            # MSSQL.
+            self('ROLLBACK TRANSACTION')

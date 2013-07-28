@@ -21,7 +21,10 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestReporter \
 	 nparcel.tests:TestDaemon \
 	 nparcel.tests:TestExporter \
-	 nparcel.table.tests
+	 nparcel.table.tests:TestAgent \
+	 nparcel.table.tests:TestJob \
+	 nparcel.table.tests:TestJobItem \
+	 nparcel.table.tests:TestTable
 
 sdist:
 	$(PY) setup.py sdist
