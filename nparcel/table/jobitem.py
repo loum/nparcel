@@ -26,7 +26,7 @@ class JobItem(nparcel.Table):
                 "created_ts TIMESTAMP",
                 "pickup_ts TIMESTAMP"]
 
-    def collected_sql(self, range=86400):
+    def collected_sql(self, range):
         """SQL wrapper to extract the collected items from the "jobitems"
         table.
 

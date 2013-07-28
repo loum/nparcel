@@ -26,11 +26,11 @@ class TestExporter(unittest2.TestCase):
         msg = 'Object is not an nparcel.Exporter'
         self.assertIsInstance(self._e, nparcel.Exporter, msg)
 
-    def test_collected_sql_default(self):
-        """Default collection check.
+    def test_collected_sql_one_day_range(self):
+        """One day range collection check.
         """
-        msg = 'Default collection check should return results.'
-        sql = self._e.db.jobitem.collected_sql()
+        msg = 'One day range collection check should return results.'
+        sql = self._e.db.jobitem.collected_sql(range=86400)
         self._e.db(sql)
 
         received = []
@@ -53,6 +53,13 @@ class TestExporter(unittest2.TestCase):
 
         # Loose check should return NO values.
         self.assertFalse(received, msg)
+
+    def test_cached_items_if_file_not_provided(self):
+        """Check cached items if a cache file is not provided.
+        """
+        msg = "Collected items with no cache should not be None"
+        self._e.get_collected_items()
+        self.assertIsNotNone(self._e._collected_items, msg)
 
     @classmethod
     def tearDownClass(cls):
