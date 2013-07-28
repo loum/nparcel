@@ -1,6 +1,8 @@
 __all__ = [
     "JobItem",
 ]
+import datetime
+
 import nparcel
 
 
@@ -11,7 +13,7 @@ class JobItem(nparcel.Table):
     def __init__(self):
         """
         """
-        super(JobItem, self).__init__('job_item')
+        super(JobItem, self).__init__('jobitem')
 
     @property
     def schema(self):
@@ -21,4 +23,25 @@ class JobItem(nparcel.Table):
                 "consumer_name CHAR(30)",
                 "pieces INTEGER",
                 "status INTEGER",
-                "created_ts TIMESTAMP"]
+                "created_ts TIMESTAMP",
+                "pickup_ts TIMESTAMP"]
+
+    def collected_sql(self, range=86400):
+        """SQL wrapper to extract the collected items from the "jobitems"
+        table.
+
+        **Args:**
+            range: period (in seconds) to search from now
+
+        **Returns:**
+            the SQL string
+
+        """
+        now = datetime.datetime.now()
+        pick_ups_after = now - datetime.timedelta(seconds=range)
+
+        sql = """SELECT id
+FROM jobitem
+WHERE pickup_ts > '%s'""" % pick_ups_after
+
+        return sql

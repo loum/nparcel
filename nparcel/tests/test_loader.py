@@ -241,8 +241,8 @@ class TestLoader(unittest2.TestCase):
         msg = 'Valid postcode translation to state failed -- exceptions'
         self.assertEqual(received, expected, msg)
 
-    def test_job_item_table_column_map_for_a_valid_raw_record(self):
-        """Process valid raw T1250 line and map job_item table elements.
+    def test_jobitem_table_column_map_for_a_valid_raw_record(self):
+        """Process valid raw T1250 line and map "jobitem" table elements.
         """
         fields = self._loader.parser.parse_line(VALID_LINE)
         received = self._loader.table_column_map(fields,
@@ -254,7 +254,7 @@ class TestLoader(unittest2.TestCase):
                     'pieces': '00001',
                     'status': 1,
                     'created_ts': None}
-        msg = 'Valid record "job_item" table translation error'
+        msg = 'Valid record "jobitem" table translation error'
         self.assertDictEqual(received, expected, msg)
 
     def test_barcode_exists_with_missing_barcode(self):
