@@ -1,5 +1,7 @@
 import unittest2
 import datetime
+import tempfile
+import os
 
 import nparcel
 
@@ -28,6 +30,9 @@ class TestExporter(unittest2.TestCase):
         for jobitem in jobitems:
             sql = cls._e.db.jobitem.insert_sql(jobitem)
             jobitem_id = cls._e.db.insert(sql=sql)
+
+        # Create a temporary directory structure.
+        cls._dir = tempfile.mkdtemp()
 
     def test_init(self):
         """Initialise an Exporter object.
@@ -96,6 +101,40 @@ class TestExporter(unittest2.TestCase):
         msg = 'Cleansed valid data incorrect'
         self.assertTupleEqual(received, expected, msg)
 
+    def test_output_file_creation(self):
+        """Output file handle creation.
+        """
+        staging = os.path.join(self._dir, 'staging')
+
+        msg = 'Export reporting file handle should not be None'
+        fh = self._e.outfile(staging)
+        self.assertIsNotNone(fh, msg)
+
+        outfile = fh.name
+        fh.close()
+
+        # Cleanup.
+        os.remove(outfile)
+        os.rmdir(staging)
+
+    def test_output_file_write(self):
+        """Output file write.
+        """
+        staging = os.path.join(self._dir, 'staging')
+
+        # Regenerate the collected items list.
+        del self._e._collected_items[:]
+
+        self._e.set_staging_dir(staging)
+        self._e.get_collected_items()
+        file_name = self._e.report()
+
+        # Restore and cleanup.
+        os.remove(file_name.replace('.txt.tmp', '.txt'))
+        os.rmdir(staging)
+        self._e.set_staging_dir(None)
+
     @classmethod
     def tearDownClass(cls):
         cls._r = None
+        os.removedirs(cls._dir)
