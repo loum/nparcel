@@ -13,7 +13,8 @@ class JobItem(nparcel.Table):
     def __init__(self):
         """
         """
-        super(JobItem, self).__init__('jobitem')
+        self._name = 'job_item'
+        super(JobItem, self).__init__('job_item')
 
     @property
     def schema(self):
@@ -43,12 +44,13 @@ class JobItem(nparcel.Table):
         pick_ups_after = now - datetime.timedelta(seconds=range)
 
         sql = """SELECT %s, %s, %s, %s, %s
-FROM jobitem
+FROM %s
 WHERE pickup_ts > '%s'""" % ('connote_nbr',
                              'id',
                              'pickup_ts',
                              'pod_name',
                              'identity_type_data',
+                             self._name,
                              pick_ups_after)
 
         return sql

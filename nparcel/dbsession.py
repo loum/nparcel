@@ -25,6 +25,7 @@ class DbSession(object):
         self._job = nparcel.Job()
         self._jobitem = nparcel.JobItem()
         self._agent = nparcel.Agent()
+        self._identity_type = nparcel.IdentityType()
 
     def __call__(self, sql=None):
         if sql is not None:
@@ -145,8 +146,9 @@ class DbSession(object):
         """
         """
         self.create_table("job", self._job.schema)
-        self.create_table("jobitem", self.jobitem.schema)
+        self.create_table("job_item", self.jobitem.schema)
         self.create_table("agent", self._agent.schema)
+        self.create_table("identity_type", self._identity_type.schema)
 
     def close(self):
         if self.connection is not None:
