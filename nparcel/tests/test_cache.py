@@ -13,7 +13,6 @@ class TestCache(unittest2.TestCase):
         # Create a random cache file.
         f = tempfile.NamedTemporaryFile()
         cls._cache_file = f.name
-        f.close()
 
     def test_init(self):
         """Initialise a Cache object.

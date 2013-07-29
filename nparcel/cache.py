@@ -24,19 +24,24 @@ class Cache(object):
 
         """
         self._cache_file = cache_file
+        self._cache = None
 
     def __call__(self):
-        data = None
+        """Cache object callable that attempts to open the file cache
+        and load the :mod:`pickle` object data.
+
+        """
+        log.info('Attempting cache load from "%s" ...' % self._cache_file)
 
         if self._cache_file is not None:
             try:
                 fh = open(self._cache_file, 'rb')
-                data = pickle.load(self._fh)
+                self._cache = pickle.load(self._fh)
             except IOError, e:
                 log.error('Could not read file "%s"' % self._cache_file)
                 pass
 
-        return data
+        return self._cache
 
     def set_cache_file(self, cache_file):
         self._cache_file = cache_file

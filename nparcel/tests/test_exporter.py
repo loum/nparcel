@@ -11,11 +11,20 @@ class TestExporter(unittest2.TestCase):
         cls._e = nparcel.Exporter()
 
         now = datetime.datetime.now()
-        jobitems = [{'pickup_ts': '%s' % now},
-                    {'pickup_ts': '%s' %
-                     (now - datetime.timedelta(seconds=86400))},
-                    {'pickup_ts': '%s' %
-                     (now - datetime.timedelta(seconds=(86400 * 2)))}]
+        jobitems = [{'connote_nbr': '218501217863',
+                     'pickup_ts': '%s' % now,
+                     'pod_name': 'pod_name 218501217863',
+                     'identity_type_data': 'identity 218501217863'},
+                    {'connote_nbr': '218501217864',
+                     'pickup_ts': '%s' %
+                     (now - datetime.timedelta(seconds=86400)),
+                     'pod_name': 'pod_name 218501217864',
+                     'identity_type_data': 'identity 218501217864'},
+                    {'connote_nbr': '218501217865',
+                     'pickup_ts': '%s' %
+                     (now - datetime.timedelta(seconds=(86400 * 2))),
+                     'pod_name': 'pod_name 218501217865',
+                     'identity_type_data': 'identity 218501217865'}]
         for jobitem in jobitems:
             sql = cls._e.db.jobitem.insert_sql(jobitem)
             jobitem_id = cls._e.db.insert(sql=sql)
@@ -60,6 +69,32 @@ class TestExporter(unittest2.TestCase):
         msg = "Collected items with no cache should not be None"
         self._e.get_collected_items()
         self.assertIsNotNone(self._e._collected_items, msg)
+
+    def test_report(self):
+        """Verify reporter output.
+        """
+        # Regenerate the collected items list.
+        del self._e._collected_items[:]
+        self._e.get_collected_items()
+        self._e.report()
+
+    def test_cleansed_valid_date(self):
+        """Cleanse valid data.
+        """
+        row = ('', '', '2013-07-29 12:00:00.123456', '', '', '')
+        received = self._e._cleanse(row)
+        expected = ('', '', '2013-07-29 12:00:00', '', '', '')
+        msg = 'Cleansed valid data incorrect'
+        self.assertTupleEqual(received, expected, msg)
+
+    def test_cleansed_invalid_date(self):
+        """Cleanse invalid pickup_ts data.
+        """
+        row = ('', '', '2013-07-29 12:00:00', '', '', '')
+        received = self._e._cleanse(row)
+        expected = ('', '', '2013-07-29 12:00:00', '', '', '')
+        msg = 'Cleansed valid data incorrect'
+        self.assertTupleEqual(received, expected, msg)
 
     @classmethod
     def tearDownClass(cls):
