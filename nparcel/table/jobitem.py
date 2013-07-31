@@ -1,8 +1,6 @@
 __all__ = [
     "JobItem",
 ]
-import datetime
-
 import nparcel
 
 
@@ -28,30 +26,26 @@ class JobItem(nparcel.Table):
                 "pickup_ts TIMESTAMP",
                 "pod_name CHAR(40)",
                 "identity_type_id INTEGER",
-                "identity_type_data CHAR(30)"]
+                "identity_type_data CHAR(30)",
+                "extract_ts TIMESTAMP"]
 
-    def collected_sql(self, range):
+    def collected_sql(self):
         """SQL wrapper to extract the collected items from the "jobitems"
         table.
-
-        **Args:**
-            range: period (in seconds) to search from now
 
         **Returns:**
             the SQL string
 
         """
-        now = datetime.datetime.now()
-        pick_ups_after = now - datetime.timedelta(seconds=range)
-
-        sql = """SELECT %s, %s, %s, %s, %s
-FROM %s
-WHERE pickup_ts > '%s'""" % ('connote_nbr',
-                             'id',
-                             'pickup_ts',
-                             'pod_name',
-                             'identity_type_data',
-                             self._name,
-                             pick_ups_after)
+        sql = """SELECT ji.connote_nbr as 'REF1',
+    ji.id as 'JOB_KEY',
+    ji.pickup_ts as 'PICKUP_TIME',
+    ji.pod_name as 'PICKUP_POD',
+    it.description as 'IDENTITY_TYPE',
+    ji.identity_type_data as 'IDENTITY_DATA'
+FROM job_item as ji, identity_type as it
+WHERE pickup_ts IS NOT null
+AND extract_ts IS null
+AND ji.identity_type_id = it.id"""
 
         return sql

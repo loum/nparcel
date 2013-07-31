@@ -31,13 +31,15 @@ class TestExporter(unittest2.TestCase):
                      (now - datetime.timedelta(seconds=86400)),
                      'pod_name': 'pod_name 218501217864',
                      'identity_type_id': id_type_id,
-                     'identity_type_data': 'identity 218501217864'},
+                     'identity_type_data': 'identity 218501217864',
+                     'extract_ts': '%s' % now},
                     {'connote_nbr': '218501217865',
                      'pickup_ts': '%s' %
                      (now - datetime.timedelta(seconds=(86400 * 2))),
                      'pod_name': 'pod_name 218501217865',
                      'identity_type_id': id_type_id,
-                     'identity_type_data': 'identity 218501217865'}]
+                     'identity_type_data': 'identity 218501217865',
+                     'extract_ts': '%s' % now}]
         for jobitem in jobitems:
             sql = cls._e.db.jobitem.insert_sql(jobitem)
             jobitem_id = cls._e.db.insert(sql=sql)
@@ -51,33 +53,20 @@ class TestExporter(unittest2.TestCase):
         msg = 'Object is not an nparcel.Exporter'
         self.assertIsInstance(self._e, nparcel.Exporter, msg)
 
-    def test_collected_sql_one_day_range(self):
-        """One day range collection check.
-        """
-        msg = 'One day range collection check should return results.'
-        sql = self._e.db.jobitem.collected_sql(range=86400)
-        self._e.db(sql)
-
-        received = []
-        for row in self._e.db.rows():
-            received.append(row[0])
-
-        # Loose check should return values.
-        self.assertTrue(received, msg)
-
-    def test_collected_sql_beyond_range(self):
-        """Range beyond collection check.
+    def test_collected_sql(self):
+        """Query table for collected items.
         """
         msg = 'Default collection check should return results.'
-        sql = self._e.db.jobitem.collected_sql(range=-1)
+        sql = self._e.db.jobitem.collected_sql()
         self._e.db(sql)
 
         received = []
         for row in self._e.db.rows():
-            received.append(row[0])
+            received.append(row)
 
-        # Loose check should return NO values.
-        self.assertFalse(received, msg)
+        # We should have at least one seeded result so we shouldn't
+        # receive an empty list.
+        self.assertTrue(received, msg)
 
     def test_cached_items_if_file_not_provided(self):
         """Check cached items if a cache file is not provided.
