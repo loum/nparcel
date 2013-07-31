@@ -13,19 +13,30 @@ class TestExporter(unittest2.TestCase):
         cls._e = nparcel.Exporter()
 
         now = datetime.datetime.now()
+
+        # "identity_type" table.
+        identity_types = [{'description': 'identity_type description'}]
+        for identity_type in identity_types:
+            sql = cls._e.db.identity_type.insert_sql(identity_type)
+            id_type_id = cls._e.db.insert(sql=sql)
+
+        # "job_items" table.
         jobitems = [{'connote_nbr': '218501217863',
                      'pickup_ts': '%s' % now,
                      'pod_name': 'pod_name 218501217863',
+                     'identity_type_id': id_type_id,
                      'identity_type_data': 'identity 218501217863'},
                     {'connote_nbr': '218501217864',
                      'pickup_ts': '%s' %
                      (now - datetime.timedelta(seconds=86400)),
                      'pod_name': 'pod_name 218501217864',
+                     'identity_type_id': id_type_id,
                      'identity_type_data': 'identity 218501217864'},
                     {'connote_nbr': '218501217865',
                      'pickup_ts': '%s' %
                      (now - datetime.timedelta(seconds=(86400 * 2))),
                      'pod_name': 'pod_name 218501217865',
+                     'identity_type_id': id_type_id,
                      'identity_type_data': 'identity 218501217865'}]
         for jobitem in jobitems:
             sql = cls._e.db.jobitem.insert_sql(jobitem)

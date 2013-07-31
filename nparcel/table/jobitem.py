@@ -27,6 +27,7 @@ class JobItem(nparcel.Table):
                 "created_ts TIMESTAMP",
                 "pickup_ts TIMESTAMP",
                 "pod_name CHAR(40)",
+                "identity_type_id INTEGER",
                 "identity_type_data CHAR(30)"]
 
     def collected_sql(self, range):

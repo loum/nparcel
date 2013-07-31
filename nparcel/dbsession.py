@@ -91,6 +91,10 @@ class DbSession(object):
     def jobitem(self):
         return self._jobitem
 
+    @property
+    def identity_type(self):
+        return self._identity_type
+
     def set_connection(self, value):
         self._connection = value
 
