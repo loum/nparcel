@@ -39,14 +39,14 @@ class Exporter(object):
     def set_staging_dir(self, value):
         self._staging_dir = value
 
-    def get_collected_items(self):
+    def get_collected_items(self, business_unit):
         """Query DB for recently collected items.
 
         """
         # First, source our cache.
         cached_items = self._cache()
 
-        sql = self.db.jobitem.collected_sql()
+        sql = self.db.jobitem.collected_sql(business_unit=business_unit)
         self.db(sql)
 
         items = []

@@ -88,6 +88,10 @@ class DbSession(object):
         return self._connection
 
     @property
+    def job(self):
+        return self._job
+
+    @property
     def jobitem(self):
         return self._jobitem
 

@@ -29,9 +29,12 @@ class JobItem(nparcel.Table):
                 "identity_type_data CHAR(30)",
                 "extract_ts TIMESTAMP"]
 
-    def collected_sql(self):
+    def collected_sql(self, business_unit):
         """SQL wrapper to extract the collected items from the "jobitems"
         table.
+
+        **Args:**
+            business_unit: the id relating to the job.bu_id value.
 
         **Returns:**
             the SQL string
@@ -43,9 +46,10 @@ class JobItem(nparcel.Table):
     ji.pod_name as 'PICKUP_POD',
     it.description as 'IDENTITY_TYPE',
     ji.identity_type_data as 'IDENTITY_DATA'
-FROM job_item as ji, identity_type as it
+FROM job_item as ji, identity_type as it, job as j
 WHERE pickup_ts IS NOT null
 AND extract_ts IS null
-AND ji.identity_type_id = it.id"""
+AND ji.identity_type_id = it.id
+AND (ji.job_id = j.id AND j.bu_id = %d)""" % business_unit
 
         return sql
