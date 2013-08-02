@@ -23,6 +23,7 @@ class Exporter(object):
     def __init__(self,
                  db=None,
                  cache_file=None,
+                 signature_dir=None,
                  staging_dir=None):
         """Exporter object initialiser.
         """
@@ -32,12 +33,28 @@ class Exporter(object):
         self.db.connect()
 
         self._cache = nparcel.Cache(cache_file)
+
+        self._signature_dir = signature_dir
         self._staging_dir = staging_dir
+        self._create_dir(self._staging_dir)
 
         self._collected_items = []
 
+    @property
+    def signature_dir(self):
+        return self._signature_dir
+
+    def set_signature_dir(self, value):
+        self._signature_dir = value
+
+    @property
+    def staging_dir(self):
+        return self._staging_dir
+
     def set_staging_dir(self, value):
         self._staging_dir = value
+
+        self._create_dir(dir=self._staging_dir)
 
     def get_collected_items(self, business_unit):
         """Query DB for recently collected items.
@@ -61,6 +78,55 @@ class Exporter(object):
 
             if not is_cached:
                 self._collected_items.append(cleansed_row)
+                self.move_signature_file(row[1])
+
+    def move_signature_file(self, id):
+        """Move the Nparcel signtature file to the staging directory for
+        further processing.
+
+        Move will only occur if a a staging directory exists.
+
+        Filename is constructed on the *id* provided.  *id* is typically
+        the record id of the "job_item" table record.
+
+        **Args:**
+            id: file name identifier of the file to move
+
+        """
+        status = True
+
+        log.info('Moving signature file for job_item.id: %d' % id)
+        if self.staging_dir is not None:
+            # Define the signature filename.
+            if self.signature_dir is not None:
+                sig_file = os.path.join(self.signature_dir, "%d.ps" % id)
+                if not os.path.exists(sig_file):
+                    log.error('Cannot locate signature file: "%s"' %
+                              sig_file)
+                    status = False
+            else:
+                log.error('Signature directory is not defined')
+                status = False
+
+            if status:
+                if os.path.exists(sig_file):
+                    target = os.path.join(self.staging_dir, "%d.ps" % id)
+                    log.info('Moving signature file "%s" to "%s"' %
+                                (sig_file, target))
+                    try:
+                        os.rename(sig_file, target)
+                    except OSError, e:
+                        log.error('Signature file move failed: "%s"' % e)
+                else:
+                    log.error('Signature file "%s" does not exist' %
+                              sig_file)
+                    status = False
+        else:
+            status = False
+            log.error('Skip file "%s" move: no staging directory' %
+                      self.staging_dir)
+
+        return status
 
     def _cleanse(self, row):
         """Runs over the "jobitem" record and modifies to suit the
@@ -79,7 +145,8 @@ class Exporter(object):
         row_list = list(row)
 
         # "pickup_ts" column should have microseconds removed.
-        m = re.match('(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\.\d*', row_list[2])
+        m = re.match('(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\.\d*',
+                     row_list[2])
         try:
             pickup_ts = m.group(1)
             log.debug('Cleansed pickup_ts produced "%s"' % pickup_ts)
@@ -135,15 +202,7 @@ class Exporter(object):
         status = True
         fh = None
 
-        # Attempt to create the staging directory if it does not exist.
-        if not os.path.exists(dir):
-            try:
-                log.info('Creating staging directory "%s"' % dir)
-                os.makedirs(dir)
-            except OSError, err:
-                status = False
-                log.error('Unable to create staging directory "%s": %s"' %
-                          (dir, err))
+        self._create_dir(dir)
 
         if status:
             # Create the output file.
@@ -154,7 +213,21 @@ class Exporter(object):
                 log.info('Opening file "%s"' % file_path)
                 fh = open(file_path, 'wb')
             except IOError, err:
-                status= False
-                log.error('Could not open out file "%s": %s' )
+                status = False
+                log.error('Could not open out file "%s": %s')
 
         return fh
+
+    def _create_dir(self, dir):
+        """Helper method to manage the creation of the Exporter
+        out directory.
+        """
+        # Attempt to create the staging directory if it does not exist.
+        if dir is not None and not os.path.exists(dir):
+            try:
+                log.info('Creating staging directory "%s"' % dir)
+                os.makedirs(dir)
+            except OSError, err:
+                status = False
+                log.error('Unable to create staging directory "%s": %s"' %
+                            (dir, err))

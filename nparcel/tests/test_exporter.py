@@ -76,6 +76,7 @@ class TestExporter(unittest2.TestCase):
 
         # Create a temporary directory structure.
         cls._dir = tempfile.mkdtemp()
+        cls._staging_dir = tempfile.mkdtemp()
 
     def test_init(self):
         """Initialise an Exporter object.
@@ -181,7 +182,63 @@ class TestExporter(unittest2.TestCase):
         os.rmdir(staging)
         self._e.set_staging_dir(None)
 
+    def test_staging_file_move_no_staging_directory(self):
+        """Move signature file -- no staging directory.
+        """
+        bogus_sig_id = 99999999
+        msg = 'Signature file move to missing directory should fail'
+        self.assertFalse(self._e.move_signature_file(id=bogus_sig_id), msg)
+
+    def test_staging_file_move(self):
+        """Move signature file.
+        """
+        # Define the staging directory.
+        self._e.set_signature_dir(self._dir)
+        self._e.set_staging_dir(self._staging_dir)
+
+        # Create a dummy signature file.
+        sig_file = os.path.join(self._dir, '1.ps')
+        fh = open(sig_file, 'w')
+        fh.close()
+
+        msg = 'Signature file move should return True'
+        self.assertTrue(self._e.move_signature_file(id=1), msg)
+
+        # Check that the file now exists in staging.
+        msg = 'Signature file move to directory should succeed'
+        staging_sig_file = os.path.join(self._staging_dir, '1.ps')
+        self.assertTrue(os.path.exists(staging_sig_file), msg)
+
+        # Cleanup
+        self._e.set_signature_dir(value=None)
+        self._e.set_staging_dir(value=None)
+        os.remove(staging_sig_file)
+
+    def test_staging_file_move_no_signature_directory(self):
+        """Move signature file -- no signature directory.
+        """
+        # Define the staging directory.
+        self._e.set_staging_dir(self._staging_dir)
+
+        # Create a dummy signature file.
+        sig_file = os.path.join(self._dir, '1.ps')
+        fh = open(sig_file, 'w')
+        fh.close()
+
+        msg = 'Signature file move should return False'
+        self.assertFalse(self._e.move_signature_file(id=1), msg)
+
+        # Check that the file does not exist in staging.
+        msg = 'Signature file move to directory should fail'
+        staging_sig_file = os.path.join(self._staging_dir, '1.ps')
+        self.assertFalse(os.path.exists(staging_sig_file), msg)
+
+        # Cleanup
+        self._e.set_staging_dir(value=None)
+        os.remove(sig_file)
+
     @classmethod
     def tearDownClass(cls):
         cls._r = None
         os.removedirs(cls._dir)
+        os.removedirs(cls._staging_dir)
