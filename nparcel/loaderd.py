@@ -1,5 +1,5 @@
 __all__ = [
-    "Daemon",
+    "LoaderDaemon",
 ]
 import os
 import sys
@@ -14,14 +14,14 @@ import nparcel
 from nparcel.utils.log import log
 
 
-class Daemon(nparcel.utils.Daemon):
+class LoaderDaemon(nparcel.utils.Daemon):
 
     def __init__(self,
                  pidfile,
                  file=None,
                  dry=False,
                  config='nparcel.conf'):
-        super(Daemon, self).__init__(pidfile=pidfile)
+        super(LoaderDaemon, self).__init__(pidfile=pidfile)
 
         self.file = file
         self.dry = dry

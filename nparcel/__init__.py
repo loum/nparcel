@@ -1,4 +1,4 @@
-from nparcel.daemon import Daemon
+from nparcel.loaderd import LoaderDaemon
 from nparcel.parser import Parser
 from nparcel.loader import Loader
 from nparcel.dbsession import DbSession

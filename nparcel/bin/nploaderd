@@ -54,10 +54,10 @@ def main():
     log.info('Processing dry run %s' % dry)
 
     # OK, start processing.
-    np = nparcel.Daemon(pidfile='/var/tmp/nparceld.pid',
-                        file=file,
-                        dry=dry,
-                        config=options.config)
+    np = nparcel.LoaderDaemon(pidfile='/var/tmp/nparceld.pid',
+                              file=file,
+                              dry=dry,
+                              config=options.config)
 
     script_name = inspect.getfile(inspect.currentframe())
     scrip_name = os.path.basename(script_name)
