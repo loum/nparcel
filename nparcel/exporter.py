@@ -78,10 +78,12 @@ class Exporter(object):
 
             if not is_cached:
                 self._collected_items.append(cleansed_row)
-                self.move_signature_file(row[1])
+                id = row[1]
+                if self.move_signature_file(id):
+                    self._update_status(id)
 
     def move_signature_file(self, id):
-        """Move the Nparcel signtature file to the staging directory for
+        """Move the Nparcel signature file to the staging directory for
         further processing.
 
         Move will only occur if a a staging directory exists.
@@ -221,6 +223,10 @@ class Exporter(object):
     def _create_dir(self, dir):
         """Helper method to manage the creation of the Exporter
         out directory.
+
+        **Args:**
+            dir: the name of the directory structure to create.
+
         """
         # Attempt to create the staging directory if it does not exist.
         if dir is not None and not os.path.exists(dir):
@@ -231,3 +237,17 @@ class Exporter(object):
                 status = False
                 log.error('Unable to create staging directory "%s": %s"' %
                             (dir, err))
+
+    def _update_status(self, id):
+        """Set the job_item.extract_ts column of record *id* to the
+        current date/time.
+
+        **Args:**
+            id: the job_item.id column value to update.
+
+        """
+        time = self.db.date_now()
+
+        log.info('Updating extracted timestamp for job_item.id')
+        sql = self.db.jobitem.upd_collected_sql(id, time)
+        self.db(sql)

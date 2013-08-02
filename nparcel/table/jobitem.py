@@ -53,3 +53,21 @@ AND ji.identity_type_id = it.id
 AND (ji.job_id = j.id AND j.bu_id = %d)""" % business_unit
 
         return sql
+
+    def upd_collected_sql(self, business_unit, time):
+        """SQL wrapper to update the collected items from the "jobitems"
+        table.
+
+        **Args:**
+            business_unit: the id relating to the job.bu_id value.
+
+        **Returns:**
+            the SQL string
+
+        """
+        sql = """UPDATE job_item
+SET extract_ts = '%s'
+WHERE id = %d
+""" % (time, business_unit)
+
+        return sql

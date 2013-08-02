@@ -3,9 +3,10 @@ __all__ = [
 ]
 import sqlite
 import pyodbc
-from nparcel.utils.log import log
+import datetime
 
 import nparcel
+from nparcel.utils.log import log
 
 
 class DbSession(object):
@@ -61,6 +62,16 @@ class DbSession(object):
     @property
     def port(self):
         return self._port
+
+    def date_now(self, *args):
+        """Helper method that returns the current time stamp in a format
+        suitable for the database.
+
+        """
+        time = datetime.datetime.now().isoformat()
+
+        # Strip of last 3 digits of precision for MSSQL.
+        return time[:-3]
 
     def rows(self):
         """

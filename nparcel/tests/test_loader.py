@@ -16,7 +16,7 @@ class TestLoader(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._loader = nparcel.Loader()
-        cls._job_ts = cls._loader.date_now()
+        cls._job_ts = cls._loader.db.date_now()
 
     def test_init(self):
         """Initialise a Loader object.

@@ -237,6 +237,54 @@ class TestExporter(unittest2.TestCase):
         self._e.set_staging_dir(value=None)
         os.remove(sig_file)
 
+    def test_update_status(self):
+        """Update the collected item extract_ts.
+        """
+        self._e._update_status(1)
+
+        # Cleanup.
+        sql = """UPDATE job_item
+SET extract_ts = ''
+WHERE id = 1"""
+        self._e.db(sql)
+
+    def test_get_collected_items(self):
+        """End to end collected items.
+        """
+        # Up from query to model expected behaviour.
+        sql = self._e.db.jobitem.collected_sql(business_unit=BU['Priority'])
+        self._e.db(sql)
+
+        items = []
+        for row in self._e.db.rows():
+            items.append(row)
+
+        # Prepare our signature files.
+        for item in items:
+            sig_file = os.path.join(self._dir, '%d.ps' % item[1])
+            fh = open(sig_file, 'w')
+            fh.close()
+
+        # Define the staging/signature directory.
+        self._e.set_signature_dir(self._dir)
+        self._e.set_staging_dir(self._staging_dir)
+
+        # Process.
+        self._e.get_collected_items(business_unit=BU['Priority'])
+
+        # Clean.
+        self._e.set_signature_dir(value=None)
+        self._e.set_staging_dir(value=None)
+        for item in items:
+            sig_file = os.path.join(self._staging_dir, '%d.ps' % item[1])
+            os.remove(sig_file)
+
+            # Clear the extract_id timestamp.
+            sql = """UPDATE job_item
+SET extract_ts = ''
+WHERE id = %d""" % item[1]
+            self._e.db(sql)
+
     @classmethod
     def tearDownClass(cls):
         cls._r = None

@@ -2,7 +2,6 @@ __all__ = [
     "Loader",
 ]
 import re
-import datetime
 
 import nparcel
 from nparcel.utils.log import log
@@ -315,10 +314,7 @@ class Loader(object):
     def date_now(self, *args):
         """
         """
-        time = datetime.datetime.now().isoformat()
-
-        # Strip of last 3 digits of precision for MSSQL.
-        return time[:-3]
+        return self.db.date_now()
 
     def set_alert(self, alert):
         self.alerts.append(alert)
