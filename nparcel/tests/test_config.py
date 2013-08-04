@@ -52,9 +52,14 @@ class TestConfig(unittest2.TestCase):
         expected = '/data/nparcel/archive'
         self.assertEqual(received, expected, msg)
 
-        msg = 'Processing loop not as expected'
-        received = self._c('processing_loop')
+        msg = 'Loader loop not as expected'
+        received = self._c('loader_loop')
         expected = 30
+        self.assertEqual(received, expected, msg)
+
+        msg = 'Exporter loop not as expected'
+        received = self._c('exporter_loop')
+        expected = 300
         self.assertEqual(received, expected, msg)
 
         # Cleanup.

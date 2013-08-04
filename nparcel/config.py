@@ -20,7 +20,8 @@ class Config(object):
 
         self.dirs_to_check = []
         self.archive = None
-        self.processing_loop = 30
+        self.loader_loop = 30
+        self.exporter_loop = 900
 
         if self._file is not None:
             self.set_file(self._file)
@@ -35,8 +36,10 @@ class Config(object):
             value = self.dirs_to_check
         elif item == 'archive_dir':
             value = self.archive
-        elif item == 'processing_loop':
-            value = self.processing_loop
+        elif item == 'loader_loop':
+            value = self.loader_loop
+        elif item == 'exporter_loop':
+            value = self.exporter_loop
 
         return value
 
@@ -71,12 +74,12 @@ class Config(object):
 
         # Optional items (defaults provided).
         try:
-            self.processing_loop = int(self._config.get('timeout',
-                                                        'processing'))
-            log.info('File check timeout set at %d (seconds)' %
-                     self.processing_loop)
+            self.loader_loop = int(self._config.get('timeout',
+                                                    'loader_loop'))
+            self.exporter_loop = int(self._config.get('timeout',
+                                                      'exporter_loop'))
         except ConfigParser.NoOptionError, err:
-            log.warn('No processing loop time defined: %s' % err)
+            log.warn('"Timeout section error: %s' % err)
             pass
 
     def db_kwargs(self):

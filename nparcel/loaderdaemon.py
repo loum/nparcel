@@ -91,7 +91,7 @@ class LoaderDaemon(nparcel.utils.Daemon):
                     log.info('Dry run iteration complete -- aborting')
                     event.set()
                 else:
-                    time.sleep(self.config('processing_loop'))
+                    time.sleep(self.config('loader_loop'))
 
     def _exit_handler(self, signal, frame):
         log_msg = '%s --' % type(self).__name__

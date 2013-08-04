@@ -17,7 +17,8 @@ class TestExporterDaemon(unittest2.TestCase):
         self.assertIsInstance(self._ed, nparcel.ExporterDaemon, msg)
 
     def test_start(self):
-        self._ed._start(self._ed.exit_event)
+        self._ed.dry = True
+        self._ed._start(self._ed.exit_event, )
 
     @classmethod
     def tearDownClass(cls):

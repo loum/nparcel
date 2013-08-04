@@ -53,7 +53,7 @@ class Exporter(object):
 
         self._create_dir(dir=self._staging_dir)
 
-    def get_collected_items(self, business_unit):
+    def get_collected_items(self, business_unit, dry=False):
         """Query DB for recently collected items.
 
         """
@@ -68,8 +68,10 @@ class Exporter(object):
 
             self._collected_items.append(cleansed_row)
             id = row[1]
-            if self.move_signature_file(id):
-                self._update_status(id)
+
+            if not dry:
+                if self.move_signature_file(id):
+                    self._update_status(id)
 
     def move_signature_file(self, id):
         """Move the Nparcel signature file to the staging directory for
@@ -147,7 +149,7 @@ class Exporter(object):
 
         return tuple(row_list)
 
-    def report(self):
+    def report(self, dry=False):
         """Cycle through the newly identified collected items and produce
         a report.
 
@@ -156,7 +158,7 @@ class Exporter(object):
 
         header = '|'.join(FIELDS)
 
-        if self._staging_dir is None:
+        if dry:
             print(header)
             for item in self._collected_items:
                 print('%s' % '|'.join(map(str, item)))

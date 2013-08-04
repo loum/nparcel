@@ -129,7 +129,7 @@ class TestExporter(unittest2.TestCase):
         # Regenerate the collected items list.
         del self._e._collected_items[:]
         self._e.get_collected_items(business_unit=1)
-        self._e.report()
+        self._e.report(dry=True)
 
     def test_cleansed_valid_date(self):
         """Cleanse valid data.
