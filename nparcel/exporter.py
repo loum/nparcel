@@ -22,7 +22,6 @@ class Exporter(object):
 
     def __init__(self,
                  db=None,
-                 cache_file=None,
                  signature_dir=None,
                  staging_dir=None):
         """Exporter object initialiser.
@@ -31,8 +30,6 @@ class Exporter(object):
             db = {}
         self.db = nparcel.DbSession(**db)
         self.db.connect()
-
-        self._cache = nparcel.Cache(cache_file)
 
         self._signature_dir = signature_dir
         self._staging_dir = staging_dir
@@ -60,9 +57,6 @@ class Exporter(object):
         """Query DB for recently collected items.
 
         """
-        # First, source our cache.
-        cached_items = self._cache()
-
         sql = self.db.jobitem.collected_sql(business_unit=business_unit)
         self.db(sql)
 
@@ -70,17 +64,12 @@ class Exporter(object):
         for row in self.db.rows():
             cleansed_row = self._cleanse(row)
 
-            is_cached = False
             item_id = cleansed_row[1]
 
-            if cached_items and cached_items.get(item_id) is None:
-                is_cached = True
-
-            if not is_cached:
-                self._collected_items.append(cleansed_row)
-                id = row[1]
-                if self.move_signature_file(id):
-                    self._update_status(id)
+            self._collected_items.append(cleansed_row)
+            id = row[1]
+            if self.move_signature_file(id):
+                self._update_status(id)
 
     def move_signature_file(self, id):
         """Move the Nparcel signature file to the staging directory for
