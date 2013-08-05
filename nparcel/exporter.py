@@ -56,24 +56,34 @@ class Exporter(object):
     def get_collected_items(self, business_unit, dry=False):
         """Query DB for recently collected items.
 
+        **Args:**
+            business_unit: business_unit.id
+
+        **Kwargs:**
+            dry: only report what would happen (do not move file)
+
         """
         sql = self.db.jobitem.collected_sql(business_unit=business_unit)
         self.db(sql)
 
         items = []
         for row in self.db.rows():
+            job_item_id = row[1]
+            log.info('job_item.id: %d start processing ...' % job_item_id)
             cleansed_row = self._cleanse(row)
 
             item_id = cleansed_row[1]
 
             self._collected_items.append(cleansed_row)
-            id = row[1]
 
-            if not dry:
-                if self.move_signature_file(id):
-                    self._update_status(id)
+            if self.move_signature_file(job_item_id, dry=dry):
+                if not dry:
+                    self._update_status(job_item_id)
+                    log.info('job_item.id: %d OK' % job_item_id)
+            else:
+                log.error('job_item.id: %d failed' % job_item_id)
 
-    def move_signature_file(self, id):
+    def move_signature_file(self, id, dry=False):
         """Move the Nparcel signature file to the staging directory for
         further processing.
 
@@ -85,39 +95,38 @@ class Exporter(object):
         **Args:**
             id: file name identifier of the file to move
 
+        **Kwargs:**
+            dry: only report what would happen (do not move file)
+
         """
         status = True
 
         log.info('Moving signature file for job_item.id: %d' % id)
-        if self.staging_dir is not None:
-            # Define the signature filename.
-            if self.signature_dir is not None:
-                sig_file = os.path.join(self.signature_dir, "%d.ps" % id)
-                if not os.path.exists(sig_file):
-                    log.error('Cannot locate signature file: "%s"' %
-                              sig_file)
-                    status = False
-            else:
-                log.error('Signature directory is not defined')
+        # Define the signature filename.
+        if self.signature_dir is not None:
+            sig_file = os.path.join(self.signature_dir, "%d.ps" % id)
+            if not os.path.exists(sig_file):
+                log.error('Cannot locate signature file: "%s"' %
+                            sig_file)
                 status = False
-
-            if status:
-                if os.path.exists(sig_file):
-                    target = os.path.join(self.staging_dir, "%d.ps" % id)
-                    log.info('Moving signature file "%s" to "%s"' %
-                                (sig_file, target))
-                    try:
-                        os.rename(sig_file, target)
-                    except OSError, e:
-                        log.error('Signature file move failed: "%s"' % e)
-                else:
-                    log.error('Signature file "%s" does not exist' %
-                              sig_file)
-                    status = False
         else:
+            log.error('Signature directory is not defined')
             status = False
-            log.error('Skip file "%s" move: no staging directory' %
-                      self.staging_dir)
+
+        if status:
+            if os.path.exists(sig_file):
+                target = os.path.join(self.staging_dir, "%d.ps" % id)
+                log.info('Moving signature file "%s" to "%s"' %
+                            (sig_file, target))
+                try:
+                    if not dry:
+                        os.rename(sig_file, target)
+                except OSError, e:
+                    log.error('Signature file move failed: "%s"' % e)
+            else:
+                log.error('Signature file "%s" does not exist' %
+                            sig_file)
+                status = False
 
         return status
 

@@ -22,6 +22,10 @@ class Config(object):
 
         directory to place processed T1250 files into.
 
+    .. attribute:: signature (exporter)
+
+        directory where POD signature files are kept.
+
     .. attribute loader_loop (loader)
 
         time (seconds) between loader processing iterations.
@@ -45,6 +49,7 @@ class Config(object):
 
         self.dirs_to_check = []
         self.archive = None
+        self.signature = None
         self.loader_loop = 30
         self.exporter_loop = 900
         self.business_units = {}
@@ -62,6 +67,8 @@ class Config(object):
             value = self.dirs_to_check
         elif item == 'archive_dir':
             value = self.archive
+        elif item == 'signature_dir':
+            value = self.signature
         elif item == 'loader_loop':
             value = self.loader_loop
         elif item == 'exporter_loop':
@@ -98,6 +105,9 @@ class Config(object):
 
             self.archive = self._config.get('dirs', 'archive')
             log.info('Loader archive directory %s' % self.archive)
+
+            self.signature = self._config.get('dirs', 'signature')
+            log.info('Exporter signature directory %s' % self.signature)
 
         except ConfigParser.NoOptionError, err:
             log.critical('Missing required config: %s' % err)

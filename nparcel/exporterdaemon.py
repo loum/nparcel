@@ -22,7 +22,8 @@ class ExporterDaemon(nparcel.utils.Daemon):
     def _start(self, event):
         signal.signal(signal.SIGTERM, self._exit_handler)
 
-        exporter = nparcel.Exporter(db=self.config.db_kwargs())
+        exporter = nparcel.Exporter(db=self.config.db_kwargs(),
+                                    signature_dir=self.config('signature_dir'))
 
         commit = True
         if self.dry:

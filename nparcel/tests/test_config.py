@@ -52,6 +52,11 @@ class TestConfig(unittest2.TestCase):
         expected = '/data/nparcel/archive'
         self.assertEqual(received, expected, msg)
 
+        msg = 'Signature directory not as expected'
+        received = self._c('signature_dir')
+        expected = '/data/www/nparcel/data/signature'
+        self.assertEqual(received, expected, msg)
+
         msg = 'Loader loop not as expected'
         received = self._c('loader_loop')
         expected = 30
