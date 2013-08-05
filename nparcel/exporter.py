@@ -249,3 +249,8 @@ class Exporter(object):
         log.info('Updating extracted timestamp for job_item.id')
         sql = self.db.jobitem.upd_collected_sql(id, time)
         self.db(sql)
+
+    def reset(self):
+        """Initialise object state in readiness for another iteration.
+        """
+        del self._collected_items[:]

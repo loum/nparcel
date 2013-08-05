@@ -9,12 +9,37 @@ from nparcel.utils.log import log
 
 
 class Config(object):
-    """
+    """Nparcel Config class.
+
+    :class:`nparcel.Config` captures the configuration items required
+    by the Nparcel B2C Replicator.
+
+    .. attribute:: dirs_to_check (loader)
+
+        list of directories to look for T1250 files.
+
+    .. attribute:: archive (loader)
+
+        directory to place processed T1250 files into.
+
+    .. attribute loader_loop (loader)
+
+        time (seconds) between loader processing iterations.
+
+    .. attribute:: exporter_loop (exporter)
+
+        time (seconds) between exporter processing iterations.
+
+    .. attribute:: business_units (exporter)
+
+        the list of business units to query for collected items
+
     """
 
     def __init__(self, file=None):
+        """Nparcel Config initialisation.
         """
-        """
+
         self._file = file
         self._config = ConfigParser.SafeConfigParser()
 
@@ -22,6 +47,7 @@ class Config(object):
         self.archive = None
         self.loader_loop = 30
         self.exporter_loop = 900
+        self.business_units = {}
 
         if self._file is not None:
             self.set_file(self._file)
@@ -40,6 +66,8 @@ class Config(object):
             value = self.loader_loop
         elif item == 'exporter_loop':
             value = self.exporter_loop
+        elif item == 'business_units':
+            value = self.business_units
 
         return value
 
@@ -65,11 +93,20 @@ class Config(object):
 
         try:
             self.dirs_to_check = self._config.get('dirs', 'in').split(',')
-            log.info('Directories to check %s' % str(self.dirs_to_check))
+            log.info('Loader directories to check %s' %
+                     str(self.dirs_to_check))
+
             self.archive = self._config.get('dirs', 'archive')
-            log.info('Archive directory %s' % self.archive)
+            log.info('Loader archive directory %s' % self.archive)
+
         except ConfigParser.NoOptionError, err:
-            log.error('Missing required config: %s' % err)
+            log.critical('Missing required config: %s' % err)
+            sys.exit(1)
+
+        self.business_units = dict(self._config.items('business_units'))
+        log.info('Exporter Business Units %s' % self.business_units.keys())
+        if self.business_units is None:
+            log.critical('Missing Business Units in configuration')
             sys.exit(1)
 
         # Optional items (defaults provided).

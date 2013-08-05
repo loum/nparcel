@@ -30,9 +30,13 @@ class ExporterDaemon(nparcel.utils.Daemon):
 
         while not event.isSet():
             if exporter.db():
-                # TODO: support for multiple BU's
-                exporter.get_collected_items(business_unit=1, dry=self.dry)
-                exporter.report(dry=self.dry)
+                for bu, id in self.config('business_units').iteritems():
+                    log.info('Starting collection report for BU "%s" ...' %
+                             bu)
+                    exporter.get_collected_items(business_unit=int(id),
+                                                dry=self.dry)
+                    exporter.report(dry=self.dry)
+                    exporter.reset()
 
                 # Only makes sense to do one iteration of a dry run.
                 if self.dry:
