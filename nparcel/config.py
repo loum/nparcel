@@ -22,6 +22,11 @@ class Config(object):
 
         directory to place processed T1250 files into.
 
+    .. attribute:: staging_base (exporter)
+
+        directory to place processed collected reports and signature files
+        for further processing.
+
     .. attribute:: signature (exporter)
 
         directory where POD signature files are kept.
@@ -67,6 +72,8 @@ class Config(object):
             value = self.dirs_to_check
         elif item == 'archive_dir':
             value = self.archive
+        elif item == 'staging_base':
+            value = self.staging_base
         elif item == 'signature_dir':
             value = self.signature
         elif item == 'loader_loop':
@@ -105,6 +112,9 @@ class Config(object):
 
             self.archive = self._config.get('dirs', 'archive')
             log.info('Loader archive directory %s' % self.archive)
+
+            self.staging_base = self._config.get('dirs', 'staging_base')
+            log.info('Exporter staging base %s' % self.staging_base)
 
             self.signature = self._config.get('dirs', 'signature')
             log.info('Exporter signature directory %s' % self.signature)

@@ -1,5 +1,5 @@
 __all__ = [
-    "Exporter",
+   "Exporter",
 ]
 import re
 import os
@@ -53,17 +53,17 @@ class Exporter(object):
 
         self._create_dir(dir=self._staging_dir)
 
-    def get_collected_items(self, business_unit, dry=False):
+    def get_collected_items(self, business_unit_id, dry=False):
         """Query DB for recently collected items.
 
         **Args:**
-            business_unit: business_unit.id
+            business_unit_id: business_unit.id
 
         **Kwargs:**
             dry: only report what would happen (do not move file)
 
         """
-        sql = self.db.jobitem.collected_sql(business_unit=business_unit)
+        sql = self.db.jobitem.collected_sql(business_unit=business_unit_id)
         self.db(sql)
 
         items = []
@@ -165,7 +165,7 @@ class Exporter(object):
 
         return tuple(row_list)
 
-    def report(self, dry=False):
+    def report(self, business_unit, dry=False):
         """Cycle through the newly identified collected items and produce
         a report.
 
@@ -179,7 +179,8 @@ class Exporter(object):
             for item in self._collected_items:
                 print('%s' % '|'.join(map(str, item)))
         else:
-            fh = self.outfile(self._staging_dir)
+            out_dir = os.path.join(self._staging_dir, business_unit, 'out')
+            fh = self.outfile(out_dir)
             file_name = fh.name
             fh.write('%s\n' % header)
             for item in self._collected_items:
@@ -201,7 +202,7 @@ class Exporter(object):
         During output file access, prepends ``.tmp`` to the file.
 
         **Args:**
-            dir: name of the staging directory
+            dir: base directory name of the staging directory
 
         **Returns:**
             open file handle to the exporter report file (or None if file
@@ -230,6 +231,10 @@ class Exporter(object):
     def _create_dir(self, dir):
         """Helper method to manage the creation of the Exporter
         out directory.
+
+        Staging directories are based on the Business Unit.  For example,
+        the Business Unit "Priority" will create the directory
+        ``priority/out`` off the *dir* base.
 
         **Args:**
             dir: the name of the directory structure to create.

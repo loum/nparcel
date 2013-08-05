@@ -1,6 +1,7 @@
 __all__ = [
     "ExporterDaemon",
 ]
+import time
 import signal
 
 import nparcel
@@ -22,8 +23,11 @@ class ExporterDaemon(nparcel.utils.Daemon):
     def _start(self, event):
         signal.signal(signal.SIGTERM, self._exit_handler)
 
+        sig_dir = self.config('signature_dir')
+        staging_dir = self.config('staging_dir')
         exporter = nparcel.Exporter(db=self.config.db_kwargs(),
-                                    signature_dir=self.config('signature_dir'))
+                                    signature_dir=sig_dir,
+                                    staging_dir=staging_dir)
 
         commit = True
         if self.dry:
@@ -34,9 +38,9 @@ class ExporterDaemon(nparcel.utils.Daemon):
                 for bu, id in self.config('business_units').iteritems():
                     log.info('Starting collection report for BU "%s" ...' %
                              bu)
-                    exporter.get_collected_items(business_unit=int(id),
-                                                dry=self.dry)
-                    exporter.report(dry=self.dry)
+                    exporter.get_collected_items(business_unit_id=int(id),
+                                                 dry=self.dry)
+                    exporter.report(business_unit=bu, dry=self.dry)
                     exporter.reset()
 
                 # Only makes sense to do one iteration of a dry run.

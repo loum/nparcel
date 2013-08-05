@@ -120,7 +120,7 @@ class TestExporter(unittest2.TestCase):
         """Check cached items if a cache file is not provided.
         """
         msg = "Collected items with no cache should not be None"
-        self._e.get_collected_items(business_unit=1)
+        self._e.get_collected_items(business_unit_id=1)
         self.assertIsNotNone(self._e._collected_items, msg)
 
     def test_report(self):
@@ -128,8 +128,9 @@ class TestExporter(unittest2.TestCase):
         """
         # Regenerate the collected items list.
         del self._e._collected_items[:]
-        self._e.get_collected_items(business_unit=1)
-        self._e.report(dry=True)
+        self._e.get_collected_items(business_unit_id=1)
+        self._e.report(business_unit='priority', dry=True)
+
 
     def test_cleansed_valid_date_sqlite(self):
         """Cleanse valid data -- sqlite data.
@@ -171,6 +172,7 @@ class TestExporter(unittest2.TestCase):
         fh.close()
 
         # Cleanup.
+        self._e.reset()
         os.remove(outfile)
         os.rmdir(staging)
 
@@ -179,15 +181,15 @@ class TestExporter(unittest2.TestCase):
         """
         staging = os.path.join(self._dir, 'staging')
 
-        # Regenerate the collected items list.
-        del self._e._collected_items[:]
-
         self._e.set_staging_dir(staging)
-        self._e.get_collected_items(business_unit=1)
-        file_name = self._e.report()
+        self._e.get_collected_items(business_unit_id=1)
+        file_name = self._e.report(business_unit='priority')
 
         # Restore and cleanup.
+        self._e.reset()
         os.remove(file_name.replace('.txt.tmp', '.txt'))
+        os.rmdir(os.path.join(staging, 'priority', 'out'))
+        os.rmdir(os.path.join(staging, 'priority'))
         os.rmdir(staging)
         self._e.set_staging_dir(None)
 
@@ -219,6 +221,7 @@ class TestExporter(unittest2.TestCase):
         self.assertTrue(os.path.exists(staging_sig_file), msg)
 
         # Cleanup
+        self._e.reset()
         self._e.set_signature_dir(value=None)
         self._e.set_staging_dir(value=None)
         os.remove(staging_sig_file)
@@ -243,6 +246,7 @@ class TestExporter(unittest2.TestCase):
         self.assertFalse(os.path.exists(staging_sig_file), msg)
 
         # Cleanup
+        self._e.reset()
         self._e.set_staging_dir(value=None)
         os.remove(sig_file)
 
@@ -252,6 +256,7 @@ class TestExporter(unittest2.TestCase):
         self._e._update_status(1)
 
         # Cleanup.
+        self._e.reset()
         sql = """UPDATE job_item
 SET extract_ts = ''
 WHERE id = 1"""
@@ -279,9 +284,10 @@ WHERE id = 1"""
         self._e.set_staging_dir(self._staging_dir)
 
         # Process.
-        self._e.get_collected_items(business_unit=BU['Priority'])
+        self._e.get_collected_items(business_unit_id=BU['Priority'])
 
         # Clean.
+        self._e.reset()
         self._e.set_signature_dir(value=None)
         self._e.set_staging_dir(value=None)
         for item in items:
