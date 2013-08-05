@@ -138,14 +138,21 @@ class Exporter(object):
         row_list = list(row)
 
         # "pickup_ts" column should have microseconds removed.
-        m = re.match('(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\.\d*',
-                     row_list[2])
-        try:
-            pickup_ts = m.group(1)
-            log.debug('Cleansed pickup_ts produced "%s"' % pickup_ts)
-            row_list[2] = pickup_ts
-        except AttributeError, err:
-            log.error('Error cleansing pickup_ts "%s": %s' % (row[2], err))
+        # Handle sqlite and MSSQL dates differently.
+        pickup_ts = row[2]
+        if isinstance(row[2], str):
+            m = re.match('(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\.\d*',
+                        row[2])
+            try:
+                pickup_ts = m.group(1)
+                log.debug('Cleansed pickup_ts produced "%s"' % pickup_ts)
+            except AttributeError, err:
+                log.error('Error cleansing pickup_ts "%s": %s' % (row[2],
+                                                                  err))
+        elif isinstance(row[2], datetime.datetime):
+            pickup_ts = row[2].isoformat(' ')
+
+        row_list[2] = pickup_ts
 
         return tuple(row_list)
 

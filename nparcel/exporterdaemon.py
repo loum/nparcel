@@ -29,17 +29,17 @@ class ExporterDaemon(nparcel.utils.Daemon):
             commit = False
 
         while not event.isSet():
-            # TODO: support for multiple BU's
-            exporter.get_collected_items(business_unit=1, dry=self.dry)
-            exporter.report(dry=self.dry)
-
             if exporter.db():
+                # TODO: support for multiple BU's
+                exporter.get_collected_items(business_unit=1, dry=self.dry)
+                exporter.report(dry=self.dry)
+
                 # Only makes sense to do one iteration of a dry run.
                 if self.dry:
                     log.info('Dry run iteration complete -- aborting')
                     event.set()
                 else:
-                    time.sleep(self.config('loader_loop'))
+                    time.sleep(self.config('exporter_loop'))
             else:
                 log.error('ODBC connection failure -- aborting')
                 event.set()

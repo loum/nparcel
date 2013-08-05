@@ -131,10 +131,19 @@ class TestExporter(unittest2.TestCase):
         self._e.get_collected_items(business_unit=1)
         self._e.report(dry=True)
 
-    def test_cleansed_valid_date(self):
-        """Cleanse valid data.
+    def test_cleansed_valid_date_sqlite(self):
+        """Cleanse valid data -- sqlite data.
         """
         row = ('', '', '2013-07-29 12:00:00.123456', '', '', '')
+        received = self._e._cleanse(row)
+        expected = ('', '', '2013-07-29 12:00:00', '', '', '')
+        msg = 'Cleansed valid data incorrect'
+        self.assertTupleEqual(received, expected, msg)
+
+    def test_cleansed_valid_date_mssql(self):
+        """Cleanse valid data -- MSSQL data.
+        """
+        row = ('', '', datetime.datetime(2013, 07, 29, 12, 0), '', '', '')
         received = self._e._cleanse(row)
         expected = ('', '', '2013-07-29 12:00:00', '', '', '')
         msg = 'Cleansed valid data incorrect'
