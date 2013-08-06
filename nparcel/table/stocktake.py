@@ -19,3 +19,11 @@ class AgentParcelStocktake(nparcel.Table):
         return ["id INTEGER PRIMARY KEY",
                 "created_ts TIMESTAMP NOT NULL",
                 "scanned_item CHAR(30)"]
+
+    def aged_parcel_stocktake_sql(self):
+        """
+        """
+        sql = """SELECT id
+FROM agent_parcel_stocktake"""
+
+        return sql

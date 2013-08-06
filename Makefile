@@ -19,6 +19,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestParser \
 	 nparcel.tests:TestDbSession \
 	 nparcel.tests:TestReporter \
+	 nparcel.tests:TestAgedParcelReporter \
 	 nparcel.tests:TestLoaderDaemon \
 	 nparcel.tests:TestExporter \
 	 nparcel.tests:TestConfig \
