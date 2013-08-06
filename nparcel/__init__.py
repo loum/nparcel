@@ -11,3 +11,4 @@ from table.job import Job
 from table.jobitem import JobItem
 from table.agent import Agent
 from table.identitytype import IdentityType
+from table.stocktake import AgentParcelStocktake

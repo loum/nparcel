@@ -11,7 +11,7 @@ class TestJob(unittest2.TestCase):
         cls._job = nparcel.Job()
         cls._db = nparcel.DbSession()
         cls._db.connect()
-        cls._job_ts = datetime.datetime.now().isoformat()
+        cls._job_ts = datetime.datetime.now().isoformat(' ')[:-3]
 
     def test_check_barcode(self):
         """Bar code check.
