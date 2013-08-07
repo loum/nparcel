@@ -111,6 +111,10 @@ class DbSession(object):
     def identity_type(self):
         return self._identity_type
 
+    @property
+    def stocktake(self):
+        return self._stocktake
+
     def set_connection(self, value):
         self._connection = value
 

@@ -1,6 +1,8 @@
 __all__ = [
     "AgentParcelStocktake",
 ]
+import datetime
+
 import nparcel
 
 
@@ -20,10 +22,14 @@ class AgentParcelStocktake(nparcel.Table):
                 "created_ts TIMESTAMP NOT NULL",
                 "scanned_item CHAR(30)"]
 
-    def aged_parcel_stocktake_sql(self):
+    def aged_parcel_stocktake_sql(self, age):
         """
         """
-        sql = """SELECT id
-FROM agent_parcel_stocktake"""
+        now = datetime.datetime.now()
+        aged_time = now - datetime.timedelta(seconds=age)
+
+        sql = """SELECT *
+FROM agent_parcel_stocktake
+WHERE created_ts < '%s'""" % aged_time
 
         return sql
