@@ -1,6 +1,8 @@
 __all__ = [
     "JobItem",
 ]
+import datetime
+
 import nparcel
 
 
@@ -69,5 +71,23 @@ AND (ji.job_id = j.id AND j.bu_id = %d)""" % business_unit
 SET extract_ts = '%s'
 WHERE id = %d
 """ % (time, business_unit)
+
+        return sql
+
+    def aged_sql(self, age):
+        """SQL wrapper to return the items whose created_ts value
+        breaches the *age* threshold.
+
+        **Args:**
+            age: time (in seconds) id relating to the job.bu_id value.
+
+        **Returns:**
+            the SQL string
+        """
+        now = datetime.datetime.now()
+        aged_time = now - datetime.timedelta(seconds=age)
+        sql = """SELECT *
+FROM %s
+WHERE created_ts < '%s'""" % (self._name, aged_time)
 
         return sql

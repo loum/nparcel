@@ -25,10 +25,12 @@ class AgentParcelStocktake(nparcel.Table):
     def aged_parcel_stocktake_sql(self, age):
         """
         """
-        now = datetime.datetime.now()
-        aged_time = now - datetime.timedelta(seconds=age)
-
-        sql = """SELECT *
+        if age is None:
+            sql = """SELECT * FROM agent_parcel_stocktake"""
+        else:
+            now = datetime.datetime.now()
+            aged_time = now - datetime.timedelta(seconds=age)
+            sql = """SELECT *
 FROM agent_parcel_stocktake
 WHERE created_ts < '%s'""" % aged_time
 

@@ -30,7 +30,24 @@ class AgedParcelReporter(nparcel.Reporter):
         """Nparcel aged parcels generator.
         """
         sql = self.db.stocktake.aged_parcel_stocktake_sql(self._age)
+        self.db(sql)
+        for row in self.db.rows():
+            yield row
 
+    def get_aged_jobitems(self):
+        """
+        """
+        sql = self.db.jobitem.aged_sql(self._age)
+        self.db(sql)
+        for row in self.db.rows():
+            yield row
+
+    def get_aged(self):
+        """
+        """
+        sql = """SELECT *
+FROM job_item
+WHERE connote_nbr IN ('APPLES', 'SCANNED_01', 'DODGY_01')"""
         self.db(sql)
         for row in self.db.rows():
             yield row
