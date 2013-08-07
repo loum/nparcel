@@ -300,6 +300,33 @@ class TestLoader(unittest2.TestCase):
         # Restore DB state.
         self._loader.db.connection.rollback()
 
+    def test_match_connote_scenario_connote_lt_15_char(self):
+        """Manufactured connote check -- connote < 15 chars.
+        """
+        msg = 'Connote length < 15 chars scenario check should return False'
+        barcode = '41566627'
+        connote = '218701663454'
+        received = self._loader.match_connote(connote, barcode)
+        self.assertFalse(received, msg)
+
+    def test_match_connote_scenario_connote_gt_15_char_unique_barcode(self):
+        """Manufactured connote check -- unique barcode, connote > 15 chars.
+        """
+        msg = 'Connote length > 15 chars scenario check should return False'
+        barcode = '41566627'
+        connote = '3142357006912345'
+        received = self._loader.match_connote(connote, barcode)
+        self.assertFalse(received, msg)
+
+    def test_match_connote_scenario_connote_gt_15_char_dodgy_barcode(self):
+        """Manufactured connote check -- dodgy barcode, connote > 15 chars.
+        """
+        msg = 'Connote length > 15 chars scenario check should return False'
+        barcode = '000931423570069'
+        connote = '3142357006912345'
+        received = self._loader.match_connote(connote, barcode)
+        self.assertTrue(received, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._loader = None

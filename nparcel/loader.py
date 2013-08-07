@@ -332,3 +332,37 @@ class Loader(object):
             log.info('Rolling back transaction state to the DB ...')
             self.db.rollback()
             log.info('Rollback OK')
+
+    def match_connote(self, connote, barcode):
+        """Pre-check to see if barcode value is based on connote.
+
+        This special coniditon occurs when operators cannot record parcel
+        against a missing barcode.  Instead, a barcode value is manufactured
+        from the existing connote.  Due to system limitations, the
+        manufactured connote is truncated in the system.  This loss of
+        precision introduces the chance of false-positives during the
+        barcode comparison phase.
+
+        **Args:**
+            connote: connote value parsed directly from the T1250 file
+
+            barcode: barcode value parsed directly from the T1250 file
+
+        **Returns:**
+            boolean True if barcode is manufactured against connote
+
+            boolean False otherwise
+
+        """
+        status = False
+
+        if len(connote) > 15:
+            log.debug('Connote "%s" length is greater than 15' % connote)
+            tmp_connote = connote[:11]
+            tmp_barcode = '0009' + tmp_connote
+            log.debug('Manufactured barcode to check: "%s"' % tmp_barcode)
+            if barcode == tmp_barcode:
+                status = True
+                log.info('Possible manufactured barcode "%s"' % barcode)
+
+        return status
