@@ -6,6 +6,7 @@ from nparcel.dbsession import DbSession
 from nparcel.reporter import Reporter
 from nparcel.exporter import Exporter
 from nparcel.config import Config
+from nparcel.ftp import Ftp
 from table import Table
 from table.job import Job
 from table.jobitem import JobItem

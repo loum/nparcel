@@ -6,3 +6,4 @@ from test_loaderdaemon import TestLoaderDaemon
 from test_exporterdaemon import TestExporterDaemon
 from test_exporter import TestExporter
 from test_config import TestConfig
+from test_ftp import TestFtp
