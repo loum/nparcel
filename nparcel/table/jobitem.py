@@ -84,7 +84,7 @@ WHERE id = %d
             the SQL string
 
         """
-        sql = """SELECT *
+        sql = """SELECT id
 FROM %s
 WHERE connote_nbr = '%s'""" % (self._name, connote)
 

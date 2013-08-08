@@ -1,4 +1,5 @@
 import unittest2
+import datetime
 
 import nparcel
 
@@ -326,6 +327,67 @@ class TestLoader(unittest2.TestCase):
         connote = '3142357006912345'
         received = self._loader.match_connote(connote, barcode)
         self.assertTrue(received, msg)
+
+    def test_get_connote_job_id(self):
+        """Get connote-based job id.
+        """
+        kwargs = {'address_1': '31 Bridge st,',
+                  'address_2': 'Lane Cove,',
+                  'agent_id': 'N031',
+                  'bu_id': 1,
+                  'card_ref_nbr': '4156536111',
+                  'job_ts': '%s' %
+                  (datetime.datetime.now() - datetime.timedelta(seconds=99)),
+                  'status': 1,
+                  'suburb': 'Australia Other'}
+        sql = self._loader.db.job.insert_sql(kwargs)
+        job_id_old = self._loader.db.insert(sql)
+
+        kwargs = {'address_1': '31 Bridge st,',
+                  'address_2': 'Lane Cove,',
+                  'agent_id': 'N031',
+                  'bu_id': 1,
+                  'card_ref_nbr': '4156536111',
+                  'job_ts': self._job_ts,
+                  'status': 1,
+                  'suburb': 'Australia Other'}
+        sql = self._loader.db.job.insert_sql(kwargs)
+        job_id = self._loader.db.insert(sql)
+
+        kwargs = {'address_1': '32 Banana st,',
+                  'address_2': 'Banana Cove,',
+                  'agent_id': 'N031',
+                  'bu_id': 1,
+                  'card_ref_nbr': '4156536112',
+                  'job_ts': self._job_ts,
+                  'status': 1,
+                  'suburb': 'Australia Other'}
+        sql = self._loader.db.job.insert_sql(kwargs)
+        dodgy_job_id = self._loader.db.insert(sql)
+
+        # "job_items" table.
+        jobitems = [{'connote_nbr': '218501217863',
+                     'job_id': job_id,
+                     'pickup_ts': self._job_ts,
+                     'pod_name': 'pod_name 218501217863'},
+                    {'connote_nbr': '218501217863',
+                     'job_id': job_id_old,
+                     'pickup_ts': self._job_ts,
+                     'pod_name': 'pod_name 218501217863'},
+                    {'connote_nbr': '111111111111',
+                     'job_id': dodgy_job_id,
+                     'pickup_ts': self._job_ts,
+                     'pod_name': 'pod_name 111111111111'}]
+        for jobitem in jobitems:
+            sql = self._loader.db.jobitem.insert_sql(jobitem)
+            self._loader.db(sql=sql)
+
+        received = self._loader.get_connote_job_id(connote='218501217863')
+        msg = 'Connote based job id query results not as expected'
+        self.assertEqual(received, job_id, msg)
+
+        # Restore DB state.
+        self._loader.db.connection.rollback()
 
     @classmethod
     def tearDownClass(cls):

@@ -48,3 +48,13 @@ SET agent_id=%d
 WHERE id=%d""" % (agent_id_row_id, job_id)
 
         return sql
+
+    def connote_based_job_sql(self, connote):
+        """
+        """
+        sql = """SELECT j.id
+FROM job as j, job_item as ji
+WHERE (ji.connote_nbr = '%s' AND j.id = ji.job_id)
+ORDER by j.job_ts DESC""" % connote
+
+        return sql

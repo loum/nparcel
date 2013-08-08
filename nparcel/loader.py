@@ -366,3 +366,31 @@ class Loader(object):
                 log.info('Possible manufactured barcode "%s"' % barcode)
 
         return status
+
+    def get_connote_job_id(self, connote):
+        """Checks the "job" table for related "job_item" records with
+        *connote*.  If more than one job exists, will sort against the
+        job_ts against the most recent record.
+
+        **Args:**
+            connote: connote value parsed directly from the T1250 file
+
+        **Returns:**
+            integer value relating to the job.id if match is found.
+
+            ``None`` otherwise.
+
+        """
+        job_id = None
+
+        sql = self.db.job.connote_based_job_sql(connote=connote)
+        self.db(sql)
+        received = []
+        for row in self.db.rows():
+            received.append(row[0])
+
+        if received:
+            # Results are sorted by job_ts so grab the first index.
+            job_id = received[0]
+
+        return job_id
