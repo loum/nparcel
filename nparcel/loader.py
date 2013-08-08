@@ -8,8 +8,8 @@ from nparcel.utils.log import log
 
 FIELDS = {'Conn Note': {'offset': 0,
                         'length': 20},
-          'Identifier': {'offset': 21,
-                         'length': 20},
+          'Identifier': {'offset': 22,
+                         'length': 19},
           'Consumer Name': {'offset': 41,
                             'length': 30},
           'Consumer Address 1': {'offset': 81,
@@ -139,7 +139,7 @@ class Loader(object):
         """
         status = True
 
-        connote = raw_record[0:20].rstrip()
+        connote = raw_record[0:18].rstrip()
 
         # Parse the raw record and set the job timestamp.
         log.info('Conn Note: "%s" start parse ...' % connote)
@@ -159,6 +159,12 @@ class Loader(object):
             msg = 'Barcode "%s" mapping error: %s' % (barcode, e)
             log.error(msg)
             self.set_alert(msg)
+
+        # Check for a manufactured barcode (based on connote).
+        if self.match_connote(connote, barcode):
+            log.error('Not processing connote/barcode "%s/%s"' %
+                      (connote, barcode))
+            status = False
 
         if status:
             barcodes = self.barcode_exists(barcode=barcode)
@@ -276,7 +282,7 @@ class Loader(object):
         bu_id = None
 
         log.debug('Translating "%s" to BU ...' % value)
-        m = re.search(' YMLML11(TOL.).*', value)
+        m = re.search('YMLML11(TOL.).*', value)
         bu_id = BU_MAP.get(m.group(1))
 
         if bu_id is None:
