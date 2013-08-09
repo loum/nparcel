@@ -71,9 +71,6 @@ JOB_ITEM_MAP = {'Conn Note': {
                     'column': 'created_ts',
                     'required': True,
                     'callback': 'date_now'}}
-BU_MAP = {'TOLP': 1,
-          'TOLF': 2,
-          'TOLI': 3}
 POSTCODE_MAP = {'NSW': {
                     'ranges': [
                         (1000, 1999),
@@ -117,18 +114,25 @@ POSTCODE_MAP = {'NSW': {
 
 class Loader(object):
     """Nparcel Loader object.
+
+    .. attribute:: file_bu
+
+        Dictionary of tokens that identify a Business Unit and maps
+        to a known database entry.
     """
 
-    def __init__(self, db=None):
+    def __init__(self, file_bu, db=None):
         """
         """
-        self.parser = nparcel.Parser(fields=FIELDS)
-        self.alerts = []
+        self.file_bu = file_bu
 
         if db is None:
             db = {}
         self.db = nparcel.DbSession(**db)
         self.db.connect()
+
+        self.parser = nparcel.Parser(fields=FIELDS)
+        self.alerts = []
 
     def process(self, time, raw_record):
         """
@@ -285,10 +289,12 @@ class Loader(object):
 
         log.debug('Translating "%s" to BU ...' % value)
         m = re.search('YMLML11(TOL.).*', value)
-        bu_id = BU_MAP.get(m.group(1))
+        bu_id = self.file_bu.get(m.group(1).lower())
 
         if bu_id is None:
             log.error('Unable to extract BU from "%s"' % value)
+        else:
+            bu_id = int(bu_id)
 
         return bu_id
 

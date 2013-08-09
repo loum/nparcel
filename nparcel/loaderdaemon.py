@@ -29,7 +29,8 @@ class LoaderDaemon(nparcel.utils.Daemon):
     def _start(self, event):
         signal.signal(signal.SIGTERM, self._exit_handler)
 
-        loader = nparcel.Loader(db=self.config.db_kwargs())
+        loader = nparcel.Loader(file_bu=self.config('file_bu'),
+                                db=self.config.db_kwargs())
         reporter = nparcel.Reporter()
 
         commit = True

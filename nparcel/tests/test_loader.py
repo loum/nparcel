@@ -19,7 +19,8 @@ class TestLoader(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._loader = nparcel.Loader()
+        file_bu = {'tolp': '1', 'tolf': '2', 'toli': '3'}
+        cls._loader = nparcel.Loader(file_bu=file_bu)
         cls._job_ts = cls._loader.db.date_now()
 
     def test_init(self):
@@ -232,7 +233,7 @@ class TestLoader(unittest2.TestCase):
     def test_valid_bu_id(self):
         """Convert identifier to business unit code.
         """
-        bu_id = ' YMLML11TOLP130413'
+        bu_id = 'YMLML11TOLP130413'
         received = self._loader.translate_bu_id(bu_id)
         expected = 1
         msg = 'BU translation error -- valid BU'
@@ -241,7 +242,7 @@ class TestLoader(unittest2.TestCase):
     def test_invalid_bu_id(self):
         """Convert identifier to business unit code -- invalid.
         """
-        bu_id = ' YMLML11TOLZ130413'
+        bu_id = 'YMLML11TOLZ130413'
         received = self._loader.translate_bu_id(bu_id)
         expected = None
         msg = 'BU translation error -- invalid BU'

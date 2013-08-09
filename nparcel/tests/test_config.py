@@ -77,6 +77,11 @@ class TestConfig(unittest2.TestCase):
         expected = {'priority': '1', 'fast': '2', 'ipec': '3'}
         self.assertDictEqual(received, expected, msg)
 
+        msg = 'Filename Business units not as expected'
+        received = self._c('file_bu')
+        expected = {'tolp': '1', 'tolf': '2', 'toli': '3'}
+        self.assertDictEqual(received, expected, msg)
+
         # Cleanup.
         self._c._file = None
 

@@ -58,6 +58,7 @@ class Config(object):
         self.loader_loop = 30
         self.exporter_loop = 900
         self.business_units = {}
+        self.file_bu = {}
 
         if self._file is not None:
             self.set_file(self._file)
@@ -82,6 +83,8 @@ class Config(object):
             value = self.exporter_loop
         elif item == 'business_units':
             value = self.business_units
+        elif item == 'file_bu':
+            value = self.file_bu
 
         return value
 
@@ -127,6 +130,12 @@ class Config(object):
         log.info('Exporter Business Units %s' % self.business_units.keys())
         if self.business_units is None:
             log.critical('Missing Business Units in configuration')
+            sys.exit(1)
+
+        self.file_bu = dict(self._config.items('file_bu'))
+        log.info('Exporter File Business Units %s' % self.file_bu.keys())
+        if self.file_bu is None:
+            log.critical('Missing Filename Business Units in configuration')
             sys.exit(1)
 
         # Optional items (defaults provided).
