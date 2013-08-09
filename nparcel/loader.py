@@ -424,7 +424,11 @@ class Loader(object):
         log.debug('"jobitem.id" %d created' % jobitem_id)
 
     def update(self, job_id, agent_id, jobitem_data):
-        """
+        """Updates and existing barcode.
+
+        Updates the job.agent_id and will create a new job_item.connote_nbr
+        if the connote does not already exist in the job_item table.
+
         **Args:**
             job_id: row ID of the "job" table
 
@@ -436,8 +440,19 @@ class Loader(object):
         sql = self.db.job.update_sql(job_id, agent_id)
         self.db(sql)
 
-        # Set the "jobitem" table's foreign key.
-        jobitem_data['job_id'] = job_id
-        sql = self.db.jobitem.insert_sql(jobitem_data)
-        jobitem_id = self.db.insert(sql)
-        log.debug('"jobitem.id" %d created' % jobitem_id)
+        connote = jobitem_data.get('connote_nbr')
+        log.info('Check if connote "%s" job_item already exists' % connote)
+        sql = self.db.jobitem.connote_sql(connote)
+        job_item_ids = []
+        self.db(sql)
+        for row in self.db.rows():
+            job_item_ids.append(row[0])
+
+        if not job_item_ids:
+            # Set the "jobitem" table's foreign key.
+            jobitem_data['job_id'] = job_id
+            sql = self.db.jobitem.insert_sql(jobitem_data)
+            jobitem_id = self.db.insert(sql)
+            log.info('"jobitem.id" %d created' % jobitem_id)
+        else:
+            log.info('"jobitem.id" %d exists' % job_item_ids[0])
