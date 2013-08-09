@@ -5,6 +5,7 @@ import nparcel
 
 
 VALID_LINE_BARCODE = '4156536111'
+VALID_LINE_CONNOTE = '218501217863'
 VALID_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111     N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
 VALID_LINE_AGENT_UPD = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111     N014                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N014                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
 INVALID_BARCODE_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                                              N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
@@ -97,17 +98,25 @@ class TestLoader(unittest2.TestCase):
     def test_processor_valid_record_existing_barcode(self):
         """Process valid raw T1250 line -- existing barcode.
         """
-        # Seed the barcode.
-        barcode_fields = {'card_ref_nbr': VALID_LINE_BARCODE,
-                          'job_ts': self._job_ts}
-        self._loader.db(self._loader.db._job.insert_sql(barcode_fields))
-
         # Seed the Agent Id.
         agent_fields = {'code': 'N031'}
         self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
 
-        msg = 'T1250 record should process successfully -- existing barcode'
+        # First, create a record and attempt to reload as a duplicate.
+        # Should update the Agent Id but not create a new job_item record.
+        msg = 'New T1250 record should process successfully'
         self.assertTrue(self._loader.process(self._job_ts, VALID_LINE), msg)
+        msg = 'Duplicate T1250 record should process successfully'
+        self.assertTrue(self._loader.process(self._job_ts, VALID_LINE), msg)
+
+        sql = self._loader.db.jobitem.connote_sql(VALID_LINE_CONNOTE)
+        self._loader.db(sql)
+        received = []
+        for row in self._loader.db.rows():
+            received.append(row[0])
+        expected = 1
+        msg = 'Connote update should not create additional job_item'
+        self.assertEqual(len(received), expected, msg)
 
         # Restore DB state.
         self._loader.db.connection.rollback()
@@ -360,7 +369,7 @@ class TestLoader(unittest2.TestCase):
                   'agent_id': 'N031',
                   'bu_id': 1,
                   'card_ref_nbr': '4156536111',
-                  'job_ts': '%s' % older_ts, 
+                  'job_ts': '%s' % older_ts,
                   'status': 1,
                   'suburb': 'Australia Other'}
         sql = self._loader.db.job.insert_sql(kwargs)

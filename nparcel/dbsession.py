@@ -192,40 +192,6 @@ class DbSession(object):
 
         return id
 
-    def create(self, job_data, jobitem_data):
-        """
-        **Args:**
-            job_data: dictionary of the "job" table fields
-
-            jobitem_data: dictionary of the "jobitem" table fields
-
-        """
-        job_id = self.insert(self._job.insert_sql(job_data))
-        log.debug('"job.id" %d created' % job_id)
-
-        # Set the "jobitem" table's foreign key.
-        jobitem_data['job_id'] = job_id
-        jobitem_id = self.insert(self.jobitem.insert_sql(jobitem_data))
-        log.debug('"jobitem.id" %d created' % jobitem_id)
-
-    def update(self, job_id, agent_id, jobitem_data):
-        """
-        **Args:**
-            job_id: row ID of the "job" table
-
-            agent_id: row ID of the "agent" table
-
-            jobitem_data: dictionary of the "jobitem" table fields
-
-        """
-        sql = self._job.update_sql(job_id, agent_id)
-        self(sql)
-
-        # Set the "jobitem" table's foreign key.
-        jobitem_data['job_id'] = job_id
-        jobitem_id = self.insert(self.jobitem.insert_sql(jobitem_data))
-        log.debug('"jobitem.id" %d created' % jobitem_id)
-
     def commit(self):
         """
         """
