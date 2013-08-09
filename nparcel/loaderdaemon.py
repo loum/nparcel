@@ -116,7 +116,7 @@ class LoaderDaemon(nparcel.utils.Daemon):
                     else:
                         files_to_process.append(file)
 
-        return files_to_process
+        return sort(files_to_process)
 
     def files(self, path):
         for file in os.listdir(path):

@@ -1,4 +1,5 @@
 import unittest2
+import datetime
 
 import nparcel
 
@@ -9,6 +10,8 @@ VALID_LINE_AGENT_UPD = """218501217863          YMLML11TOLP130413  Diane Donohoe
 INVALID_BARCODE_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                                              N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
 INVALID_AGENTID_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111                                                                                                                                            00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
 INVALID_POSTCODE_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other                                                                                                                                    Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111     N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
+MANUFACTURED_BC_LINE = """3142357006912345      YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other                                                                                                                                    Diane Donohoe                             Bally                         Hong Kong Other                                                               000931423570069N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
+MANUFACTURED_BC_UPD_LINE = """3142357006912345      YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other                                                                                                                                    Diane Donohoe                             Bally                         Hong Kong Other                                                               000931423570069N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N032                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
 
 
 class TestLoader(unittest2.TestCase):
@@ -122,6 +125,27 @@ class TestLoader(unittest2.TestCase):
         msg = 'Invalid Agent Id processing should return False'
         self.assertFalse(self._loader.process(self._job_ts,
                                               INVALID_AGENTID_LINE), msg)
+
+    def test_processor_manufactured_connote(self):
+        """Process valid raw T1250 line with manufactured barcode.
+        """
+        # Seed the Agent Id.
+        agent_fields = [{'code': 'N031'},
+                        {'code': 'N032'}]
+        for agent_field in agent_fields:
+            self._loader.db(self._loader.db._agent.insert_sql(agent_field))
+
+        # First, create a manufactured barcode value.
+        msg = 'Manufactured barcode creation failed -- no barcode'
+        self.assertTrue(self._loader.process(self._job_ts,
+                                             MANUFACTURED_BC_LINE), msg)
+        # Now the manufactured barcode value update.
+        msg = 'Manufactured barcode creation failed -- existing barcode'
+        self.assertTrue(self._loader.process(self._job_ts,
+                                             MANUFACTURED_BC_UPD_LINE), msg)
+
+        # Restore DB state.
+        self._loader.db.connection.rollback()
 
     def test_table_column_map(self):
         """Map parser fields to table columns.
@@ -296,6 +320,94 @@ class TestLoader(unittest2.TestCase):
         received = self._loader.get_agent_id(test_agent_id)
         expected = 1
         self.assertEqual(received, expected, msg)
+
+        # Restore DB state.
+        self._loader.db.connection.rollback()
+
+    def test_match_connote_scenario_connote_lt_15_char(self):
+        """Manufactured connote check -- connote < 15 chars.
+        """
+        msg = 'Connote length < 15 chars scenario check should return False'
+        barcode = '41566627'
+        connote = '218701663454'
+        received = self._loader.match_connote(connote, barcode)
+        self.assertFalse(received, msg)
+
+    def test_match_connote_scenario_connote_gt_15_char_unique_barcode(self):
+        """Manufactured connote check -- unique barcode, connote > 15 chars.
+        """
+        msg = 'Connote length > 15 chars scenario check should return False'
+        barcode = '41566627'
+        connote = '3142357006912345'
+        received = self._loader.match_connote(connote, barcode)
+        self.assertFalse(received, msg)
+
+    def test_match_connote_scenario_connote_gt_15_char_dodgy_barcode(self):
+        """Manufactured connote check -- dodgy barcode, connote > 15 chars.
+        """
+        msg = 'Connote length > 15 chars scenario check should return False'
+        barcode = '000931423570069'
+        connote = '3142357006912345'
+        received = self._loader.match_connote(connote, barcode)
+        self.assertTrue(received, msg)
+
+    def test_get_connote_job_id(self):
+        """Get connote-based job id.
+        """
+        older_ts = datetime.datetime.now() - datetime.timedelta(seconds=999)
+        kwargs = {'address_1': '31 Bridge st,',
+                  'address_2': 'Lane Cove,',
+                  'agent_id': 'N031',
+                  'bu_id': 1,
+                  'card_ref_nbr': '4156536111',
+                  'job_ts': '%s' % older_ts, 
+                  'status': 1,
+                  'suburb': 'Australia Other'}
+        sql = self._loader.db.job.insert_sql(kwargs)
+        job_id_old = self._loader.db.insert(sql)
+
+        kwargs = {'address_1': '31 Bridge st,',
+                  'address_2': 'Lane Cove,',
+                  'agent_id': 'N031',
+                  'bu_id': 1,
+                  'card_ref_nbr': '4156536111',
+                  'job_ts': self._job_ts,
+                  'status': 1,
+                  'suburb': 'Australia Other'}
+        sql = self._loader.db.job.insert_sql(kwargs)
+        job_id = self._loader.db.insert(sql)
+
+        kwargs = {'address_1': '32 Banana st,',
+                  'address_2': 'Banana Cove,',
+                  'agent_id': 'N031',
+                  'bu_id': 1,
+                  'card_ref_nbr': '4156536112',
+                  'job_ts': self._job_ts,
+                  'status': 1,
+                  'suburb': 'Australia Other'}
+        sql = self._loader.db.job.insert_sql(kwargs)
+        dodgy_job_id = self._loader.db.insert(sql)
+
+        # "job_items" table.
+        jobitems = [{'connote_nbr': '218501217863',
+                     'job_id': job_id,
+                     'pickup_ts': self._job_ts,
+                     'pod_name': 'pod_name 218501217863'},
+                    {'connote_nbr': '218501217863',
+                     'job_id': job_id_old,
+                     'pickup_ts': self._job_ts,
+                     'pod_name': 'pod_name 218501217863'},
+                    {'connote_nbr': '111111111111',
+                     'job_id': dodgy_job_id,
+                     'pickup_ts': self._job_ts,
+                     'pod_name': 'pod_name 111111111111'}]
+        for jobitem in jobitems:
+            sql = self._loader.db.jobitem.insert_sql(jobitem)
+            self._loader.db(sql=sql)
+
+        received = self._loader.get_connote_job_id(connote='218501217863')
+        msg = 'Connote based job id query results not as expected'
+        self.assertEqual(received, job_id, msg)
 
         # Restore DB state.
         self._loader.db.connection.rollback()

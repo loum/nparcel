@@ -71,3 +71,21 @@ WHERE id = %d
 """ % (time, business_unit)
 
         return sql
+
+    def connote_sql(self, connote):
+        """SQL wrapper to extract records where job_item.connote_nbr
+        is equal to *connote*.
+
+        **Args:**
+            connote: Connote value relating to the job_item.connote_nbr
+            value.
+
+        **Returns:**
+            the SQL string
+
+        """
+        sql = """SELECT id
+FROM %s
+WHERE connote_nbr = '%s'""" % (self._name, connote)
+
+        return sql

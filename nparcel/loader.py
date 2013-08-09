@@ -8,8 +8,8 @@ from nparcel.utils.log import log
 
 FIELDS = {'Conn Note': {'offset': 0,
                         'length': 20},
-          'Identifier': {'offset': 21,
-                         'length': 20},
+          'Identifier': {'offset': 22,
+                         'length': 19},
           'Consumer Name': {'offset': 41,
                             'length': 30},
           'Consumer Address 1': {'offset': 81,
@@ -136,18 +136,17 @@ class Loader(object):
 
         **Args:**
             raw_record: raw record directly from a T1250 file.
+
         """
         status = True
 
-        connote = raw_record[0:20].rstrip()
-
         # Parse the raw record and set the job timestamp.
+        connote = raw_record[0:18].rstrip()
         log.info('Conn Note: "%s" start parse ...' % connote)
         fields = self.parser.parse_line(raw_record)
         fields['job_ts'] = time
 
         barcode = fields.get('Bar code')
-        agent_id = fields.get('Agent Id')
 
         try:
             log.info('Barcode "%s" start mapping ...' % barcode)
@@ -160,17 +159,26 @@ class Loader(object):
             log.error(msg)
             self.set_alert(msg)
 
+        # Check for a manufactured barcode (based on connote).
         if status:
-            barcodes = self.barcode_exists(barcode=barcode)
-            agent_id_row_id = job_data.get('agent_id')
+            job_id = None
 
-            if barcodes:
-                job_id_to_update = barcodes[0]
-                log.info('Updating Nparcel barcode "%s" agent ID "%s"' % (
-                         (barcode, agent_id)))
-                self.db.update(job_id_to_update,
-                               agent_id_row_id,
-                               job_item_data)
+            if self.match_connote(connote, barcode):
+                # Manufactured barcode.
+                job_id = self.get_connote_job_id(connote=connote)
+            else:
+                # Expicit barcode.
+                barcodes = self.barcode_exists(barcode=barcode)
+                if barcodes:
+                    job_id = barcodes[0]
+
+            # OK, update or create ...
+            if job_id is not None:
+                agent_id = fields.get('Agent Id')
+                log.info('Updating Nparcel barcode "%s" agent ID "%s"' %
+                         (barcode, agent_id))
+                agent_id_row_id = job_data.get('agent_id')
+                self.db.update(job_id, agent_id_row_id, job_item_data)
             else:
                 log.info('Creating Nparcel barcode "%s"' % barcode)
                 self.db.create(job_data, job_item_data)
@@ -276,7 +284,7 @@ class Loader(object):
         bu_id = None
 
         log.debug('Translating "%s" to BU ...' % value)
-        m = re.search(' YMLML11(TOL.).*', value)
+        m = re.search('YMLML11(TOL.).*', value)
         bu_id = BU_MAP.get(m.group(1))
 
         if bu_id is None:
@@ -332,3 +340,68 @@ class Loader(object):
             log.info('Rolling back transaction state to the DB ...')
             self.db.rollback()
             log.info('Rollback OK')
+
+    def match_connote(self, connote, barcode):
+        """Pre-check to see if barcode value is based on connote.
+
+        This special coniditon occurs when operators cannot record parcel
+        against a missing barcode.  Instead, a barcode value is manufactured
+        from the existing connote.  Due to system limitations, the
+        manufactured connote is truncated in the system.  This loss of
+        precision introduces the chance of false-positives during the
+        barcode comparison phase.
+
+        **Args:**
+            connote: connote value parsed directly from the T1250 file
+
+            barcode: barcode value parsed directly from the T1250 file
+
+        **Returns:**
+            boolean True if barcode is manufactured against connote
+
+            boolean False otherwise
+
+        """
+        status = False
+
+        if len(connote) > 15:
+            log.debug('Connote "%s" length is greater than 15' % connote)
+            tmp_connote = connote[:11]
+            tmp_barcode = '0009' + tmp_connote
+            log.debug('Manufactured barcode to check: "%s"' % tmp_barcode)
+            if barcode == tmp_barcode:
+                log.info('Ambiguous connote/barcode "%s/%s"' %
+                         (connote, barcode))
+                status = True
+
+        return status
+
+    def get_connote_job_id(self, connote):
+        """Checks the "job" table for related "job_item" records with
+        *connote*.  If more than one job exists, will sort against the
+        job_ts against the most recent record.
+
+        **Args:**
+            connote: connote value parsed directly from the T1250 file
+
+        **Returns:**
+            integer value relating to the job.id if match is found.
+
+            ``None`` otherwise.
+
+        """
+        log.info('Check for job records with connote "%s"' % connote)
+        job_id = None
+
+        sql = self.db.job.connote_based_job_sql(connote=connote)
+        self.db(sql)
+        received = []
+        for row in self.db.rows():
+            received.append(row[0])
+
+        if received:
+            # Results are sorted by job_ts so grab the first index.
+            job_id = received[0]
+            log.info('Connote check -- job record id %d found' % job_id)
+
+        return job_id

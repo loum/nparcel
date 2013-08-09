@@ -11,7 +11,7 @@ class TestJob(unittest2.TestCase):
         cls._job = nparcel.Job()
         cls._db = nparcel.DbSession()
         cls._db.connect()
-        cls._job_ts = datetime.datetime.now().isoformat()
+        cls._job_ts = datetime.datetime.now().isoformat(' ')[:-3]
 
     def test_check_barcode(self):
         """Bar code check.
@@ -32,6 +32,9 @@ VALUES ("%s", "%s")""" % (bc, self._job_ts)
         msg = 'Barcode value not returned from "job" table'
         self.assertListEqual(received, expected, msg)
 
+        # Cleanup.
+        self._db.connection.rollback()
+
     def test_job_table_insert_with_valid_nparcel_data(self):
         """Insert valid Nparcel data.
         """
@@ -44,6 +47,71 @@ VALUES ("%s", "%s")""" % (bc, self._job_ts)
                   'status': 1,
                   'suburb': 'Australia Other'}
         self._db(self._job.insert_sql(kwargs))
+
+        # Cleanup.
+        self._db.connection.rollback()
+
+    def test_connote_based_job_sql(self):
+        """Verify the connote_based_job_sql string.
+        """
+        kwargs = {'address_1': '31 Bridge st,',
+                  'address_2': 'Lane Cove,',
+                  'agent_id': 'N031',
+                  'bu_id': 1,
+                  'card_ref_nbr': '4156536111',
+                  'job_ts': '%s' %
+                  (datetime.datetime.now() - datetime.timedelta(seconds=99)),
+                  'status': 1,
+                  'suburb': 'Australia Other'}
+        job_id_old = self._db.insert(self._job.insert_sql(kwargs))
+
+        kwargs = {'address_1': '31 Bridge st,',
+                  'address_2': 'Lane Cove,',
+                  'agent_id': 'N031',
+                  'bu_id': 1,
+                  'card_ref_nbr': '4156536111',
+                  'job_ts': self._job_ts,
+                  'status': 1,
+                  'suburb': 'Australia Other'}
+        job_id = self._db.insert(self._job.insert_sql(kwargs))
+
+        kwargs = {'address_1': '32 Banana st,',
+                  'address_2': 'Banana Cove,',
+                  'agent_id': 'N031',
+                  'bu_id': 1,
+                  'card_ref_nbr': '4156536112',
+                  'job_ts': self._job_ts,
+                  'status': 1,
+                  'suburb': 'Australia Other'}
+        dodgy_job_id = self._db.insert(self._job.insert_sql(kwargs))
+
+        # "job_items" table.
+        jobitems = [{'connote_nbr': '218501217863',
+                     'job_id': job_id,
+                     'pickup_ts': self._job_ts,
+                     'pod_name': 'pod_name 218501217863'},
+                    {'connote_nbr': '218501217863',
+                     'job_id': job_id_old,
+                     'pickup_ts': self._job_ts,
+                     'pod_name': 'pod_name 218501217863'},
+                    {'connote_nbr': '111111111111',
+                     'job_id': dodgy_job_id,
+                     'pickup_ts': self._job_ts,
+                     'pod_name': 'pod_name 111111111111'}]
+        for jobitem in jobitems:
+            sql = self._db.jobitem.insert_sql(jobitem)
+            self._db(sql=sql)
+
+        sql = self._db.job.connote_based_job_sql(connote='218501217863')
+        self._db(sql)
+        received = []
+        for row in self._db.rows():
+            received.append(row[0])
+        msg = 'Connote based job id query results not as expected'
+        self.assertEqual(received[0], job_id, msg)
+
+        # Cleanup.
+        self._db.connection.rollback()
 
     @classmethod
     def tearDownClass(cls):
