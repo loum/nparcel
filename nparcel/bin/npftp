@@ -48,7 +48,7 @@ def main():
     script_name = inspect.getfile(inspect.currentframe())
     scrip_name = os.path.basename(script_name)
     print('Starting %s ...' % script_name)
-    ftp.process()
+    ftp.process(dry=options.dry)
     print('Completed %s' % script_name)
 
 if __name__ == '__main__':

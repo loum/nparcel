@@ -158,8 +158,13 @@ class Ftp(ftplib.FTP):
             log.critical('Connection failed: %s' % err)
             sys.exit(1)
 
-        log.info('Login as "%s"' % user)
-        self.login(user=user, passwd=password)
+        try:
+            log.info('Login as "%s"' % user)
+            self.login(user=user, passwd=password)
+        except ftplib.error_perm, err:
+            log.critical('Login failed: %s' % err)
+            sys.exit(1)
+
         if target is not None:
             log.info('Setting CWD on server to "%s"' % target)
             self.cwd(target)
@@ -168,11 +173,15 @@ class Ftp(ftplib.FTP):
             if os.path.exists(file):
                 filename = os.path.basename(file)
                 f = open(file, 'rb')
-                log.info('Transferring "%s" ...' % file)
+                log.info('Transferring "%s" to "%s" ...' % (file, filename))
                 if not dry:
                     self.storbinary('STOR %s' % filename, f)
                 log.info('Transfer "%s" OK' % file)
                 f.close()
+
+                log.info('Removing "%s"' % file)
+                if not dry:
+                    os.remove(file)
 
         log.info('Closing FTP session to "%s"' % host)
         self.quit()
