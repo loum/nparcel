@@ -54,7 +54,10 @@ def main():
     log.info('Processing dry run %s' % dry)
 
     # OK, start processing.
-    np = nparcel.LoaderDaemon(pidfile='/var/tmp/nparceld.pid',
+    pidfile = os.path.join(os.path.expanduser('~'),
+                           '.nparceld',
+                           'nploaderd.pid')
+    np = nparcel.LoaderDaemon(pidfile=pidfile,
                               file=file,
                               dry=dry,
                               config=options.config)

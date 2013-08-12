@@ -6,9 +6,9 @@ import os
 import nparcel
 
 # Current busness_unit map:
-BU = {'Priority': 1,
-      'Fast': 2,
-      'Ipec': 3}
+BU = {'priority': 1,
+      'fast': 2,
+      'ipec': 3}
 
 
 class TestExporter(unittest2.TestCase):
@@ -19,15 +19,15 @@ class TestExporter(unittest2.TestCase):
 
         now = datetime.datetime.now()
         # "job" table
-        jobs = [{'card_ref_nbr': 'Priority ref',
+        jobs = [{'card_ref_nbr': 'priority ref',
                  'job_ts': '%s' % now,
-                 'bu_id': BU['Priority']},
-                {'card_ref_nbr': 'Fast ref',
+                 'bu_id': BU['priority']},
+                {'card_ref_nbr': 'fast ref',
                  'job_ts': '%s' % now,
-                 'bu_id': BU['Fast']},
-                {'card_ref_nbr': 'Ipec ref',
+                 'bu_id': BU['fast']},
+                {'card_ref_nbr': 'ipec ref',
                  'job_ts': '%s' % now,
-                 'bu_id': BU['Ipec']}]
+                 'bu_id': BU['ipec']}]
         sql = cls._e.db.job.insert_sql(jobs[0])
         priority_job_id = cls._e.db.insert(sql=sql)
         sql = cls._e.db.job.insert_sql(jobs[1])
@@ -85,26 +85,23 @@ class TestExporter(unittest2.TestCase):
         self.assertIsInstance(self._e, nparcel.Exporter, msg)
 
     def test_collected_sql_bu_priority(self):
-        """Query table for collected items -- BU: Priority.
+        """Query table for collected items -- BU: priority.
         """
         msg = 'Priorty collection check should return results.'
-        sql = self._e.db.jobitem.collected_sql(business_unit=BU['Priority'])
+        sql = self._e.db.jobitem.collected_sql(business_unit=BU['priority'])
         self._e.db(sql)
 
         received = []
         expected = '218501217863'
         for row in self._e.db.rows():
             received.append(row)
-
-        # We should have at least one seeded result so we shouldn't
-        # receive an empty list.
         self.assertEqual(received[0][0], expected, msg)
 
     def test_collected_sql_bu_fast(self):
-        """Query table for collected items -- BU: Fast.
+        """Query table for collected items -- BU: fast.
         """
         msg = 'Default collection check should return results.'
-        sql = self._e.db.jobitem.collected_sql(business_unit=BU['Fast'])
+        sql = self._e.db.jobitem.collected_sql(business_unit=BU['fast'])
         self._e.db(sql)
 
         received = []
@@ -115,22 +112,6 @@ class TestExporter(unittest2.TestCase):
         # We should have at least one seeded result so we shouldn't
         # receive an empty list.
         self.assertEqual(received[0][0], expected, msg)
-
-    def test_cached_items_if_file_not_provided(self):
-        """Check cached items if a cache file is not provided.
-        """
-        msg = "Collected items with no cache should not be None"
-        self._e.get_collected_items(business_unit_id=1)
-        self.assertIsNotNone(self._e._collected_items, msg)
-
-    def test_report(self):
-        """Verify reporter output.
-        """
-        # Regenerate the collected items list.
-        del self._e._collected_items[:]
-        self._e.get_collected_items(business_unit_id=1)
-        self._e.report(business_unit='priority', dry=True)
-
 
     def test_cleansed_valid_date_sqlite(self):
         """Cleanse valid data -- sqlite data.
@@ -176,36 +157,11 @@ class TestExporter(unittest2.TestCase):
         os.remove(outfile)
         os.rmdir(staging)
 
-    def test_output_file_write(self):
-        """Output file write.
-        """
-        staging = os.path.join(self._dir, 'staging')
-
-        self._e.set_staging_dir(staging)
-        self._e.get_collected_items(business_unit_id=1)
-        file_name = self._e.report(business_unit='priority')
-
-        # Restore and cleanup.
-        self._e.reset()
-        os.remove(file_name.replace('.txt.tmp', '.txt'))
-        os.rmdir(os.path.join(staging, 'priority', 'out'))
-        os.rmdir(os.path.join(staging, 'priority'))
-        os.rmdir(staging)
-        self._e.set_staging_dir(None)
-
-    def test_staging_file_move_no_staging_directory(self):
-        """Move signature file -- no staging directory.
-        """
-        bogus_sig_id = 99999999
-        msg = 'Signature file move to missing directory should fail'
-        self.assertFalse(self._e.move_signature_file(id=bogus_sig_id), msg)
-
     def test_staging_file_move(self):
         """Move signature file.
         """
         # Define the staging directory.
         self._e.set_signature_dir(self._dir)
-        self._e.set_staging_dir(self._staging_dir)
 
         # Create a dummy signature file.
         sig_file = os.path.join(self._dir, '1.ps')
@@ -213,7 +169,9 @@ class TestExporter(unittest2.TestCase):
         fh.close()
 
         msg = 'Signature file move should return True'
-        self.assertTrue(self._e.move_signature_file(id=1), msg)
+        received = self._e.move_signature_file(id=1,
+                                               out_dir=self._staging_dir)
+        self.assertTrue(received, msg)
 
         # Check that the file now exists in staging.
         msg = 'Signature file move to directory should succeed'
@@ -223,32 +181,7 @@ class TestExporter(unittest2.TestCase):
         # Cleanup
         self._e.reset()
         self._e.set_signature_dir(value=None)
-        self._e.set_staging_dir(value=None)
         os.remove(staging_sig_file)
-
-    def test_staging_file_move_no_signature_directory(self):
-        """Move signature file -- no signature directory.
-        """
-        # Define the staging directory.
-        self._e.set_staging_dir(self._staging_dir)
-
-        # Create a dummy signature file.
-        sig_file = os.path.join(self._dir, '1.ps')
-        fh = open(sig_file, 'w')
-        fh.close()
-
-        msg = 'Signature file move should return False'
-        self.assertFalse(self._e.move_signature_file(id=1), msg)
-
-        # Check that the file does not exist in staging.
-        msg = 'Signature file move to directory should fail'
-        staging_sig_file = os.path.join(self._staging_dir, '1.ps')
-        self.assertFalse(os.path.exists(staging_sig_file), msg)
-
-        # Cleanup
-        self._e.reset()
-        self._e.set_staging_dir(value=None)
-        os.remove(sig_file)
 
     def test_update_status(self):
         """Update the collected item extract_ts.
@@ -262,36 +195,58 @@ SET extract_ts = ''
 WHERE id = 1"""
         self._e.db(sql)
 
-    def test_get_collected_items(self):
+    def test_get_out_directory(self):
+        """Create buinsess unit output directory.
+        """
+        # Set the staging directory.
+        self._e.set_staging_dir(value=self._dir)
+
+        bu = 'priority'
+        received = self._e.get_out_directory(bu)
+        expected = os.path.join(self._e.staging_dir, 'priority', 'out')
+        msg = 'Business unit output directory incorrect'
+        self.assertEqual(received, expected, msg)
+
+        # Cleanup.
+        os.rmdir(os.path.join(self._e.staging_dir, 'priority', 'out'))
+        os.rmdir(os.path.join(self._e.staging_dir, 'priority'))
+        self._e.set_staging_dir(value=None)
+
+    def test_process(self):
         """End to end collected items.
         """
-        # Up from query to model expected behaviour.
-        sql = self._e.db.jobitem.collected_sql(business_unit=BU['Priority'])
-        self._e.db(sql)
-
-        items = []
-        for row in self._e.db.rows():
-            items.append(row)
-
-        # Prepare our signature files.
-        for item in items:
-            sig_file = os.path.join(self._dir, '%d.ps' % item[1])
-            fh = open(sig_file, 'w')
-            fh.close()
+        bu = 'priority'
 
         # Define the staging/signature directory.
         self._e.set_signature_dir(self._dir)
         self._e.set_staging_dir(self._staging_dir)
 
-        # Process.
-        self._e.get_collected_items(business_unit_id=BU['Priority'])
+        # Prepare the signature files.
+        sql = self._e.db.jobitem.collected_sql(business_unit=BU.get(bu))
+        self._e.db(sql)
+        items = []
+        for row in self._e.db.rows():
+            items.append(row)
+            fh = open(os.path.join(self._e.signature_dir,
+                                   '%s.ps' % str(row[1])), 'w')
+            fh.close()
+
+        # Check if we can source a staging directory.
+        out_dir = self._e.get_out_directory(business_unit=bu)
+        valid_items = self._e.process(business_unit_id=BU.get('priority'),
+                                      out_dir=out_dir)
+        report_file = self._e.report(valid_items, out_dir=out_dir)
 
         # Clean.
         self._e.reset()
-        self._e.set_signature_dir(value=None)
-        self._e.set_staging_dir(value=None)
+        os.remove(report_file)
+
         for item in items:
-            sig_file = os.path.join(self._staging_dir, '%d.ps' % item[1])
+            # Remove the signature files.
+            sig_file = os.path.join(self._e._staging_dir,
+                                    'priority',
+                                    'out',
+                                    '%s.ps' % str(item[1]))
             os.remove(sig_file)
 
             # Clear the extract_id timestamp.
@@ -299,6 +254,28 @@ WHERE id = 1"""
 SET extract_ts = ''
 WHERE id = %d""" % item[1]
             self._e.db(sql)
+
+        os.rmdir(os.path.join(self._e.staging_dir, 'priority', 'out'))
+        os.rmdir(os.path.join(self._e.staging_dir, 'priority'))
+        self._e.set_staging_dir(value=None)
+        self._e.set_signature_dir(value=None)
+
+    def test_process_no_items(self):
+        """No report file created if no collected items.
+        """
+        bu = 'priority'
+
+        self._e.set_staging_dir(value=self._dir)
+
+        out_dir = self._e.get_out_directory(business_unit=bu)
+        valid_items = []
+        msg = 'No items should not create a report file'
+        self.assertIsNone(self._e.report(valid_items, out_dir=out_dir), msg)
+
+        # Cleanup.
+        os.rmdir(os.path.join(self._e.staging_dir, 'priority', 'out'))
+        os.rmdir(os.path.join(self._e.staging_dir, 'priority'))
+        self._e.set_staging_dir(value=None)
 
     @classmethod
     def tearDownClass(cls):

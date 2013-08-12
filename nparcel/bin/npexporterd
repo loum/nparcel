@@ -46,7 +46,10 @@ def main():
     log.info('Processing dry run %s' % dry)
 
     # OK, start processing.
-    np = nparcel.ExporterDaemon(pidfile='/var/tmp/nparceld.pid',
+    pidfile = os.path.join(os.path.expanduser('~'),
+                           '.nparceld',
+                           'npexporterd.pid')
+    np = nparcel.ExporterDaemon(pidfile=pidfile,
                                 dry=dry,
                                 config=options.config)
 

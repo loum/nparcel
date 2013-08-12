@@ -68,7 +68,7 @@ class DbSession(object):
         suitable for the database.
 
         """
-        time = datetime.datetime.now().isoformat()
+        time = datetime.datetime.now().isoformat(' ')
 
         # Strip of last 3 digits of precision for MSSQL.
         return time[:-3]

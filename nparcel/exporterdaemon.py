@@ -24,23 +24,23 @@ class ExporterDaemon(nparcel.utils.Daemon):
         signal.signal(signal.SIGTERM, self._exit_handler)
 
         sig_dir = self.config('signature_dir')
-        staging_dir = self.config('staging_dir')
+        staging_dir = self.config('staging_base')
         exporter = nparcel.Exporter(db=self.config.db_kwargs(),
                                     signature_dir=sig_dir,
                                     staging_dir=staging_dir)
-
-        commit = True
-        if self.dry:
-            commit = False
 
         while not event.isSet():
             if exporter.db():
                 for bu, id in self.config('business_units').iteritems():
                     log.info('Starting collection report for BU "%s" ...' %
                              bu)
-                    exporter.get_collected_items(business_unit_id=int(id),
-                                                 dry=self.dry)
-                    exporter.report(business_unit=bu, dry=self.dry)
+                    out_dir = exporter.get_out_directory(business_unit=bu)
+                    items = exporter.process(business_unit_id=int(id),
+                                             out_dir=out_dir,
+                                             dry=self.dry)
+                    if self.dry:
+                        out_dir = None
+                    exporter.report(items, out_dir=out_dir)
                     exporter.reset()
 
                 # Only makes sense to do one iteration of a dry run.

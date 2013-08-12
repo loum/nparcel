@@ -53,37 +53,76 @@ class Exporter(object):
 
         self._create_dir(dir=self._staging_dir)
 
-    def get_collected_items(self, business_unit_id, dry=False):
+    def get_out_directory(self, business_unit):
+        """Uses the *business_unit* name to construct the output directory
+        to which the report and signature files will be placed for further
+        processing.
+
+        Staging directories are based on the Business Unit.  For example,
+        the Business Unit "Priority" will create the directory
+        ``priority/out`` off the base staging directory.
+
+        Will check if the output directory structure exists before
+        attempting to create it.
+
+        **Args:**
+            business_unit: name of the Business Unit that is associated
+            with the collected items output files.
+
+        **Returns:**
+            fully qualified name of the output directory if it exists and
+            is accessible.  ``None`` otherwise.
+
+        """
+        log.info('Checking output directory for "%s" ...' % business_unit)
+        try:
+            out_dir = os.path.join(self.staging_dir,
+                                   business_unit.lower(),
+                                   'out')
+            self._create_dir(out_dir)
+        except AttributeError, err:
+            log.error('Output directory error: "%s"' % err)
+            out_dir = None
+
+        return out_dir
+
+    def get_collected_items(self, business_unit_id):
         """Query DB for recently collected items.
 
         **Args:**
             business_unit_id: business_unit.id
 
-        **Kwargs:**
-            dry: only report what would happen (do not move file)
-
         """
+        log.info('Searching for collected items ...')
         sql = self.db.jobitem.collected_sql(business_unit=business_unit_id)
         self.db(sql)
 
-        items = []
         for row in self.db.rows():
-            job_item_id = row[1]
-            log.info('job_item.id: %d start processing ...' % job_item_id)
             cleansed_row = self._cleanse(row)
-
-            item_id = cleansed_row[1]
-
             self._collected_items.append(cleansed_row)
 
-            if self.move_signature_file(job_item_id, dry=dry):
-                if not dry:
-                    self._update_status(job_item_id)
-                    log.info('job_item.id: %d OK' % job_item_id)
+        log.info('Collected items: %d' % len(self._collected_items))
+
+    def process(self, business_unit_id, out_dir, dry=False):
+        """
+        """
+        valid_items = []
+
+        self.get_collected_items(business_unit_id)
+
+        for row in self._collected_items:
+            job_item_id = row[1]
+
+            # Attempt to move the signature file.
+            if self.move_signature_file(job_item_id, out_dir, dry=dry):
+                log.info('job_item.id: %d OK' % job_item_id)
+                valid_items.append(row)
             else:
                 log.error('job_item.id: %d failed' % job_item_id)
 
-    def move_signature_file(self, id, dry=False):
+        return valid_items
+
+    def move_signature_file(self, id, out_dir, dry=False):
         """Move the Nparcel signature file to the staging directory for
         further processing.
 
@@ -106,8 +145,7 @@ class Exporter(object):
         if self.signature_dir is not None:
             sig_file = os.path.join(self.signature_dir, "%d.ps" % id)
             if not os.path.exists(sig_file):
-                log.error('Cannot locate signature file: "%s"' %
-                            sig_file)
+                log.error('Cannot locate signature file: "%s"' % sig_file)
                 status = False
         else:
             log.error('Signature directory is not defined')
@@ -115,17 +153,16 @@ class Exporter(object):
 
         if status:
             if os.path.exists(sig_file):
-                target = os.path.join(self.staging_dir, "%d.ps" % id)
+                target = os.path.join(out_dir, "%d.ps" % id)
                 log.info('Moving signature file "%s" to "%s"' %
-                            (sig_file, target))
+                         (sig_file, target))
                 try:
                     if not dry:
                         os.rename(sig_file, target)
                 except OSError, e:
                     log.error('Signature file move failed: "%s"' % e)
             else:
-                log.error('Signature file "%s" does not exist' %
-                            sig_file)
+                log.error('Signature file "%s" does not exist' % sig_file)
                 status = False
 
         return status
@@ -165,35 +202,45 @@ class Exporter(object):
 
         return tuple(row_list)
 
-    def report(self, business_unit, dry=False):
+    def report(self, items, out_dir=None):
         """Cycle through the newly identified collected items and produce
         a report.
 
+        Once an entry is made in the report, also update the database
+        so that it does not appear in future runs.
+
+        **Returns:**
+            name of the report file
+
         """
         file_name = None
+        target_file = None
 
-        header = '|'.join(FIELDS)
+        if items:
+            header = '|'.join(FIELDS)
+            if out_dir is None:
+                print(header)
+                for item in items:
+                    print('%s' % '|'.join(map(str, item)))
+            else:
+                fh = self.outfile(out_dir)
+                file_name = fh.name
+                fh.write('%s\n' % header)
+                for item in items:
+                    fh.write('%s\n' % '|'.join(map(str, item)))
+                    job_item_id = item[1]
+                    self._update_status(job_item_id)
+                fh.close()
 
-        if dry:
-            print(header)
-            for item in self._collected_items:
-                print('%s' % '|'.join(map(str, item)))
+                # Rename the output file so that it's ready for delivery.
+                target_file = file_name.replace('.txt.tmp', '.txt')
+                log.info('Renaming out file to "%s"' % target_file)
+                os.rename(file_name, target_file)
+
         else:
-            out_dir = os.path.join(self._staging_dir, business_unit, 'out')
-            fh = self.outfile(out_dir)
-            file_name = fh.name
-            fh.write('%s\n' % header)
-            for item in self._collected_items:
-                fh.write('%s\n' % '|'.join(map(str, item)))
-            fh.close()
+            log.info('No collected items to report')
 
-            # Finally, rename the output file so that it's ready for
-            # delivery.
-            target_file = file_name.replace('.txt.tmp', '.txt')
-            log.info('Renaming out file to "%s"' % target_file)
-            os.rename(file_name, target_file)
-
-        return file_name
+        return target_file
 
     def outfile(self, dir):
         """Creates the Exporter output file based on current timestamp
@@ -232,23 +279,29 @@ class Exporter(object):
         """Helper method to manage the creation of the Exporter
         out directory.
 
-        Staging directories are based on the Business Unit.  For example,
-        the Business Unit "Priority" will create the directory
-        ``priority/out`` off the *dir* base.
-
         **Args:**
             dir: the name of the directory structure to create.
 
+        **Returns:**
+            boolean ``True`` if directory exists.
+
+            boolean ``False`` if the directory does not exist and the
+            attempt to create it fails.
+
         """
+        status = True
+
         # Attempt to create the staging directory if it does not exist.
         if dir is not None and not os.path.exists(dir):
             try:
-                log.info('Creating staging directory "%s"' % dir)
+                log.info('Creating directory "%s"' % dir)
                 os.makedirs(dir)
             except OSError, err:
                 status = False
-                log.error('Unable to create staging directory "%s": %s"' %
-                            (dir, err))
+                log.error('Unable to create directory "%s": %s"' %
+                          (dir, err))
+
+        return status
 
     def _update_status(self, id):
         """Set the job_item.extract_ts column of record *id* to the
@@ -263,6 +316,7 @@ class Exporter(object):
         log.info('Updating extracted timestamp for job_item.id')
         sql = self.db.jobitem.upd_collected_sql(id, time)
         self.db(sql)
+        self.db.commit()
 
     def reset(self):
         """Initialise object state in readiness for another iteration.
