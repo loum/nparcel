@@ -5,6 +5,7 @@ import os
 import sys
 import ftplib
 import fnmatch
+import socket
 import ConfigParser
 
 from nparcel.utils.log import log
@@ -73,15 +74,19 @@ class Ftp(ftplib.FTP):
 
         **Returns:**
             list of report files
+
         """
-        log.info('Looking for report files in directory: "%s"' % dir)
-        for file in os.listdir(dir):
-            file = os.path.join(dir, file)
-            if os.path.isfile(file):
-                if fnmatch.fnmatch(os.path.basename(file),
-                                   'VIC_VANA_RE*.txt'):
-                    log.info('Found report file: "%s"' % file)
-                    yield file
+        if os.path.exists(dir):
+            log.info('Sourcing files from local directory: "%s"' % dir)
+            for file in os.listdir(dir):
+                file = os.path.join(dir, file)
+                if os.path.isfile(file):
+                    if fnmatch.fnmatch(os.path.basename(file),
+                                    'VIC_VANA_RE*.txt'):
+                        log.info('Found report file: "%s"' % file)
+                        yield file
+        else:
+            log.error('Source directory "%s" does not exist' % dir)
 
     def get_report_file_ids(self, file):
         """Parse report file and extract a list of JOB_KEY's
@@ -112,11 +117,10 @@ class Ftp(ftplib.FTP):
         """
         self._parse_config()
         for xfer in self.xfers:
-            files_to_xfer = []
+            xfer_set = []
 
             log.info('Processing transfers for "%s"' % xfer)
             source = self.config.get(xfer, 'source')
-            log.debug('Sourcing files from local directory: "%s"' % source)
 
             keys = []
             for report in self.get_report_file(source):
@@ -124,16 +128,22 @@ class Ftp(ftplib.FTP):
 
                 for key in keys:
                     sig_file = os.path.join(source, '%s.ps' % key)
-                    files_to_xfer.append(sig_file)
+                    xfer_set.append(sig_file)
 
                 # ... and append the report file.
-                files_to_xfer.append(report)
+                xfer_set.append(report)
 
-            if files_to_xfer:
-                self.xfer_files(xfer, files_to_xfer)
+            if xfer_set:
+                self.xfer_files(xfer, xfer_set, dry=dry)
 
-    def xfer_files(self, xfer, files):
-        """
+    def xfer_files(self, xfer, files, dry=False):
+        """Transfer files defined by *files* list.
+
+        **Args:**
+            xfer: the config section of the current FTP context.
+
+            files: list of files to transfer
+
         """
         host = self.config.get(xfer, 'host')
         port = self.config.get(xfer, 'port')
@@ -141,10 +151,28 @@ class Ftp(ftplib.FTP):
         password = self.config.get(xfer, 'password')
         target = self.config.get(xfer, 'target')
 
-        self.connect(host=host, port=port)
+        try:
+            log.info('Connecting to "%s:%s"' % (host, port))
+            self.connect(host=host, port=port)
+        except socket.error, err:
+            log.critical('Connection failed: %s' % err)
+            sys.exit(1)
+
+        log.info('Login as "%s"' % user)
         self.login(user=user, passwd=password)
+        if target is not None:
+            log.info('Setting CWD on server to "%s"' % target)
+            self.cwd(target)
 
         for file in files:
-            log.info('Transferring "%s"' % file)
+            if os.path.exists(file):
+                filename = os.path.basename(file)
+                f = open(file, 'rb')
+                log.info('Transferring "%s" ...' % file)
+                if not dry:
+                    self.storbinary('STOR %s' % filename, f)
+                log.info('Transfer "%s" OK' % file)
+                f.close()
 
+        log.info('Closing FTP session to "%s"' % host)
         self.quit()
