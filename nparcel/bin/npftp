@@ -5,7 +5,9 @@ import inspect
 from optparse import OptionParser
 
 import nparcel
-from nparcel.utils.log import log, set_log_level
+from nparcel.utils.log import (log,
+                               set_log_level,
+                               set_console)
 
 
 def main():
@@ -33,6 +35,9 @@ def main():
                       help='override default config "%s"' % config)
     (options, args) = parser.parse_args()
 
+    if options.dry is not None:
+        set_console()
+
     # Enable detailed logging if required.
     if options.verbose == 0:
         set_log_level('INFO')
@@ -47,9 +52,9 @@ def main():
 
     script_name = inspect.getfile(inspect.currentframe())
     scrip_name = os.path.basename(script_name)
-    print('Starting %s ...' % script_name)
+    log.info('Starting %s ...' % script_name)
     ftp.process(dry=options.dry)
-    print('Completed %s' % script_name)
+    log.info('Completed %s' % script_name)
 
 if __name__ == '__main__':
     main()

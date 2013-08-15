@@ -15,7 +15,6 @@ __all__ = [
 ]
 
 import sys
-import logging
 import os
 import resource
 import atexit
@@ -23,7 +22,7 @@ import signal
 import time
 import threading
 
-from nparcel.utils.log import log, autolog
+from nparcel.utils.log import log
 
 MAXFD = 1024
 
@@ -167,19 +166,19 @@ class Daemon(object):
 
         """
         if not os.path.isabs(self.pidfile):
-            autolog('PID file "%s" is relative -- make absolute' %
-                    self.pidfile)
+            log.debug('PID file "%s" is relative -- make absolute' %
+                      self.pidfile)
             self.pidfile = os.path.join(os.sep, self.pidfile)
-            autolog('PID file now "%s"' % self.pidfile)
+            log.debug('PID file now "%s"' % self.pidfile)
 
         # Check if the PID file exists.
         if os.path.exists(self.pidfile):
             # PID file exists, so the process may be active.
             # Set the current process PID.
-            autolog('PID file "%s" exists' % self.pidfile)
+            log.debug('PID file "%s" exists' % self.pidfile)
             try:
                 self.pid = int(file(self.pidfile, 'r').read().strip())
-                autolog('Stored PID is: %d' % self.pid)
+                log.debug('Stored PID is: %d' % self.pid)
             except ValueError, err:
                 raise DaemonError('Error reading PID file: %s' % err)
 
@@ -246,16 +245,16 @@ class Daemon(object):
         if self.pidfile is None:
             raise DaemonError('PID file has not been defined')
 
-        autolog('checking daemon status with PID: %s' % self.pid)
+        log.debug('checking daemon status with PID: %s' % self.pid)
         if self.pid is not None:
             msg = ('PID file "%s" exists.  Daemon may be running?\n' %
                    self.pidfile)
-            log.error(msg)
+            log.warn(msg)
         else:
             # Check if PID file is writable to save hassles later on.
-            autolog('No PID file -- creating handle')
+            log.debug('No PID file -- creating handle')
             try:
-                autolog('starting daemon')
+                log.debug('starting daemon')
                 self.daemonize()
                 self._start(self.exit_event)
                 start_status = True
@@ -280,7 +279,7 @@ class Daemon(object):
         associated PID file automatically.
 
         """
-        autolog('attempting first fork')
+        log.debug('attempting first fork')
         try:
             pid = os.fork()
 
@@ -322,7 +321,8 @@ class Daemon(object):
             maxfd = MAXFD
 
         filenos = []
-        for handler in logging.root.handlers:
+        #for handler in logging.root.handlers:
+        for handler in log.handlers:
             if (hasattr(handler, 'stream') and
                 hasattr(handler.stream, 'fileno') and
                 handler.stream.fileno() > 2):
@@ -341,7 +341,7 @@ class Daemon(object):
 
         # Write out to pidfile.
         child_pid = str(os.getpid())
-        autolog('PID of child process: %s' % child_pid)
+        log.debug('PID of child process: %s' % child_pid)
         file(self.pidfile, 'w+').write("%s\n" % child_pid)
 
         # Remove the PID file when the process terminates.
@@ -364,7 +364,7 @@ class Daemon(object):
 
         if self.pid:
             # OK to terminate.
-            autolog('stopping daemon process with PID: %s' % self.pid)
+            log.debug('stopping daemon process with PID: %s' % self.pid)
 
             try:
                 os.kill(int(self.pid), signal.SIGTERM)
@@ -415,7 +415,7 @@ class Daemon(object):
     def _delpid(self):
         """Simple wrapper method around file deletion.
         """
-        autolog('Removing PID file at "%s"' % self.pidfile)
+        log.debug('Removing PID file at "%s"' % self.pidfile)
         os.remove(self.pidfile)
 
     def status(self):

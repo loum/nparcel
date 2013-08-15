@@ -94,7 +94,7 @@ class Config(object):
         self._file = file
 
         if os.path.exists(self._file):
-            log.info('Parsing config file: "%s"' % file)
+            log.debug('Parsing config file: "%s"' % file)
             self._config.read(file)
         else:
             log.critical('Unable to locate config file: "%s"' % file)
@@ -110,30 +110,30 @@ class Config(object):
 
         try:
             self.dirs_to_check = self._config.get('dirs', 'in').split(',')
-            log.info('Loader directories to check %s' %
-                     str(self.dirs_to_check))
+            log.debug('Loader directories to check %s' %
+                      str(self.dirs_to_check))
 
             self.archive = self._config.get('dirs', 'archive')
-            log.info('Loader archive directory %s' % self.archive)
+            log.debug('Loader archive directory %s' % self.archive)
 
             self.staging_base = self._config.get('dirs', 'staging_base')
-            log.info('Exporter staging base %s' % self.staging_base)
+            log.debug('Exporter staging base %s' % self.staging_base)
 
             self.signature = self._config.get('dirs', 'signature')
-            log.info('Exporter signature directory %s' % self.signature)
+            log.debug('Exporter signature directory %s' % self.signature)
 
         except ConfigParser.NoOptionError, err:
             log.critical('Missing required config: %s' % err)
             sys.exit(1)
 
         self.business_units = dict(self._config.items('business_units'))
-        log.info('Exporter Business Units %s' % self.business_units.keys())
+        log.debug('Exporter Business Units %s' % self.business_units.keys())
         if self.business_units is None:
             log.critical('Missing Business Units in configuration')
             sys.exit(1)
 
         self.file_bu = dict(self._config.items('file_bu'))
-        log.info('Exporter File Business Units %s' % self.file_bu.keys())
+        log.debug('Exporter File Business Units %s' % self.file_bu.keys())
         if self.file_bu is None:
             log.critical('Missing Filename Business Units in configuration')
             sys.exit(1)
