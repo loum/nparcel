@@ -27,8 +27,8 @@ This arrangement is analogous to "rc" files.  for example, "bashrc",
 locations = [
     os.curdir,
     os.path.expanduser("~"),
-    "/etc/myproject",
     os.environ.get("LOG_CONF"),
+    os.path.join(os.path.expanduser("~"), '.nparceld'),
 ]
 
 for loc in locations:
@@ -44,6 +44,8 @@ for loc in locations:
 # resulting frame to get the name of the script.
 s = inspect.stack()
 logger_name = os.path.basename(s[-1][1])
+if logger_name == 'nosetests':
+    logger_name = None
 
 log = logging.getLogger(logger_name)
 if logger_name:

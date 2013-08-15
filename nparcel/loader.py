@@ -368,19 +368,22 @@ class Loader(object):
             boolean False otherwise
 
         """
-        status = False
+        match = False
 
         if len(connote) > 15:
             log.debug('Connote "%s" length is greater than 15' % connote)
-            tmp_connote = connote[:11]
-            tmp_barcode = '0009' + tmp_connote
-            log.debug('Manufactured barcode to check: "%s"' % tmp_barcode)
-            if barcode == tmp_barcode:
-                log.info('Ambiguous connote/barcode "%s/%s"' %
-                         (connote, barcode))
-                status = True
+            # Check barcode position 1 to 15.
+            for tmp_barcode in [barcode[:16], barcode[4:16]]:
+                log.debug('Manufactured barcode to check: "%s"' %
+                          tmp_barcode)
+                m = re.search(tmp_barcode, connote)
+                if m is not None:
+                    match = True
+                    log.info('Ambiguous connote/barcode "%s/%s"' %
+                            (connote, barcode))
+                    break
 
-        return status
+        return match
 
     def get_connote_job_id(self, connote):
         """Checks the "job" table for related "job_item" records with
@@ -421,13 +424,13 @@ class Loader(object):
 
         """
         job_id = self.db.insert(self.db.job.insert_sql(job_data))
-        log.debug('"job.id" %d created' % job_id)
+        log.info('"job.id" %d created' % job_id)
 
         # Set the "jobitem" table's foreign key.
         jobitem_data['job_id'] = job_id
         sql = self.db.jobitem.insert_sql(jobitem_data)
         jobitem_id = self.db.insert(sql)
-        log.debug('"jobitem.id" %d created' % jobitem_id)
+        log.info('"jobitem.id" %d created' % jobitem_id)
 
     def update(self, job_id, agent_id, jobitem_data):
         """Updates and existing barcode.

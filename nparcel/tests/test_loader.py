@@ -361,6 +361,15 @@ class TestLoader(unittest2.TestCase):
         received = self._loader.match_connote(connote, barcode)
         self.assertTrue(received, msg)
 
+    def test_match_connote_scenario_connote_gt_15_char_like_start(self):
+        """Manufactured connote check -- like start, connote > 15 chars.
+        """
+        msg = 'Connote length > 15 chars scenario check should return False'
+        barcode = '000931423750069'
+        connote = '00093142375006909983'
+        received = self._loader.match_connote(connote, barcode)
+        self.assertTrue(received, msg)
+
     def test_get_connote_job_id(self):
         """Get connote-based job id.
         """
