@@ -42,13 +42,6 @@ class ExporterDaemon(nparcel.utils.Daemon):
                         out_dir = None
                     exporter.report(items, out_dir=out_dir)
                     exporter.reset()
-
-                # Only makes sense to do one iteration of a dry run.
-                if self.dry:
-                    log.info('Dry run iteration complete -- aborting')
-                    event.set()
-                else:
-                    time.sleep(self.config('exporter_loop'))
             else:
                 log.error('ODBC connection failure -- aborting')
                 event.set()
