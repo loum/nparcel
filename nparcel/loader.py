@@ -317,18 +317,21 @@ class Loader(object):
     def translate_postcode(self, postcode):
         """Translate postcode information to state.
         """
-        log.debug('Translating postcode: "%s" ...' % str(postcode))
+        log.debug('Translating raw postcode value: "%s" ...' % postcode)
+
         state = ''
-
-        if postcode:
+        try:
             postcode = int(postcode)
+        except ValueError, e:
+            log.warn('Unable to convert "%s" to an integer' % postcode)
 
+        if isinstance(postcode, int):
             for postcode_state, postcode_ranges in POSTCODE_MAP.iteritems():
                 for range in postcode_ranges.get('ranges'):
                     if postcode >= range[0] and postcode <= range[1]:
                         state = postcode_state
                         break
-                for exception in  postcode_ranges.get('exceptions'):
+                for exception in postcode_ranges.get('exceptions'):
                     if postcode == exception:
                         state = postcode_state
                         break
@@ -336,8 +339,7 @@ class Loader(object):
                 if state:
                     break
 
-        log.debug('Postcode "%s" translation produced: "%s"' %
-                  (str(postcode), state))
+            log.debug('Postcode/state - %d/"%s"' % (postcode, state))
 
         return state
 

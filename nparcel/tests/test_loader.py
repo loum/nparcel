@@ -14,7 +14,7 @@ INVALID_POSTCODE_LINE = """218501217863          YMLML11TOLP130413  Diane Donoho
 MANUFACTURED_BC_LINE = """3142357006912345      YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other                                                                                                                                    Diane Donohoe                             Bally                         Hong Kong Other                                                               000931423570069N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
 MANUFACTURED_BC_UPD_LINE = """3142357006912345      YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other                                                                                                                                    Diane Donohoe                             Bally                         Hong Kong Other                                                               000931423570069N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N032                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
 SINGLE_QUOTE_LINE = """080102033141          YMLML11TOLP130815  MISS S D'ARCY                           13 FITZGERALD RD              ESSENDON                      MELBOURNE                     3040                                                                                                                 MISS S D'ARCY                             NEXT RETAIL LTD               LEICESTER                                                                     4159214753     V098                                                                                                                                   00001000001                                                                      Parcels Overnight                   DESFORD ROAD                  ENDERBY                                                                                                              FVAN000098                                                                                                 GB                            AUSTRALIA                                                                                                                                                                                                         VI                                               """
-
+DODGY_POSTCODE = """574000244915          YMLML11TOLP130715  AMAL DOUKARI                            41 BLAMEY ST 1501 KELVIN GROVEQUEEN SLAND 4059              ;                             ;                                                                                                                    AMAL DOUKARI                              GUANGZHOU YASHUNDA LTD                                      362000                                          4159054556     Q067                                                                                                                                   00001000001                                                                      Parcels Overnight                   NO.83 MEIGUI YUAN QU E 3 BAIYUGUANGZHOU GUANGDONG                                                                                                  Q067                                                                                                       CHINA                         AUSTRALIA                                                                                                                                                                                                      GU ;                                                """
 
 class TestLoader(unittest2.TestCase):
 
@@ -52,7 +52,7 @@ class TestLoader(unittest2.TestCase):
         agent_fields = {'code': 'N031'}
         self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
 
-        msg = 'Valid T1250 record should process successfully'
+        msg = 'Valid T1250 record should process OK'
         self.assertTrue(self._loader.process(self._job_ts, VALID_LINE), msg)
 
         # Restore DB state.
@@ -65,9 +65,23 @@ class TestLoader(unittest2.TestCase):
         agent_fields = {'code': 'V098'}
         self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
 
-        msg = 'Valid T1250 record should process successfully -- single quote'
+        msg = 'Valid T1250 record should process OK -- single quote'
         self.assertTrue(self._loader.process(self._job_ts,
                                              SINGLE_QUOTE_LINE), msg)
+
+        # Restore DB state.
+        self._loader.db.connection.rollback()
+
+    def test_processor_valid_record_dodgy_postcode(self):
+        """Process valid raw T1250 line -- dodgy postcode.
+        """
+        # Seed the Agent Id.
+        agent_fields = {'code': 'Q067'}
+        self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
+
+        msg = 'Valid T1250 record should process OK -- bad postcode'
+        self.assertTrue(self._loader.process(self._job_ts,
+                                             DODGY_POSTCODE), msg)
 
         # Restore DB state.
         self._loader.db.connection.rollback()
@@ -278,6 +292,15 @@ class TestLoader(unittest2.TestCase):
         received = self._loader.translate_bu_id(bu_id)
         expected = None
         msg = 'BU translation error -- invalid BU'
+        self.assertEqual(received, expected, msg)
+
+    def test_valid_translate_postcode_non_integer(self):
+        """Translate postcode to state -- valid, range-based.
+        """
+        postcode = 'xxx'
+        received = self._loader.translate_postcode(postcode)
+        expected = ''
+        msg = 'Non-integer postcode translation to state failed'
         self.assertEqual(received, expected, msg)
 
     def test_valid_translate_postcode_range_based(self):
