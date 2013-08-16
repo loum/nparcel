@@ -19,6 +19,7 @@ class JobItem(nparcel.Table):
         return ["id INTEGER PRIMARY KEY",
                 "job_id INTEGER",
                 "connote_nbr CHAR(30)",
+                "item_nbr CHAR(32)",
                 "consumer_name CHAR(30)",
                 "pieces INTEGER",
                 "status INTEGER",

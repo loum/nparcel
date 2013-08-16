@@ -27,7 +27,9 @@ FIELDS = {'Conn Note': {'offset': 0,
           'Agent Id': {'offset': 453,
                        'length': 4},
           'Pieces': {'offset': 588,
-                     'length': 5}}
+                     'length': 5},
+          'Item Number': {'offset': 887,
+                          'length': 32}}
 JOB_MAP = {'Agent Id': {
                'column': 'agent_id',
                'required': True,
@@ -59,6 +61,10 @@ JOB_MAP = {'Agent Id': {
                'required': True}}
 JOB_ITEM_MAP = {'Conn Note': {
                     'column': 'connote_nbr'},
+                'Item Number': {
+                    'column': 'item_nbr',
+                    'default_equal': 'Conn Note',
+                    'required': True},
                 'Consumer Name': {
                     'column': 'consumer_name'},
                 'Pieces': {
@@ -156,6 +162,7 @@ class Loader(object):
             log.info('Barcode "%s" start mapping ...' % barcode)
             job_data = self.table_column_map(fields, JOB_MAP)
             job_item_data = self.table_column_map(fields, JOB_ITEM_MAP)
+
             log.info('Barcode "%s" mapping OK' % barcode)
         except ValueError, e:
             status = False
@@ -237,8 +244,8 @@ class Loader(object):
         """Convert the parser fields to Nparcel table column names in
         preparation for table manipulation.
 
-        Runs a preliminary check to ensure that all items in *fields*
-        can be mapped.  Raises a ``ValueError`` if otherwise.
+        Runs a preliminary check to ensure that all requireditems in
+        *fields* can be mapped.  Raises a ``ValueError`` if otherwise.
 
         **Args:**
             fields: dictionary of :class:`nparcel.Parser` fields and
@@ -268,14 +275,23 @@ class Loader(object):
                 callback = getattr(self, v.get('callback'))
                 fields[field_name] = callback(fields.get(field_name))
 
-            if (v.get('required') and
-                not fields.get(field_name) and
-                not v.get('default')):
-                raise ValueError('Field "%s" is required' % field_name)
-
             if not fields.get(field_name):
                 if v.get('default') is not None:
                     fields[field_name] = v.get('default')
+
+        # Map to an existing field if we are currently empty.
+        for field_name, v in map.iteritems():
+            if not fields.get(field_name):
+                if v.get('default_equal') is not None:
+                    log.debug('"%s" set to "%s" value' %
+                              (field_name, v.get('default_equal')))
+                    copy_value = fields.get(v.get('default_equal'))
+                    fields[field_name] = copy_value
+
+            # By now, if we don't have data and we are "required" then
+            # raise an exception.
+            if v.get('required') and not fields.get(field_name):
+                raise ValueError('Field "%s" is required' % field_name)
 
         columns = dict((map.get(k).get('column'),
                         fields.get(k)) for (k, v) in map.iteritems())

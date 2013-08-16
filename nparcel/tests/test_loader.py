@@ -221,6 +221,23 @@ class TestLoader(unittest2.TestCase):
         msg = 'Table to column map with missing required field error'
         self.assertDictEqual(received, expected, msg)
 
+    def test_table_column_map_missing_required_field_with_default_eq(self):
+        """Table column map missing required field value with default_equal.
+        """
+        fields = {'Field 2': 'field 2 value'}
+        map = {'Field 1': {
+                   'column': 'field_1',
+                   'required': True,
+                   'default_equal': 'Field 2'},
+               'Field 2': {
+                   'column': 'field_2',
+                   'required': False}}
+        received = self._loader.table_column_map(fields, map)
+        expected = {'field_1': 'field 2 value',
+                    'field_2': 'field 2 value'}
+        msg = 'Table to column map with missing required field error'
+        self.assertDictEqual(received, expected, msg)
+
     def test_table_column_map_for_a_valid_raw_record(self):
         """Process valid raw T1250 line and map job table elements.
         """
@@ -299,6 +316,7 @@ class TestLoader(unittest2.TestCase):
         # Null out the time created.
         received['created_ts'] = None
         expected = {'connote_nbr': '218501217863',
+                    'item_nbr': '218501217863',
                     'consumer_name': 'Diane Donohoe',
                     'pieces': '00001',
                     'status': 1,
