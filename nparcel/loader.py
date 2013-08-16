@@ -19,9 +19,9 @@ FIELDS = {'Conn Note': {'offset': 0,
           'Suburb': {'offset': 141,
                      'length': 30},
           'Post code': {'offset': 171,
-                        'length': 4},
+                        'length': 6},
           'state': {'offset': 171,
-                    'length': 4},
+                    'length': 6},
           'Bar code': {'offset': 438,
                        'length': 15},
           'Agent Id': {'offset': 453,
@@ -145,7 +145,7 @@ class Loader(object):
         status = True
 
         # Parse the raw record and set the job timestamp.
-        connote = raw_record[0:18].rstrip()
+        connote = raw_record[0:20].rstrip()
         log.info('Conn Note: "%s" start parse ...' % connote)
         fields = self.parser.parse_line(raw_record)
         fields['job_ts'] = time
