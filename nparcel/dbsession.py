@@ -36,8 +36,6 @@ class DbSession(object):
             except pyodbc.ProgrammingError, e:
                 if self.connection is not None:
                     log.error('ODBC error: %s' % str(e))
-                    # Gracefully close the connection.
-                    self.close()
                 pass
         else:
             # This is a link check.
@@ -62,22 +60,6 @@ class DbSession(object):
     @property
     def port(self):
         return self._port
-
-    def date_now(self, *args):
-        """Helper method that returns the current time stamp in a format
-        suitable for the database.
-
-        """
-        time = datetime.datetime.now().isoformat(' ')
-
-        # Strip of last 3 digits of precision for MSSQL.
-        return time[:-3]
-
-    def rows(self):
-        """
-        """
-        for row in self.cursor.fetchall():
-            yield row
 
     @property
     def row(self):
@@ -109,6 +91,22 @@ class DbSession(object):
     @property
     def identity_type(self):
         return self._identity_type
+
+    def date_now(self, *args):
+        """Helper method that returns the current time stamp in a format
+        suitable for the database.
+
+        """
+        time = datetime.datetime.now().isoformat(' ')
+
+        # Strip of last 3 digits of precision for MSSQL.
+        return time[:-3]
+
+    def rows(self):
+        """
+        """
+        for row in self.cursor.fetchall():
+            yield row
 
     def set_connection(self, value):
         self._connection = value

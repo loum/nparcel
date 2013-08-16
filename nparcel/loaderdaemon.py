@@ -38,16 +38,16 @@ class LoaderDaemon(nparcel.utils.Daemon):
             commit = False
 
         while not event.isSet():
-            files = []
-            if self.file is not None:
-                files.append(self.file)
-            else:
-                files.extend(self.get_files())
+            if loader.db():
+                files = []
+                if self.file is not None:
+                    files.append(self.file)
+                else:
+                    files.extend(self.get_files())
 
-            for file in files:
-                log.info('Processing file: "%s" ...' % file)
+                for file in files:
+                    log.info('Processing file: "%s" ...' % file)
 
-                if loader.db():
                     status = False
 
                     try:
@@ -82,9 +82,9 @@ class LoaderDaemon(nparcel.utils.Daemon):
                         reporter.report()
                     else:
                         log.error('%s processing failed.' % file)
-                else:
-                    log.error('ODBC connection failure -- aborting')
-                    event.set()
+            else:
+                log.error('ODBC connection failure -- aborting')
+                event.set()
 
             if not event.isSet():
                 # Only makes sense to do one iteration of a dry run.

@@ -1,7 +1,7 @@
 __all__ = [
     "Table",
 ]
-from nparcel.utils.log import log
+import re
 
 
 class Table(object):
@@ -16,10 +16,19 @@ class Table(object):
         """
         columns = kwargs.keys()
         values = [kwargs.get(x) for x in columns]
+        escaped_values = []
         cleansed_values = []
 
-        # Enclose strings with quotes.
+        # Escape single quotes.
         for value in values:
+            new_value = value
+            if isinstance(value, str):
+                new_value = re.sub("'", "''", value)
+
+            escaped_values.append(new_value)
+
+        # Enclose strings with quotes.
+        for value in escaped_values:
             new_value = value
             if isinstance(value, str):
                 new_value = "'%s'" % value
