@@ -32,6 +32,7 @@ class LoaderDaemon(nparcel.utils.Daemon):
         loader = nparcel.Loader(file_bu=self.config('file_bu'),
                                 db=self.config.db_kwargs())
         reporter = nparcel.Reporter()
+        emailer = nparcel.Emailer()
 
         commit = True
         if self.dry:
@@ -42,6 +43,10 @@ class LoaderDaemon(nparcel.utils.Daemon):
                 files = []
                 if self.file is not None:
                     files.append(self.file)
+
+                    # Only makes sense to do one iteration if a single
+                    # file has been given on the command line.
+                    event.set()
                 else:
                     files.extend(self.get_files())
 
@@ -64,7 +69,6 @@ class LoaderDaemon(nparcel.utils.Daemon):
                                 reporter(loader.process(file_timestamp,
                                                         record))
                         f.close()
-
                     except IOError, e:
                         log.error('Error opening file "%s": %s' %
                                   (file, str(e)))
@@ -79,7 +83,15 @@ class LoaderDaemon(nparcel.utils.Daemon):
                         # Report.
                         reporter.end()
                         reporter.set_failed_log(loader.alerts)
-                        reporter.report()
+                        log.info(reporter.report())
+                        if reporter.bad_records > 0:
+                            subject = 'Nploaderd processing error'
+                            msg = ("%s\n%s" % (reporter.report(),
+                                               reporter.failed_log))
+                            emailer.set_recipients(['loumar@tollgroup.com'])
+                            emailer.send(subject=subject,
+                                         msg=msg,
+                                         dry=self.dry)
                     else:
                         log.error('%s processing failed.' % file)
             else:

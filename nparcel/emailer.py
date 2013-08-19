@@ -37,10 +37,9 @@ class Emailer(object):
         return self._recipients
 
     def set_recipients(self, values):
-        if values is None:
-            del self._recipients[:]
-        else:
-            self._recipients.append(values)
+        del self._recipients[:]
+        if values is not None:
+            self._recipients.extend(values)
 
     def send(self, subject, msg, dry=False):
         """Send the *msg*.
@@ -58,32 +57,34 @@ class Emailer(object):
             dry: do not send, only report what would happen
 
         """
-        if not self.recipients:
+        log.info('Sending email comms ...')
+        if len(self.recipients):
+            if self.sender is None:
+                sender = getpass.getuser()
+                log.debug('Setting sender as "%s"' % sender)
+                self.set_sender(sender)
+
+            # OK, send the message.
+            mime_msg = MIMEText(msg)
+            mime_msg['Subject'] = subject
+            mime_msg['From'] = self.sender
+            mime_msg['To'] = self.recipients
+
+            # ... and send.
+            s = None
+            if not dry:
+                try:
+                    s = smtplib.SMTP()
+                except gaierror, err:
+                    log.error('Could not connect to SMTP server "%s"' % err)
+
+            if s is not None:
+                s.connect()
+                log.info('Sending email to recipients: "%s"' %
+                        str(self.recipients))
+                s.sendmail(self.sender,
+                           self.recipients,
+                           mime_msg.as_string())
+                s.close()
+        else:
             log.warn('No email recipients provided')
-            raise TypeError('No recipients provided')
-
-        if self.sender is None:
-            sender = getpass.getuser()
-            log.debug('Setting sender as "%s"' % sender)
-            self.set_sender(sender)
-
-        # OK, send the message.
-        mime_msg = MIMEText(msg)
-        mime_msg['Subject'] = subject
-        mime_msg['From'] = self.sender
-        mime_msg['To'] = self.recipients
-
-        # ... and send.
-        s = None
-        if not dry:
-            try:
-                s = smtplib.SMTP()
-            except gaierror, err:
-                log.error('Could not connect to SMTP server "%s"' % err)
-
-        if s is not None:
-            s.connect()
-            log.info('Sending email to recipients: "%s"' %
-                     str(self.recipients))
-            s.sendmail(self.sender, self.recipients, mime_msg.as_string())
-            s.close()

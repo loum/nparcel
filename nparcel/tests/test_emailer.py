@@ -32,9 +32,18 @@ class TestEmailer(unittest2.TestCase):
         """
         kwargs = {'subject': 'no recipients subject',
                   'msg': 'no recipients msg'}
-        self.assertRaises(TypeError,
-                          self._e.send,
-                          **kwargs)
+        self._e.send(**kwargs)
+
+    def test_send_with_empty_recipients_list(self):
+        """Send message with empty recipients list specified.
+        """
+        self._e.set_recipients([])
+        kwargs = {'subject': 'empty recipients list subject',
+                  'msg': 'empty recipients list msg'}
+        self._e.send(**kwargs)
+
+        # Clean up.
+        self._e.set_recipients(None)
 
     @classmethod
     def tearDownClass(cls):

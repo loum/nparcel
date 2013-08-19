@@ -10,11 +10,10 @@ class Reporter(object):
     """Nparcel record processing reporter.
     """
 
-    def __init__(self, identifier=None, email=False):
+    def __init__(self, identifier=None):
         """
         """
         self._identifier = identifier
-        self._email = email
 
         self._failed_log = []
         self.reset()
@@ -30,10 +29,6 @@ class Reporter(object):
     @property
     def identifier(self):
         return self._identifier
-
-    @property
-    def email(self):
-        return self._email
 
     @property
     def failed_log(self):
@@ -105,20 +100,8 @@ class Reporter(object):
         if self.identifier is not None:
             log_msg = '%s: %s' % (self.identifier, log_msg)
 
-        log.info('%s: %d/%d/%d:%s' % (log_msg,
-                                      self.good_records,
-                                      self.bad_records,
-                                      self.total_count,
-                                      str(self.duration)))
-
-        if self.email:
-            print('Stats:')
-            print('------')
-            print('Successful count: %d' % self.good_records)
-            print('Failure count: %d' % self.bad_records)
-            print('Total count: %d' % self.total_count)
-            print('Total elapsed time: %s' % str(self.duration))
-            print('Alerts:')
-            print('-------')
-            for log_msg in self.failed_log:
-                print(log_msg)
+        return('%s: %d/%d/%d:%s' % (log_msg,
+                                    self.good_records,
+                                    self.bad_records,
+                                    self.total_count,
+                                    str(self.duration)))
