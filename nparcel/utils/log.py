@@ -3,11 +3,13 @@ __all__ = [
     "set_log_level",
     "suppress_logging",
     "set_console",
+    "rollover",
 ]
 
 import logging
 import logging.config
 import os
+import datetime
 import inspect
 
 
@@ -31,11 +33,13 @@ locations = [
     os.path.join(os.path.expanduser("~"), '.nparceld'),
 ]
 
+found_log_config = False
 for loc in locations:
     try:
         source = open(os.path.join(loc, "log.conf"))
         logging.config.fileConfig(source)
         source.close()
+        found_log_config = True
     except:
         pass
 
@@ -48,8 +52,17 @@ if logger_name == 'nosetests':
     logger_name = None
 
 log = logging.getLogger(logger_name)
-if logger_name:
+if logger_name is not None:
+    # Contain logging to the configured handler only (not console).
     log.propagate = False
+
+if not found_log_config:
+    # If no config, just dump a basic log message to console.
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter("%(asctime)s %(levelname)s:: %(message)s")
+    ch.setFormatter(formatter)
+    log.addHandler(ch)
 
 
 def set_console():
@@ -58,6 +71,35 @@ def set_console():
     for hdlr in log.handlers:
         log.removeHandler(hdlr)
     log.propagate = True
+
+
+def rollover():
+    """Specific to a TimedRotatingFileHandler, will force a rollover of the
+    logs as per the requirements outlined in the logging configuration.
+
+    """
+    # Check if we can identify a handler log file from the logger_name.
+    logger_handler = None
+    for handler in log.handlers:
+        # Try to match the logger_name with the log filename.
+        log_file = os.path.basename(handler.baseFilename)
+        logger_from_file = os.path.splitext(log_file)[0]
+
+        if (logger_name == logger_from_file and
+            isinstance(handler, logging.handlers.TimedRotatingFileHandler)):
+            logger_handler = handler
+            break
+
+    if logger_handler is not None:
+        # OK, we have found our handler, check if a backup already exists.
+        now = datetime.datetime.now()
+        backup_logfile = ("%s.%s" % (logger_handler.baseFilename,
+                                     now.strftime("%Y-%m-%d")))
+        # Rollover only if a backup has not already been made.
+        if not os.path.exists(backup_logfile):
+            log.info('Forcing rollover of log: "%s"' %
+                     logger_handler.baseFilename)
+            handler.doRollover()
 
 
 def set_log_level(level='INFO'):

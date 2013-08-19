@@ -1,5 +1,4 @@
 PY=/usr/bin/env python
-LOG_CONF=nparcel/utils/conf
 NOSE=/usr/bin/nosetests -s -v
 GIT=/usr/bin/git
 
@@ -39,7 +38,7 @@ docs:
 	sphinx-build -b html nparcel/doc/source nparcel/doc/build
 
 test:
-	LOG_CONF=$(LOG_CONF) $(NOSE) $(TEST)
+	$(NOSE) $(TEST)
 
 clean:
 	$(GIT) clean -xdf

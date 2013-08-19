@@ -7,7 +7,8 @@ from optparse import OptionParser
 import nparcel
 from nparcel.utils.log import (log,
                                set_console,
-                               set_log_level)
+                               set_log_level,
+                               rollover)
 
 
 def main():
@@ -75,6 +76,7 @@ def main():
             np._start(np.exit_event)
         else:
             print('Starting %s as daemon ...' % script_name)
+            rollover()
             np.start()
     elif args[0] == 'stop':
         print('Stopping %s ...' % script_name)
