@@ -33,6 +33,8 @@ class LoaderDaemon(nparcel.utils.Daemon):
                                 db=self.config.db_kwargs())
         reporter = nparcel.Reporter()
         emailer = nparcel.Emailer()
+        np_support = self.config('support_emails')
+        np_special = self.config('special_emails')
 
         commit = True
         if self.dry:
@@ -88,7 +90,8 @@ class LoaderDaemon(nparcel.utils.Daemon):
                             subject = 'Nploaderd processing error'
                             msg = ("%s\n%s" % (reporter.report(),
                                                reporter.failed_log))
-                            emailer.set_recipients(['loumar@tollgroup.com'])
+
+                            emailer.set_recipients(np_support)
                             emailer.send(subject=subject,
                                          msg=msg,
                                          dry=self.dry)

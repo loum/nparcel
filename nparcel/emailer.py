@@ -4,7 +4,7 @@ __all__ = [
 import smtplib
 from email.MIMEText import MIMEText
 import getpass
-from socket import gaierror
+from socket import gaierror, getfqdn
 
 from nparcel.utils.log import log
 
@@ -38,6 +38,7 @@ class Emailer(object):
 
     def set_recipients(self, values):
         del self._recipients[:]
+
         if values is not None:
             self._recipients.extend(values)
 
@@ -60,7 +61,7 @@ class Emailer(object):
         log.info('Sending email comms ...')
         if len(self.recipients):
             if self.sender is None:
-                sender = getpass.getuser()
+                sender = "%s@%s" % (getpass.getuser(), getfqdn())
                 log.debug('Setting sender as "%s"' % sender)
                 self.set_sender(sender)
 
@@ -68,7 +69,7 @@ class Emailer(object):
             mime_msg = MIMEText(msg)
             mime_msg['Subject'] = subject
             mime_msg['From'] = self.sender
-            mime_msg['To'] = self.recipients
+            mime_msg['To'] = ", ".join(self.recipients)
 
             # ... and send.
             s = None
@@ -81,7 +82,7 @@ class Emailer(object):
             if s is not None:
                 s.connect()
                 log.info('Sending email to recipients: "%s"' %
-                        str(self.recipients))
+                         str(self.recipients))
                 s.sendmail(self.sender,
                            self.recipients,
                            mime_msg.as_string())

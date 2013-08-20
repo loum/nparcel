@@ -59,6 +59,8 @@ class Config(object):
         self.exporter_loop = 900
         self.business_units = {}
         self.file_bu = {}
+        self.support_emails = []
+        self.special_emails = []
 
         if self._file is not None:
             self.set_file(self._file)
@@ -85,6 +87,10 @@ class Config(object):
             value = self.business_units
         elif item == 'file_bu':
             value = self.file_bu
+        if item == 'support_emails':
+            value = self.support_emails
+        if item == 'special_emails':
+            value = self.special_emails
 
         return value
 
@@ -142,10 +148,29 @@ class Config(object):
         try:
             self.loader_loop = int(self._config.get('timeout',
                                                     'loader_loop'))
+        except ConfigParser.NoOptionError, err:
+            log.warn('Loader loop time not provided: %s' % err)
+            pass
+
+        try:
             self.exporter_loop = int(self._config.get('timeout',
                                                       'exporter_loop'))
         except ConfigParser.NoOptionError, err:
-            log.warn('"Timeout section error: %s' % err)
+            log.warn('Exporter loop time not provided: %s' % err)
+            pass
+
+        try:
+            self.support_emails = self._config.get('email',
+                                                   'support').split(',')
+        except ConfigParser.NoOptionError, err:
+            log.warn('Support emails not provided: %s' % err)
+            pass
+
+        try:
+            self.special_emails = self._config.get('email',
+                                                   'special').split(',')
+        except ConfigParser.NoOptionError, err:
+            log.warn('Special emails not provided: %s' % err)
             pass
 
     def db_kwargs(self):
