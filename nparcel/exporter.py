@@ -191,12 +191,13 @@ class Exporter(object):
                         row[2])
             try:
                 pickup_ts = m.group(1)
-                log.debug('Cleansed pickup_ts produced "%s"' % pickup_ts)
             except AttributeError, err:
                 log.error('Error cleansing pickup_ts "%s": %s' % (row[2],
                                                                   err))
         elif isinstance(row[2], datetime.datetime):
-            pickup_ts = row[2].isoformat(' ')
+            pickup_ts = row[2].strftime("%Y-%m-%d %H:%M:%S")
+
+        log.debug('Cleansed pickup_ts produced "%s"' % pickup_ts)
 
         row_list[2] = pickup_ts
 
