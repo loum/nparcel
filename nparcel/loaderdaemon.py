@@ -62,6 +62,7 @@ class LoaderDaemon(nparcel.utils.Daemon):
                         file_timestamp = self.validate_file(file)
 
                         reporter.reset(identifier=file)
+                        email = np_special
                         for line in f:
                             record = line.rstrip('\r\n')
                             if record == '%%EOF':
@@ -69,7 +70,10 @@ class LoaderDaemon(nparcel.utils.Daemon):
                                 status = True
                             else:
                                 reporter(loader.process(file_timestamp,
-                                                        record))
+                                                        record,
+                                                        email,
+                                                        self.dry))
+                                email = None
                         f.close()
                     except IOError, e:
                         log.error('Error opening file "%s": %s' %

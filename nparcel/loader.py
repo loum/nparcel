@@ -140,7 +140,9 @@ class Loader(object):
         self.parser = nparcel.Parser(fields=FIELDS)
         self.alerts = []
 
-    def process(self, time, raw_record):
+        self.emailer = nparcel.Emailer()
+
+    def process(self, time, raw_record, email=None, dry=False):
         """
         Extracts, validates and inserts an Nparcel record.
 
@@ -184,15 +186,18 @@ class Loader(object):
                     job_id = barcodes[0]
 
             # OK, update or create ...
+            agent_id = fields.get('Agent Id')
+            agent_id_row_id = job_data.get('agent_id')
             if job_id is not None:
-                agent_id = fields.get('Agent Id')
                 log.info('Updating Nparcel barcode "%s" agent ID "%s"' %
                          (barcode, agent_id))
-                agent_id_row_id = job_data.get('agent_id')
                 self.update(job_id, agent_id_row_id, job_item_data)
             else:
                 log.info('Creating Nparcel barcode "%s"' % barcode)
                 self.create(job_data, job_item_data)
+
+            # Send out comms.
+            self.send_email(agent_id_row_id, email, barcode, dry)
 
         log.info('Conn Note: "%s" parse complete' % connote)
 
@@ -219,9 +224,9 @@ class Loader(object):
         """Helper method to verify if an Agent ID is defined.
         """
         log.info('Checking if Agent Id "%s" exists in system ...' % agent)
-        self.db(self.db._agent.check_agent_id(agent_id=agent))
-
+        self.db(self.db._agent.check_agent_id(agent_code=agent))
         agent_id_row_id = self.db.row
+
         if agent_id_row_id is not None:
             agent_id_row_id = agent_id_row_id[0]
             log.info('Agent Id "%s" found: %s' % (agent, agent_id_row_id))
@@ -483,3 +488,54 @@ class Loader(object):
             log.info('"jobitem.id" %d created' % jobitem_id)
         else:
             log.info('"jobitem.id" %d exists' % job_item_ids[0])
+
+    def send_email(self,
+                   agent_id,
+                   to_addresses,
+                   barcode,
+                   dry=False):
+        """Send out email comms to the list of *to_addresses*.
+
+        **Args:**
+            agent_id: the Agent's "agent.id" private key
+
+            to_addresses: list of email recipients
+
+            barcode: job barcode
+
+        **Kwargs:**
+            dry: only report, do not actual execute
+
+        **Returns:**
+            ``True`` for processing success
+
+            ``False`` for processing failure
+
+        """
+        status = True
+
+        # Send out email comms.
+        if to_addresses is not None and len(to_addresses):
+            log.debug('Sending customer email to "%s"' % to_addresses)
+
+            # Get agent details.
+            self.db(self.db._agent.agent_sql(id=agent_id))
+            agent = self.db.row
+            if agent is not None:
+                (name, address, suburb, postcode) = agent
+
+                # OK, generate the email structure.
+                subject = 'Nparcel pickup'
+                msg = """Your consignment has been placed at %s, %s, %s %s.  Consignment Ref %s.  Please bring your photo ID with you.  Enquiries 13 32 78""" % (name, address, suburb, postcode, barcode)
+                self.emailer.set_recipients(to_addresses)
+                status = self.emailer.send(subject=subject,
+                                           msg=msg,
+                                           dry=dry)
+            else:
+                status = False
+                log.error('Email missing Agent details for id: %d' %
+                          agent_id)
+        else:
+            log.error('Email list is empty')
+
+        return status

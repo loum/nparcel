@@ -58,6 +58,8 @@ class Emailer(object):
             dry: do not send, only report what would happen
 
         """
+        status = True
+
         log.info('Sending email comms ...')
         if len(self.recipients):
             if self.sender is None:
@@ -77,7 +79,9 @@ class Emailer(object):
                 try:
                     s = smtplib.SMTP()
                 except gaierror, err:
+                    status = False
                     log.error('Could not connect to SMTP server "%s"' % err)
+                    pass
 
             if s is not None:
                 s.connect()
@@ -89,3 +93,5 @@ class Emailer(object):
                 s.close()
         else:
             log.warn('No email recipients provided')
+
+        return status

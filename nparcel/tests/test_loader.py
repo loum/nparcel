@@ -16,6 +16,7 @@ MANUFACTURED_BC_UPD_LINE = """3142357006912345      YMLML11TOLP130413  Diane Don
 SINGLE_QUOTE_LINE = """080102033141          YMLML11TOLP130815  MISS S D'ARCY                           13 FITZGERALD RD              ESSENDON                      MELBOURNE                     3040                                                                                                                 MISS S D'ARCY                             NEXT RETAIL LTD               LEICESTER                                                                     4159214753     V098                                                                                                                                   00001000001                                                                      Parcels Overnight                   DESFORD ROAD                  ENDERBY                                                                                                              FVAN000098                                                                                                 GB                            AUSTRALIA                                                                                                                                                                                                         VI                                               """
 DODGY_POSTCODE = """574000244915          YMLML11TOLP130715  AMAL DOUKARI                            41 BLAMEY ST 1501 KELVIN GROVEQUEEN SLAND 4059              ;                             ;                                                                                                                    AMAL DOUKARI                              GUANGZHOU YASHUNDA LTD                                      362000                                          4159054556     Q067                                                                                                                                   00001000001                                                                      Parcels Overnight                   NO.83 MEIGUI YUAN QU E 3 BAIYUGUANGZHOU GUANGDONG                                                                                                  Q067                                                                                                       CHINA                         AUSTRALIA                                                                                                                                                                                                      GU ;                                                """
 
+
 class TestLoader(unittest2.TestCase):
 
     @classmethod
@@ -37,7 +38,7 @@ class TestLoader(unittest2.TestCase):
         self.assertIsInstance(self._loader.parser, nparcel.Parser, msg)
 
     def test_valid_barcode_extract(self):
-        """Extract valid barvcode.
+        """Extract valid barcode.
         """
         result = self._loader.parser.parse_line(VALID_LINE)
         received = result.get('Bar code')
@@ -483,6 +484,46 @@ class TestLoader(unittest2.TestCase):
         received = self._loader.get_connote_job_id(connote='218501217863')
         msg = 'Connote based job id query results not as expected'
         self.assertEqual(received, job_id, msg)
+
+        # Restore DB state.
+        self._loader.db.connection.rollback()
+
+    def test_email_no_agent_id(self):
+        """Email attempt with no agent_id.
+        """
+        recipients = ['dummy@dummyville.com']
+        agent_id = 1
+        barcode = 'xxx'
+        received = self._loader.send_email(agent_id,
+                                           recipients,
+                                           barcode,
+                                           dry=True)
+        msg = 'Email with no Agent Id should return False'
+        self.assertFalse(received, msg)
+
+    def test_email_agent_id(self):
+        """Email attempt with agent_id.
+        """
+        recipients = ['dummy@dummyville.com']
+
+        # Seed the Agent Id.
+        agent_fields = {'code': 'N031',
+                        'name': 'Auburn Newsagency',
+                        'address': '119 Auburn Road',
+                        'suburb': 'HAWTHORN EAST',
+                        'postcode': '3123'}
+        sql = self._loader.db._agent.insert_sql(agent_fields)
+        id = self._loader.db.insert(sql)
+
+        recipients = ['dummy@dummyville.com']
+        agent_id = id
+        barcode = 'xxx'
+        received = self._loader.send_email(agent_id,
+                                           recipients,
+                                           barcode,
+                                           dry=True)
+        msg = 'Email with valid Agent Id should return True'
+        self.assertTrue(received, msg)
 
         # Restore DB state.
         self._loader.db.connection.rollback()

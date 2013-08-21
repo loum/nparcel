@@ -18,7 +18,7 @@ class TestEmailer(unittest2.TestCase):
     def test_send_without_sender_specified(self):
         """Send message without sender specified.
         """
-        self._e.set_recipients('banana')
+        self._e.set_recipients(['banana'])
         self._e.send(subject='test subject', msg='banana msg', dry=True)
 
         msg = 'Sender should not be None'
