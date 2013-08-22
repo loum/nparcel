@@ -43,7 +43,7 @@ class TestSmser(unittest2.TestCase):
         sms_msg = """Your consignment has been placed at Skylark News, 59 Skylark Street, INALA 4077. A Consignment Ref 4156736304. Please bring your photo ID with you. Enquiries 13 32 78"""
         self._sms.set_recipients(['0431602145'])
 
-        received = self._sms.send(sms_msg, dry=False)
+        received = self._sms.send(sms_msg, dry=True)
         msg = 'SMS send should return True'
         self.assertTrue(received, msg)
 
