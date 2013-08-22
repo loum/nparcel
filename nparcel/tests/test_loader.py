@@ -504,8 +504,6 @@ class TestLoader(unittest2.TestCase):
     def test_email_agent_id(self):
         """Email attempt with agent_id.
         """
-        recipients = ['dummy@dummyville.com']
-
         # Seed the Agent Id.
         agent_fields = {'code': 'N031',
                         'name': 'Auburn Newsagency',
@@ -523,6 +521,44 @@ class TestLoader(unittest2.TestCase):
                                            barcode,
                                            dry=True)
         msg = 'Email with valid Agent Id should return True'
+        self.assertTrue(received, msg)
+
+        # Restore DB state.
+        self._loader.db.connection.rollback()
+
+    def test_sms_no_agent_id(self):
+        """SMS attempt with no agent_id.
+        """
+        recipients = ['1234567890']
+        agent_id = 1
+        barcode = 'xxx'
+        received = self._loader.send_sms(agent_id,
+                                         recipients,
+                                         barcode,
+                                         dry=True)
+        msg = 'SMS with no Agent Id should return False'
+        self.assertFalse(received, msg)
+
+    def test_sms_agent_id(self):
+        """SMS attempt with agent_id.
+        """
+        # Seed the Agent Id.
+        agent_fields = {'code': 'N031',
+                        'name': 'Auburn Newsagency',
+                        'address': '119 Auburn Road',
+                        'suburb': 'HAWTHORN EAST',
+                        'postcode': '3123'}
+        sql = self._loader.db._agent.insert_sql(agent_fields)
+        id = self._loader.db.insert(sql)
+
+        recipients = ['0431602145']
+        agent_id = id
+        barcode = 'xxx'
+        received = self._loader.send_sms(agent_id,
+                                         recipients,
+                                         barcode,
+                                         dry=True)
+        msg = 'SMS with valid Agent Id should return True'
         self.assertTrue(received, msg)
 
         # Restore DB state.

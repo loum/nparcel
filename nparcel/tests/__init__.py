@@ -3,6 +3,7 @@ from test_dbsession import TestDbSession
 from test_loader import TestLoader
 from test_reporter import TestReporter
 from test_emailer import TestEmailer
+from test_smser import TestSmser
 from test_loaderdaemon import TestLoaderDaemon
 from test_exporterdaemon import TestExporterDaemon
 from test_exporter import TestExporter

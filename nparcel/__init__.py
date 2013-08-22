@@ -5,6 +5,7 @@ from nparcel.loader import Loader
 from nparcel.dbsession import DbSession
 from nparcel.reporter import Reporter
 from nparcel.emailer import Emailer
+from nparcel.smser import Smser
 from nparcel.exporter import Exporter
 from nparcel.config import Config
 from nparcel.ftp import Ftp

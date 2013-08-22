@@ -61,6 +61,7 @@ class Config(object):
         self.file_bu = {}
         self.support_emails = []
         self.special_emails = []
+        self.special_sms = []
 
         if self._file is not None:
             self.set_file(self._file)
@@ -91,6 +92,8 @@ class Config(object):
             value = self.support_emails
         if item == 'special_emails':
             value = self.special_emails
+        if item == 'special_sms':
+            value = self.special_sms
 
         return value
 
@@ -170,7 +173,14 @@ class Config(object):
             self.special_emails = self._config.get('email',
                                                    'special').split(',')
         except ConfigParser.NoOptionError, err:
-            log.warn('Special emails not provided: %s' % err)
+        #    log.warn('Special emails not provided: %s' % err)
+            pass
+
+        try:
+            self.special_sms = self._config.get('sms',
+                                                'special').split(',')
+        except ConfigParser.NoOptionError, err:
+        #    log.warn('Special SMSs not provided: %s' % err)
             pass
 
     def db_kwargs(self):

@@ -141,8 +141,9 @@ class Loader(object):
         self.alerts = []
 
         self.emailer = nparcel.Emailer()
+        self.smser = nparcel.Smser()
 
-    def process(self, time, raw_record, email=None, dry=False):
+    def process(self, time, raw_record, email=None, sms=None, dry=False):
         """
         Extracts, validates and inserts an Nparcel record.
 
@@ -168,9 +169,7 @@ class Loader(object):
             log.info('Barcode "%s" mapping OK' % barcode)
         except ValueError, e:
             status = False
-            msg = 'Barcode "%s" mapping error: %s' % (barcode, e)
-            log.error(msg)
-            self.set_alert(msg)
+            self.set_alert('Barcode "%s" mapping error: %s' % (barcode, e))
 
         # Check for a manufactured barcode (based on connote).
         if status:
@@ -198,6 +197,7 @@ class Loader(object):
 
             # Send out comms.
             self.send_email(agent_id_row_id, email, barcode, dry)
+            self.send_sms(agent_id_row_id, sms, barcode, dry)
 
         log.info('Conn Note: "%s" parse complete' % connote)
 
@@ -231,7 +231,8 @@ class Loader(object):
             agent_id_row_id = agent_id_row_id[0]
             log.info('Agent Id "%s" found: %s' % (agent, agent_id_row_id))
         else:
-            log.error('Agent Id "%s" does not exist' % agent)
+            err = 'Agent Id "%s" does not exist' % agent
+            self.set_alert(err)
 
             # For testing only, create the record.
             # First insert will fail the test -- subsequent checks should
@@ -313,7 +314,7 @@ class Loader(object):
         bu_id = self.file_bu.get(m.group(1).lower())
 
         if bu_id is None:
-            log.error('Unable to extract BU from "%s"' % value)
+            self.set_alert('Unable to extract BU from "%s"' % value)
         else:
             bu_id = int(bu_id)
 
@@ -354,6 +355,7 @@ class Loader(object):
         return self.db.date_now()
 
     def set_alert(self, alert):
+        log.error(alert)
         self.alerts.append(alert)
 
     def reset(self, commit=False):
@@ -533,9 +535,53 @@ class Loader(object):
                                            dry=dry)
             else:
                 status = False
-                log.error('Email missing Agent details for id: %d' %
-                          agent_id)
+                log.warn('Email no Agent details for id: %d' % agent_id)
         else:
-            log.error('Email list is empty')
+            log.warn('Email list is empty')
+
+        return status
+
+    def send_sms(self, agent_id, mobiles, barcode, dry=False):
+        """Send out SMS comms to the list of *mobiles*.
+
+        **Args:**
+            agent_id: the Agent's "agent.id" private key
+
+            mobiles: list of SMS recipients
+
+            barcode: job barcode
+
+        **Kwargs:**
+            dry: only report, do not actual execute
+
+        **Returns:**
+            ``True`` for processing success
+
+            ``False`` for processing failure
+
+        """
+        status = True
+
+        # Send out SMS comms.
+        if mobiles is not None and len(mobiles):
+            log.debug('Sending customer email to "%s"' % str(mobiles))
+
+            # Get agent details.
+            self.db(self.db._agent.agent_sql(id=agent_id))
+            agent = self.db.row
+            if agent is not None:
+                (name, address, suburb, postcode) = agent
+
+                # OK, generate the SMS structure.
+                subject = 'Nparcel pickup'
+                msg = """Your consignment has been placed at %s, %s, %s %s.  Consignment Ref %s.  Please bring your photo ID with you.  Enquiries 13 32 78""" % (name, address, suburb, postcode, barcode)
+                self.smser.set_recipients(mobiles)
+                status = self.smser.send(msg=msg, dry=dry)
+            else:
+                status = False
+                err = 'SMS missing Agent details for id: %d' % agent_id
+                self.set_alert(err)
+        else:
+            log.warn('SMS list is empty')
 
         return status

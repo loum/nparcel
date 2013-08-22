@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(name='python-nparcel',
-      version='0.7.7',
+      version='0.8',
       description='Nparcel B2C Replicator',
       author='Lou Markovski',
       author_email='lou.markovski@tollgroup.com',

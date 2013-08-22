@@ -15,7 +15,6 @@ class Reporter(object):
         """
         self._identifier = identifier
 
-        self._failed_log = []
         self.reset()
 
     def __call__(self, status):
@@ -29,13 +28,6 @@ class Reporter(object):
     @property
     def identifier(self):
         return self._identifier
-
-    @property
-    def failed_log(self):
-        return self._failed_log
-
-    def set_failed_log(self, logs):
-        self._failed_log.extend(logs)
 
     @property
     def total_count(self):
@@ -81,7 +73,6 @@ class Reporter(object):
         """
         """
         self._identifier = identifier
-        self._failed_log = []
         self._total_count = 0
         self._good_records = 0
         self._bad_records = 0

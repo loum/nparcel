@@ -35,6 +35,7 @@ class LoaderDaemon(nparcel.utils.Daemon):
         emailer = nparcel.Emailer()
         np_support = self.config('support_emails')
         np_special = self.config('special_emails')
+        np_special_sms = self.config('special_sms')
 
         commit = True
         if self.dry:
@@ -63,6 +64,7 @@ class LoaderDaemon(nparcel.utils.Daemon):
 
                         reporter.reset(identifier=file)
                         email = np_special
+                        sms = np_special_sms
                         for line in f:
                             record = line.rstrip('\r\n')
                             if record == '%%EOF':
@@ -72,8 +74,10 @@ class LoaderDaemon(nparcel.utils.Daemon):
                                 reporter(loader.process(file_timestamp,
                                                         record,
                                                         email,
+                                                        sms,
                                                         self.dry))
                                 email = None
+                                sms = None
                         f.close()
                     except IOError, e:
                         log.error('Error opening file "%s": %s' %
@@ -82,18 +86,19 @@ class LoaderDaemon(nparcel.utils.Daemon):
                     # Report the results.
                     if status:
                         log.info('%s processing OK.' % file)
+                        alerts = list(loader.alerts)
                         loader.reset(commit=commit)
                         if not self.dry:
                             self.archive_file(file)
 
                         # Report.
                         reporter.end()
-                        reporter.set_failed_log(loader.alerts)
                         log.info(reporter.report())
                         if reporter.bad_records > 0:
                             subject = 'Nploaderd processing error'
-                            msg = ("%s\n%s" % (reporter.report(),
-                                               reporter.failed_log))
+                            msg = ("%s\n\n%s" % (reporter.report(),
+                                                 "\n".join(alerts)))
+                            del alerts[:]
 
                             emailer.set_recipients(np_support)
                             emailer.send(subject=subject,
