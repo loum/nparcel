@@ -43,6 +43,10 @@ class Config(object):
 
         the list of business units to query for collected items
 
+    .. attribute:: cond (loader)
+
+        dictionary of Business unit special condition flags
+
     """
 
     def __init__(self, file=None):
@@ -62,6 +66,7 @@ class Config(object):
         self.support_emails = []
         self.special_emails = []
         self.special_sms = []
+        self.cond = {}
 
         if self._file is not None:
             self.set_file(self._file)
@@ -88,12 +93,14 @@ class Config(object):
             value = self.business_units
         elif item == 'file_bu':
             value = self.file_bu
-        if item == 'support_emails':
+        elif item == 'support_emails':
             value = self.support_emails
-        if item == 'special_emails':
+        elif item == 'special_emails':
             value = self.special_emails
-        if item == 'special_sms':
+        elif item == 'special_sms':
             value = self.special_sms
+        elif item == 'cond':
+            value = self.cond
 
         return value
 
@@ -135,15 +142,19 @@ class Config(object):
             log.critical('Missing required config: %s' % err)
             sys.exit(1)
 
-        self.business_units = dict(self._config.items('business_units'))
-        log.debug('Exporter Business Units %s' % self.business_units.keys())
-        if self.business_units is None:
+        try:
+            self.business_units = dict(self._config.items('business_units'))
+            log.debug('Exporter Business Units %s' %
+                      self.business_units.keys())
+        except ConfigParser.NoSectionError, err:
             log.critical('Missing Business Units in configuration')
             sys.exit(1)
 
-        self.file_bu = dict(self._config.items('file_bu'))
-        log.debug('Exporter File Business Units %s' % self.file_bu.keys())
-        if self.file_bu is None:
+        try:
+            self.file_bu = dict(self._config.items('file_bu'))
+            log.debug('Exporter File Business Units %s' %
+                      self.file_bu.keys())
+        except ConfigParser.NoSectionError, err:
             log.critical('Missing Filename Business Units in configuration')
             sys.exit(1)
 
@@ -168,6 +179,14 @@ class Config(object):
         except ConfigParser.NoOptionError, err:
             log.warn('Support emails not provided: %s' % err)
             pass
+
+        # Business unit condiitons.  No probs if they are missing -- will
+        # just default to '0' (False) for each flag.
+        try:
+            self.cond = dict(self._config.items('conditions'))
+            log.debug('Business Unit conditions %s' % self.cond.keys())
+        except ConfigParser.NoSectionError, err:
+            log.warn('Missing Business Unit conditions in config')
 
         try:
             self.special_emails = self._config.get('email',
@@ -207,3 +226,36 @@ class Config(object):
             log.error('Missing DB key via config: %s' % err)
 
         return kwargs
+
+    def condition(self, bu, flag):
+        """Return the *bu* condition *flag* value.
+
+        **Args:**
+            bu: the name of the Business Unit.
+
+            flag: name of the flag to process.
+
+        **Returns:**
+            boolean ``True`` if flag is '1'
+            boolean ``False`` if flag is '0' or undefined
+
+        """
+        status = False
+
+        if self.cond:
+            flag_map = {'item_number_excp': 0}
+            index = flag_map.get(flag)
+            if index is None:
+                log.debug('Condition map undefined flag "%s"' % flag)
+            else:
+                if self.cond.get(bu) is None:
+                    log.debug('Condition map missing BU "%s" option' % bu)
+                else:
+                    # Finally, get the flag!!!
+                    status = self.cond.get(bu)[index]
+                    log.debug('Condition map %s:%s is "%s"' %
+                              (bu, flag, status))
+        else:
+            log.debug('Conditions config item is not defined')
+
+        return status == '1'

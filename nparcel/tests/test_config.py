@@ -82,6 +82,16 @@ class TestConfig(unittest2.TestCase):
         expected = {'tolp': '1', 'tolf': '2', 'toli': '3'}
         self.assertDictEqual(received, expected, msg)
 
+        msg = 'Support emails not as expected'
+        received = self._c('support_emails')
+        expected = ['loumar@tollgroup.com', 'lou.markovski@gmail.com']
+        self.assertListEqual(received, expected, msg)
+
+        msg = 'Conditions map not as expected'
+        received = self._c('cond')
+        expected = {'tolp': '0', 'tolf': '0', 'toli': '1'}
+        self.assertDictEqual(received, expected, msg)
+
         # Cleanup.
         self._c._file = None
 
@@ -96,6 +106,65 @@ class TestConfig(unittest2.TestCase):
 
         # Cleanup.
         self._c._file = None
+
+    def test_condition_flag_item_excp_true(self):
+        """Check item_excp flag settings -- True.
+        """
+        self._c.set_file(file=self._file)
+        self._c.parse_config()
+
+        received = self._c.condition('toli', 'item_number_excp')
+        msg = 'Flag value "1" should return True'
+        self.assertTrue(received, msg)
+
+        # Cleanup.
+        self._c._file = None
+
+    def test_condition_flag_item_excp_false(self):
+        """Check item_excp flag settings -- False.
+        """
+        self._c.set_file(file=self._file)
+        self._c.parse_config()
+
+        received = self._c.condition('tolp', 'item_number_excp')
+        msg = 'Flag value "0" should return False'
+        self.assertFalse(received, msg)
+
+        # Cleanup.
+        self._c._file = None
+
+    def test_condition_flag_undefined_flag(self):
+        """Check item_excp flag settings -- undefined flag.
+        """
+        self._c.set_file(file=self._file)
+        self._c.parse_config()
+
+        received = self._c.condition('toli', 'banana')
+        msg = 'Flag value "banana" should return False'
+        self.assertFalse(received, msg)
+
+        # Cleanup.
+        self._c._file = None
+
+    def test_condition_flag_undefined_bu(self):
+        """Check item_excp flag settings -- undefined BU.
+        """
+        self._c.set_file(file=self._file)
+        self._c.parse_config()
+
+        received = self._c.condition('fruit', 'item_number_excp')
+        msg = 'Undefined BU value "fruit" should return False'
+        self.assertFalse(received, msg)
+
+        # Cleanup.
+        self._c._file = None
+
+    def test_condition_no_conditions(self):
+        """Check condition settings -- missing condition.
+        """
+        received = self._c.condition('fruit', 'item_number_excp')
+        msg = 'Missing condition section should return False'
+        self.assertFalse(received, msg)
 
     @classmethod
     def tearDownClass(cls):
