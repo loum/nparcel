@@ -4,6 +4,7 @@ import datetime
 import nparcel
 
 
+FILE_BU = {'tolp': '1', 'tolf': '2', 'toli': '3'}
 VALID_LINE_BARCODE = '4156536111'
 VALID_LINE_CONNOTE = '218501217863'
 VALID_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111     N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
@@ -21,8 +22,7 @@ class TestLoader(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        file_bu = {'tolp': '1', 'tolf': '2', 'toli': '3'}
-        cls._loader = nparcel.Loader(file_bu=file_bu)
+        cls._loader = nparcel.Loader()
         cls._job_ts = cls._loader.db.date_now()
 
     def test_init(self):
@@ -54,7 +54,10 @@ class TestLoader(unittest2.TestCase):
         self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
 
         msg = 'Valid T1250 record should process OK'
-        self.assertTrue(self._loader.process(self._job_ts, VALID_LINE), msg)
+        self.assertTrue(self._loader.process(self._job_ts,
+                                             VALID_LINE,
+                                             FILE_BU.get('tolp')),
+                        msg)
 
         # Restore DB state.
         self._loader.db.connection.rollback()
@@ -68,7 +71,9 @@ class TestLoader(unittest2.TestCase):
 
         msg = 'Valid T1250 record should process OK -- single quote'
         self.assertTrue(self._loader.process(self._job_ts,
-                                             SINGLE_QUOTE_LINE), msg)
+                                             SINGLE_QUOTE_LINE,
+                                             FILE_BU.get('tolp')),
+                        msg)
 
         # Restore DB state.
         self._loader.db.connection.rollback()
@@ -82,7 +87,8 @@ class TestLoader(unittest2.TestCase):
 
         msg = 'Valid T1250 record should process OK -- bad postcode'
         self.assertTrue(self._loader.process(self._job_ts,
-                                             DODGY_POSTCODE), msg)
+                                             DODGY_POSTCODE,
+                                             FILE_BU.get('tolp')), msg)
 
         # Restore DB state.
         self._loader.db.connection.rollback()
@@ -97,10 +103,13 @@ class TestLoader(unittest2.TestCase):
         self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
 
         msg = 'Valid T1250 record should process successfully'
-        self.assertTrue(self._loader.process(self._job_ts, VALID_LINE), msg)
+        self.assertTrue(self._loader.process(self._job_ts,
+                                             VALID_LINE,
+                                             FILE_BU.get('tolp')), msg)
         msg = 'Valid T1250 record update should process successfully'
         self.assertTrue(self._loader.process(self._job_ts,
-                                             VALID_LINE_AGENT_UPD), msg)
+                                             VALID_LINE_AGENT_UPD,
+                                             FILE_BU.get('tolp')), msg)
 
         # Restore DB state.
         self._loader.db.connection.rollback()
@@ -114,7 +123,8 @@ class TestLoader(unittest2.TestCase):
 
         msg = 'T1250 record should process successfully -- missing postcode'
         self.assertTrue(self._loader.process(self._job_ts,
-                                             INVALID_POSTCODE_LINE), msg)
+                                             INVALID_POSTCODE_LINE,
+                                             FILE_BU.get('tolp')), msg)
 
         # Restore DB state.
         self._loader.db.connection.rollback()
@@ -124,7 +134,8 @@ class TestLoader(unittest2.TestCase):
         """
         msg = 'Missing Agent Id should fail processing'
         self.assertFalse(self._loader.process(self._job_ts,
-                                              VALID_LINE), msg)
+                                              VALID_LINE,
+                                              FILE_BU.get('tolp')), msg)
 
     def test_processor_valid_record_existing_barcode(self):
         """Process valid raw T1250 line -- existing barcode.
@@ -136,9 +147,13 @@ class TestLoader(unittest2.TestCase):
         # First, create a record and attempt to reload as a duplicate.
         # Should update the Agent Id but not create a new job_item record.
         msg = 'New T1250 record should process successfully'
-        self.assertTrue(self._loader.process(self._job_ts, VALID_LINE), msg)
+        self.assertTrue(self._loader.process(self._job_ts,
+                                             VALID_LINE,
+                                             FILE_BU.get('tolp')), msg)
         msg = 'Duplicate T1250 record should process successfully'
-        self.assertTrue(self._loader.process(self._job_ts, VALID_LINE), msg)
+        self.assertTrue(self._loader.process(self._job_ts,
+                                             VALID_LINE,
+                                             FILE_BU.get('tolp')), msg)
 
         sql = self._loader.db.jobitem.connote_sql(VALID_LINE_CONNOTE)
         self._loader.db(sql)
@@ -157,14 +172,16 @@ class TestLoader(unittest2.TestCase):
         """
         msg = 'Invalid barcode processing should return False'
         self.assertFalse(self._loader.process(self._job_ts,
-                                              INVALID_BARCODE_LINE), msg)
+                                              INVALID_BARCODE_LINE,
+                                              FILE_BU.get('tolp')), msg)
 
     def test_processor_invalid_agent_id_record(self):
         """Process valid raw T1250 line with an invalid barcode.
         """
         msg = 'Invalid Agent Id processing should return False'
         self.assertFalse(self._loader.process(self._job_ts,
-                                              INVALID_AGENTID_LINE), msg)
+                                              INVALID_AGENTID_LINE,
+                                              FILE_BU.get('tolp')), msg)
 
     def test_processor_manufactured_connote(self):
         """Process valid raw T1250 line with manufactured barcode.
@@ -178,11 +195,13 @@ class TestLoader(unittest2.TestCase):
         # First, create a manufactured barcode value.
         msg = 'Manufactured barcode creation failed -- no barcode'
         self.assertTrue(self._loader.process(self._job_ts,
-                                             MANUFACTURED_BC_LINE), msg)
+                                             MANUFACTURED_BC_LINE,
+                                             FILE_BU.get('tolp')), msg)
         # Now the manufactured barcode value update.
         msg = 'Manufactured barcode creation failed -- existing barcode'
         self.assertTrue(self._loader.process(self._job_ts,
-                                             MANUFACTURED_BC_UPD_LINE), msg)
+                                             MANUFACTURED_BC_UPD_LINE,
+                                             FILE_BU.get('tolp')), msg)
 
         # Restore DB state.
         self._loader.db.connection.rollback()
@@ -262,6 +281,7 @@ class TestLoader(unittest2.TestCase):
 
         fields = self._loader.parser.parse_line(VALID_LINE)
         fields['job_ts'] = self._job_ts
+        fields['bu_id'] = int(FILE_BU.get('tolp'))
         received = self._loader.table_column_map(fields,
                                                  nparcel.loader.JOB_MAP)
         expected = {'address_1': '31 Bridge st,',
@@ -276,24 +296,6 @@ class TestLoader(unittest2.TestCase):
                     'suburb': 'Australia Other'}
         msg = 'Valid record Job table translation error'
         self.assertDictEqual(received, expected, msg)
-
-    def test_valid_bu_id(self):
-        """Convert identifier to business unit code.
-        """
-        bu_id = 'YMLML11TOLP130413'
-        received = self._loader.translate_bu_id(bu_id)
-        expected = 1
-        msg = 'BU translation error -- valid BU'
-        self.assertEqual(received, expected, msg)
-
-    def test_invalid_bu_id(self):
-        """Convert identifier to business unit code -- invalid.
-        """
-        bu_id = 'YMLML11TOLZ130413'
-        received = self._loader.translate_bu_id(bu_id)
-        expected = None
-        msg = 'BU translation error -- invalid BU'
-        self.assertEqual(received, expected, msg)
 
     def test_valid_translate_postcode_non_integer(self):
         """Translate postcode to state -- valid, range-based.

@@ -60,7 +60,7 @@ class LoaderDaemon(nparcel.utils.Daemon):
 
                     try:
                         f = open(file, 'r')
-                        file_timestamp = self.validate_file(file)
+                        (bu_id, file_timestamp) = self.validate_file(file)
 
                         reporter.reset(identifier=file)
                         email = np_special
@@ -73,6 +73,7 @@ class LoaderDaemon(nparcel.utils.Daemon):
                             else:
                                 reporter(loader.process(file_timestamp,
                                                         record,
+                                                        bu_id,
                                                         email,
                                                         sms,
                                                         self.dry))
@@ -187,15 +188,17 @@ class LoaderDaemon(nparcel.utils.Daemon):
         """
         """
         log.debug('Validating filename: "%s"' % filename)
-        m = re.search('T1250_TOL._(\d{14})\.txt', filename)
-        file_timestamp = m.group(1)
+        m = re.search('T1250_(TOL.)_(\d{14})\.txt', filename)
+        bu_id = int(self.config('file_bu').get(m.group(1).lower()))
+        log.debug('bu_id: %s' % bu_id)
+        file_timestamp = m.group(2)
 
         parsed_time = time.strptime(file_timestamp, "%Y%m%d%H%M%S")
         log.debug('parsed_time: %s' % parsed_time)
         dt = datetime.datetime.fromtimestamp(time.mktime(parsed_time))
         dt_formatted = dt.isoformat(' ')
 
-        return dt_formatted
+        return (bu_id, dt_formatted)
 
     def archive_file(self, file):
         """

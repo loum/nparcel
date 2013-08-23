@@ -37,10 +37,9 @@ JOB_MAP = {'Agent Id': {
            'Bar code': {
                'column': 'card_ref_nbr',
                'required': True},
-           'Identifier': {
+           'bu_id': {
                'column': 'bu_id',
-               'required': True,
-               'callback': 'translate_bu_id'},
+               'required': True},
            'Consumer Address 1': {
                'column': 'address_1'},
            'Consumer Address 2': {
@@ -121,17 +120,16 @@ POSTCODE_MAP = {'NSW': {
 class Loader(object):
     """Nparcel Loader object.
 
-    .. attribute:: file_bu
+    .. attributes:: db
 
-        Dictionary of tokens that identify a Business Unit and maps
-        to a known database entry.
+        :class:`nparcel.DbSession` object
+
     """
 
-    def __init__(self, file_bu, db=None):
-        """
-        """
-        self.file_bu = file_bu
+    def __init__(self, db=None):
+        """Nparcel Loader initaliser.
 
+        """
         if db is None:
             db = {}
         self.db = nparcel.DbSession(**db)
@@ -143,12 +141,32 @@ class Loader(object):
         self.emailer = nparcel.Emailer()
         self.smser = nparcel.Smser()
 
-    def process(self, time, raw_record, email=None, sms=None, dry=False):
-        """
-        Extracts, validates and inserts an Nparcel record.
+    def process(self,
+                time,
+                raw_record,
+                bu_id,
+                email=None,
+                sms=None,
+                dry=False):
+        """Extracts, validates and inserts/updates an Nparcel record.
 
         **Args:**
+            time: as identified by the input file timestamp
+
             raw_record: raw record directly from a T1250 file.
+
+            bu_id: the Business Unit id as per "business_unit.id"
+
+        **Kwargs:**
+            email: list of email addresses to send to (special case)
+
+            sms: list of numbers to SMS comms to (special case)
+
+        **Returns:**
+
+            boolean ``True`` if processing was successful
+
+            boolean ``False`` if processing failed
 
         """
         status = True
@@ -158,14 +176,14 @@ class Loader(object):
         log.info('Conn Note: "%s" start parse ...' % connote)
         fields = self.parser.parse_line(raw_record)
         fields['job_ts'] = time
+        fields['bu_id'] = bu_id
 
         barcode = fields.get('Bar code')
+        log.info('Barcode "%s" start mapping ...' % barcode)
 
         try:
-            log.info('Barcode "%s" start mapping ...' % barcode)
             job_data = self.table_column_map(fields, JOB_MAP)
             job_item_data = self.table_column_map(fields, JOB_ITEM_MAP)
-
             log.info('Barcode "%s" mapping OK' % barcode)
         except ValueError, e:
             status = False
@@ -303,22 +321,6 @@ class Loader(object):
                         fields.get(k)) for (k, v) in map.iteritems())
 
         return columns
-
-    def translate_bu_id(self, value):
-        """
-        """
-        bu_id = None
-
-        log.debug('Translating "%s" to BU ...' % value)
-        m = re.search('YMLML11(TOL.).*', value)
-        bu_id = self.file_bu.get(m.group(1).lower())
-
-        if bu_id is None:
-            self.set_alert('Unable to extract BU from "%s"' % value)
-        else:
-            bu_id = int(bu_id)
-
-        return bu_id
 
     def translate_postcode(self, postcode):
         """Translate postcode information to state.
