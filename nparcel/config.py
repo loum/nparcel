@@ -7,6 +7,8 @@ import ConfigParser
 
 from nparcel.utils.log import log
 
+FLAG_MAP = {'item_number_excp': 0}
+
 
 class Config(object):
     """Nparcel Config class.
@@ -118,6 +120,7 @@ class Config(object):
 
     def parse_config(self):
         """Read config items from the configuration file.
+
         """
         # Required items (fail if otherwise).
         if self._file is None:
@@ -138,24 +141,15 @@ class Config(object):
             self.signature = self._config.get('dirs', 'signature')
             log.debug('Exporter signature directory %s' % self.signature)
 
-        except ConfigParser.NoOptionError, err:
-            log.critical('Missing required config: %s' % err)
-            sys.exit(1)
-
-        try:
             self.business_units = dict(self._config.items('business_units'))
             log.debug('Exporter Business Units %s' %
                       self.business_units.keys())
-        except ConfigParser.NoSectionError, err:
-            log.critical('Missing Business Units in configuration')
-            sys.exit(1)
 
-        try:
             self.file_bu = dict(self._config.items('file_bu'))
             log.debug('Exporter File Business Units %s' %
                       self.file_bu.keys())
-        except ConfigParser.NoSectionError, err:
-            log.critical('Missing Filename Business Units in configuration')
+        except ConfigParser.NoOptionError, err:
+            log.critical('Missing required config: %s' % err)
             sys.exit(1)
 
         # Optional items (defaults provided).
@@ -237,14 +231,14 @@ class Config(object):
 
         **Returns:**
             boolean ``True`` if flag is '1'
+
             boolean ``False`` if flag is '0' or undefined
 
         """
         status = False
 
         if self.cond:
-            flag_map = {'item_number_excp': 0}
-            index = flag_map.get(flag)
+            index = FLAG_MAP.get(flag)
             if index is None:
                 log.debug('Condition map undefined flag "%s"' % flag)
             else:
@@ -259,3 +253,22 @@ class Config(object):
             log.debug('Conditions config item is not defined')
 
         return status == '1'
+
+    def condition_map(self, bu):
+        """Return the *bu* condition map values.
+
+        **Args:**
+            bu: the name of the Business Unit.
+
+        **Returns:**
+            dict representing all of the condition flags for the *bu*
+
+        """
+        c_map = {}
+
+        for flag in FLAG_MAP.keys():
+            status = self.condition(bu, flag)
+            log.debug('bu/flag - status | %s/%s - %s' % (bu, flag, status))
+            c_map[flag] = status
+
+        return c_map

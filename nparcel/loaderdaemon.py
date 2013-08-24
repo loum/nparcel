@@ -29,8 +29,7 @@ class LoaderDaemon(nparcel.utils.Daemon):
     def _start(self, event):
         signal.signal(signal.SIGTERM, self._exit_handler)
 
-        loader = nparcel.Loader(file_bu=self.config('file_bu'),
-                                db=self.config.db_kwargs())
+        loader = nparcel.Loader(db=self.config.db_kwargs())
         reporter = nparcel.Reporter()
         emailer = nparcel.Emailer()
         np_support = self.config('support_emails')
@@ -42,74 +41,81 @@ class LoaderDaemon(nparcel.utils.Daemon):
             commit = False
 
         while not event.isSet():
-            if loader.db():
-                files = []
-                if self.file is not None:
-                    files.append(self.file)
+            subject = ('Nploaderd processing error: %s' %
+                       datetime.datetime.now().strftime("%Y/%m/%d %H:%M"))
 
+            files = []
+            if loader.db():
+                if self.file is not None:
                     # Only makes sense to do one iteration if a single
                     # file has been given on the command line.
+                    files.append(self.file)
                     event.set()
                 else:
                     files.extend(self.get_files())
-
-                for file in files:
-                    log.info('Processing file: "%s" ...' % file)
-
-                    status = False
-
-                    try:
-                        f = open(file, 'r')
-                        (bu_id, file_timestamp) = self.validate_file(file)
-
-                        reporter.reset(identifier=file)
-                        email = np_special
-                        sms = np_special_sms
-                        for line in f:
-                            record = line.rstrip('\r\n')
-                            if record == '%%EOF':
-                                log.info('EOF found')
-                                status = True
-                            else:
-                                reporter(loader.process(file_timestamp,
-                                                        record,
-                                                        bu_id,
-                                                        email,
-                                                        sms,
-                                                        self.dry))
-                                email = None
-                                sms = None
-                        f.close()
-                    except IOError, e:
-                        log.error('Error opening file "%s": %s' %
-                                  (file, str(e)))
-
-                    # Report the results.
-                    if status:
-                        log.info('%s processing OK.' % file)
-                        alerts = list(loader.alerts)
-                        loader.reset(commit=commit)
-                        if not self.dry:
-                            self.archive_file(file)
-
-                        # Report.
-                        reporter.end()
-                        log.info(reporter.report())
-                        if reporter.bad_records > 0:
-                            subject = 'Nploaderd processing error'
-                            msg = ("%s\n\n%s" % (reporter.report(),
-                                                 "\n".join(alerts)))
-                            del alerts[:]
-
-                            emailer.set_recipients(np_support)
-                            emailer.send(subject=subject,
-                                         msg=msg,
-                                         dry=self.dry)
-                    else:
-                        log.error('%s processing failed.' % file)
             else:
                 log.error('ODBC connection failure -- aborting')
                 event.set()
+                continue
+
+            # Start processing files.
+            for file in files:
+                log.info('Processing file: "%s" ...' % file)
+                status = False
+                try:
+                    f = open(file, 'r')
+                except IOError, e:
+                    log.error('File error "%s": %s' % (file, str(e)))
+                    continue
+
+                # We should have a file handle.
+                reporter.reset(identifier=file)
+                (bu, file_timestamp) = self.validate_file(file)
+                if bu is None or file_timestamp is None:
+                    continue
+
+                bu_id = int(self.config('file_bu').get(bu.lower()))
+                email = np_special
+                sms = np_special_sms
+                condition_map = self.config.condition_map(bu)
+                for line in f:
+                    record = line.rstrip('\r\n')
+                    if record == '%%EOF':
+                        log.info('EOF found')
+                        status = True
+                        break
+                    else:
+                        reporter(loader.process(file_timestamp,
+                                                record,
+                                                bu_id,
+                                                condition_map,
+                                                email,
+                                                sms,
+                                                self.dry))
+                        email = None
+                        sms = None
+                f.close()
+
+                # Report the results.
+                if status:
+                    log.info('%s processing OK.' % file)
+                    alerts = list(loader.alerts)
+                    loader.reset(commit=commit)
+                    if not self.dry:
+                        self.archive_file(file)
+
+                    # Report.
+                    reporter.end()
+                    stats = reporter.report()
+                    log.info(stats)
+                    if reporter.bad_records > 0:
+                        msg = ("%s\n\n%s" % (stats, "\n".join(alerts)))
+                        del alerts[:]
+
+                        emailer.set_recipients(np_support)
+                        emailer.send(subject=subject, msg=msg, dry=self.dry)
+                else:
+                    log.error('%s processing failed.' % file)
 
             if not event.isSet():
                 # Only makes sense to do one iteration of a dry run.
@@ -189,16 +195,21 @@ class LoaderDaemon(nparcel.utils.Daemon):
         """
         log.debug('Validating filename: "%s"' % filename)
         m = re.search('T1250_(TOL.)_(\d{14})\.txt', filename)
-        bu_id = int(self.config('file_bu').get(m.group(1).lower()))
-        log.debug('bu_id: %s' % bu_id)
-        file_timestamp = m.group(2)
+        bu = None
+        dt_formatted = None
+        if m is not None:
+            bu = m.group(1).lower()
+            file_timestamp = m.group(2)
+            parsed_time = time.strptime(file_timestamp, "%Y%m%d%H%M%S")
+            log.debug('parsed_time: %s' % parsed_time)
+            dt = datetime.datetime.fromtimestamp(time.mktime(parsed_time))
+            dt_formatted = dt.isoformat(' ')
+            log.info('Parsed BU/time "%s/%s" from file "%s"' %
+                     (bu, dt_formatted, filename))
+        else:
+            log.error('Could not parse BU/time from file "%s"' % filename)
 
-        parsed_time = time.strptime(file_timestamp, "%Y%m%d%H%M%S")
-        log.debug('parsed_time: %s' % parsed_time)
-        dt = datetime.datetime.fromtimestamp(time.mktime(parsed_time))
-        dt_formatted = dt.isoformat(' ')
-
-        return (bu_id, dt_formatted)
+        return (bu, dt_formatted)
 
     def archive_file(self, file):
         """

@@ -146,6 +146,7 @@ class Loader(object):
                 time,
                 raw_record,
                 bu_id,
+                cond_map,
                 email=None,
                 sms=None,
                 dry=False):
@@ -157,6 +158,9 @@ class Loader(object):
             raw_record: raw record directly from a T1250 file.
 
             bu_id: the Business Unit id as per "business_unit.id"
+
+            conditions: dict representing all of the condition flags for
+            the Business Unit
 
         **Kwargs:**
             email: list of email addresses to send to (special case)
@@ -183,8 +187,12 @@ class Loader(object):
         log.info('Barcode "%s" start mapping ...' % barcode)
 
         try:
-            job_data = self.table_column_map(fields, JOB_MAP)
-            job_item_data = self.table_column_map(fields, JOB_ITEM_MAP)
+            job_data = self.table_column_map(fields,
+                                             JOB_MAP,
+                                             cond_map)
+            job_item_data = self.table_column_map(fields,
+                                                  JOB_ITEM_MAP,
+                                                  cond_map)
             log.info('Barcode "%s" mapping OK' % barcode)
         except ValueError, e:
             status = False
@@ -265,7 +273,7 @@ class Loader(object):
 
         return agent_id_row_id
 
-    def table_column_map(self, fields, map):
+    def table_column_map(self, fields, map, condition_map):
         """Convert the parser fields to Nparcel table column names in
         preparation for table manipulation.
 
@@ -289,7 +297,9 @@ class Loader(object):
         """
         self.set_callbacks(fields, map)
         self.set_defaults(fields, map)
-        self.set_default_equals(fields, map)
+        self.set_default_equals(fields,
+                                map,
+                                condition_map.get('item_number_excp'))
         return self.set_columns(fields, map)
 
     def set_callbacks(self, fields, map):
@@ -333,7 +343,7 @@ class Loader(object):
                     log.debug('Set default value "%s" to "%s"' %
                               (v.get('default'), field_name))
 
-    def set_default_equals(self, fields, map):
+    def set_default_equals(self, fields, map, item_number_excp):
         """Process column default equals.
 
         Cycles through each raw, parsed fields and checks if the
@@ -341,18 +351,25 @@ class Loader(object):
         if the current field value is empty.
 
         **Args:**
-            as per :method:`table_column_map`
+            *fields* and *map* as per :method:`table_column_map`
+
+            item_number_excp: boolean flag which controls whether a
+            missing "Item Number" raises an exception (if set to ``True``)
 
         """
         for field_name, v in map.iteritems():
+            if field_name == 'Item Number' and item_number_excp:
+                log.debug('Missing Item number set to raise exception')
+                continue
+
             if not fields.get(field_name):
                 if v.get('default_equal') is not None:
                     copy_value = fields.get(v.get('default_equal'))
                     fields[field_name] = copy_value
                     log.debug('Set default_equal value "%s:%s" to "%s"' %
-                              (field_name,
+                              (v.get('default_equal'),
                                copy_value,
-                               v.get('default_equal')))
+                               field_name))
 
     def set_columns(self, fields, map):
         """Performs the actual mapping between the raw, parser fields and

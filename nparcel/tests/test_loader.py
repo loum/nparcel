@@ -5,6 +5,8 @@ import nparcel
 
 
 FILE_BU = {'tolp': '1', 'tolf': '2', 'toli': '3'}
+COND_MAP = {'item_number_excp': False}
+COND_MAP_IPEC = {'item_number_excp': True}
 VALID_LINE_BARCODE = '4156536111'
 VALID_LINE_CONNOTE = '218501217863'
 VALID_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111     N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
@@ -16,6 +18,7 @@ MANUFACTURED_BC_LINE = """3142357006912345      YMLML11TOLP130413  Diane Donohoe
 MANUFACTURED_BC_UPD_LINE = """3142357006912345      YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other                                                                                                                                    Diane Donohoe                             Bally                         Hong Kong Other                                                               000931423570069N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N032                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
 SINGLE_QUOTE_LINE = """080102033141          YMLML11TOLP130815  MISS S D'ARCY                           13 FITZGERALD RD              ESSENDON                      MELBOURNE                     3040                                                                                                                 MISS S D'ARCY                             NEXT RETAIL LTD               LEICESTER                                                                     4159214753     V098                                                                                                                                   00001000001                                                                      Parcels Overnight                   DESFORD ROAD                  ENDERBY                                                                                                              FVAN000098                                                                                                 GB                            AUSTRALIA                                                                                                                                                                                                         VI                                               """
 DODGY_POSTCODE = """574000244915          YMLML11TOLP130715  AMAL DOUKARI                            41 BLAMEY ST 1501 KELVIN GROVEQUEEN SLAND 4059              ;                             ;                                                                                                                    AMAL DOUKARI                              GUANGZHOU YASHUNDA LTD                                      362000                                          4159054556     Q067                                                                                                                                   00001000001                                                                      Parcels Overnight                   NO.83 MEIGUI YUAN QU E 3 BAIYUGUANGZHOU GUANGDONG                                                                                                  Q067                                                                                                       CHINA                         AUSTRALIA                                                                                                                                                                                                      GU ;                                                """
+VALID_ITEM_NUMBER = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111     N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                               1234567890                                                              HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
 
 
 class TestLoader(unittest2.TestCase):
@@ -56,10 +59,44 @@ class TestLoader(unittest2.TestCase):
         msg = 'Valid T1250 record should process OK'
         self.assertTrue(self._ldr.process(self._job_ts,
                                           VALID_LINE,
-                                          FILE_BU.get('tolp')), msg)
+                                          FILE_BU.get('tolp'),
+                                          COND_MAP), msg)
 
         # Restore DB state.
         self._ldr.db.connection.rollback()
+
+    def test_processor_valid_record_item_number(self):
+        """Process valid raw T1250 line -- item number, no exception.
+        """
+        # Seed the Agent Id.
+        agent_fields = {'code': 'N031'}
+        self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
+
+        msg = 'Valid T1250 record should process OK'
+        self.assertTrue(self._ldr.process(self._job_ts,
+                                          VALID_ITEM_NUMBER,
+                                          FILE_BU.get('toli'),
+                                          COND_MAP_IPEC), msg)
+
+        # Restore DB state.
+        self._ldr.db.connection.rollback()
+
+    def test_processor_invalid_record_item_number(self):
+        """Process valid raw T1250 line -- no item number, exception.
+        """
+        # Seed the Agent Id.
+        agent_fields = {'code': 'N031'}
+        self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
+
+        msg = 'T1250 record with missing Item Number should return False'
+        self.assertFalse(self._ldr.process(self._job_ts,
+                                           VALID_LINE,
+                                           FILE_BU.get('toli'),
+                                           COND_MAP_IPEC), msg)
+
+        # Restore DB state.
+        self._ldr.db.connection.rollback()
+
 
     def test_processor_valid_record_single_quote(self):
         """Process valid raw T1250 line.
@@ -71,7 +108,8 @@ class TestLoader(unittest2.TestCase):
         msg = 'Valid T1250 record should process OK -- single quote'
         self.assertTrue(self._ldr.process(self._job_ts,
                                           SINGLE_QUOTE_LINE,
-                                          FILE_BU.get('tolp')), msg)
+                                          FILE_BU.get('tolp'),
+                                          COND_MAP), msg)
 
         # Restore DB state.
         self._ldr.db.connection.rollback()
@@ -86,7 +124,8 @@ class TestLoader(unittest2.TestCase):
         msg = 'Valid T1250 record should process OK -- bad postcode'
         self.assertTrue(self._ldr.process(self._job_ts,
                                           DODGY_POSTCODE,
-                                          FILE_BU.get('tolp')), msg)
+                                          FILE_BU.get('tolp'),
+                                          COND_MAP), msg)
 
         # Restore DB state.
         self._ldr.db.connection.rollback()
@@ -103,11 +142,13 @@ class TestLoader(unittest2.TestCase):
         msg = 'Valid T1250 record should process successfully'
         self.assertTrue(self._ldr.process(self._job_ts,
                                           VALID_LINE,
-                                          FILE_BU.get('tolp')), msg)
+                                          FILE_BU.get('tolp'),
+                                          COND_MAP), msg)
         msg = 'Valid T1250 record update should process successfully'
         self.assertTrue(self._ldr.process(self._job_ts,
                                           VALID_LINE_AGENT_UPD,
-                                          FILE_BU.get('tolp')), msg)
+                                          FILE_BU.get('tolp'),
+                                          COND_MAP), msg)
 
         # Restore DB state.
         self._ldr.db.connection.rollback()
@@ -122,7 +163,8 @@ class TestLoader(unittest2.TestCase):
         msg = 'T1250 record should process successfully -- missing postcode'
         self.assertTrue(self._ldr.process(self._job_ts,
                                           INVALID_POSTCODE_LINE,
-                                          FILE_BU.get('tolp')), msg)
+                                          FILE_BU.get('tolp'),
+                                          COND_MAP), msg)
 
         # Restore DB state.
         self._ldr.db.connection.rollback()
@@ -133,7 +175,8 @@ class TestLoader(unittest2.TestCase):
         msg = 'Missing Agent Id should fail processing'
         self.assertFalse(self._ldr.process(self._job_ts,
                                            VALID_LINE,
-                                           FILE_BU.get('tolp')), msg)
+                                           FILE_BU.get('tolp'),
+                                           COND_MAP), msg)
 
     def test_processor_valid_record_existing_barcode(self):
         """Process valid raw T1250 line -- existing barcode.
@@ -147,11 +190,13 @@ class TestLoader(unittest2.TestCase):
         msg = 'New T1250 record should process successfully'
         self.assertTrue(self._ldr.process(self._job_ts,
                                           VALID_LINE,
-                                          FILE_BU.get('tolp')), msg)
+                                          FILE_BU.get('tolp'),
+                                          COND_MAP), msg)
         msg = 'Duplicate T1250 record should process successfully'
         self.assertTrue(self._ldr.process(self._job_ts,
                                           VALID_LINE,
-                                          FILE_BU.get('tolp')), msg)
+                                          FILE_BU.get('tolp'),
+                                          COND_MAP), msg)
 
         sql = self._ldr.db.jobitem.connote_sql(VALID_LINE_CONNOTE)
         self._ldr.db(sql)
@@ -171,7 +216,8 @@ class TestLoader(unittest2.TestCase):
         msg = 'Invalid barcode processing should return False'
         self.assertFalse(self._ldr.process(self._job_ts,
                                            INVALID_BARCODE_LINE,
-                                           FILE_BU.get('tolp')), msg)
+                                           FILE_BU.get('tolp'),
+                                           COND_MAP), msg)
 
     def test_processor_invalid_agent_id_record(self):
         """Process valid raw T1250 line with an invalid barcode.
@@ -179,7 +225,8 @@ class TestLoader(unittest2.TestCase):
         msg = 'Invalid Agent Id processing should return False'
         self.assertFalse(self._ldr.process(self._job_ts,
                                            INVALID_AGENTID_LINE,
-                                           FILE_BU.get('tolp')), msg)
+                                           FILE_BU.get('tolp'),
+                                           COND_MAP), msg)
 
     def test_processor_manufactured_connote(self):
         """Process valid raw T1250 line with manufactured barcode.
@@ -194,12 +241,14 @@ class TestLoader(unittest2.TestCase):
         msg = 'Manufactured barcode creation failed -- no barcode'
         self.assertTrue(self._ldr.process(self._job_ts,
                                           MANUFACTURED_BC_LINE,
-                                          FILE_BU.get('tolp')), msg)
+                                          FILE_BU.get('tolp'),
+                                          COND_MAP), msg)
         # Now the manufactured barcode value update.
         msg = 'Manufactured barcode creation failed -- existing barcode'
         self.assertTrue(self._ldr.process(self._job_ts,
                                           MANUFACTURED_BC_UPD_LINE,
-                                          FILE_BU.get('tolp')), msg)
+                                          FILE_BU.get('tolp'),
+                                          COND_MAP), msg)
 
         # Restore DB state.
         self._ldr.db.connection.rollback()
@@ -215,7 +264,7 @@ class TestLoader(unittest2.TestCase):
                'Field 2': {
                    'column': 'field_2',
                    'required': True}}
-        received = self._ldr.table_column_map(fields, map)
+        received = self._ldr.table_column_map(fields, map, COND_MAP)
         expected = {'field_1': 'field 1 value',
                     'field_2': 'field 2 value'}
         msg = 'Table to column map incorrect'
@@ -298,11 +347,11 @@ class TestLoader(unittest2.TestCase):
                    'default_equal': 'Field 1',
                    'required': True}}
 
-        self._ldr.set_default_equals(fields, map)
+        self._ldr.set_default_equals(fields, map, False)
         received = fields
         expected = {'Field 1': 'field 1 value',
                     'Field 2': 'field 2 value'}
-        msg = 'Raw fields to table column default equals incorrect -- has value'
+        msg = 'Default equals incorrect -- has value'
         self.assertDictEqual(received, expected, msg)
 
     def test_set_default_equals_value_not_provided(self):
@@ -318,11 +367,51 @@ class TestLoader(unittest2.TestCase):
                    'default_equal': 'Field 1',
                    'required': True}}
 
-        self._ldr.set_default_equals(fields, map)
+        self._ldr.set_default_equals(fields, map, False)
         received = fields
         expected = {'Field 1': 'field 1 value',
                     'Field 2': 'field 1 value'}
-        msg = 'Raw fields to table column default equals incorrect -- no value'
+        msg = 'Default equals incorrect -- no value'
+        self.assertDictEqual(received, expected, msg)
+
+    def test_set_default_equals_missing_item_number_raise_excp(self):
+        """Default equals if value not provided raises exception.
+        """
+        fields = {'Field 1': 'field 1 value',
+                  'Item Number': ''}
+        map = {'Field 1': {
+                   'column': 'field_1',
+                   'required': True},
+               'Item Number': {
+                   'column': 'field_2',
+                   'default_equal': 'Field 1',
+                   'required': True}}
+
+        self._ldr.set_default_equals(fields, map, True)
+        received = fields
+        expected = {'Field 1': 'field 1 value',
+                    'Item Number': ''}
+        msg = 'Default equals incorrect -- Item Number raises exception'
+        self.assertDictEqual(received, expected, msg)
+
+    def test_set_default_equals_missing_item_number_no_excp(self):
+        """Default equals if value not provided does not raise exception.
+        """
+        fields = {'Field 1': 'field 1 value',
+                  'Item Number': ''}
+        map = {'Field 1': {
+                   'column': 'field_1',
+                   'required': True},
+               'Item Number': {
+                   'column': 'field_2',
+                   'default_equal': 'Field 1',
+                   'required': True}}
+
+        self._ldr.set_default_equals(fields, map, False)
+        received = fields
+        expected = {'Field 1': 'field 1 value',
+                    'Item Number': 'field 1 value'}
+        msg = 'Default equals incorrect -- Item Number no exception'
         self.assertDictEqual(received, expected, msg)
 
     def test_set_columns(self):
@@ -355,7 +444,7 @@ class TestLoader(unittest2.TestCase):
         self.assertRaisesRegexp(ValueError,
                                 'Field "Field 1" is required',
                                 self._ldr.table_column_map,
-                                fields, map)
+                                fields, map, COND_MAP)
 
     def test_table_column_map_missing_required_field_with_default(self):
         """Table column map missing required field value with default.
@@ -368,7 +457,7 @@ class TestLoader(unittest2.TestCase):
                'Field 2': {
                    'column': 'field_2',
                    'required': False}}
-        received = self._ldr.table_column_map(fields, map)
+        received = self._ldr.table_column_map(fields, map, COND_MAP)
         expected = {'field_1': 'field_1_default',
                     'field_2': 'field 2 value'}
         msg = 'Table to column map with missing required field error'
@@ -385,7 +474,7 @@ class TestLoader(unittest2.TestCase):
                'Field 2': {
                    'column': 'field_2',
                    'required': False}}
-        received = self._ldr.table_column_map(fields, map)
+        received = self._ldr.table_column_map(fields, map, COND_MAP)
         expected = {'field_1': 'field 2 value',
                     'field_2': 'field 2 value'}
         msg = 'Table to column map with missing required field error'
@@ -402,7 +491,8 @@ class TestLoader(unittest2.TestCase):
         fields['job_ts'] = self._job_ts
         fields['bu_id'] = int(FILE_BU.get('tolp'))
         received = self._ldr.table_column_map(fields,
-                                                 nparcel.loader.JOB_MAP)
+                                              nparcel.loader.JOB_MAP,
+                                              COND_MAP)
         expected = {'address_1': '31 Bridge st,',
                     'address_2': 'Lane Cove,',
                     'agent_id': 1,
@@ -457,7 +547,8 @@ class TestLoader(unittest2.TestCase):
         """
         fields = self._ldr.parser.parse_line(VALID_LINE)
         received = self._ldr.table_column_map(fields,
-                                              nparcel.loader.JOB_ITEM_MAP)
+                                              nparcel.loader.JOB_ITEM_MAP,
+                                              COND_MAP)
         # Null out the time created.
         received['created_ts'] = None
         expected = {'connote_nbr': '218501217863',
