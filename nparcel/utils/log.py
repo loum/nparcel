@@ -48,8 +48,9 @@ for loc in locations:
 # resulting frame to get the name of the script.
 s = inspect.stack()
 logger_name = os.path.basename(s[-1][1])
-if logger_name == 'nosetests':
+if logger_name == 'nosetests' or logger_name == '<stdin>':
     logger_name = None
+
 
 log = logging.getLogger(logger_name)
 if logger_name is not None:
@@ -59,10 +60,10 @@ if logger_name is not None:
 if not found_log_config:
     # If no config, just dump a basic log message to console.
     ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
     formatter = logging.Formatter("%(asctime)s %(levelname)s:: %(message)s")
     ch.setFormatter(formatter)
     log.addHandler(ch)
+    log.level = logging.NOTSET
 
 
 def set_console():

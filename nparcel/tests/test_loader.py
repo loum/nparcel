@@ -22,25 +22,25 @@ class TestLoader(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._loader = nparcel.Loader()
-        cls._job_ts = cls._loader.db.date_now()
+        cls._ldr = nparcel.Loader()
+        cls._job_ts = cls._ldr.db.date_now()
 
     def test_init(self):
         """Initialise a Loader object.
         """
         msg = 'Object is not an nparcel.Loader'
-        self.assertIsInstance(self._loader, nparcel.Loader, msg)
+        self.assertIsInstance(self._ldr, nparcel.Loader, msg)
 
     def test_parser_integration(self):
         """Parser object integration.
         """
         msg = 'Loader object does not have a valid Parser object'
-        self.assertIsInstance(self._loader.parser, nparcel.Parser, msg)
+        self.assertIsInstance(self._ldr.parser, nparcel.Parser, msg)
 
     def test_valid_barcode_extract(self):
         """Extract valid barcode.
         """
-        result = self._loader.parser.parse_line(VALID_LINE)
+        result = self._ldr.parser.parse_line(VALID_LINE)
         received = result.get('Bar code')
         expected = VALID_LINE_BARCODE
         msg = 'Loader Bar code parse should return "%s"' % expected
@@ -51,137 +51,135 @@ class TestLoader(unittest2.TestCase):
         """
         # Seed the Agent Id.
         agent_fields = {'code': 'N031'}
-        self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
+        self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
         msg = 'Valid T1250 record should process OK'
-        self.assertTrue(self._loader.process(self._job_ts,
-                                             VALID_LINE,
-                                             FILE_BU.get('tolp')),
-                        msg)
+        self.assertTrue(self._ldr.process(self._job_ts,
+                                          VALID_LINE,
+                                          FILE_BU.get('tolp')), msg)
 
         # Restore DB state.
-        self._loader.db.connection.rollback()
+        self._ldr.db.connection.rollback()
 
     def test_processor_valid_record_single_quote(self):
         """Process valid raw T1250 line.
         """
         # Seed the Agent Id.
         agent_fields = {'code': 'V098'}
-        self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
+        self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
         msg = 'Valid T1250 record should process OK -- single quote'
-        self.assertTrue(self._loader.process(self._job_ts,
-                                             SINGLE_QUOTE_LINE,
-                                             FILE_BU.get('tolp')),
-                        msg)
+        self.assertTrue(self._ldr.process(self._job_ts,
+                                          SINGLE_QUOTE_LINE,
+                                          FILE_BU.get('tolp')), msg)
 
         # Restore DB state.
-        self._loader.db.connection.rollback()
+        self._ldr.db.connection.rollback()
 
     def test_processor_valid_record_dodgy_postcode(self):
         """Process valid raw T1250 line -- dodgy postcode.
         """
         # Seed the Agent Id.
         agent_fields = {'code': 'Q067'}
-        self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
+        self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
         msg = 'Valid T1250 record should process OK -- bad postcode'
-        self.assertTrue(self._loader.process(self._job_ts,
-                                             DODGY_POSTCODE,
-                                             FILE_BU.get('tolp')), msg)
+        self.assertTrue(self._ldr.process(self._job_ts,
+                                          DODGY_POSTCODE,
+                                          FILE_BU.get('tolp')), msg)
 
         # Restore DB state.
-        self._loader.db.connection.rollback()
+        self._ldr.db.connection.rollback()
 
     def test_processor_valid_record_update(self):
         """Process valid raw T1250 line with a "job" item Agent Id update.
         """
         # Seed the Agent Ids.
         agent_fields = {'code': 'N031'}
-        self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
+        self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
         agent_fields = {'code': 'N014'}
-        self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
+        self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
         msg = 'Valid T1250 record should process successfully'
-        self.assertTrue(self._loader.process(self._job_ts,
-                                             VALID_LINE,
-                                             FILE_BU.get('tolp')), msg)
+        self.assertTrue(self._ldr.process(self._job_ts,
+                                          VALID_LINE,
+                                          FILE_BU.get('tolp')), msg)
         msg = 'Valid T1250 record update should process successfully'
-        self.assertTrue(self._loader.process(self._job_ts,
-                                             VALID_LINE_AGENT_UPD,
-                                             FILE_BU.get('tolp')), msg)
+        self.assertTrue(self._ldr.process(self._job_ts,
+                                          VALID_LINE_AGENT_UPD,
+                                          FILE_BU.get('tolp')), msg)
 
         # Restore DB state.
-        self._loader.db.connection.rollback()
+        self._ldr.db.connection.rollback()
 
     def test_processor_invalid_postcode_record(self):
         """Process valid raw T1250 line -- missing Postcode.
         """
         # Seed the Agent Id.
         agent_fields = {'code': 'N031'}
-        self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
+        self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
         msg = 'T1250 record should process successfully -- missing postcode'
-        self.assertTrue(self._loader.process(self._job_ts,
-                                             INVALID_POSTCODE_LINE,
-                                             FILE_BU.get('tolp')), msg)
+        self.assertTrue(self._ldr.process(self._job_ts,
+                                          INVALID_POSTCODE_LINE,
+                                          FILE_BU.get('tolp')), msg)
 
         # Restore DB state.
-        self._loader.db.connection.rollback()
+        self._ldr.db.connection.rollback()
 
     def test_processor_missing_agent_id_record(self):
         """Process valid raw T1250 line -- missing Agent Id.
         """
         msg = 'Missing Agent Id should fail processing'
-        self.assertFalse(self._loader.process(self._job_ts,
-                                              VALID_LINE,
-                                              FILE_BU.get('tolp')), msg)
+        self.assertFalse(self._ldr.process(self._job_ts,
+                                           VALID_LINE,
+                                           FILE_BU.get('tolp')), msg)
 
     def test_processor_valid_record_existing_barcode(self):
         """Process valid raw T1250 line -- existing barcode.
         """
         # Seed the Agent Id.
         agent_fields = {'code': 'N031'}
-        self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
+        self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
         # First, create a record and attempt to reload as a duplicate.
         # Should update the Agent Id but not create a new job_item record.
         msg = 'New T1250 record should process successfully'
-        self.assertTrue(self._loader.process(self._job_ts,
-                                             VALID_LINE,
-                                             FILE_BU.get('tolp')), msg)
+        self.assertTrue(self._ldr.process(self._job_ts,
+                                          VALID_LINE,
+                                          FILE_BU.get('tolp')), msg)
         msg = 'Duplicate T1250 record should process successfully'
-        self.assertTrue(self._loader.process(self._job_ts,
-                                             VALID_LINE,
-                                             FILE_BU.get('tolp')), msg)
+        self.assertTrue(self._ldr.process(self._job_ts,
+                                          VALID_LINE,
+                                          FILE_BU.get('tolp')), msg)
 
-        sql = self._loader.db.jobitem.connote_sql(VALID_LINE_CONNOTE)
-        self._loader.db(sql)
+        sql = self._ldr.db.jobitem.connote_sql(VALID_LINE_CONNOTE)
+        self._ldr.db(sql)
         received = []
-        for row in self._loader.db.rows():
+        for row in self._ldr.db.rows():
             received.append(row[0])
         expected = 1
         msg = 'Connote update should not create additional job_item'
         self.assertEqual(len(received), expected, msg)
 
         # Restore DB state.
-        self._loader.db.connection.rollback()
+        self._ldr.db.connection.rollback()
 
     def test_processor_invalid_barcode_record(self):
         """Process valid raw T1250 line with an invalid barcode.
         """
         msg = 'Invalid barcode processing should return False'
-        self.assertFalse(self._loader.process(self._job_ts,
-                                              INVALID_BARCODE_LINE,
-                                              FILE_BU.get('tolp')), msg)
+        self.assertFalse(self._ldr.process(self._job_ts,
+                                           INVALID_BARCODE_LINE,
+                                           FILE_BU.get('tolp')), msg)
 
     def test_processor_invalid_agent_id_record(self):
         """Process valid raw T1250 line with an invalid barcode.
         """
         msg = 'Invalid Agent Id processing should return False'
-        self.assertFalse(self._loader.process(self._job_ts,
-                                              INVALID_AGENTID_LINE,
-                                              FILE_BU.get('tolp')), msg)
+        self.assertFalse(self._ldr.process(self._job_ts,
+                                           INVALID_AGENTID_LINE,
+                                           FILE_BU.get('tolp')), msg)
 
     def test_processor_manufactured_connote(self):
         """Process valid raw T1250 line with manufactured barcode.
@@ -190,21 +188,21 @@ class TestLoader(unittest2.TestCase):
         agent_fields = [{'code': 'N031'},
                         {'code': 'N032'}]
         for agent_field in agent_fields:
-            self._loader.db(self._loader.db._agent.insert_sql(agent_field))
+            self._ldr.db(self._ldr.db._agent.insert_sql(agent_field))
 
         # First, create a manufactured barcode value.
         msg = 'Manufactured barcode creation failed -- no barcode'
-        self.assertTrue(self._loader.process(self._job_ts,
-                                             MANUFACTURED_BC_LINE,
-                                             FILE_BU.get('tolp')), msg)
+        self.assertTrue(self._ldr.process(self._job_ts,
+                                          MANUFACTURED_BC_LINE,
+                                          FILE_BU.get('tolp')), msg)
         # Now the manufactured barcode value update.
         msg = 'Manufactured barcode creation failed -- existing barcode'
-        self.assertTrue(self._loader.process(self._job_ts,
-                                             MANUFACTURED_BC_UPD_LINE,
-                                             FILE_BU.get('tolp')), msg)
+        self.assertTrue(self._ldr.process(self._job_ts,
+                                          MANUFACTURED_BC_UPD_LINE,
+                                          FILE_BU.get('tolp')), msg)
 
         # Restore DB state.
-        self._loader.db.connection.rollback()
+        self._ldr.db.connection.rollback()
 
     def test_table_column_map(self):
         """Map parser fields to table columns.
@@ -217,10 +215,131 @@ class TestLoader(unittest2.TestCase):
                'Field 2': {
                    'column': 'field_2',
                    'required': True}}
-        received = self._loader.table_column_map(fields, map)
+        received = self._ldr.table_column_map(fields, map)
         expected = {'field_1': 'field 1 value',
                     'field_2': 'field 2 value'}
         msg = 'Table to column map incorrect'
+        self.assertDictEqual(received, expected, msg)
+
+    def test_set_callbacks(self):
+        """Set table columns from a callback.
+        """
+
+        def test_callback(value):
+            return 'new value'
+
+        fields = {'Field 1': 'field 1 value',
+                  'Field 2': 'field 2 value'}
+        map = {'Field 1': {
+                   'column': 'field_1',
+                   'required': True},
+               'Field 2': {
+                   'column': 'field_2',
+                   'callback': test_callback,
+                   'required': True}}
+
+        self._ldr.set_callbacks(fields, map)
+        received = fields
+        expected = {'Field 1': 'field 1 value',
+                    'Field 2': 'new value'}
+        msg = 'Raw fields to table column callback incorrect'
+        self.assertDictEqual(received, expected, msg)
+
+    def test_set_defaults_value_already_provided(self):
+        """Set table columns from defaults if value provided.
+        """
+        fields = {'Field 1': 'field 1 value',
+                  'Field 2': 'field 2 value'}
+        map = {'Field 1': {
+                   'column': 'field_1',
+                   'required': True},
+               'Field 2': {
+                   'column': 'field_2',
+                   'default': 'banana',
+                   'required': True}}
+
+        self._ldr.set_defaults(fields, map)
+        received = fields
+        expected = {'Field 1': 'field 1 value',
+                    'Field 2': 'field 2 value'}
+        msg = 'Raw fields to table column default incorrect -- has value'
+        self.assertDictEqual(received, expected, msg)
+
+    def test_set_defaults_value_not_provided(self):
+        """Set table columns from defaults if value not provided.
+        """
+        fields = {'Field 1': 'field 1 value',
+                  'Field 2': ''}
+        map = {'Field 1': {
+                   'column': 'field_1',
+                   'required': True},
+               'Field 2': {
+                   'column': 'field_2',
+                   'default': 'banana',
+                   'required': True}}
+
+        self._ldr.set_defaults(fields, map)
+        received = fields
+        expected = {'Field 1': 'field 1 value',
+                    'Field 2': 'banana'}
+        msg = 'Raw fields to table column default incorrect -- no value'
+        self.assertDictEqual(received, expected, msg)
+
+    def test_set_default_equals_value_already_provided(self):
+        """Set table columns from default equals if value provided.
+        """
+        fields = {'Field 1': 'field 1 value',
+                  'Field 2': 'field 2 value'}
+        map = {'Field 1': {
+                   'column': 'field_1',
+                   'required': True},
+               'Field 2': {
+                   'column': 'field_2',
+                   'default_equal': 'Field 1',
+                   'required': True}}
+
+        self._ldr.set_default_equals(fields, map)
+        received = fields
+        expected = {'Field 1': 'field 1 value',
+                    'Field 2': 'field 2 value'}
+        msg = 'Raw fields to table column default equals incorrect -- has value'
+        self.assertDictEqual(received, expected, msg)
+
+    def test_set_default_equals_value_not_provided(self):
+        """Set table columns from default equals if value not provided.
+        """
+        fields = {'Field 1': 'field 1 value',
+                  'Field 2': ''}
+        map = {'Field 1': {
+                   'column': 'field_1',
+                   'required': True},
+               'Field 2': {
+                   'column': 'field_2',
+                   'default_equal': 'Field 1',
+                   'required': True}}
+
+        self._ldr.set_default_equals(fields, map)
+        received = fields
+        expected = {'Field 1': 'field 1 value',
+                    'Field 2': 'field 1 value'}
+        msg = 'Raw fields to table column default equals incorrect -- no value'
+        self.assertDictEqual(received, expected, msg)
+
+    def test_set_columns(self):
+        """Set table columns from the parsed fields.
+        """
+        fields = {'Field 1': 'field 1 value',
+                  'Field 2': 'field 2 value'}
+        map = {'Field 1': {
+                   'column': 'field_1',
+                   'required': True},
+               'Field 2': {
+                   'column': 'field_2',
+                   'required': True}}
+        received = self._ldr.set_columns(fields, map)
+        expected = {'field_1': 'field 1 value',
+                    'field_2': 'field 2 value'}
+        msg = 'Raw fields to table column map incorrect'
         self.assertDictEqual(received, expected, msg)
 
     def test_table_column_map_missing_required_field_exception(self):
@@ -235,7 +354,7 @@ class TestLoader(unittest2.TestCase):
                    'required': False}}
         self.assertRaisesRegexp(ValueError,
                                 'Field "Field 1" is required',
-                                self._loader.table_column_map,
+                                self._ldr.table_column_map,
                                 fields, map)
 
     def test_table_column_map_missing_required_field_with_default(self):
@@ -249,7 +368,7 @@ class TestLoader(unittest2.TestCase):
                'Field 2': {
                    'column': 'field_2',
                    'required': False}}
-        received = self._loader.table_column_map(fields, map)
+        received = self._ldr.table_column_map(fields, map)
         expected = {'field_1': 'field_1_default',
                     'field_2': 'field 2 value'}
         msg = 'Table to column map with missing required field error'
@@ -266,7 +385,7 @@ class TestLoader(unittest2.TestCase):
                'Field 2': {
                    'column': 'field_2',
                    'required': False}}
-        received = self._loader.table_column_map(fields, map)
+        received = self._ldr.table_column_map(fields, map)
         expected = {'field_1': 'field 2 value',
                     'field_2': 'field 2 value'}
         msg = 'Table to column map with missing required field error'
@@ -277,12 +396,12 @@ class TestLoader(unittest2.TestCase):
         """
         # Seed the Agent Id.
         agent_fields = {'code': 'N031'}
-        self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
+        self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
-        fields = self._loader.parser.parse_line(VALID_LINE)
+        fields = self._ldr.parser.parse_line(VALID_LINE)
         fields['job_ts'] = self._job_ts
         fields['bu_id'] = int(FILE_BU.get('tolp'))
-        received = self._loader.table_column_map(fields,
+        received = self._ldr.table_column_map(fields,
                                                  nparcel.loader.JOB_MAP)
         expected = {'address_1': '31 Bridge st,',
                     'address_2': 'Lane Cove,',
@@ -301,7 +420,7 @@ class TestLoader(unittest2.TestCase):
         """Translate postcode to state -- valid, range-based.
         """
         postcode = 'xxx'
-        received = self._loader.translate_postcode(postcode)
+        received = self._ldr.translate_postcode(postcode)
         expected = ''
         msg = 'Non-integer postcode translation to state failed'
         self.assertEqual(received, expected, msg)
@@ -310,7 +429,7 @@ class TestLoader(unittest2.TestCase):
         """Translate postcode to state -- valid, range-based.
         """
         postcode = 2000
-        received = self._loader.translate_postcode(postcode)
+        received = self._ldr.translate_postcode(postcode)
         expected = 'NSW'
         msg = 'Valid postcode translation to state failed -- valid'
         self.assertEqual(received, expected, msg)
@@ -319,7 +438,7 @@ class TestLoader(unittest2.TestCase):
         """Translate postcode to state -- invalid, range-based.
         """
         postcode = -1
-        received = self._loader.translate_postcode(postcode)
+        received = self._ldr.translate_postcode(postcode)
         expected = ''
         msg = 'Invalid postcode translation to state failed -- invalid'
         self.assertEqual(received, expected, msg)
@@ -328,7 +447,7 @@ class TestLoader(unittest2.TestCase):
         """Translate postcode to state -- valid, exception-based.
         """
         postcode = 2899
-        received = self._loader.translate_postcode(postcode)
+        received = self._ldr.translate_postcode(postcode)
         expected = 'NSW'
         msg = 'Valid postcode translation to state failed -- exceptions'
         self.assertEqual(received, expected, msg)
@@ -336,9 +455,9 @@ class TestLoader(unittest2.TestCase):
     def test_jobitem_table_column_map_for_a_valid_raw_record(self):
         """Process valid raw T1250 line and map "jobitem" table elements.
         """
-        fields = self._loader.parser.parse_line(VALID_LINE)
-        received = self._loader.table_column_map(fields,
-                                                 nparcel.loader.JOB_ITEM_MAP)
+        fields = self._ldr.parser.parse_line(VALID_LINE)
+        received = self._ldr.table_column_map(fields,
+                                              nparcel.loader.JOB_ITEM_MAP)
         # Null out the time created.
         received['created_ts'] = None
         expected = {'connote_nbr': '218501217863',
@@ -354,7 +473,7 @@ class TestLoader(unittest2.TestCase):
         """Check barcode status -- missing barcode.
         """
         msg = 'Missing barcode should return False'
-        self.assertFalse(self._loader.barcode_exists('xxx'), msg)
+        self.assertFalse(self._ldr.barcode_exists('xxx'), msg)
 
     def test_barcode_exists_with_existing_barcode(self):
         """Check barcode status -- existing barcode.
@@ -362,20 +481,19 @@ class TestLoader(unittest2.TestCase):
         # Seed the barcode.
         barcode_fields = {'card_ref_nbr': VALID_LINE_BARCODE,
                           'job_ts': self._job_ts}
-        self._loader.db(self._loader.db._job.insert_sql(barcode_fields))
+        self._ldr.db(self._ldr.db._job.insert_sql(barcode_fields))
 
         msg = 'Existing barcode should return True'
-        self.assertTrue(self._loader.barcode_exists(VALID_LINE_BARCODE),
-                        msg)
+        self.assertTrue(self._ldr.barcode_exists(VALID_LINE_BARCODE), msg)
 
         # Restore DB state.
-        self._loader.db.connection.rollback()
+        self._ldr.db.connection.rollback()
 
     def test_agent_id_with_missing_agent_id(self):
         """Agent ID check with missing Agent ID.
         """
         msg = 'Missing Agent ID should return None'
-        self.assertIsNone(self._loader.get_agent_id('xxx'), msg)
+        self.assertIsNone(self._ldr.get_agent_id('xxx'), msg)
 
     def test_agent_id_existing_agent_id(self):
         """Valid agent ID check.
@@ -383,15 +501,15 @@ class TestLoader(unittest2.TestCase):
         # Seed the Agent Id.
         test_agent_id = 'N014'
         agent_fields = {'code': test_agent_id}
-        self._loader.db(self._loader.db._agent.insert_sql(agent_fields))
+        self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
         msg = 'Existing barcode should not return None'
-        received = self._loader.get_agent_id(test_agent_id)
+        received = self._ldr.get_agent_id(test_agent_id)
         expected = 1
         self.assertEqual(received, expected, msg)
 
         # Restore DB state.
-        self._loader.db.connection.rollback()
+        self._ldr.db.connection.rollback()
 
     def test_match_connote_scenario_connote_lt_15_char(self):
         """Manufactured connote check -- connote < 15 chars.
@@ -399,7 +517,7 @@ class TestLoader(unittest2.TestCase):
         msg = 'Connote length < 15 chars scenario check should return False'
         barcode = '41566627'
         connote = '218701663454'
-        received = self._loader.match_connote(connote, barcode)
+        received = self._ldr.match_connote(connote, barcode)
         self.assertFalse(received, msg)
 
     def test_match_connote_scenario_connote_gt_15_char_unique_barcode(self):
@@ -408,7 +526,7 @@ class TestLoader(unittest2.TestCase):
         msg = 'Connote length > 15 chars scenario check should return False'
         barcode = '41566627'
         connote = '3142357006912345'
-        received = self._loader.match_connote(connote, barcode)
+        received = self._ldr.match_connote(connote, barcode)
         self.assertFalse(received, msg)
 
     def test_match_connote_scenario_connote_gt_15_char_dodgy_barcode(self):
@@ -417,7 +535,7 @@ class TestLoader(unittest2.TestCase):
         msg = 'Connote length > 15 chars scenario check should return False'
         barcode = '000931423570069'
         connote = '3142357006912345'
-        received = self._loader.match_connote(connote, barcode)
+        received = self._ldr.match_connote(connote, barcode)
         self.assertTrue(received, msg)
 
     def test_match_connote_scenario_connote_gt_15_char_like_start(self):
@@ -426,7 +544,7 @@ class TestLoader(unittest2.TestCase):
         msg = 'Connote length > 15 chars scenario check should return False'
         barcode = '000931423750069'
         connote = '00093142375006909983'
-        received = self._loader.match_connote(connote, barcode)
+        received = self._ldr.match_connote(connote, barcode)
         self.assertTrue(received, msg)
 
     def test_get_connote_job_id(self):
@@ -441,8 +559,8 @@ class TestLoader(unittest2.TestCase):
                   'job_ts': '%s' % older_ts,
                   'status': 1,
                   'suburb': 'Australia Other'}
-        sql = self._loader.db.job.insert_sql(kwargs)
-        job_id_old = self._loader.db.insert(sql)
+        sql = self._ldr.db.job.insert_sql(kwargs)
+        job_id_old = self._ldr.db.insert(sql)
 
         kwargs = {'address_1': '31 Bridge st,',
                   'address_2': 'Lane Cove,',
@@ -452,8 +570,8 @@ class TestLoader(unittest2.TestCase):
                   'job_ts': self._job_ts,
                   'status': 1,
                   'suburb': 'Australia Other'}
-        sql = self._loader.db.job.insert_sql(kwargs)
-        job_id = self._loader.db.insert(sql)
+        sql = self._ldr.db.job.insert_sql(kwargs)
+        job_id = self._ldr.db.insert(sql)
 
         kwargs = {'address_1': '32 Banana st,',
                   'address_2': 'Banana Cove,',
@@ -463,8 +581,8 @@ class TestLoader(unittest2.TestCase):
                   'job_ts': self._job_ts,
                   'status': 1,
                   'suburb': 'Australia Other'}
-        sql = self._loader.db.job.insert_sql(kwargs)
-        dodgy_job_id = self._loader.db.insert(sql)
+        sql = self._ldr.db.job.insert_sql(kwargs)
+        dodgy_job_id = self._ldr.db.insert(sql)
 
         # "job_items" table.
         jobitems = [{'connote_nbr': '218501217863',
@@ -480,26 +598,23 @@ class TestLoader(unittest2.TestCase):
                      'pickup_ts': self._job_ts,
                      'pod_name': 'pod_name 111111111111'}]
         for jobitem in jobitems:
-            sql = self._loader.db.jobitem.insert_sql(jobitem)
-            self._loader.db(sql=sql)
+            sql = self._ldr.db.jobitem.insert_sql(jobitem)
+            self._ldr.db(sql=sql)
 
-        received = self._loader.get_connote_job_id(connote='218501217863')
+        received = self._ldr.get_connote_job_id(connote='218501217863')
         msg = 'Connote based job id query results not as expected'
         self.assertEqual(received, job_id, msg)
 
         # Restore DB state.
-        self._loader.db.connection.rollback()
+        self._ldr.db.connection.rollback()
 
     def test_email_no_agent_id(self):
         """Email attempt with no agent_id.
         """
-        recipients = ['dummy@dummyville.com']
+        emails = ['dummy@dummyville.com']
         agent_id = 1
         barcode = 'xxx'
-        received = self._loader.send_email(agent_id,
-                                           recipients,
-                                           barcode,
-                                           dry=True)
+        received = self._ldr.send_email(agent_id, emails, barcode, dry=True)
         msg = 'Email with no Agent Id should return False'
         self.assertFalse(received, msg)
 
@@ -512,32 +627,26 @@ class TestLoader(unittest2.TestCase):
                         'address': '119 Auburn Road',
                         'suburb': 'HAWTHORN EAST',
                         'postcode': '3123'}
-        sql = self._loader.db._agent.insert_sql(agent_fields)
-        id = self._loader.db.insert(sql)
+        sql = self._ldr.db._agent.insert_sql(agent_fields)
+        id = self._ldr.db.insert(sql)
 
-        recipients = ['dummy@dummyville.com']
+        emails = ['dummy@dummyville.com']
         agent_id = id
         barcode = 'xxx'
-        received = self._loader.send_email(agent_id,
-                                           recipients,
-                                           barcode,
-                                           dry=True)
+        received = self._ldr.send_email(agent_id, emails, barcode, dry=True)
         msg = 'Email with valid Agent Id should return True'
         self.assertTrue(received, msg)
 
         # Restore DB state.
-        self._loader.db.connection.rollback()
+        self._ldr.db.connection.rollback()
 
     def test_sms_no_agent_id(self):
         """SMS attempt with no agent_id.
         """
-        recipients = ['1234567890']
+        mobiles = ['1234567890']
         agent_id = 1
         barcode = 'xxx'
-        received = self._loader.send_sms(agent_id,
-                                         recipients,
-                                         barcode,
-                                         dry=True)
+        received = self._ldr.send_sms(agent_id, mobiles, barcode, dry=True)
         msg = 'SMS with no Agent Id should return False'
         self.assertFalse(received, msg)
 
@@ -550,23 +659,20 @@ class TestLoader(unittest2.TestCase):
                         'address': '119 Auburn Road',
                         'suburb': 'HAWTHORN EAST',
                         'postcode': '3123'}
-        sql = self._loader.db._agent.insert_sql(agent_fields)
-        id = self._loader.db.insert(sql)
+        sql = self._ldr.db._agent.insert_sql(agent_fields)
+        id = self._ldr.db.insert(sql)
 
-        recipients = ['0431602145']
+        mobiles = ['0431602145']
         agent_id = id
         barcode = 'xxx'
-        received = self._loader.send_sms(agent_id,
-                                         recipients,
-                                         barcode,
-                                         dry=True)
+        received = self._ldr.send_sms(agent_id, mobiles, barcode, dry=True)
         msg = 'SMS with valid Agent Id should return True'
         self.assertTrue(received, msg)
 
         # Restore DB state.
-        self._loader.db.connection.rollback()
+        self._ldr.db.connection.rollback()
 
     @classmethod
     def tearDownClass(cls):
-        cls._loader = None
+        cls._ldr = None
         cls._job_ts = None

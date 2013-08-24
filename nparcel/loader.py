@@ -2,6 +2,7 @@ __all__ = [
     "Loader",
 ]
 import re
+import inspect
 
 import nparcel
 from nparcel.utils.log import log
@@ -268,9 +269,6 @@ class Loader(object):
         """Convert the parser fields to Nparcel table column names in
         preparation for table manipulation.
 
-        Runs a preliminary check to ensure that all requireditems in
-        *fields* can be mapped.  Raises a ``ValueError`` if otherwise.
-
         **Args:**
             fields: dictionary of :class:`nparcel.Parser` fields and
             values.
@@ -289,38 +287,95 @@ class Loader(object):
             ValueError if all *fields* cannot be mapped.
 
         """
-        columns = {}
+        self.set_callbacks(fields, map)
+        self.set_defaults(fields, map)
+        self.set_default_equals(fields, map)
+        return self.set_columns(fields, map)
 
+    def set_callbacks(self, fields, map):
+        """Process column map callbacks.
+
+        For each parsed field, check if a the mapping defines a 'callback'
+        option.  If so, it will process the existing field value
+        according to the logic defined in the callback.
+
+        **Args:**
+            as per :method:`table_column_map`
+
+        """
         for field_name, v in map.iteritems():
-            # Check for callbacks.
             if v.get('callback'):
+                # Check if the callback is a function or string.
+                if inspect.isroutine(v.get('callback')):
+                    callback = v.get('callback')
+                else:
+                    callback = getattr(self, v.get('callback'))
+
                 log.debug('Executing "%s" callback: "%s" ...' %
                           (field_name, v.get('callback')))
-                callback = getattr(self, v.get('callback'))
                 fields[field_name] = callback(fields.get(field_name))
 
+    def set_defaults(self, fields, map):
+        """Process column defaults.
+
+        Cycles through each raw, parsed fields and checks if the 'default'
+        option is set.  Will only assign the default if the current
+        field value is empty.
+
+        **Args:**
+            as per :method:`table_column_map`
+
+        """
+        for field_name, v in map.iteritems():
             if not fields.get(field_name):
                 if v.get('default') is not None:
                     fields[field_name] = v.get('default')
+                    log.debug('Set default value "%s" to "%s"' %
+                              (v.get('default'), field_name))
 
-        # Map to an existing field if we are currently empty.
+    def set_default_equals(self, fields, map):
+        """Process column default equals.
+
+        Cycles through each raw, parsed fields and checks if the
+        'default_equals' option is set.  Will only assign the default_equals
+        if the current field value is empty.
+
+        **Args:**
+            as per :method:`table_column_map`
+
+        """
         for field_name, v in map.iteritems():
             if not fields.get(field_name):
                 if v.get('default_equal') is not None:
-                    log.debug('"%s" set to "%s" value' %
-                              (field_name, v.get('default_equal')))
                     copy_value = fields.get(v.get('default_equal'))
                     fields[field_name] = copy_value
+                    log.debug('Set default_equal value "%s:%s" to "%s"' %
+                              (field_name,
+                               copy_value,
+                               v.get('default_equal')))
 
-            # By now, if we don't have data and we are "required" then
-            # raise an exception.
+    def set_columns(self, fields, map):
+        """Performs the actual mapping between the raw, parser fields and
+        the table columns.
+
+        Also runs a preliminary check to ensure that empty fields set as
+        "required" raise an exception.
+
+        **Args:**
+            as per :method:`table_column_map`
+
+        **Returns:**
+            as per :method:`table_column_map`
+
+        """
+        for field_name, v in map.iteritems():
             if v.get('required') and not fields.get(field_name):
                 raise ValueError('Field "%s" is required' % field_name)
 
-        columns = dict((map.get(k).get('column'),
+        cols = dict((map.get(k).get('column'),
                         fields.get(k)) for (k, v) in map.iteritems())
 
-        return columns
+        return cols
 
     def translate_postcode(self, postcode):
         """Translate postcode information to state.
