@@ -207,7 +207,7 @@ class Loader(object):
                 # Manufactured barcode.
                 job_id = self.get_connote_job_id(connote=connote)
             else:
-                # Expicit barcode.
+                # Explicit barcode.
                 barcodes = self.barcode_exists(barcode=barcode)
                 if barcodes:
                     job_id = barcodes[0]
@@ -451,7 +451,7 @@ class Loader(object):
     def match_connote(self, connote, barcode):
         """Pre-check to see if barcode value is based on connote.
 
-        This special coniditon occurs when operators cannot record parcel
+        This special condition occurs when operators cannot record parcel
         against a missing barcode.  Instead, a barcode value is manufactured
         from the existing connote.  Due to system limitations, the
         manufactured connote is truncated in the system.  This loss of

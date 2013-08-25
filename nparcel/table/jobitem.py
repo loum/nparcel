@@ -79,7 +79,7 @@ WHERE id = %d
 
         **Args:**
             connote: Connote value relating to the job_item.connote_nbr
-            value.
+            column.
 
         **Returns:**
             the SQL string
@@ -88,5 +88,23 @@ WHERE id = %d
         sql = """SELECT id
 FROM %s
 WHERE connote_nbr = '%s'""" % (self._name, connote)
+
+        return sql
+
+    def item_number_sql(self, item_nbr):
+        """SQL wrapper to extract records where job_item.item_nbr
+        is equal to *item_nbr*.
+
+        **Args:**
+            item_nbr: Item Number value relating to the job_item.item_nbr
+            column.
+
+        **Returns:**
+            the SQL string
+
+        """
+        sql = """SELECT id
+FROM %s
+WHERE item_nbr = '%s'""" % (self._name, item_nbr)
 
         return sql

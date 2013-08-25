@@ -113,6 +113,61 @@ VALUES ("%s", "%s")""" % (bc, self._job_ts)
         # Cleanup.
         self._db.connection.rollback()
 
+    def test_item_nbr_based_job_sql(self):
+        """Verify the item_nbr_based_job_sql string.
+        """
+        now = datetime.datetime.now()
+        delay = datetime.timedelta(seconds=99)
+        job_kwargs = {'address_1': '31 Bridge st,',
+                      'address_2': 'Lane Cove,',
+                      'agent_id': 'N031',
+                      'bu_id': 1,
+                      'card_ref_nbr': '4156536111',
+                      'job_ts': '%s' % (now - delay),
+                      'status': 1,
+                      'suburb': 'Australia Other'}
+        job_id_old = self._db.insert(self._job.insert_sql(job_kwargs))
+
+        job_kwargs = {'address_1': '31 Bridge st,',
+                      'address_2': 'Lane Cove,',
+                      'agent_id': 'N031',
+                      'bu_id': 1,
+                      'card_ref_nbr': '4156536111',
+                      'job_ts': self._job_ts,
+                      'status': 1,
+                      'suburb': 'Australia Other'}
+        job_id = self._db.insert(self._job.insert_sql(job_kwargs))
+
+        job_kwargs = {'address_1': '32 Banana st,',
+                      'address_2': 'Banana Cove,',
+                      'agent_id': 'N031',
+                      'bu_id': 1,
+                      'card_ref_nbr': '4156536112',
+                      'job_ts': self._job_ts,
+                      'status': 1,
+                      'suburb': 'Australia Other'}
+        dodgy_job_id = self._db.insert(self._job.insert_sql(job_kwargs))
+
+        # "job_items" table.
+        jobitems = {'connote_nbr': '218501217863',
+                    'item_nbr': 'abcdef000001',
+                    'job_id': job_id,
+                    'pickup_ts': self._job_ts,
+                    'pod_name': 'pod_name 218501217863'},
+        for jobitem in jobitems:
+            sql = self._db.jobitem.insert_sql(jobitem)
+            self._db(sql=sql)
+
+        sql = self._db.job.item_nbr_based_job_sql(item_nbr='abcdef000001')
+        self._db(sql)
+        received = self._db.row
+        expected = (job_id,)
+        msg = 'Item Number based job id query results not as expected'
+        self.assertEqual(received, expected, msg)
+
+        # Cleanup.
+        self._db.connection.rollback()
+
     @classmethod
     def tearDownClass(cls):
         cls._db.close()

@@ -50,11 +50,39 @@ WHERE id=%d""" % (agent_id_row_id, job_id)
         return sql
 
     def connote_based_job_sql(self, connote):
-        """
+        """Query job table for records that are related to a job_item
+        record with *connote*
+
+        **Args:**
+            connote: Conn Note value relating to the job_item.connote_nbr
+            column.
+
+        **Returns:**
+            the SQL string
+
         """
         sql = """SELECT j.id
 FROM job as j, job_item as ji
 WHERE (ji.connote_nbr = '%s' AND j.id = ji.job_id)
 ORDER by j.job_ts DESC""" % connote
+
+        return sql
+
+    def item_nbr_based_job_sql(self, item_nbr):
+        """Query job table for records that are related to a job_item
+        record with *item_nbr*
+
+        **Args:**
+            item_nbr: Item Number value relating to the job_item.item_nbr
+            column.
+
+        **Returns:**
+            the SQL string
+
+        """
+        sql = """SELECT j.id
+FROM job as j, job_item as ji
+WHERE (ji.item_nbr = '%s' AND j.id = ji.job_id)
+ORDER by j.job_ts DESC""" % item_nbr
 
         return sql
