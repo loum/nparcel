@@ -7,7 +7,9 @@ import ConfigParser
 
 from nparcel.utils.log import log
 
-FLAG_MAP = {'item_number_excp': 0}
+FLAG_MAP = {'item_number_excp': 0,
+            'job_from_connote': 1,
+            'job_from_item_nbr': 2}
 
 
 class Config(object):
@@ -246,9 +248,12 @@ class Config(object):
                     log.debug('Condition map missing BU "%s" option' % bu)
                 else:
                     # Finally, get the flag!!!
-                    status = self.cond.get(bu)[index]
-                    log.debug('Condition map %s:%s is "%s"' %
-                              (bu, flag, status))
+                    try:
+                        status = self.cond.get(bu)[index]
+                        log.debug('Condition map %s:%s is "%s"' %
+                                  (bu, flag, status))
+                    except IndexError, e:
+                        status = 0
         else:
             log.debug('Conditions config item is not defined')
 
