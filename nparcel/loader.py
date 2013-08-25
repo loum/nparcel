@@ -60,7 +60,8 @@ JOB_MAP = {'Agent Id': {
                'column': 'job_ts',
                'required': True}}
 JOB_ITEM_MAP = {'Conn Note': {
-                    'column': 'connote_nbr'},
+                    'column': 'connote_nbr',
+                    'required': True},
                 'Item Number': {
                     'column': 'item_nbr',
                     'default_equal': 'Conn Note',
@@ -358,7 +359,8 @@ class Loader(object):
 
         """
         for field_name, v in map.iteritems():
-            if field_name == 'Item Number' and item_number_excp:
+            if (not fields.get(field_name) and
+                (field_name == 'Item Number' and item_number_excp)):
                 log.debug('Missing Item number set to raise exception')
                 continue
 

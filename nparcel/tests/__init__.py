@@ -1,6 +1,7 @@
 from test_parser import TestParser
 from test_dbsession import TestDbSession
 from test_loader import TestLoader
+from test_loader_ipec import TestLoaderIpec
 from test_reporter import TestReporter
 from test_emailer import TestEmailer
 from test_smser import TestSmser
