@@ -202,6 +202,7 @@ class Loader(object):
         # Check for a manufactured barcode.
         if status:
             job_id = None
+            skip_jobitem_chk = False
 
             connote = fields.get('Conn Note')
             if self.match_connote(connote, barcode):
@@ -209,6 +210,8 @@ class Loader(object):
                 item_nbr = fields.get('Item Number')
                 job_id = self.get_jobitem_based_job_id(connote=connote,
                                                        item_nbr=item_nbr)
+                if job_id is not None:
+                    skip_jobitem_chk = True
             else:
                 # Explicit barcode.
                 barcodes = self.barcode_exists(barcode=barcode)
@@ -221,7 +224,10 @@ class Loader(object):
             if job_id is not None:
                 log.info('Updating Nparcel barcode "%s" agent ID "%s"' %
                          (barcode, agent_id))
-                self.update(job_id, agent_id_row_id, job_item_data)
+                self.update(job_id,
+                            agent_id_row_id,
+                            job_item_data,
+                            skip_jobitem_chk)
             else:
                 log.info('Creating Nparcel barcode "%s"' % barcode)
                 self.create(job_data, job_item_data)
@@ -570,7 +576,11 @@ class Loader(object):
         jobitem_id = self.db.insert(sql)
         log.info('"jobitem.id" %d created' % jobitem_id)
 
-    def update(self, job_id, agent_id, jobitem_data):
+    def update(self,
+               job_id,
+               agent_id,
+               jobitem_data,
+               skip_jobitem_chk=False):
         """Updates and existing barcode.
 
         Updates the job.agent_id and will create a new job_item.connote_nbr
@@ -583,26 +593,34 @@ class Loader(object):
 
             jobitem_data: dictionary of the "jobitem" table fields
 
+            skip_jobitem_chk: bypass jobitem insert check and only update
+            the job record (default ``False``)
+
         """
         sql = self.db.job.update_sql(job_id, agent_id)
         self.db(sql)
 
-        connote = jobitem_data.get('connote_nbr')
-        log.info('Check if connote "%s" job_item already exists' % connote)
-        sql = self.db.jobitem.connote_sql(connote)
-        job_item_ids = []
-        self.db(sql)
-        for row in self.db.rows():
-            job_item_ids.append(row[0])
+        if not skip_jobitem_chk:
+            connote = jobitem_data.get('connote_nbr')
+            item_nbr = jobitem_data.get('item_nbr')
+            log.debug('Look for jobitems with connote/item_nbr: "%s"/"%s"' %
+                      (connote, item_nbr))
+            sql = self.db.jobitem.connote_item_nbr_sql(connote, item_nbr)
+            job_item_ids = []
+            self.db(sql)
+            for row in self.db.rows():
+                job_item_ids.append(row[0])
 
-        if not job_item_ids:
-            # Set the "jobitem" table's foreign key.
-            jobitem_data['job_id'] = job_id
-            sql = self.db.jobitem.insert_sql(jobitem_data)
-            jobitem_id = self.db.insert(sql)
-            log.info('"jobitem.id" %d created' % jobitem_id)
+            if not job_item_ids:
+                # Set the "jobitem" table's foreign key.
+                jobitem_data['job_id'] = job_id
+                sql = self.db.jobitem.insert_sql(jobitem_data)
+                jobitem_id = self.db.insert(sql)
+                log.info('"jobitem.id" %d created' % jobitem_id)
+            else:
+                log.info('"jobitem.id" %d exists' % job_item_ids[0])
         else:
-            log.info('"jobitem.id" %d exists' % job_item_ids[0])
+            log.debug('Skipping jobitems check')
 
     def send_email(self,
                    agent_id,

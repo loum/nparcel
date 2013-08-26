@@ -91,6 +91,28 @@ WHERE connote_nbr = '%s'""" % (self._name, connote)
 
         return sql
 
+    def connote_item_nbr_sql(self, connote, item_nbr):
+        """SQL wrapper to extract records where job_item.connote_nbr
+        is equal to *connote* and job_item.item_nbr equals *item_nbr*.
+
+        **Args:**
+            connote: Connote value relating to the job_item.connote_nbr
+            column.
+
+            item_nbr: Item Number value relating to the job_item.item_nbr
+            column.
+
+        **Returns:**
+            the SQL string
+
+        """
+        sql = """SELECT id
+FROM %s
+WHERE connote_nbr = '%s'
+AND item_nbr = '%s'""" % (self._name, connote, item_nbr)
+
+        return sql
+
     def item_number_sql(self, item_nbr):
         """SQL wrapper to extract records where job_item.item_nbr
         is equal to *item_nbr*.

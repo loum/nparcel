@@ -58,6 +58,34 @@ class TestJobItem(unittest2.TestCase):
         # Cleanup.
         self._db.connection.rollback()
 
+    def test_connote_item_nbr_sql(self):
+        """Verify the connote_item_nbr_sql string.
+        """
+        connote = '218501217863'
+        item_nbr = 'abcdef000001'
+
+        # Seed the table with sample data.
+        kwargs = {'connote_nbr': connote,
+                  'item_nbr': item_nbr,
+                  'status': 1,
+                  'created_ts': datetime.datetime.now().isoformat(' ')[:-3]}
+        self._db(self._job_item.insert_sql(kwargs))
+
+        # Check the query via SQL.
+        sql = self._db.jobitem.connote_item_nbr_sql(connote=connote,
+                                                    item_nbr=item_nbr)
+        self._db(sql)
+
+        received = []
+        for row in self._db.rows():
+            received.append(row[0])
+        expected = [1]
+        msg = 'job_item serch return value not as expected'
+        self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        self._db.connection.rollback()
+
     def test_item_nbr_sql(self):
         """Verify the item_number_sql string.
         """
