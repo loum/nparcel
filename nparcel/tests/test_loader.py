@@ -638,8 +638,8 @@ class TestLoader(unittest2.TestCase):
         received = self._ldr.match_connote(connote, barcode)
         self.assertTrue(received, msg)
 
-    def test_get_connote_job_id(self):
-        """Get connote-based job id.
+    def test_get_jobitem_based_job_id(self):
+        """Get jobitem-based job id.
         """
         older_ts = datetime.datetime.now() - datetime.timedelta(seconds=999)
         kwargs = {'address_1': '31 Bridge st,',
@@ -677,14 +677,17 @@ class TestLoader(unittest2.TestCase):
 
         # "job_items" table.
         jobitems = [{'connote_nbr': '218501217863',
+                     'item_nbr': 'abcdef00001',
                      'job_id': job_id,
                      'pickup_ts': self._job_ts,
                      'pod_name': 'pod_name 218501217863'},
                     {'connote_nbr': '218501217863',
+                     'item_nbr': 'abcdef00002',
                      'job_id': job_id_old,
                      'pickup_ts': self._job_ts,
                      'pod_name': 'pod_name 218501217863'},
                     {'connote_nbr': '111111111111',
+                     'item_nbr': 'abcdef00003',
                      'job_id': dodgy_job_id,
                      'pickup_ts': self._job_ts,
                      'pod_name': 'pod_name 111111111111'}]
@@ -692,8 +695,10 @@ class TestLoader(unittest2.TestCase):
             sql = self._ldr.db.jobitem.insert_sql(jobitem)
             self._ldr.db(sql=sql)
 
-        received = self._ldr.get_connote_job_id(connote='218501217863')
-        msg = 'Connote based job id query results not as expected'
+        kwargs = {'item_nbr': 'abcdef00001',
+                  'connote': '218501217863'}
+        received = self._ldr.get_jobitem_based_job_id(**kwargs)
+        msg = 'jobitem table based job id query results not as expected'
         self.assertEqual(received, job_id, msg)
 
         # Restore DB state.

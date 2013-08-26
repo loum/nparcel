@@ -86,3 +86,27 @@ WHERE (ji.item_nbr = '%s' AND j.id = ji.job_id)
 ORDER by j.job_ts DESC""" % item_nbr
 
         return sql
+
+    def jobitem_based_job_search_sql(self, connote, item_nbr):
+        """Generate SQL that queries the job table for records that are
+        related to a job_item record with *connote* and *item_nbr*
+
+        **Args:**
+            item_nbr: Item Number value relating to the job_item.item_nbr
+            column.
+
+            connote: Conn Note value relating to the job_item.connote_nbr
+            column.
+
+        **Returns:**
+            the SQL string
+
+        """
+        sql = """SELECT j.id
+FROM job as j, job_item as ji
+WHERE (ji.connote_nbr = '%s' AND
+       ji.item_nbr = '%s' AND
+       j.id = ji.job_id)
+ORDER by j.job_ts DESC""" % (connote, item_nbr)
+
+        return sql

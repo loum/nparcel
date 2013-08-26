@@ -173,9 +173,7 @@ class TestConfig(unittest2.TestCase):
         self._c.parse_config()
 
         received = self._c.condition_map('banana')
-        expected = {'item_number_excp': False,
-                    'job_from_connote': False,
-                    'job_from_item_nbr': False}
+        expected = {'item_number_excp': False}
         msg = 'Dodgy Business Unit condition map should be empty dict'
         self.assertDictEqual(received, expected, msg)
 
@@ -189,9 +187,7 @@ class TestConfig(unittest2.TestCase):
         self._c.parse_config()
 
         received = self._c.condition_map('toli')
-        expected = {'item_number_excp': True,
-                    'job_from_connote': False,
-                    'job_from_item_nbr': False}
+        expected = {'item_number_excp': True}
         msg = 'Valid Business Unit condition map should produce dict values'
         self.assertDictEqual(received, expected, msg)
 

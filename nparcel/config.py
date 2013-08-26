@@ -7,9 +7,7 @@ import ConfigParser
 
 from nparcel.utils.log import log
 
-FLAG_MAP = {'item_number_excp': 0,
-            'job_from_connote': 1,
-            'job_from_item_nbr': 2}
+FLAG_MAP = {'item_number_excp': 0}
 
 
 class Config(object):

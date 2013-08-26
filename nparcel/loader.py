@@ -178,8 +178,8 @@ class Loader(object):
         status = True
 
         # Parse the raw record and set the job timestamp.
-        connote = raw_record[0:20].rstrip()
-        log.info('Conn Note: "%s" start parse ...' % connote)
+        connote_literal = raw_record[0:20].rstrip()
+        log.info('Conn Note: "%s" start parse ...' % connote_literal)
         fields = self.parser.parse_line(raw_record)
         fields['job_ts'] = time
         fields['bu_id'] = bu_id
@@ -199,13 +199,16 @@ class Loader(object):
             status = False
             self.set_alert('Barcode "%s" mapping error: %s' % (barcode, e))
 
-        # Check for a manufactured barcode (based on connote).
+        # Check for a manufactured barcode.
         if status:
             job_id = None
 
+            connote = fields.get('Conn Note')
             if self.match_connote(connote, barcode):
                 # Manufactured barcode.
-                job_id = self.get_connote_job_id(connote=connote)
+                item_nbr = fields.get('Item Number')
+                job_id = self.get_jobitem_based_job_id(connote=connote,
+                                                       item_nbr=item_nbr)
             else:
                 # Explicit barcode.
                 barcodes = self.barcode_exists(barcode=barcode)
@@ -227,7 +230,7 @@ class Loader(object):
             self.send_email(agent_id_row_id, email, barcode, dry)
             self.send_sms(agent_id_row_id, sms, barcode, dry)
 
-        log.info('Conn Note: "%s" parse complete' % connote)
+        log.info('Conn Note: "%s" parse complete' % connote_literal)
 
         return status
 
@@ -486,13 +489,15 @@ class Loader(object):
 
         return match
 
-    def get_connote_job_id(self, connote):
+    def get_jobitem_based_job_id(self, connote, item_nbr):
         """Checks the "job" table for related "job_item" records with
-        *connote*.  If more than one job exists, will sort against the
-        job_ts against the most recent record.
+        *connote* and *item_nbr*.  If more than one job exists, will sort
+        against the job_ts against the most recent record.
 
         **Args:**
             connote: connote value parsed directly from the T1250 file
+
+            item_nbr: item_nbr value parsed directly from the T1250 file
 
         **Returns:**
             integer value relating to the job.id if match is found.
@@ -500,10 +505,42 @@ class Loader(object):
             ``None`` otherwise.
 
         """
-        log.info('Check for job records with connote "%s"' % connote)
+        log.info('Check for job records with connote/item_nbr: "%s"/"%s"' %
+                 (connote, item_nbr))
         job_id = None
 
-        sql = self.db.job.connote_based_job_sql(connote=connote)
+        sql = self.db.job.jobitem_based_job_search_sql(connote=connote,
+                                                       item_nbr=item_nbr)
+        self.db(sql)
+        received = []
+        for row in self.db.rows():
+            received.append(row[0])
+
+        if received:
+            # Results are sorted by job_ts so grab the first index.
+            job_id = received[0]
+            log.info('Item Number check -- job record id %d found' % job_id)
+
+        return job_id
+
+    def get_item_number_job_id(self, item_nbr):
+        """Checks the "job" table for related "job_item" records with
+        *item_nbr*.  If more than one job exists, will sort against the
+        job_ts against the most recent record.
+
+        **Args:**
+            item_nbr: item_nbr value parsed directly from the T1250 file
+
+        **Returns:**
+            integer value relating to the job.id if match is found.
+
+            ``None`` otherwise.
+
+        """
+        log.info('Check for job records with item_nbr "%s"' % item_nbr)
+        job_id = None
+
+        sql = self.db.job.item_nbr_based_job_sql(item_nbr=item_nbr)
         self.db(sql)
         received = []
         for row in self.db.rows():

@@ -15,6 +15,7 @@ GIT=/usr/bin/git
 # Note: for this to work you will need to import the test class into
 # the current namespace via "tests/__init__.py"
 TEST=nparcel.tests:TestLoader \
+	 nparcel.tests:TestLoaderIpec \
 	 nparcel.tests:TestParser \
 	 nparcel.tests:TestDbSession \
 	 nparcel.tests:TestReporter \
