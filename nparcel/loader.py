@@ -29,6 +29,10 @@ FIELDS = {'Conn Note': {'offset': 0,
                        'length': 4},
           'Pieces': {'offset': 588,
                      'length': 5},
+          'Email Address': {'offset': 765,
+                            'length': 60},
+          'Mobile Number': {'offset': 815,
+                            'length': 10},
           'Item Number': {'offset': 887,
                           'length': 32}}
 JOB_MAP = {'Agent Id': {
@@ -68,6 +72,10 @@ JOB_ITEM_MAP = {'Conn Note': {
                     'required': True},
                 'Consumer Name': {
                     'column': 'consumer_name'},
+                'Email Address': {
+                    'column': 'email_addr'},
+                'Mobile Number': {
+                    'column': 'phone_nbr'},
                 'Pieces': {
                     'column': 'pieces'},
                 'status': {

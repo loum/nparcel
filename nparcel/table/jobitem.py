@@ -21,6 +21,8 @@ class JobItem(nparcel.Table):
                 "connote_nbr CHAR(30)",
                 "item_nbr CHAR(32)",
                 "consumer_name CHAR(30)",
+                "email_addr CHAR(60)",
+                "phone_nbr CHAR(20)",
                 "pieces INTEGER",
                 "status INTEGER",
                 "created_ts TIMESTAMP",

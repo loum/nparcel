@@ -554,6 +554,8 @@ class TestLoader(unittest2.TestCase):
         expected = {'connote_nbr': '218501217863',
                     'item_nbr': '218501217863',
                     'consumer_name': 'Diane Donohoe',
+                    'email_addr': '',
+                    'phone_nbr': '',
                     'pieces': '00001',
                     'status': 1,
                     'created_ts': None}
