@@ -1,6 +1,7 @@
 __all__ = [
     "Emailer",
 ]
+import re
 import smtplib
 from email.MIMEText import MIMEText
 import getpass
@@ -86,11 +87,43 @@ class Emailer(object):
                 s.connect()
                 log.info('Sending email to recipients: "%s"' %
                          str(self.recipients))
-                s.sendmail(self.sender,
-                           self.recipients,
-                           mime_msg.as_string())
+                try:
+                    s.sendmail(self.sender,
+                               self.recipients,
+                               mime_msg.as_string())
+                except (smtplib.SMTPRecipientsRefused,
+                        smtplib.SMTPHeloError,
+                        smtplib.SMTPSenderRefused,
+                        smtplib.SMTPDataError), err:
+                    status = False
+                    log.warn('Could not send email: %s' % err)
                 s.close()
         else:
             log.warn('No email recipients provided')
+
+        return status
+
+    def validate(self, email):
+        """Validate the *email* address.
+
+        Runs a simple regex validation across the *email* address is
+
+        **Args:**
+            email: the email address to validate
+
+        **Returns:**
+            boolean ``True`` if the email validates
+
+            boolean ``False`` if the email does not validate
+
+        """
+        status = True
+
+        err = 'Email "%s" validation failed' % email
+        r = re.compile("^[a-zA-Z0-9._%-+]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$")
+        m = r.match(email)
+        if m is None:
+            status = False
+            log.warn(err)
 
         return status

@@ -45,6 +45,41 @@ class TestEmailer(unittest2.TestCase):
         # Clean up.
         self._e.set_recipients(None)
 
+    def test_email_validator_empty(self):
+        """Validate email address -- empty.
+        """
+        msg = 'Empty email should not validate'
+
+        email = ''
+        received = self._e.validate(email)
+        self.assertFalse(received, msg)
+
+        email = 'banana'
+        received = self._e.validate(email)
+        self.assertFalse(received, msg)
+
+    def test_email_validator(self):
+        """Validate valid email.
+        """
+        msg = 'Email should validate'
+
+        email = 'loumar@tollgroup.com'
+        received = self._e.validate(email)
+        self.assertTrue(email)
+
+    def test_send(self):
+        """Send an email.
+        """
+        self._e.set_recipients(['loumar@bananagroup.com'])
+        received = self._e.send(subject='Test subject',
+                                msg='Test',
+                                dry=True)
+        msg = 'Email send should return True'
+        self.assertTrue(received, msg)
+
+        # Clean up.
+        self._e.set_recipients(None)
+
     @classmethod
     def tearDownClass(cls):
         cls._e = None
