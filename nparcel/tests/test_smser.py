@@ -50,6 +50,53 @@ class TestSmser(unittest2.TestCase):
         # Clean up.
         self._sms.set_recipients(None)
 
+    def test_mobile_validate(self):
+        """Validate mobile number -- valid
+        """
+        mobile = '0431602145'
+        received = self._sms.validate(mobile)
+        msg = 'Valid mobile number should validate'
+        self.assertTrue(received, msg)
+
+    def test_mobile_validate_not_10_digits(self):
+        """Validate mobile number -- not 10 digits.
+        """
+        msg = 'Mobile number not 10 digits should not validate'
+
+        mobile = '043160214'
+        received = self._sms.validate(mobile)
+        self.assertFalse(received, msg)
+
+        mobile = '04316021455'
+        received = self._sms.validate(mobile)
+        self.assertFalse(received, msg)
+
+        mobile = '043160214a'
+        received = self._sms.validate(mobile)
+        self.assertFalse(received, msg)
+
+    def test_mobile_does_not_start_with_04(self):
+        """Validate mobile number -- does not start with 04.
+        """
+        msg = 'Mobile number does not start with "04" should not validate'
+
+        mobile = 'a431602145'
+        received = self._sms.validate(mobile)
+        self.assertFalse(received, msg)
+
+        mobile = '0531602145'
+        received = self._sms.validate(mobile)
+        self.assertFalse(received, msg)
+
+    def test_mobile_empty(self):
+        """Validate mobile number -- empty.
+        """
+        msg = 'Empty mobile number should not validate'
+
+        mobile = ''
+        received = self._sms.validate(mobile)
+        self.assertFalse(received, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._sms = None

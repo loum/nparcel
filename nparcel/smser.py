@@ -1,6 +1,7 @@
 __all__ = [
     "Smser",
 ]
+import re
 import urllib
 import nparcel.urllib2 as urllib2
 
@@ -98,3 +99,42 @@ class Smser(object):
         encoded_msg = urllib.urlencode(f)
 
         return encoded_msg
+
+    def validate(self, mobile_number):
+        """Validate the *mobile_number*.
+
+        Runs a few simple validation checks to ensure that the number is
+        valid.  Checks include:
+
+        * all numeric digits
+
+        * length of 10
+
+        * starts with '04'
+
+        **Args:**
+            mobile_number: the mobile number to validate
+
+        **Returns:**
+            boolean ``True`` if the number validates
+
+            boolean ``False`` if the number fails
+
+        """
+        status = True
+
+        err = 'Mobile "%s" validation failed: ' % mobile_number
+        regex = re.compile("\d{10}$")
+        m = regex.match(mobile_number)
+        if m is None:
+            status = False
+            err += "not 10 digits"
+            log.warn(err)
+
+        if status:
+            if mobile_number[0:2] != '04':
+                status = False
+                err += 'does not start with "04"'
+                log.warn(err)
+
+        return status
