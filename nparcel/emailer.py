@@ -81,7 +81,6 @@ class Emailer(object):
                 except gaierror, err:
                     status = False
                     log.error('Could not connect to SMTP server "%s"' % err)
-                    pass
 
             if s is not None:
                 s.connect()

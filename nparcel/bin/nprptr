@@ -1,0 +1,109 @@
+#!/usr/bin/python
+import sys
+import re
+import os
+import time
+import datetime
+
+import nparcel
+
+IN_DIR = "."
+IN_FILE = "nploaderd.log"
+
+
+def main():
+    now = datetime.datetime.now()
+    yesterday = now - datetime.timedelta(seconds=86400)
+    try:
+        log_file = os.path.join(IN_DIR, IN_FILE)
+        log_file += '.' + yesterday.strftime("%Y-%m-%d")
+        fh = open(log_file)
+    except IOError, err:
+        print('Could not open file "%s": %s' % (IN_FILE, err))
+        sys.exit(1)
+
+    processing = []
+    archiving = []
+    stats = []
+
+    # Search patterns.
+    m_processing = re.compile("Processing file: \"(.*)\"")
+    m_archiving = re.compile("Archiving .* to \"(.*)\"")
+    m_stats = re.compile("success/failed/total:duration: (.*)")
+
+    for line in fh:
+        strip_line = line.rstrip('\n')
+
+        matched = False
+        # Filter for processing filenames.
+        m = m_processing.search(line)
+        if m is not None:
+            matched = True
+            processing.append(m.group(1))
+
+        if not matched:
+            m = m_archiving.search(line)
+            if m is not None:
+                matched = True
+                archiving.append(m.group(1))
+
+        if not matched:
+            m = m_stats.search(line)
+            if m is not None:
+                matched = True
+                stats.append(m.group(1))
+
+    fh.close()
+
+    # Generate the email content.
+    subject = 'Nparcel Loader Report %s' % yesterday.strftime("%Y-%m-%d")
+
+    # The email message.
+    msg = []
+
+    # Processed files.
+    header = 'Inbound file count: %d' % len(processing)
+    msg.append(header)
+    msg.append('=' * len(header))
+    msg.append("\n")
+    processing.append('banana')
+
+    # Archived files.
+    header = 'Archived file count: %d' % len(archiving)
+    msg.append(header)
+    msg.append('=' * len(header))
+    msg.extend(["%s: %s" %
+               (time.ctime(os.path.getctime(x)), x) for x in archiving])
+    msg.append("\n")
+
+    processing_set = set(os.path.basename(x) for x in processing)
+    archiving_set = set(os.path.basename(x) for x in archiving)
+    not_archived = list(processing_set - archiving_set)
+    header = 'Files not archived: %d' % len(not_archived)
+    msg.append(header)
+    msg.append('=' * len(header))
+    msg.append("\n".join(s for s in not_archived))
+    msg.append("\n")
+
+    # Stats.
+    total_success = 0
+    total_fail = 0
+    total_total = 0
+    m_stats = re.compile("(\d+)/(\d+)/(\d+):(\d+):(\d+):(\d+).(\d+)")
+    for s in stats:
+        m = m_stats.search(s)
+        if m is not None:
+            total_success += int(m.group(1))
+            total_fail += int(m.group(2))
+            total_total += int(m.group(3))
+            t = m.group(4)
+
+    msg.append("Total Success: %s\nTotal Failure: %s\n Total Count:%s" %
+               (total_success, total_fail, total_total))
+
+    e = nparcel.Emailer()
+    e.set_recipients(['loumar@tollgroup.com'])
+    e.send(subject, "\n".join(msg))
+
+if __name__ == "__main__":
+    main()
