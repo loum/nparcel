@@ -7,7 +7,7 @@ import datetime
 
 import nparcel
 
-IN_DIR = "."
+IN_DIR = "/users/npprod/.nparceld/logs"
 IN_FILE = "nploaderd.log"
 
 
@@ -36,19 +36,19 @@ def main():
 
         matched = False
         # Filter for processing filenames.
-        m = m_processing.search(line)
+        m = m_processing.search(strip_line)
         if m is not None:
             matched = True
             processing.append(m.group(1))
 
         if not matched:
-            m = m_archiving.search(line)
+            m = m_archiving.search(strip_line)
             if m is not None:
                 matched = True
                 archiving.append(m.group(1))
 
         if not matched:
-            m = m_stats.search(line)
+            m = m_stats.search(strip_line)
             if m is not None:
                 matched = True
                 stats.append(m.group(1))
@@ -66,14 +66,13 @@ def main():
     msg.append(header)
     msg.append('=' * len(header))
     msg.append("\n")
-    processing.append('banana')
 
     # Archived files.
     header = 'Archived file count: %d' % len(archiving)
     msg.append(header)
     msg.append('=' * len(header))
     msg.extend(["%s: %s" %
-               (time.ctime(os.path.getctime(x)), x) for x in archiving])
+               (time.ctime(os.path.getmtime(x)), x) for x in archiving])
     msg.append("\n")
 
     processing_set = set(os.path.basename(x) for x in processing)
@@ -98,12 +97,21 @@ def main():
             total_total += int(m.group(3))
             t = m.group(4)
 
-    msg.append("Total Success: %s\nTotal Failure: %s\n Total Count:%s" %
-               (total_success, total_fail, total_total))
+    msg.append("%s: %s\n%s : %s\n%s:%s" % ("Total Record Success",
+                                           "Total Record Failure",
+                                           "Total Count",
+                                           total_success,
+                                           total_fail,
+                                           total_total))
 
     e = nparcel.Emailer()
-    e.set_recipients(['loumar@tollgroup.com'])
-    e.send(subject, "\n".join(msg))
+    recipients = ['loumar@tollgroup.com']
+    #recipients = ['loumar@tollgroup.com',
+    #              'john.varsamis@tollgroup.com',
+    #              'blaine_williams@tollgroup.com',
+    #              'parcelsupport@tollgroup.com']
+    #e.set_recipients(recipients)
+    #e.send(subject, "\n".join(msg))
 
 if __name__ == "__main__":
     main()

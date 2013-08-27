@@ -1,0 +1,93 @@
+#!/usr/bin/python
+import sys
+import re
+import os
+import datetime
+
+import nparcel
+
+#IN_DIR = "/users/npprod/.nparceld/logs"
+IN_DIR = "/var/tmp"
+IN_FILE = "npexporterd.log"
+
+
+def main():
+    now = datetime.datetime.now()
+    yesterday = now - datetime.timedelta(seconds=86400)
+    try:
+        log_file = os.path.join(IN_DIR, IN_FILE)
+        log_file += '.' + yesterday.strftime("%Y-%m-%d")
+        fh = open(log_file)
+    except IOError, err:
+        print('Could not open file "%s": %s' % (IN_FILE, err))
+        sys.exit(1)
+
+    signatures = []
+    reports = []
+    errors = []
+
+    # Search patterns.
+    m_signatures = re.compile(r'Moving signature file "/data/www')
+    m_reports = re.compile('Renaming out file to')
+    m_errors = re.compile("ERROR")
+
+    for line in fh:
+        strip_line = line.rstrip('\n')
+
+        matched = False
+        # Filter for signature filenames.
+        m = m_signatures.search(strip_line)
+        if m is not None:
+            matched = True
+            signatures.append(m.group(0))
+
+        if not matched:
+            m = m_reports.search(strip_line)
+            if m is not None:
+                matched = True
+                reports.append(m.group(0))
+
+        if not matched:
+            m = m_errors.search(strip_line)
+            if m is not None:
+                matched = True
+                errors.append(strip_line)
+
+    fh.close()
+
+    # Generate the email content.
+    subject = 'Nparcel Exporter Report %s' % yesterday.strftime("%Y-%m-%d")
+
+    # The email message.
+    msg = []
+
+    # Signature files.
+    header = 'Signature file count: %d' % len(signatures)
+    msg.append(header)
+    msg.append('=' * len(header))
+    msg.append("\n")
+
+    # Report files.
+    header = 'Report file count: %d' % len(reports)
+    msg.append(header)
+    msg.append('=' * len(header))
+    msg.append("\n")
+
+    # Error files.
+    header = 'Errors: %d' % len(errors)
+    msg.append(header)
+    msg.append('=' * len(header))
+    msg.append("\n".join(errors))
+    msg.append("\n")
+
+    e = nparcel.Emailer()
+    recipients = ['loumar@tollgroup.com']
+    #recipients = ['loumar@tollgroup.com',
+    #              'john.varsamis@tollgroup.com',
+    #              'blaine_williams@tollgroup.com',
+    #              'parcelsupport@tollgroup.com']
+    e.set_recipients(recipients)
+    e.send(subject, "\n".join(msg))
+
+if __name__ == "__main__":
+    main()
