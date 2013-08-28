@@ -89,7 +89,7 @@ class TestConfig(unittest2.TestCase):
 
         msg = 'Conditions map not as expected'
         received = self._c('cond')
-        expected = {'tolp': '0', 'tolf': '0', 'toli': '1'}
+        expected = {'tolp': '000', 'tolf': '000', 'toli': '100'}
         self.assertDictEqual(received, expected, msg)
 
         # Cleanup.
@@ -216,7 +216,9 @@ class TestConfig(unittest2.TestCase):
         self._c.parse_config()
 
         received = self._c.condition_map('banana')
-        expected = {'item_number_excp': False}
+        expected = {'item_number_excp': False,
+                    'send_sms': False,
+                    'send_email': False}
         msg = 'Dodgy Business Unit condition map should be empty dict'
         self.assertDictEqual(received, expected, msg)
 
@@ -230,11 +232,41 @@ class TestConfig(unittest2.TestCase):
         self._c.parse_config()
 
         received = self._c.condition_map('toli')
-        expected = {'item_number_excp': True}
+        expected = {'item_number_excp': True,
+                    'send_sms': False,
+                    'send_email': False}
         msg = 'Valid Business Unit condition map should produce dict values'
         self.assertDictEqual(received, expected, msg)
 
         # Cleanup.
+        self._c._file = None
+
+    def test_required_facility_when_flag_not_set(self):
+        """Required facility when a flag is not set.
+        """
+        self._c.set_file(file=self._file)
+        self._c.parse_config()
+
+        msg = 'Facility check should return False if flag is set'
+        self.assertFalse(self._c.required_facility('send_sms'), msg)
+
+        # Cleanup.
+        self._c._file = None
+
+    def test_required_facility_when_flag_set(self):
+        """Required facility when a flag is set.
+        """
+        self._c.set_file(file=self._file)
+        self._c.parse_config()
+
+        old_flag = self._c.cond.get('toli', 'send_sms')
+        self._c.cond['toli'] = '101'
+
+        msg = 'Facility check should return True if flag is set'
+        self.assertTrue(self._c.required_facility('send_sms'), msg)
+
+        # Cleanup.
+        self._c.cond['toli'] = old_flag
         self._c._file = None
 
     @classmethod

@@ -7,7 +7,9 @@ import ConfigParser
 
 from nparcel.utils.log import log
 
-FLAG_MAP = {'item_number_excp': 0}
+FLAG_MAP = {'item_number_excp': 0,
+            'send_email': 1,
+            'send_sms': 2}
 
 
 class Config(object):
@@ -378,3 +380,32 @@ class Config(object):
             c_map[flag] = status
 
         return c_map
+
+    def required_facility(self, flag):
+        """Check the *flag* conditions as a set and return ``True`` if at
+        least one of the flags is set.
+
+        Verifies if the facility denoted by *flag* is a required component.
+
+        **Args:**
+            flag: the name of the flag as per the FLAG_MAP options to verify
+
+        **Returns:**
+            boolean ``True`` if any flag in the set is '1'
+
+            boolean ``False`` if no flags in the set are '1'
+
+        """
+        log.debug('have facility check for flag %s' % flag)
+        status = False
+
+        if self.cond:
+            for bu in self.cond.keys():
+                if self.condition(bu, flag):
+                    log.debug('Facility "%s" required by "%s"' % (flag, bu))
+                    status = True
+                    break
+        else:
+            log.debug('Conditions config item is not defined')
+
+        return status
