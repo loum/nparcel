@@ -51,6 +51,10 @@ class Config(object):
 
         dictionary of Business unit special condition flags
 
+    .. attribute:: rest (loader)
+
+        dictionary of RESTful interfaces for SMS and email
+
     """
 
     def __init__(self, file=None):
@@ -71,6 +75,7 @@ class Config(object):
         self.special_emails = []
         self.special_sms = []
         self.cond = {}
+        self.rest = {}
 
         if self._file is not None:
             self.set_file(self._file)
@@ -105,6 +110,8 @@ class Config(object):
             value = self.special_sms
         elif item == 'cond':
             value = self.cond
+        elif item == 'rest':
+            value = self.rest
 
         return value
 
@@ -183,6 +190,14 @@ class Config(object):
             log.debug('Business Unit conditions %s' % self.cond.keys())
         except ConfigParser.NoSectionError, err:
             log.warn('Missing Business Unit conditions in config')
+
+        # RESTful APIs.  May not need these if facility is not required
+        # by any of the BU's
+        try:
+            self.rest = dict(self._config.items('rest'))
+            log.debug('RESTful APIs %s' % self.rest.keys())
+        except ConfigParser.NoSectionError, err:
+            log.warn('No RESTful APIs in config')
 
         try:
             self.special_emails = self._config.get('email',

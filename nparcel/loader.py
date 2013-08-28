@@ -136,7 +136,7 @@ class Loader(object):
 
     """
 
-    def __init__(self, db=None, proxy=None, scheme='http'):
+    def __init__(self, db=None, proxy=None, scheme='http', api=None):
         """Nparcel Loader initaliser.
 
         """
@@ -149,7 +149,7 @@ class Loader(object):
         self.alerts = []
 
         self.emailer = nparcel.Emailer()
-        self.smser = nparcel.Smser(proxy, scheme)
+        self.smser = nparcel.Smser(proxy, scheme, api)
 
     def process(self,
                 time,

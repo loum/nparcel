@@ -19,9 +19,17 @@ class Smser(object):
 
         proxy credentials that allow for HTTP* requests via a proxy
 
+    .. attribute:: api
+
+        URI of the RESTful API to connect to
+
     """
 
-    def __init__(self, recipients=None, proxy=None, proxy_scheme='http'):
+    def __init__(self,
+                 recipients=None,
+                 proxy=None,
+                 proxy_scheme='http',
+                 api=None):
         """Nparcel Smser initiliser.
 
         """
@@ -32,6 +40,7 @@ class Smser(object):
 
         self._proxy = proxy
         self._proxy_scheme = proxy_scheme
+        self._api = api
 
     @property
     def recipients(self):
@@ -57,6 +66,13 @@ class Smser(object):
     def set_proxy_scheme(self, value):
         self._proxy_scheme = value
 
+    @property
+    def api(self):
+        return self._api
+
+    def set_api(self, value):
+        self._api = value
+
     def send(self, msg, dry=False):
         """Send the SMS.
 
@@ -72,11 +88,10 @@ class Smser(object):
         status = True
 
         log.info('Sending SMS comms ...')
-        if len(self.recipients):
+        if self.api is not None:
             for mobile in self.recipients:
                 params = self.encode_params(msg, mobile)
-                api = 'https://www.textmagic.com/app/api'
-                url = "%s?%s" % (api, params)
+                url = "%s?%s" % (self.api, params)
                 log.debug('Generated SMS URL: %s' % url)
                 if not dry:
                     proxy_kwargs = {}
@@ -96,7 +111,7 @@ class Smser(object):
                     except urllib2.URLError, e:
                         log.warn('SMS failure: %s' % e)
         else:
-            log.warn('No SMS recipients provided')
+            log.warn('No SMS API provided -- SMS not sent')
 
         return status
 

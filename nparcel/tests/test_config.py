@@ -92,6 +92,11 @@ class TestConfig(unittest2.TestCase):
         expected = {'tolp': '000', 'tolf': '000', 'toli': '100'}
         self.assertDictEqual(received, expected, msg)
 
+        msg = 'RESTful API not as expected'
+        received = self._c('rest')
+        expected = {'sms_api': 'https://www.textmagic.com/app/api'}
+        self.assertDictEqual(received, expected, msg)
+
         # Cleanup.
         self._c._file = None
 
