@@ -197,12 +197,36 @@ class Config(object):
             pass
 
     def db_kwargs(self):
-        """
+        """Extract database connectivity information from the configuration.
+
+        Database connectivity information is taken from the ``[db]``
+        section in the configuration file.  A typical example is:
+
+            [db]
+            driver = FreeTDS
+            host = SQVDBAUT07
+            database = Nparcel
+            user = npscript
+            password = <passwd>
+            port =  1442
+
+        Base assumptions on "host" keyword.  No "host" means this must be a
+        test scenario in which case the database session is a memory-based
+        sqlite instance.
+
+        **Returns:**
+            dictionary-based data structure of the form:
+
+            kwargs = {'driver': ...,
+                      'host': ...,
+                      'database': ...,
+                      'user': ...,
+                      'password': ...,
+                      'port': ...}
+
         """
         kwargs = None
 
-        # Base assumptions on "host" keyword.
-        # No "host" means this must be a test scenario.
         try:
             host = self._config.get('db', 'host')
             driver = self._config.get('db', 'driver')
@@ -220,6 +244,85 @@ class Config(object):
             log.error('Missing DB key via config: %s' % err)
 
         return kwargs
+
+    def proxy_kwargs(self):
+        """Extract proxy connectivity information from the configuration.
+
+        Proxy connectivity information is taken from the ``[proxy]``
+        section in the configuration file.  A typical example is:
+
+            [proxy]
+            host = auproxy-farm.toll.com.au
+            user = <username>
+            password = <passwd>
+            port = 8080
+            protocol = https
+
+        **Returns:**
+            dictionary-based data structure of the form:
+
+            kwargs = {'host': ...,
+                      'user': ...,
+                      'password': ...,
+                      'port': ...,
+                      'protocol': ...}
+
+        """
+        kwargs = None
+
+        try:
+            host = self._config.get('proxy', 'host')
+            user = self._config.get('proxy', 'user')
+            password = self._config.get('proxy', 'password')
+            port = self._config.get('proxy', 'port')
+            protocol = self._config.get('proxy', 'protocol')
+            kwargs = {'host': host,
+                      'user': user,
+                      'password': password,
+                      'port': int(port),
+                      'protocol': protocol}
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.error('Config proxy: %s' % err)
+
+        return kwargs
+
+    def proxy_string(self, kwargs=None):
+        """Constructs a proxy string based on the *kwargs* dictionary
+        structure or :attr:`proxy` attribute (in that order if *kwargs* is
+        ``None``).
+
+        **Kwargs:**
+            kwargs as per the return value of the :meth:`proxy_kwargs`
+            method
+
+        **Returns:**
+            string that could be fed directly into a HTTP/S header
+            to handle proxy authentication in the request.  Example:
+
+                http://louamr:<passwd>@auproxy-farm.toll.com.aus:8080
+
+        """
+        values = None
+        if kwargs is not None:
+            values = kwargs
+        else:
+            values = self.proxy_kwargs()
+        proxy = None
+        if values is not None:
+            # Check if we have a username and password.
+            if (values.get('user') is not None and
+                values.get('password') is not None):
+                proxy = ("%s:%s@" % (values.get('user'),
+                                     values.get('password')))
+
+            if values.get('host') is not None:
+                proxy += values.get('host')
+
+            if values.get('port') is not None:
+                proxy += ':' + str(values.get('port'))
+
+        return proxy
 
     def condition(self, bu, flag):
         """Return the *bu* condition *flag* value.

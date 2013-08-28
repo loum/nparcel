@@ -8,6 +8,10 @@ class TestSmser(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._sms = nparcel.Smser()
+        conf = nparcel.Config()
+        conf.set_file('nparcel/conf/nparceld.conf')
+        conf.parse_config()
+        cls._proxy = conf.proxy_string()
 
     def test_init(self):
         """Verify initialisation of an nparcel.Emailer object.
@@ -40,6 +44,9 @@ class TestSmser(unittest2.TestCase):
     def test_send(self):
         """Send SMS.
         """
+        self._sms.set_proxy(self._proxy)
+        self._sms.set_proxy_scheme('https')
+
         sms_msg = """Your consignment has been placed at Skylark News, 59 Skylark Street, INALA 4077. A Consignment Ref 4156736304. Please bring your photo ID with you. Enquiries 13 32 78"""
         self._sms.set_recipients(['0431602145'])
 
@@ -49,6 +56,8 @@ class TestSmser(unittest2.TestCase):
 
         # Clean up.
         self._sms.set_recipients(None)
+        self._sms.set_proxy(None)
+        self._sms.set_proxy_scheme('http')
 
     def test_mobile_validate(self):
         """Validate mobile number -- valid
@@ -100,3 +109,4 @@ class TestSmser(unittest2.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls._sms = None
+        cls._proxy = None

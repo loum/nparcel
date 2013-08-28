@@ -10,9 +10,18 @@ from nparcel.utils.log import log
 
 class Smser(object):
     """Nparcel SMSer.
+
+    .. attribute:: recipients
+
+        list of mobile numbers to send SMS to
+
+    .. attribute:: proxy
+
+        proxy credentials that allow for HTTP* requests via a proxy
+
     """
 
-    def __init__(self, recipients=None):
+    def __init__(self, recipients=None, proxy=None, proxy_scheme='http'):
         """Nparcel Smser initiliser.
 
         """
@@ -20,6 +29,9 @@ class Smser(object):
             self._recipients = []
         else:
             self._recipients = recipients
+
+        self._proxy = proxy
+        self._proxy_scheme = proxy_scheme
 
     @property
     def recipients(self):
@@ -30,6 +42,20 @@ class Smser(object):
 
         if values is not None:
             self._recipients.extend(values)
+
+    @property
+    def proxy(self):
+        return self._proxy
+
+    def set_proxy(self, value):
+        self._proxy = value
+
+    @property
+    def proxy_scheme(self):
+        return self._proxy_scheme
+
+    def set_proxy_scheme(self, value):
+        self._proxy_scheme = value
 
     def send(self, msg, dry=False):
         """Send the SMS.
@@ -53,12 +79,10 @@ class Smser(object):
                 url = "%s?%s" % (api, params)
                 log.debug('Generated SMS URL: %s' % url)
                 if not dry:
-                    proxy = {'user': 'loumar',
-                             'pass': 'P0o9i8U7',
-                             'host': 'auproxy-farm.toll.com.au',
-                             'port': 8080}
-                    proxy_str = "http://%(user)s:%(pass)s@%(host)s:%(port)d" % proxy
-                    proxy = urllib2.ProxyHandler({'https': proxy_str})
+                    proxy_kwargs = {}
+                    if self.proxy is not None:
+                        proxy_kwargs = {self.proxy_scheme: self.proxy}
+                    proxy = urllib2.ProxyHandler(proxy_kwargs)
                     auth = urllib2.HTTPBasicAuthHandler()
                     opener = urllib2.build_opener(proxy,
                                                   auth,

@@ -137,6 +137,12 @@ class Exporter(object):
         **Kwargs:**
             dry: only report what would happen (do not move file)
 
+        **Returns:**
+            boolean ``True`` if the signature file is located successfully
+            and moved into the staging *out_dir*
+
+            boolean ``False`` otherwise
+
         """
         status = True
 
@@ -161,6 +167,7 @@ class Exporter(object):
                         os.rename(sig_file, target)
                 except OSError, e:
                     log.error('Signature file move failed: "%s"' % e)
+                    status = False
             else:
                 log.error('Signature file "%s" does not exist' % sig_file)
                 status = False
