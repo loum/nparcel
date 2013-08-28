@@ -31,7 +31,7 @@ FIELDS = {'Conn Note': {'offset': 0,
                      'length': 5},
           'Email Address': {'offset': 765,
                             'length': 60},
-          'Mobile Number': {'offset': 815,
+          'Mobile Number': {'offset': 825,
                             'length': 10},
           'Item Number': {'offset': 887,
                           'length': 32}}
