@@ -21,10 +21,9 @@ class Emailer(object):
 
         """
         self._sender = sender
-        if self.sender is None:
-            sender = "%s@%s" % (getpass.getuser(), getfqdn())
-            log.debug('Setting sender as "%s"' % sender)
-            self.set_sender(sender)
+        if self._sender is None:
+            self._sender = "%s@%s" % (getpass.getuser(), getfqdn())
+            log.debug('Set sender as "%s"' % self._sender)
 
         if recipients is None:
             self._recipients = []

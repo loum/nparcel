@@ -29,11 +29,13 @@ class LoaderDaemon(nparcel.utils.Daemon):
     def _start(self, event):
         signal.signal(signal.SIGTERM, self._exit_handler)
 
-        loader = nparcel.Loader(db=self.config.db_kwargs())
+        loader = nparcel.Loader(db=self.config.db_kwargs(),
+                                proxy=self.config.proxy_string(),
+                                scheme=self.config.rest.get('sms_scheme'),
+                                api=self.config.rest.get('sms_api'))
         reporter = nparcel.Reporter()
         emailer = nparcel.Emailer()
         np_support = self.config('support_emails')
-        np_special_sms = self.config('special_sms')
 
         commit = True
         if self.dry:
@@ -74,7 +76,6 @@ class LoaderDaemon(nparcel.utils.Daemon):
                     continue
 
                 bu_id = int(self.config('file_bu').get(bu.lower()))
-                sms = np_special_sms
                 condition_map = self.config.condition_map(bu)
                 for line in f:
                     record = line.rstrip('\r\n')
@@ -87,9 +88,7 @@ class LoaderDaemon(nparcel.utils.Daemon):
                                                 record,
                                                 bu_id,
                                                 condition_map,
-                                                sms,
                                                 self.dry))
-                        sms = None
                 f.close()
 
                 # Report the results.

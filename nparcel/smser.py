@@ -85,10 +85,25 @@ class Smser(object):
             dry: do not send, only report what would happen
 
         """
+        log.info('Sending SMS comms ...')
         status = True
 
-        log.info('Sending SMS comms ...')
-        if self.api is not None:
+        # Verify SMS recipients.
+        if not len(self.recipients):
+            log.warn('No SMS recipients provided')
+            status = False
+
+        if status:
+            for recipient in self.recipients:
+                if not self.validate(recipient):
+                    status = False
+                    break
+
+        if self.api is None:
+            log.error('No SMS API provided -- SMS not sent')
+            status = False
+
+        if status:
             for mobile in self.recipients:
                 params = self.encode_params(msg, mobile)
                 url = "%s?%s" % (self.api, params)
@@ -110,8 +125,6 @@ class Smser(object):
                         log.info('SMS receive: "%s"' % response)
                     except urllib2.URLError, e:
                         log.warn('SMS failure: %s' % e)
-        else:
-            log.warn('No SMS API provided -- SMS not sent')
 
         return status
 

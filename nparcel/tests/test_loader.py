@@ -25,7 +25,12 @@ class TestLoader(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._ldr = nparcel.Loader()
+        conf = nparcel.Config()
+        conf.set_file('nparcel/conf/nparceld.conf')
+        conf.parse_config()
+        proxy = conf.proxy_string()
+        api = conf.rest.get('sms_api')
+        cls._ldr = nparcel.Loader(proxy=proxy, scheme='https', api=api)
         cls._job_ts = cls._ldr.db.date_now()
 
     def test_init(self):

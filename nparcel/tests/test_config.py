@@ -84,7 +84,7 @@ class TestConfig(unittest2.TestCase):
 
         msg = 'Support emails not as expected'
         received = self._c('support_emails')
-        expected = ['loumar@tollgroup.com', 'lou.markovski@gmail.com']
+        expected = ['loumar@tollgroup.com']
         self.assertListEqual(received, expected, msg)
 
         msg = 'Conditions map not as expected'
@@ -94,7 +94,8 @@ class TestConfig(unittest2.TestCase):
 
         msg = 'RESTful API not as expected'
         received = self._c('rest')
-        expected = {'sms_api': 'https://www.textmagic.com/app/api'}
+        expected = {'sms_scheme': 'https',
+                    'sms_api': 'https://www.textmagic.com/app/api'}
         self.assertDictEqual(received, expected, msg)
 
         # Cleanup.

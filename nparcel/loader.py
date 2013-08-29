@@ -149,14 +149,15 @@ class Loader(object):
         self.alerts = []
 
         self.emailer = nparcel.Emailer()
-        self.smser = nparcel.Smser(proxy, scheme, api)
+        self.smser = nparcel.Smser(proxy=proxy,
+                                   proxy_scheme=scheme,
+                                   api=api)
 
     def process(self,
                 time,
                 raw_record,
                 bu_id,
                 cond_map,
-                sms=None,
                 dry=False):
         """Extracts, validates and inserts/updates an Nparcel record.
 
@@ -171,10 +172,9 @@ class Loader(object):
             the Business Unit
 
         **Kwargs:**
-            sms: list of numbers to SMS comms to (special case)
+            dry: only report, do not actual execute
 
         **Returns:**
-
             boolean ``True`` if processing was successful
 
             boolean ``False`` if processing failed
@@ -239,10 +239,11 @@ class Loader(object):
 
             # Send out comms if the facility is enabled.
             if cond_map.get('send_email'):
-                email = job_item_data.get('email_addr').split(',')
+                email = job_item_data.get('email_addr').split()
                 self.send_email(agent_id_row_id, email, barcode, dry)
             if cond_map.get('send_sms'):
-                self.send_sms(agent_id_row_id, sms, barcode, dry)
+                mobile = job_item_data.get('phone_nbr').split()
+                self.send_sms(agent_id_row_id, mobile, barcode, dry)
 
         log.info('Conn Note: "%s" parse complete' % connote_literal)
 
@@ -666,7 +667,7 @@ class Loader(object):
                 (name, address, suburb, postcode) = agent
 
                 # OK, generate the email structure.
-                subject = 'Nparcel pickup'
+                subject = 'TEST ONLY PLEASE IGNORE --  Nparcel pickup'
                 msg = """Your consignment has been placed at %s, %s, %s %s.  Consignment Ref %s.  Please bring your photo ID with you.  Enquiries 13 32 78""" % (name, address, suburb, postcode, barcode)
                 self.emailer.set_recipients(to_addresses)
                 status = self.emailer.send(subject=subject,
@@ -703,7 +704,7 @@ class Loader(object):
 
         # Send out SMS comms.
         if mobiles is not None and len(mobiles):
-            log.debug('Sending customer email to "%s"' % str(mobiles))
+            log.debug('Sending customer SMS to "%s"' % str(mobiles))
 
             # Get agent details.
             self.db(self.db._agent.agent_sql(id=agent_id))
@@ -713,7 +714,7 @@ class Loader(object):
 
                 # OK, generate the SMS structure.
                 subject = 'Nparcel pickup'
-                msg = """Your consignment has been placed at %s, %s, %s %s.  Consignment Ref %s.  Please bring your photo ID with you.  Enquiries 13 32 78""" % (name, address, suburb, postcode, barcode)
+                msg = """TEST PLEASE IGNORE Your consignment has been placed at %s, %s, %s %s.  Consignment Ref %s.  Please bring your photo ID with you.  Enquiries 13 32 78""" % (name, address, suburb, postcode, barcode)
                 self.smser.set_recipients(mobiles)
                 status = self.smser.send(msg=msg, dry=dry)
             else:

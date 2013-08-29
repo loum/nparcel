@@ -26,8 +26,8 @@ class TestSmser(unittest2.TestCase):
         kwargs = {'msg': 'no recipients msg',
                   'dry': True}
         received = self._sms.send(**kwargs)
-        msg = 'SMS send without recipients should be (False) True'
-        self.assertTrue(received, msg)
+        msg = 'SMS send without recipients should be False'
+        self.assertFalse(received, msg)
 
         # Clean up.
         self._sms.set_recipients(None)

@@ -72,8 +72,6 @@ class Config(object):
         self.business_units = {}
         self.file_bu = {}
         self.support_emails = []
-        self.special_emails = []
-        self.special_sms = []
         self.cond = {}
         self.rest = {}
 
@@ -104,10 +102,6 @@ class Config(object):
             value = self.file_bu
         elif item == 'support_emails':
             value = self.support_emails
-        elif item == 'special_emails':
-            value = self.special_emails
-        elif item == 'special_sms':
-            value = self.special_sms
         elif item == 'cond':
             value = self.cond
         elif item == 'rest':
@@ -195,23 +189,9 @@ class Config(object):
         # by any of the BU's
         try:
             self.rest = dict(self._config.items('rest'))
-            log.debug('RESTful APIs %s' % self.rest.keys())
+            log.debug('RESTful APIs %s' % str(self.rest))
         except ConfigParser.NoSectionError, err:
             log.warn('No RESTful APIs in config')
-
-        try:
-            self.special_emails = self._config.get('email',
-                                                   'special').split(',')
-        except ConfigParser.NoOptionError, err:
-        #    log.warn('Special emails not provided: %s' % err)
-            pass
-
-        try:
-            self.special_sms = self._config.get('sms',
-                                                'special').split(',')
-        except ConfigParser.NoOptionError, err:
-        #    log.warn('Special SMSs not provided: %s' % err)
-            pass
 
     def db_kwargs(self):
         """Extract database connectivity information from the configuration.
