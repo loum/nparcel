@@ -21,6 +21,11 @@ class Emailer(object):
 
         """
         self._sender = sender
+        if self.sender is None:
+            sender = "%s@%s" % (getpass.getuser(), getfqdn())
+            log.debug('Setting sender as "%s"' % sender)
+            self.set_sender(sender)
+
         if recipients is None:
             self._recipients = []
         else:
@@ -46,9 +51,10 @@ class Emailer(object):
     def send(self, subject, msg, dry=False):
         """Send the *msg*.
 
-        Will try to source the sender as specified in the *sender*
-        attribute.  Otherwise, sender will be determined automatically
-        as the current user.
+        Performs a simple validation check of the recipients and will
+        only send the email if all are OK.
+
+        Empty recipient lists are ignored and no email send attempt is made.
 
         **Args:**
             subject: the email subject
@@ -59,15 +65,21 @@ class Emailer(object):
             dry: do not send, only report what would happen
 
         """
+        log.info('Sending email comms ...')
         status = True
 
-        log.info('Sending email comms ...')
-        if len(self.recipients):
-            if self.sender is None:
-                sender = "%s@%s" % (getpass.getuser(), getfqdn())
-                log.debug('Setting sender as "%s"' % sender)
-                self.set_sender(sender)
+        # Verify email addresses.
+        if not len(self.recipients):
+            log.warn('No email recipients provided')
+            status = False
 
+        if status:
+            for recipient in self.recipients:
+                if not self.validate(recipient):
+                    status = False
+                    break
+
+        if status:
             # OK, send the message.
             mime_msg = MIMEText(msg)
             mime_msg['Subject'] = subject
@@ -98,8 +110,6 @@ class Emailer(object):
                     status = False
                     log.warn('Could not send email: %s' % err)
                 s.close()
-        else:
-            log.warn('No email recipients provided')
 
         return status
 
@@ -124,6 +134,6 @@ class Emailer(object):
         m = r.match(email)
         if m is None:
             status = False
-            log.warn(err)
+            log.error(err)
 
         return status

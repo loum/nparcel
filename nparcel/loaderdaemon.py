@@ -33,7 +33,6 @@ class LoaderDaemon(nparcel.utils.Daemon):
         reporter = nparcel.Reporter()
         emailer = nparcel.Emailer()
         np_support = self.config('support_emails')
-        np_special = self.config('special_emails')
         np_special_sms = self.config('special_sms')
 
         commit = True
@@ -75,7 +74,6 @@ class LoaderDaemon(nparcel.utils.Daemon):
                     continue
 
                 bu_id = int(self.config('file_bu').get(bu.lower()))
-                email = np_special
                 sms = np_special_sms
                 condition_map = self.config.condition_map(bu)
                 for line in f:
@@ -89,10 +87,8 @@ class LoaderDaemon(nparcel.utils.Daemon):
                                                 record,
                                                 bu_id,
                                                 condition_map,
-                                                email,
                                                 sms,
                                                 self.dry))
-                        email = None
                         sms = None
                 f.close()
 

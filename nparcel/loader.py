@@ -156,7 +156,6 @@ class Loader(object):
                 raw_record,
                 bu_id,
                 cond_map,
-                email=None,
                 sms=None,
                 dry=False):
         """Extracts, validates and inserts/updates an Nparcel record.
@@ -172,8 +171,6 @@ class Loader(object):
             the Business Unit
 
         **Kwargs:**
-            email: list of email addresses to send to (special case)
-
             sms: list of numbers to SMS comms to (special case)
 
         **Returns:**
@@ -212,7 +209,7 @@ class Loader(object):
             job_id = None
             skip_jobitem_chk = False
 
-            connote = fields.get('Conn Note')
+            connote = job_item_data.get('connote_nbr')
             if self.match_connote(connote, barcode):
                 # Manufactured barcode.
                 item_nbr = fields.get('Item Number')
@@ -240,9 +237,12 @@ class Loader(object):
                 log.info('Creating Nparcel barcode "%s"' % barcode)
                 self.create(job_data, job_item_data)
 
-            # Send out comms.
-            self.send_email(agent_id_row_id, email, barcode, dry)
-            self.send_sms(agent_id_row_id, sms, barcode, dry)
+            # Send out comms if the facility is enabled.
+            if cond_map.get('send_email'):
+                email = job_item_data.get('email_addr').split(',')
+                self.send_email(agent_id_row_id, email, barcode, dry)
+            if cond_map.get('send_sms'):
+                self.send_sms(agent_id_row_id, sms, barcode, dry)
 
         log.info('Conn Note: "%s" parse complete' % connote_literal)
 
