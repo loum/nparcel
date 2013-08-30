@@ -43,18 +43,21 @@ class TestExporter(unittest2.TestCase):
 
         # "job_items" table.
         jobitems = [{'connote_nbr': '218501217863',
+                     'item_nbr': 'priority_item_nbr_001',
                      'job_id': priority_job_id,
                      'pickup_ts': '%s' % now,
                      'pod_name': 'pod_name 218501217863',
                      'identity_type_id': id_type_id,
                      'identity_type_data': 'identity 218501217863'},
                     {'connote_nbr': '21850121786x',
+                     'item_nbr': 'fast_item_nbr_001',
                      'job_id': fast_job_id,
                      'pickup_ts': '%s' % now,
                      'pod_name': 'pod_name 21850121786x',
                      'identity_type_id': id_type_id,
                      'identity_type_data': 'identity 21850121786x'},
                     {'connote_nbr': '218501217864',
+                     'item_nbr': 'priority_item_nbr_002',
                      'job_id': priority_job_id,
                      'pickup_ts': '%s' %
                      (now - datetime.timedelta(seconds=86400)),
@@ -63,6 +66,7 @@ class TestExporter(unittest2.TestCase):
                      'identity_type_data': 'identity 218501217864',
                      'extract_ts': '%s' % now},
                     {'connote_nbr': '218501217865',
+                     'item_nbr': 'priority_item_nbr_003',
                      'job_id': priority_job_id,
                      'pickup_ts': '%s' %
                      (now - datetime.timedelta(seconds=(86400 * 2))),

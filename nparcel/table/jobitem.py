@@ -48,7 +48,8 @@ class JobItem(nparcel.Table):
     ji.pickup_ts as 'PICKUP_TIME',
     ji.pod_name as 'PICKUP_POD',
     it.description as 'IDENTITY_TYPE',
-    ji.identity_type_data as 'IDENTITY_DATA'
+    ji.identity_type_data as 'IDENTITY_DATA',
+    ji.item_nbr as 'ITEM_NBR'
 FROM job_item as ji, identity_type as it, job as j
 WHERE pickup_ts IS NOT null
 AND extract_ts IS null
