@@ -98,6 +98,12 @@ class TestConfig(unittest2.TestCase):
                     'sms_api': 'https://www.textmagic.com/app/api'}
         self.assertDictEqual(received, expected, msg)
 
+        msg = 'Exporter columns expected'
+        received = self._c('exporter_fields')
+        expected = {'tolp': '0,1,2,3,4,5',
+                    'toli': '0,1,2,3,4,5,6'}
+        self.assertDictEqual(received, expected, msg)
+
         # Cleanup.
         self._c._file = None
 

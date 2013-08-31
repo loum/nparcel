@@ -55,6 +55,10 @@ class Config(object):
 
         dictionary of RESTful interfaces for SMS and email
 
+    .. attribute:: exporter_fields (exporter)
+
+        dictionary of business unit exporter ordered columns
+
     """
 
     def __init__(self, file=None):
@@ -74,6 +78,7 @@ class Config(object):
         self.support_emails = []
         self.cond = {}
         self.rest = {}
+        self.exporter_fields = {}
 
         if self._file is not None:
             self.set_file(self._file)
@@ -106,6 +111,8 @@ class Config(object):
             value = self.cond
         elif item == 'rest':
             value = self.rest
+        elif item == 'exporter_fields':
+            value = self.exporter_fields
 
         return value
 
@@ -192,6 +199,14 @@ class Config(object):
             log.debug('RESTful APIs %s' % str(self.rest))
         except ConfigParser.NoSectionError, err:
             log.warn('No RESTful APIs in config')
+
+        # Exporter business unit-based column output and ordering.
+        # Default is to simply display order as per query.
+        try:
+            self.exporter_fields = dict(self._config.items('exporter_fields'))
+            log.debug('Exporter fields %s' % str(self.exporter_fields))
+        except ConfigParser.NoSectionError, err:
+            log.warn('No Exporter column output ordering in config')
 
     def db_kwargs(self):
         """Extract database connectivity information from the configuration.
