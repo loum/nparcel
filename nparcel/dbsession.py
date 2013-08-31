@@ -209,3 +209,8 @@ class DbSession(object):
         else:
             # MSSQL.
             self('ROLLBACK TRANSACTION')
+
+    def columns(self):
+        """Return a list of column names within the current cursor context.
+        """
+        return list(map(lambda x: x[0], self.cursor.description))

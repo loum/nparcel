@@ -28,6 +28,16 @@ VALUES ('xxx')"""
         # and clean up.
         self._db.connection.rollback()
 
+    def test_columns(self):
+        """Verify table column names.
+        """
+        sql = """SELECT * FROM dummy"""
+        self._db(sql)
+        received = self._db.columns()
+        expected = ['id', 'dummy_field']
+        msg = 'Dummy table column names not as expected'
+        self.assertListEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._db.close()
