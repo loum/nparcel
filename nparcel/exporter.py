@@ -37,6 +37,7 @@ class Exporter(object):
         self._create_dir(self._staging_dir)
 
         self._collected_items = []
+        self._headers = []
 
     @property
     def signature_dir(self):
@@ -53,6 +54,16 @@ class Exporter(object):
         self._staging_dir = value
 
         self._create_dir(dir=self._staging_dir)
+
+    @property
+    def headers(self):
+        return self._headers
+
+    def set_headers(self, values):
+        del self._headers[:]
+
+        if values is not None:
+            self._headers.extend(values)
 
     def get_out_directory(self, business_unit):
         """Uses the *business_unit* name to construct the output directory
@@ -97,6 +108,9 @@ class Exporter(object):
         log.info('Searching for collected items ...')
         sql = self.db.jobitem.collected_sql(business_unit=business_unit_id)
         self.db(sql)
+
+        # Get the query headers.
+        self.set_headers(self.db.columns())
 
         for row in self.db.rows():
             cleansed_row = self._cleanse(row)
@@ -251,6 +265,36 @@ class Exporter(object):
 
         return target_file
 
+    def get_header(self, sequence=None):
+        """Generate the exporter report header.
+
+        Provide a tuple *sequence* to control the items displayed and their
+        order.
+
+        **Args:**
+            sequence: tuple of values that represent the index of the
+            fields that are returned by the job_item.collected_sql() query.
+            For example:
+
+                (0, 1, 4, 5, 2, 3)
+
+        **Returns:**
+            The exporter report header as a string if pipe delimited
+            column names
+
+        """
+        log.debug('Generating exporter header')
+        headers = "|".join(self.headers)
+        if sequence is not None and isinstance(sequence, tuple):
+            try:
+                headers = "|".join([self.headers[i] for i in sequence])
+            except IndexError, err:
+                log.warn('Default header generated: %s' % err)
+        else:
+            log.debug('Sequence not a tuple -- default header generated')
+
+        return headers
+
     def outfile(self, dir):
         """Creates the Exporter output file based on current timestamp
         and verifies creation at the staging directory *dir*.
@@ -331,3 +375,4 @@ class Exporter(object):
         """Initialise object state in readiness for another iteration.
         """
         del self._collected_items[:]
+        del self._headers[:]

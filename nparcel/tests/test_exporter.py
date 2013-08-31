@@ -78,6 +78,8 @@ class TestExporter(unittest2.TestCase):
             sql = cls._e.db.jobitem.insert_sql(jobitem)
             jobitem_id = cls._e.db.insert(sql=sql)
 
+        cls._e.db.commit()
+
         # Create a temporary directory structure.
         cls._dir = tempfile.mkdtemp()
         cls._staging_dir = tempfile.mkdtemp()
@@ -289,6 +291,66 @@ WHERE id = %d""" % item[1]
         os.rmdir(os.path.join(self._e.staging_dir, 'priority', 'out'))
         os.rmdir(os.path.join(self._e.staging_dir, 'priority'))
         self._e.set_staging_dir(value=None)
+
+    def test_headers(self):
+        """Default export file header generation.
+        """
+        self._e.set_headers(['REF1',
+                             'JOB_KEY',
+                             'PICKUP_TIME',
+                             'PICKUP_POD'])
+        msg = 'Default exporter headers not as expected'
+        received = self._e.get_header()
+        expected = 'REF1|JOB_KEY|PICKUP_TIME|PICKUP_POD'
+        self.assertEqual(received, expected, msg)
+
+        # Cleanup.
+        self._e.set_headers(None)
+
+    def test_headers_different_ordering(self):
+        """Export file header generation -- different ordering.
+        """
+        self._e.set_headers(['REF1',
+                             'JOB_KEY',
+                             'PICKUP_TIME',
+                             'PICKUP_POD'])
+        msg = 'Exporter headers with modified ordering not as expected'
+        received = self._e.get_header(sequence=(0, 3, 1, 2))
+        expected = 'REF1|PICKUP_POD|JOB_KEY|PICKUP_TIME'
+        self.assertEqual(received, expected, msg)
+
+        # Cleanup.
+        self._e.set_headers(None)
+
+    def test_headers_limited_columns(self):
+        """Export file header generation -- limited columns.
+        """
+        self._e.set_headers(['REF1',
+                             'JOB_KEY',
+                             'PICKUP_TIME',
+                             'PICKUP_POD'])
+        msg = 'Exporter headers with limited columns not as expected'
+        received = self._e.get_header(sequence=(0, 3, 1))
+        expected = 'REF1|PICKUP_POD|JOB_KEY'
+        self.assertEqual(received, expected, msg)
+
+        # Cleanup.
+        self._e.set_headers(None)
+
+    def test_headers_index_out_of_range(self):
+        """Export file header generation -- index out of range.
+        """
+        self._e.set_headers(['REF1',
+                             'JOB_KEY',
+                             'PICKUP_TIME',
+                             'PICKUP_POD'])
+        msg = 'Exporter headers with index out of range not as expected'
+        received = self._e.get_header(sequence=(0, 1, 2, 3, 4))
+        expected = 'REF1|JOB_KEY|PICKUP_TIME|PICKUP_POD'
+        self.assertEqual(received, expected, msg)
+
+        # Cleanup.
+        self._e.set_headers(None)
 
     @classmethod
     def tearDownClass(cls):
