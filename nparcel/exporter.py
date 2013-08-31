@@ -13,7 +13,8 @@ FIELDS = ['REF1',
           'PICKUP_TIME',
           'PICKUP_POD',
           'IDENTITY_TYPE',
-          'IDENTITY_DATA']
+          'IDENTITY_DATA',
+          'ITEM_NBR']
 
 
 class Exporter(object):

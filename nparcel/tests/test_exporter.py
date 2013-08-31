@@ -17,16 +17,16 @@ class TestExporter(unittest2.TestCase):
     def setUpClass(cls):
         cls._e = nparcel.Exporter()
 
-        now = datetime.datetime.now()
+        cls._now = datetime.datetime.now()
         # "job" table
         jobs = [{'card_ref_nbr': 'priority ref',
-                 'job_ts': '%s' % now,
+                 'job_ts': '%s' % cls._now,
                  'bu_id': BU['priority']},
                 {'card_ref_nbr': 'fast ref',
-                 'job_ts': '%s' % now,
+                 'job_ts': '%s' % cls._now,
                  'bu_id': BU['fast']},
                 {'card_ref_nbr': 'ipec ref',
-                 'job_ts': '%s' % now,
+                 'job_ts': '%s' % cls._now,
                  'bu_id': BU['ipec']}]
         sql = cls._e.db.job.insert_sql(jobs[0])
         priority_job_id = cls._e.db.insert(sql=sql)
@@ -45,14 +45,14 @@ class TestExporter(unittest2.TestCase):
         jobitems = [{'connote_nbr': '218501217863',
                      'item_nbr': 'priority_item_nbr_001',
                      'job_id': priority_job_id,
-                     'pickup_ts': '%s' % now,
+                     'pickup_ts': '%s' % cls._now,
                      'pod_name': 'pod_name 218501217863',
                      'identity_type_id': id_type_id,
                      'identity_type_data': 'identity 218501217863'},
                     {'connote_nbr': '21850121786x',
                      'item_nbr': 'fast_item_nbr_001',
                      'job_id': fast_job_id,
-                     'pickup_ts': '%s' % now,
+                     'pickup_ts': '%s' % cls._now,
                      'pod_name': 'pod_name 21850121786x',
                      'identity_type_id': id_type_id,
                      'identity_type_data': 'identity 21850121786x'},
@@ -60,20 +60,20 @@ class TestExporter(unittest2.TestCase):
                      'item_nbr': 'priority_item_nbr_002',
                      'job_id': priority_job_id,
                      'pickup_ts': '%s' %
-                     (now - datetime.timedelta(seconds=86400)),
+                     (cls._now - datetime.timedelta(seconds=86400)),
                      'pod_name': 'pod_name 218501217864',
                      'identity_type_id': id_type_id,
                      'identity_type_data': 'identity 218501217864',
-                     'extract_ts': '%s' % now},
+                     'extract_ts': '%s' % cls._now},
                     {'connote_nbr': '218501217865',
                      'item_nbr': 'priority_item_nbr_003',
                      'job_id': priority_job_id,
                      'pickup_ts': '%s' %
-                     (now - datetime.timedelta(seconds=(86400 * 2))),
+                     (cls._now - datetime.timedelta(seconds=(86400 * 2))),
                      'pod_name': 'pod_name 218501217865',
                      'identity_type_id': id_type_id,
                      'identity_type_data': 'identity 218501217865',
-                     'extract_ts': '%s' % now}]
+                     'extract_ts': '%s' % cls._now}]
         for jobitem in jobitems:
             sql = cls._e.db.jobitem.insert_sql(jobitem)
             jobitem_id = cls._e.db.insert(sql=sql)
@@ -240,6 +240,15 @@ WHERE id = 1"""
         valid_items = self._e.process(business_unit_id=BU.get('priority'),
                                       out_dir=out_dir)
         report_file = self._e.report(valid_items, out_dir=out_dir)
+
+        # Check the contents of the report file.
+        fh = open(report_file)
+        received = fh.read()
+        fh.close()
+        expected = ('REF1|JOB_KEY|PICKUP_TIME|PICKUP_POD|IDENTITY_TYPE|IDENTITY_DATA|ITEM_NBR\n218501217863|1|%s|pod_name 218501217863|identity_type description|identity 218501217863|priority_item_nbr_001\n' %
+        self._now.isoformat(' ')[:-7])
+        msg = 'Contents of Priority-based POD report file not as expected'
+        self.assertEqual(received, expected, msg)
 
         # Clean.
         self._e.reset()

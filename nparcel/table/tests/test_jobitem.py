@@ -3,6 +3,11 @@ import datetime
 
 import nparcel
 
+# Current busness_unit map:
+BU = {'priority': 1,
+      'fast': 2,
+      'ipec': 3}
+
 
 class TestJobItem(unittest2.TestCase):
 
@@ -11,6 +16,34 @@ class TestJobItem(unittest2.TestCase):
         cls._job_item = nparcel.JobItem()
         cls._db = nparcel.DbSession()
         cls._db.connect()
+
+        # Prepare some sample data.
+        cls._now = datetime.datetime.now()
+        # "job" table
+        jobs = [{'card_ref_nbr': 'priority ref',
+                 'job_ts': '%s' % cls._now,
+                 'bu_id': BU['priority']}]
+        sql = cls._db.job.insert_sql(jobs[0])
+        priority_job_id = cls._db.insert(sql=sql)
+
+        # "identity_type" table.
+        identity_types = [{'description': 'identity_type description'}]
+        for identity_type in identity_types:
+            sql = cls._db.identity_type.insert_sql(identity_type)
+            id_type_id = cls._db.insert(sql=sql)
+
+        # "job_items" table.
+        jobitems = [{'connote_nbr': '218501217863',
+                     'item_nbr': 'priority_item_nbr_001',
+                     'job_id': priority_job_id,
+                     'pickup_ts': '%s' % cls._now,
+                     'pod_name': 'pod_name 218501217863',
+                     'identity_type_id': id_type_id,
+                     'identity_type_data': 'identity 218501217863'}]
+        sql = cls._db.jobitem.insert_sql(jobitems[0])
+        cls._valid_job_item_id_01 = cls._db.insert(sql=sql)
+
+        cls._db.commit()
 
     def test_init(self):
         """Initialise a JobItem object.
@@ -21,28 +54,27 @@ class TestJobItem(unittest2.TestCase):
     def test_jobitem_table_insert_with_valid_nparcel_data(self):
         """Insert valid Nparcel data into "job_item" table.
         """
-        kwargs = {'connote_nbr': '218501217863',
+        kwargs = {'connote_nbr': '2185012insert',
                   'consumer_name': 'Diane Donohoe',
                   'pieces': '00001',
                   'status': 1,
                   'created_ts': datetime.datetime.now().isoformat(' ')[:-3]}
         received = self._db.insert(self._job_item.insert_sql(kwargs))
-        expected = 1
-        msg = '"job_item" table insert returned unexpected row_id'
-        self.assertEqual(received, expected, msg)
+        msg = '"job_item" table insert should return integer value'
+        self.assertTrue(isinstance(received, int), msg)
 
         self._db.connection.rollback()
 
     def test_connote_sql(self):
         """Verify the connote_sql string.
         """
-        connote = '218501217863'
+        connote = '218501217899'
 
         # Seed the table with sample data.
         kwargs = {'connote_nbr': connote,
                   'status': 1,
                   'created_ts': datetime.datetime.now().isoformat(' ')[:-3]}
-        self._db(self._job_item.insert_sql(kwargs))
+        id = self._db.insert(self._job_item.insert_sql(kwargs))
 
         # Check the query via SQL.
         sql = self._db.jobitem.connote_sql(connote=connote)
@@ -51,7 +83,7 @@ class TestJobItem(unittest2.TestCase):
         received = []
         for row in self._db.rows():
             received.append(row[0])
-        expected = [1]
+        expected = [id]
         msg = 'job_item.connote return value not as expected'
         self.assertListEqual(received, expected, msg)
 
@@ -61,7 +93,7 @@ class TestJobItem(unittest2.TestCase):
     def test_connote_item_nbr_sql(self):
         """Verify the connote_item_nbr_sql string.
         """
-        connote = '218501217863'
+        connote = '218501217nbr'
         item_nbr = 'abcdef000001'
 
         # Seed the table with sample data.
@@ -69,7 +101,7 @@ class TestJobItem(unittest2.TestCase):
                   'item_nbr': item_nbr,
                   'status': 1,
                   'created_ts': datetime.datetime.now().isoformat(' ')[:-3]}
-        self._db(self._job_item.insert_sql(kwargs))
+        id = self._db.insert(self._job_item.insert_sql(kwargs))
 
         # Check the query via SQL.
         sql = self._db.jobitem.connote_item_nbr_sql(connote=connote,
@@ -79,7 +111,7 @@ class TestJobItem(unittest2.TestCase):
         received = []
         for row in self._db.rows():
             received.append(row[0])
-        expected = [1]
+        expected = [id]
         msg = 'job_item serch return value not as expected'
         self.assertListEqual(received, expected, msg)
 
@@ -95,7 +127,7 @@ class TestJobItem(unittest2.TestCase):
         kwargs = {'item_nbr': item_nbr,
                   'status': 1,
                   'created_ts': datetime.datetime.now().isoformat(' ')[:-3]}
-        self._db(self._job_item.insert_sql(kwargs))
+        id = self._db.insert(self._job_item.insert_sql(kwargs))
 
         # Check the query via SQL.
         sql = self._db.jobitem.item_number_sql(item_nbr=item_nbr)
@@ -104,12 +136,25 @@ class TestJobItem(unittest2.TestCase):
         received = []
         for row in self._db.rows():
             received.append(row[0])
-        expected = [1]
+        expected = [id]
         msg = 'job_item.item_nbr return value not as expected'
         self.assertListEqual(received, expected, msg)
 
         # Cleanup.
         self._db.connection.rollback()
+
+    def test_collected_sql(self):
+        """Verify the collected_sql SQL string.
+        """
+        sql = self._db.jobitem.collected_sql(business_unit=1)
+        self._db(sql)
+
+        received = []
+        for row in self._db.rows():
+            received.append(row[0])
+        expected = ['218501217863']
+        msg = 'collected_sql SQL query did not return expected result'
+        self.assertListEqual(received, expected)
 
     @classmethod
     def tearDownClass(cls):
