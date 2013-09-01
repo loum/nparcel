@@ -8,14 +8,6 @@ import datetime
 import nparcel
 from nparcel.utils.log import log
 
-FIELDS = ['REF1',
-          'JOB_KEY',
-          'PICKUP_TIME',
-          'PICKUP_POD',
-          'IDENTITY_TYPE',
-          'IDENTITY_DATA',
-          'ITEM_NBR']
-
 
 class Exporter(object):
     """Nparcel Exporter.
@@ -37,7 +29,7 @@ class Exporter(object):
         self._create_dir(self._staging_dir)
 
         self._collected_items = []
-        self._headers = []
+        self._header = ()
 
     @property
     def signature_dir(self):
@@ -56,14 +48,14 @@ class Exporter(object):
         self._create_dir(dir=self._staging_dir)
 
     @property
-    def headers(self):
-        return self._headers
+    def header(self):
+        return self._header
 
-    def set_headers(self, values):
-        del self._headers[:]
+    def set_header(self, values):
+        self._header = ()
 
         if values is not None:
-            self._headers.extend(values)
+            self._header = values
 
     def get_out_directory(self, business_unit):
         """Uses the *business_unit* name to construct the output directory
@@ -109,8 +101,8 @@ class Exporter(object):
         sql = self.db.jobitem.collected_sql(business_unit=business_unit_id)
         self.db(sql)
 
-        # Get the query headers.
-        self.set_headers(self.db.columns())
+        # Get the query header.
+        self.set_header(self.db.columns())
 
         for row in self.db.rows():
             cleansed_row = self._cleanse(row)
@@ -225,32 +217,40 @@ class Exporter(object):
 
         return tuple(row_list)
 
-    def report(self, items, out_dir=None):
+    def report(self, items, out_dir=None, sequence=None):
         """Cycle through the newly identified collected items and produce
-        a report.
+        a report in the *out_dir*.
 
         Once an entry is made in the report, also update the database
         so that it does not appear in future runs.
 
+        **Args:**
+            out_dir: the staging area to output files to
+
+            seqence: business unit-based report column control
+
         **Returns:**
-            name of the report file
+            name of the report file that is generated
+
+            ``None`` otherwise
 
         """
         file_name = None
         target_file = None
 
         if items:
-            header = '|'.join(FIELDS)
+            header = self.get_report_line(self.header, sequence)
+
             if out_dir is None:
                 print(header)
                 for item in items:
-                    print('%s' % '|'.join(map(str, item)))
+                    print('%s' % (self.get_report_line(item, sequence)))
             else:
                 fh = self.outfile(out_dir)
                 file_name = fh.name
                 fh.write('%s\n' % header)
                 for item in items:
-                    fh.write('%s\n' % '|'.join(map(str, item)))
+                    fh.write('%s\n' % self.get_report_line(item, sequence))
                     job_item_id = item[1]
                     self._update_status(job_item_id)
                 fh.close()
@@ -265,13 +265,16 @@ class Exporter(object):
 
         return target_file
 
-    def get_header(self, sequence=None):
-        """Generate the exporter report header.
+    def get_report_line(self, line, sequence=None):
+        """Generate the exporter report line entry.
 
         Provide a tuple *sequence* to control the items displayed and their
         order.
 
         **Args:**
+            line: tuple of the collected item record as per the output from
+            the job_item.collected_item() SQL
+
             sequence: tuple of values that represent the index of the
             fields that are returned by the job_item.collected_sql() query.
             For example:
@@ -283,17 +286,20 @@ class Exporter(object):
             column names
 
         """
-        log.debug('Generating exporter header')
-        headers = "|".join(self.headers)
-        if sequence is not None and isinstance(sequence, tuple):
-            try:
-                headers = "|".join([self.headers[i] for i in sequence])
-            except IndexError, err:
-                log.warn('Default header generated: %s' % err)
+        report_line = "|".join(map(str, line))
+        if sequence is None or not len(sequence):
+            log.debug('Sequence not defined -- default line generated')
         else:
-            log.debug('Sequence not a tuple -- default header generated')
+            seq = sequence
+            if not isinstance(sequence, tuple):
+                seq = (int(x) for x in sequence.replace(' ', '').split(','))
 
-        return headers
+            try:
+                report_line = "|".join(map(str, [line[i] for i in seq]))
+            except IndexError, err:
+                log.warn('Default report line entry generated: %s' % err)
+
+        return report_line
 
     def outfile(self, dir):
         """Creates the Exporter output file based on current timestamp
@@ -375,4 +381,4 @@ class Exporter(object):
         """Initialise object state in readiness for another iteration.
         """
         del self._collected_items[:]
-        del self._headers[:]
+        self._header = ()

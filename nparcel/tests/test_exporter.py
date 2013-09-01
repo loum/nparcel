@@ -221,13 +221,12 @@ WHERE id = 1"""
     def test_process(self):
         """End to end collected items.
         """
-        bu = 'priority'
-
         # Define the staging/signature directory.
         self._e.set_signature_dir(self._dir)
         self._e.set_staging_dir(self._staging_dir)
 
         # Prepare the signature files.
+        bu = 'priority'
         sql = self._e.db.jobitem.collected_sql(business_unit=BU.get(bu))
         self._e.db(sql)
         items = []
@@ -241,13 +240,16 @@ WHERE id = 1"""
         out_dir = self._e.get_out_directory(business_unit=bu)
         valid_items = self._e.process(business_unit_id=BU.get('priority'),
                                       out_dir=out_dir)
-        report_file = self._e.report(valid_items, out_dir=out_dir)
+        sequence = '0, 1, 2, 3, 4, 5'
+        report_file = self._e.report(valid_items,
+                                    out_dir=out_dir,
+                                    sequence=sequence)
 
         # Check the contents of the report file.
         fh = open(report_file)
         received = fh.read()
         fh.close()
-        expected = ('REF1|JOB_KEY|PICKUP_TIME|PICKUP_POD|IDENTITY_TYPE|IDENTITY_DATA|ITEM_NBR\n218501217863|1|%s|pod_name 218501217863|identity_type description|identity 218501217863|priority_item_nbr_001\n' %
+        expected = ('REF1|JOB_KEY|PICKUP_TIME|PICKUP_POD|IDENTITY_TYPE|IDENTITY_DATA\n218501217863|1|%s|pod_name 218501217863|identity_type description|identity 218501217863\n' %
         self._now.isoformat(' ')[:-7])
         msg = 'Contents of Priority-based POD report file not as expected'
         self.assertEqual(received, expected, msg)
@@ -295,62 +297,80 @@ WHERE id = %d""" % item[1]
     def test_headers(self):
         """Default export file header generation.
         """
-        self._e.set_headers(['REF1',
-                             'JOB_KEY',
-                             'PICKUP_TIME',
-                             'PICKUP_POD'])
-        msg = 'Default exporter headers not as expected'
-        received = self._e.get_header()
+        self._e.set_header(('REF1',
+                            'JOB_KEY',
+                            'PICKUP_TIME',
+                            'PICKUP_POD'))
+        msg = 'Default exporter report line not as expected'
+        received = self._e.get_report_line(self._e.header)
         expected = 'REF1|JOB_KEY|PICKUP_TIME|PICKUP_POD'
         self.assertEqual(received, expected, msg)
 
         # Cleanup.
-        self._e.set_headers(None)
+        self._e.set_header(None)
 
     def test_headers_different_ordering(self):
         """Export file header generation -- different ordering.
         """
-        self._e.set_headers(['REF1',
-                             'JOB_KEY',
-                             'PICKUP_TIME',
-                             'PICKUP_POD'])
-        msg = 'Exporter headers with modified ordering not as expected'
-        received = self._e.get_header(sequence=(0, 3, 1, 2))
+        self._e.set_header(('REF1',
+                            'JOB_KEY',
+                            'PICKUP_TIME',
+                            'PICKUP_POD'))
+        msg = 'Exporter report line with modified ordering not as expected'
+        received = self._e.get_report_line(self._e.header,
+                                           sequence=(0, 3, 1, 2))
         expected = 'REF1|PICKUP_POD|JOB_KEY|PICKUP_TIME'
         self.assertEqual(received, expected, msg)
 
         # Cleanup.
-        self._e.set_headers(None)
+        self._e.set_header(None)
 
     def test_headers_limited_columns(self):
-        """Export file header generation -- limited columns.
+        """Export file report line generation -- limited columns.
         """
-        self._e.set_headers(['REF1',
-                             'JOB_KEY',
-                             'PICKUP_TIME',
-                             'PICKUP_POD'])
-        msg = 'Exporter headers with limited columns not as expected'
-        received = self._e.get_header(sequence=(0, 3, 1))
+        self._e.set_header(('REF1',
+                            'JOB_KEY',
+                            'PICKUP_TIME',
+                            'PICKUP_POD'))
+        msg = 'Exporter report line with limited columns not as expected'
+        received = self._e.get_report_line(self._e.header,
+                                           sequence=(0, 3, 1))
         expected = 'REF1|PICKUP_POD|JOB_KEY'
         self.assertEqual(received, expected, msg)
 
         # Cleanup.
-        self._e.set_headers(None)
+        self._e.set_header(None)
 
     def test_headers_index_out_of_range(self):
         """Export file header generation -- index out of range.
         """
-        self._e.set_headers(['REF1',
-                             'JOB_KEY',
-                             'PICKUP_TIME',
-                             'PICKUP_POD'])
-        msg = 'Exporter headers with index out of range not as expected'
-        received = self._e.get_header(sequence=(0, 1, 2, 3, 4))
+        self._e.set_header(('REF1',
+                            'JOB_KEY',
+                            'PICKUP_TIME',
+                            'PICKUP_POD'))
+        msg = 'Exporter report line with index out of range not as expected'
+        received = self._e.get_report_line(self._e.header,
+                                           sequence=(0, 1, 2, 3, 4))
         expected = 'REF1|JOB_KEY|PICKUP_TIME|PICKUP_POD'
         self.assertEqual(received, expected, msg)
 
         # Cleanup.
-        self._e.set_headers(None)
+        self._e.set_header(None)
+
+    def test_report_line(self):
+        """Default report line entry generation.
+        """
+        line = ('218501217863',
+                1,
+                '%s' % self._now,
+                'pod_name 218501217863',
+                'License',
+                '1234',
+                'priority_item_nbr_001')
+        msg = 'Default exporter line entry not as expected'
+        received = self._e.get_report_line(line)
+        expected = """218501217863|1|%s|pod_name 218501217863|License|1234|priority_item_nbr_001""" % self._now
+        self.assertEqual(received, expected, msg)
 
     @classmethod
     def tearDownClass(cls):
