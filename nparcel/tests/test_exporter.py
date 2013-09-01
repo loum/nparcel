@@ -254,10 +254,15 @@ WHERE id = 1"""
         sql = self._e.db.jobitem.collected_sql(business_unit=BU.get(bu))
         self._e.db(sql)
         items = []
+        png_files = []
         for row in self._e.db.rows():
             items.append(row)
             fh = open(os.path.join(self._e.signature_dir,
                                    '%s.ps' % str(row[1])), 'w')
+            fh.close()
+            fh = open(os.path.join(self._e.signature_dir,
+                                   '%s.png' % str(row[1])), 'w')
+            png_files.append(fh.name)
             fh.close()
 
         # Check if we can source a staging directory.
@@ -293,6 +298,7 @@ WHERE id = 1"""
         self._e.reset()
         os.remove(report_file)
 
+        # Remove signature files.
         for item in items:
             # Remove the signature files.
             sig_file = os.path.join(self._e._staging_dir,
@@ -300,6 +306,9 @@ WHERE id = 1"""
                                     'out',
                                     '%s.ps' % str(item[1]))
             os.remove(sig_file)
+
+        for png_file in png_files:
+            os.remove(png_file)
 
             # Clear the extract_id timestamp.
             sql = """UPDATE job_item

@@ -129,17 +129,24 @@ class Exporter(object):
 
         return valid_items
 
-    def move_signature_file(self, id, out_dir, dry=False):
+    def move_signature_file(self, id, out_dir, extension='ps', dry=False):
         """Move the Nparcel signature file to the staging directory for
         further processing.
 
-        Move will only occur if a a staging directory exists.
+        .. note::
+
+            Move will only occur if a a staging directory exists.
 
         Filename is constructed on the *id* provided.  *id* is typically
         the record id of the "job_item" table record.
 
         **Args:**
             id: file name identifier of the file to move
+
+            out_dir: target directory
+
+            extension: the extension of the filename to move
+            (default '.ps')
 
         **Kwargs:**
             dry: only report what would happen (do not move file)
@@ -151,22 +158,24 @@ class Exporter(object):
             boolean ``False`` otherwise
 
         """
+        log.info('Moving signature file for job_item.id: %d' % id)
         status = True
 
-        log.info('Moving signature file for job_item.id: %d' % id)
         # Define the signature filename.
-        if self.signature_dir is not None:
-            sig_file = os.path.join(self.signature_dir, "%d.ps" % id)
-            if not os.path.exists(sig_file):
-                log.error('Cannot locate signature file: "%s"' % sig_file)
-                status = False
-        else:
+        if self.signature_dir is None:
             log.error('Signature directory is not defined')
             status = False
 
         if status:
-            if os.path.exists(sig_file):
-                target = os.path.join(out_dir, "%d.ps" % id)
+            sig_file = os.path.join(self.signature_dir,
+                                    "%d.%s" % (id, extension))
+
+            if not os.path.exists(sig_file):
+                log.error('Cannot locate signature file: "%s"' % sig_file)
+                status = False
+            else:
+                target = os.path.join(out_dir,
+                                      "%d.%s" % (id, extension))
                 log.info('Moving signature file "%s" to "%s"' %
                          (sig_file, target))
                 try:
@@ -175,9 +184,6 @@ class Exporter(object):
                 except OSError, e:
                     log.error('Signature file move failed: "%s"' % e)
                     status = False
-            else:
-                log.error('Signature file "%s" does not exist' % sig_file)
-                status = False
 
         return status
 
