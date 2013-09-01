@@ -9,7 +9,9 @@ from nparcel.utils.log import log
 
 FLAG_MAP = {'item_number_excp': 0,
             'send_email': 1,
-            'send_sms': 2}
+            'send_sms': 2,
+            'send_ps_file': 3,
+            'send_png_file': 4}
 
 
 class Config(object):

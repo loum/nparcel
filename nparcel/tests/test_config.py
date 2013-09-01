@@ -89,7 +89,9 @@ class TestConfig(unittest2.TestCase):
 
         msg = 'Conditions map not as expected'
         received = self._c('cond')
-        expected = {'tolp': '000', 'tolf': '000', 'toli': '100'}
+        expected = {'tolp': '00010',
+                    'tolf': '00010',
+                    'toli': '10001'}
         self.assertDictEqual(received, expected, msg)
 
         msg = 'RESTful API not as expected'
@@ -230,7 +232,9 @@ class TestConfig(unittest2.TestCase):
         received = self._c.condition_map('banana')
         expected = {'item_number_excp': False,
                     'send_sms': False,
-                    'send_email': False}
+                    'send_email': False,
+                    'send_ps_file': False,
+                    'send_png_file': False}
         msg = 'Dodgy Business Unit condition map should be empty dict'
         self.assertDictEqual(received, expected, msg)
 
@@ -246,7 +250,9 @@ class TestConfig(unittest2.TestCase):
         received = self._c.condition_map('toli')
         expected = {'item_number_excp': True,
                     'send_sms': False,
-                    'send_email': False}
+                    'send_email': False,
+                    'send_ps_file': False,
+                    'send_png_file': True}
         msg = 'Valid Business Unit condition map should produce dict values'
         self.assertDictEqual(received, expected, msg)
 
@@ -272,7 +278,7 @@ class TestConfig(unittest2.TestCase):
         self._c.parse_config()
 
         old_flag = self._c.cond.get('toli', 'send_sms')
-        self._c.cond['toli'] = '101'
+        self._c.cond['toli'] = '10100'
 
         msg = 'Facility check should return True if flag is set'
         self.assertTrue(self._c.required_facility('send_sms'), msg)
