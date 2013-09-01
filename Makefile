@@ -23,6 +23,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestSmser \
 	 nparcel.tests:TestLoaderDaemon \
 	 nparcel.tests:TestExporter \
+	 nparcel.tests:TestExporterIpec \
 	 nparcel.tests:TestConfig \
 	 nparcel.tests:TestFtp \
 	 nparcel.table.tests:TestAgent \

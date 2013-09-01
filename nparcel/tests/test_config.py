@@ -101,7 +101,7 @@ class TestConfig(unittest2.TestCase):
         msg = 'Exporter columns expected'
         received = self._c('exporter_fields')
         expected = {'tolp': '0,1,2,3,4,5',
-                    'toli': '0,1,2,3,4,5,6'}
+                    'toli': '0,1,2,3,4,5,6,7'}
         self.assertDictEqual(received, expected, msg)
 
         # Cleanup.

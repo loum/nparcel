@@ -5,7 +5,7 @@ import os
 
 import nparcel
 
-# Current busness_unit map:
+# Current business_unit map:
 BU = {'priority': 1,
       'fast': 2,
       'ipec': 3}
@@ -18,13 +18,14 @@ class TestExporter(unittest2.TestCase):
         cls._e = nparcel.Exporter()
 
         # Prepare some sample data.
+        # "agent" table.
         agents = [{'code': 'N031'},
                   {'code': 'BAD1'}]
         agent_ok = cls._e.db.insert(cls._e.db._agent.insert_sql(agents[0]))
         agent_nok = cls._e.db.insert(cls._e.db._agent.insert_sql(agents[1]))
 
         cls._now = datetime.datetime.now()
-        # "job" table
+        # "job" table.
         jobs = [{'card_ref_nbr': 'priority ref',
                  'agent_id': agent_ok,
                  'job_ts': '%s' % cls._now,
@@ -220,7 +221,7 @@ class TestExporter(unittest2.TestCase):
         # Cleanup.
         self._e.reset()
         sql = """UPDATE job_item
-SET extract_ts = ''
+SET extract_ts = null
 WHERE id = 1"""
         self._e.db(sql)
 
@@ -272,8 +273,19 @@ WHERE id = 1"""
         fh = open(report_file)
         received = fh.read()
         fh.close()
-        expected = ('REF1|JOB_KEY|PICKUP_TIME|PICKUP_POD|IDENTITY_TYPE|IDENTITY_DATA\n218501217863|1|%s|pod_name 218501217863|identity_type description|identity 218501217863\n' %
-        self._now.isoformat(' ')[:-7])
+        expected = ('%s|%s|%s|%s|%s|%s\n%s|%s|%s|%s|%s|%s\n' %
+                    ('REF1',
+                     'JOB_KEY',
+                     'PICKUP_TIME',
+                     'PICKUP_POD',
+                     'IDENTITY_TYPE',
+                     'IDENTITY_DATA',
+                     '218501217863',
+                     '1',
+                     self._now.isoformat(' ')[:-7],
+                     'pod_name 218501217863',
+                     'identity_type description',
+                     'identity 218501217863'))
         msg = 'Contents of Priority-based POD report file not as expected'
         self.assertEqual(received, expected, msg)
 
@@ -291,7 +303,7 @@ WHERE id = 1"""
 
             # Clear the extract_id timestamp.
             sql = """UPDATE job_item
-SET extract_ts = ''
+SET extract_ts = null
 WHERE id = %d""" % item[1]
             self._e.db(sql)
 
@@ -317,7 +329,7 @@ WHERE id = %d""" % item[1]
         os.rmdir(os.path.join(self._e.staging_dir, 'priority'))
         self._e.set_staging_dir(value=None)
 
-    def test_headers(self):
+    def test_header(self):
         """Default export file header generation.
         """
         self._e.set_header(('REF1',
@@ -392,7 +404,13 @@ WHERE id = %d""" % item[1]
                 'priority_item_nbr_001')
         msg = 'Default exporter line entry not as expected'
         received = self._e.get_report_line(line)
-        expected = """218501217863|1|%s|pod_name 218501217863|License|1234|priority_item_nbr_001""" % self._now
+        expected = """%s|%s|%s|%s|%s|%s|%s""" % ('218501217863',
+                                                 '1',
+                                                 self._now,
+                                                 'pod_name 218501217863',
+                                                 'License',
+                                                 '1234',
+                                                 'priority_item_nbr_001')
         self.assertEqual(received, expected, msg)
 
     @classmethod

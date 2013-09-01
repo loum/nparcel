@@ -203,6 +203,7 @@ class DbSession(object):
     def rollback(self):
         """
         """
+        log.debug('Rolling back DB state')
         if self.host is None:
             # sqlite.
             self.connection.rollback()
