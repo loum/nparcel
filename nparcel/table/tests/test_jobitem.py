@@ -18,9 +18,16 @@ class TestJobItem(unittest2.TestCase):
         cls._db.connect()
 
         # Prepare some sample data.
+        # Agent.
+        agents = [{'code': 'N031'},
+                  {'code': 'BAD1'}]
+        agent_ok = cls._db.insert(cls._db._agent.insert_sql(agents[0]))
+        agent_nok = cls._db.insert(cls._db._agent.insert_sql(agents[1]))
+
         cls._now = datetime.datetime.now()
         # "job" table
         jobs = [{'card_ref_nbr': 'priority ref',
+                 'agent_id': agent_ok,
                  'job_ts': '%s' % cls._now,
                  'bu_id': BU['priority']}]
         sql = cls._db.job.insert_sql(jobs[0])
@@ -151,8 +158,8 @@ class TestJobItem(unittest2.TestCase):
 
         received = []
         for row in self._db.rows():
-            received.append(row[0])
-        expected = ['218501217863']
+            received.append(row)
+        expected = [('218501217863', 1, '%s' % self._now, 'pod_name 218501217863', 'identity_type description', 'identity 218501217863', 'priority_item_nbr_001', 'N031')]
         msg = 'collected_sql SQL query did not return expected result'
         self.assertListEqual(received, expected)
 

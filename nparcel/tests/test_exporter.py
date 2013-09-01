@@ -17,15 +17,24 @@ class TestExporter(unittest2.TestCase):
     def setUpClass(cls):
         cls._e = nparcel.Exporter()
 
+        # Prepare some sample data.
+        agents = [{'code': 'N031'},
+                  {'code': 'BAD1'}]
+        agent_ok = cls._e.db.insert(cls._e.db._agent.insert_sql(agents[0]))
+        agent_nok = cls._e.db.insert(cls._e.db._agent.insert_sql(agents[1]))
+
         cls._now = datetime.datetime.now()
         # "job" table
         jobs = [{'card_ref_nbr': 'priority ref',
+                 'agent_id': agent_ok,
                  'job_ts': '%s' % cls._now,
                  'bu_id': BU['priority']},
                 {'card_ref_nbr': 'fast ref',
+                 'agent_id': agent_ok,
                  'job_ts': '%s' % cls._now,
                  'bu_id': BU['fast']},
                 {'card_ref_nbr': 'ipec ref',
+                 'agent_id': agent_ok,
                  'job_ts': '%s' % cls._now,
                  'bu_id': BU['ipec']}]
         sql = cls._e.db.job.insert_sql(jobs[0])
@@ -98,10 +107,17 @@ class TestExporter(unittest2.TestCase):
         self._e.db(sql)
 
         received = []
-        expected = '218501217863'
+        expected = [('218501217863',
+                     1,
+                     '%s' % self._now,
+                     'pod_name 218501217863',
+                     'identity_type description',
+                     'identity 218501217863',
+                     'priority_item_nbr_001',
+                     'N031')]
         for row in self._e.db.rows():
             received.append(row)
-        self.assertEqual(received[0][0], expected, msg)
+        self.assertEqual(received, expected, msg)
 
     def test_collected_sql_bu_fast(self):
         """Query table for collected items -- BU: fast.
@@ -111,13 +127,20 @@ class TestExporter(unittest2.TestCase):
         self._e.db(sql)
 
         received = []
-        expected = '21850121786x'
+        expected = [('21850121786x',
+                     2,
+                     '%s' % self._now,
+                     'pod_name 21850121786x',
+                     'identity_type description',
+                     'identity 21850121786x',
+                     'fast_item_nbr_001',
+                     'N031')]
         for row in self._e.db.rows():
             received.append(row)
 
         # We should have at least one seeded result so we shouldn't
         # receive an empty list.
-        self.assertEqual(received[0][0], expected, msg)
+        self.assertEqual(received, expected, msg)
 
     def test_cleansed_valid_date_sqlite(self):
         """Cleanse valid data -- sqlite data.

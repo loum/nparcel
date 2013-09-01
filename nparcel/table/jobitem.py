@@ -49,11 +49,13 @@ class JobItem(nparcel.Table):
     ji.pod_name as 'PICKUP_POD',
     it.description as 'IDENTITY_TYPE',
     ji.identity_type_data as 'IDENTITY_DATA',
-    ji.item_nbr as 'ITEM_NBR'
-FROM job_item as ji, identity_type as it, job as j
+    ji.item_nbr as 'ITEM_NBR',
+    ag.code as 'AGENT'
+FROM job_item as ji, identity_type as it, job as j, agent as ag
 WHERE pickup_ts IS NOT null
 AND extract_ts IS null
 AND ji.identity_type_id = it.id
+AND j.agent_id = ag.id
 AND (ji.job_id = j.id AND j.bu_id = %d)""" % business_unit
 
         return sql
