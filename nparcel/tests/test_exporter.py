@@ -271,8 +271,8 @@ WHERE id = 1"""
                                       out_dir=out_dir)
         sequence = '0, 1, 2, 3, 4, 5'
         report_file = self._e.report(valid_items,
-                                    out_dir=out_dir,
-                                    sequence=sequence)
+                                     out_dir=out_dir,
+                                     sequence=sequence)
 
         # Check the contents of the report file.
         fh = open(report_file)

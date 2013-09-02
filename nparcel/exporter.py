@@ -110,8 +110,41 @@ class Exporter(object):
 
         log.info('Collected items: %d' % len(self._collected_items))
 
-    def process(self, business_unit_id, out_dir, dry=False):
+    def process(self,
+                business_unit_id,
+                out_dir,
+                archive_dir=None,
+                file_control={'ps': True},
+                dry=False):
         """
+        Identifies picked up items and prepares reporting.
+
+        Moves/archives signature files as defined by *file_control*.
+
+        **Args:**
+            business_unit_id: the Business Unit id as per "business_unit.id"
+            column
+
+            out_dir: next step in the processing flow.  Where report and
+            signature files will be deposited to.
+
+        **Kwargs:**
+            file_control: dictionary structure which controls whether the
+            file extension type is moved or archived.  For example, the
+            following structure sets '.ps' file extensions to be moved to
+            the *out_dir* whilst ``*.png`` are moved to the *archive_dir*::
+
+                {'ps': True,
+                 'png': False}
+
+            Defaults to ``None`` in which case only ``*.ps`` files are moved
+            to the *out_dir*.
+
+            archive_dir: where to archive signature files (if not being
+            transfered).  Default of ``None`` will not archive files.
+
+            dry: only report what would happen (do not move file)
+
         """
         valid_items = []
 
@@ -121,11 +154,23 @@ class Exporter(object):
             job_item_id = row[1]
 
             # Attempt to move the signature file.
-            if self.move_signature_file(job_item_id, out_dir, dry=dry):
-                log.info('job_item.id: %d OK' % job_item_id)
-                valid_items.append(row)
-            else:
-                log.error('job_item.id: %d failed' % job_item_id)
+            for extension, send_to_out_dir in file_control.iteritems():
+                if send_to_out_dir:
+                    target_dir = out_dir
+                else:
+                    target_dir = archive_dir
+
+                if target_dir is not None:
+                    if self.move_signature_file(job_item_id,
+                                                target_dir,
+                                                extension=extension,
+                                                dry=dry):
+                        log.info('job_item.id: %d OK' % job_item_id)
+                        # Only tag file sent to out_dir.
+                        if send_to_out_dir:
+                            valid_items.append(row)
+                    else:
+                        log.error('job_item.id: %d failed' % job_item_id)
 
         return valid_items
 
