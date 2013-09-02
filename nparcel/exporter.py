@@ -11,12 +11,19 @@ from nparcel.utils.log import log
 
 class Exporter(object):
     """Nparcel Exporter.
+
+    .. attribute:: archive_dir
+
+            where to archive signature files (if not being transfered).
+            Default of ``None`` will not archive files.
+
     """
 
     def __init__(self,
                  db=None,
                  signature_dir=None,
-                 staging_dir=None):
+                 staging_dir=None,
+                 archive_dir=None):
         """Exporter object initialiser.
         """
         if db is None:
@@ -27,6 +34,8 @@ class Exporter(object):
         self._signature_dir = signature_dir
         self._staging_dir = staging_dir
         self._create_dir(self._staging_dir)
+        self._archive_dir = archive_dir
+        self._create_dir(self._archive_dir)
 
         self._collected_items = []
         self._header = ()
@@ -46,6 +55,17 @@ class Exporter(object):
         self._staging_dir = value
 
         self._create_dir(dir=self._staging_dir)
+
+    @property
+    def archive_dir(self):
+        return self._archive_dir
+
+    def set_archive_dir(self, value):
+        self._archive_dir = value
+
+        if self._archive_dir is not None:
+            if not self._create_dir(self._archive_dir):
+                self._archive_dir = None
 
     @property
     def header(self):
@@ -113,7 +133,6 @@ class Exporter(object):
     def process(self,
                 business_unit_id,
                 out_dir,
-                archive_dir=None,
                 file_control={'ps': True},
                 dry=False):
         """
@@ -140,9 +159,6 @@ class Exporter(object):
             Defaults to ``None`` in which case only ``*.ps`` files are moved
             to the *out_dir*.
 
-            archive_dir: where to archive signature files (if not being
-            transfered).  Default of ``None`` will not archive files.
-
             dry: only report what would happen (do not move file)
 
         """
@@ -158,13 +174,14 @@ class Exporter(object):
                 if send_to_out_dir:
                     target_dir = out_dir
                 else:
-                    target_dir = archive_dir
+                    target_dir = self.archive_dir
 
                 if target_dir is not None:
                     if self.move_signature_file(job_item_id,
                                                 target_dir,
-                                                extension=extension,
-                                                dry=dry):
+                                                extension,
+                                                file_control,
+                                                dry):
                         log.info('job_item.id: %d OK' % job_item_id)
                         # Only tag file sent to out_dir.
                         if send_to_out_dir:
@@ -174,7 +191,12 @@ class Exporter(object):
 
         return valid_items
 
-    def move_signature_file(self, id, out_dir, extension='ps', dry=False):
+    def move_signature_file(self,
+                            id,
+                            out_dir,
+                            extension='ps',
+                            file_control={'ps': True},
+                            dry=False):
         """Move the Nparcel signature file to the staging directory for
         further processing.
 
@@ -386,8 +408,7 @@ class Exporter(object):
         return fh
 
     def _create_dir(self, dir):
-        """Helper method to manage the creation of the Exporter
-        out directory.
+        """Helper method to manage the creation of a directory.
 
         **Args:**
             dir: the name of the directory structure to create.
@@ -401,7 +422,7 @@ class Exporter(object):
         """
         status = True
 
-        # Attempt to create the staging directory if it does not exist.
+        # Attempt to create the directory if it does not exist.
         if dir is not None and not os.path.exists(dir):
             try:
                 log.info('Creating directory "%s"' % dir)

@@ -421,3 +421,44 @@ class Config(object):
             log.debug('Conditions config item is not defined')
 
         return status
+
+    def get_file_control(self, bu):
+        """Return the *bu* file control settings from the condition map
+        values.
+
+        **Args:**
+            bu: the name of the Business Unit.
+
+        **Returns:**
+            dictionary representing all of the file contril condition flags
+            for the *bu*.  For example, if Business Unit has a send_ps_file
+            flag '0' and send_png_file flag '1'::
+
+                {'ps': False,
+                 'png': True}
+
+        """
+        file_control = {}
+
+        file_control['ps'] = self.condition(bu, 'send_ps_file')
+        file_control['png'] = self.condition(bu, 'send_png_file')
+
+        return file_control
+
+    def bu_to_file(self, bu):
+        """Return the file_bu configuration option of a given *bu*.
+
+        **Returns:**
+
+        """
+        file_code_for_bu = None
+
+        bu_value = self.business_units.get(bu)
+
+        if bu_value is not None:
+            for file_bu in self.file_bu.keys():
+                if self.file_bu.get(file_bu) == bu_value:
+                    file_code_for_bu = file_bu
+                    break
+
+        return file_code_for_bu

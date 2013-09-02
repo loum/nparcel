@@ -69,6 +69,8 @@ class TestExporterIpec(unittest2.TestCase):
         cls._staging_dir = tempfile.mkdtemp()
         cls._archive_dir = tempfile.mkdtemp()
 
+        cls._e.set_archive_dir(cls._archive_dir)
+
     def test_header(self):
         """Ipec export file header generation.
         """
@@ -144,7 +146,6 @@ class TestExporterIpec(unittest2.TestCase):
                         'png': True}
         valid_items = self._e.process(business_unit_id=BU.get('ipec'),
                                       out_dir=out_dir,
-                                      archive_dir=self._archive_dir,
                                       file_control=file_control)
         sequence = '0, 1, 2, 3, 4, 5, 6, 7'
         report_file = self._e.report(valid_items,
@@ -244,9 +245,10 @@ WHERE id = %d""" % item[1]
         out_dir = self._e.get_out_directory(business_unit=bu)
         file_control = {'ps': False,
                         'png': True}
+        old_archive = self._e.archive_dir
+        self._e.set_archive_dir(None)
         valid_items = self._e.process(business_unit_id=BU.get('ipec'),
                                       out_dir=out_dir,
-                                      archive_dir=None,
                                       file_control=file_control)
         sequence = '0, 1, 2, 3, 4, 5, 6, 7'
         report_file = self._e.report(valid_items,
@@ -288,6 +290,7 @@ WHERE id = %d""" % item[1]
         self.assertListEqual(ps_files, ps_sig_files, msg)
 
         # Clean.
+        self._e.set_archive_dir(old_archive)
         self._e.reset()
         os.remove(report_file)
 

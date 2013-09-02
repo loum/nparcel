@@ -287,6 +287,58 @@ class TestConfig(unittest2.TestCase):
         self._c.cond['toli'] = old_flag
         self._c._file = None
 
+    def test_file_control(self):
+        """Check file control dictionary structure.
+        """
+        self._c.set_file(file=self._file)
+        self._c.parse_config()
+
+        received = self._c.get_file_control('tolp')
+        expected = {'ps': True, 'png': False}
+        msg = 'Priority file control dictionary not as expected'
+        self.assertDictEqual(received, expected, msg)
+
+        received = self._c.get_file_control('toli')
+        expected = {'ps': False, 'png': True}
+        msg = 'Ipec file control dictionary not as expected'
+        self.assertDictEqual(received, expected, msg)
+
+        received = self._c.get_file_control('bogus')
+        expected = {'ps': False, 'png': False}
+        msg = 'Bogus file control dictionary not as expected'
+        self.assertDictEqual(received, expected, msg)
+
+        # Cleanup.
+        self._c._file = None
+
+    def test_bu_to_file(self):
+        """Translate business unit name to file name code.
+        """
+        self._c.set_file(file=self._file)
+        self._c.parse_config()
+
+        received = self._c.bu_to_file('priority')
+        expected = 'tolp'
+        msg = 'Priority bu_to_file translation not as expected'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.bu_to_file('fast')
+        expected = 'tolf'
+        msg = 'Fast bu_to_file translation not as expected'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.bu_to_file('ipec')
+        expected = 'toli'
+        msg = 'Ipec bu_to_file translation not as expected'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.bu_to_file('dodgy')
+        msg = 'Dodgy bu_to_file translation not None'
+        self.assertIsNone(received, msg)
+
+        # Cleanup.
+        self._c._file = None
+
     @classmethod
     def tearDownClass(cls):
         cls._file = None
