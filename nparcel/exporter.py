@@ -291,7 +291,7 @@ class Exporter(object):
 
         return tuple(row_list)
 
-    def report(self, items, out_dir=None, sequence=None):
+    def report(self, items, out_dir=None, sequence=None, identifier='P'):
         """Cycle through the newly identified collected items and produce
         a report in the *out_dir*.
 
@@ -299,9 +299,14 @@ class Exporter(object):
         so that it does not appear in future runs.
 
         **Args:**
+            items: list of report line item tuples
+
+        **Kwargs:**
             out_dir: the staging area to output files to
 
-            seqence: business unit-based report column control
+            sequence: business unit-based report column control
+
+            identifier: business unit specific file identifier
 
         **Returns:**
             name of the report file that is generated
@@ -327,7 +332,7 @@ class Exporter(object):
                 for item in sorted_items:
                     print('%s' % (self.get_report_line(item, sequence)))
             else:
-                fh = self.outfile(out_dir)
+                fh = self.outfile(out_dir, identifier)
                 file_name = fh.name
                 fh.write('%s\n' % header)
                 for item in sorted_items:
@@ -379,7 +384,7 @@ class Exporter(object):
 
         return report_line
 
-    def outfile(self, dir):
+    def outfile(self, dir, identifier):
         """Creates the Exporter output file based on current timestamp
         and verifies creation at the staging directory *dir*.
 
@@ -387,6 +392,8 @@ class Exporter(object):
 
         **Args:**
             dir: base directory name of the staging directory
+
+            identifier: business unit specific file identifier
 
         **Returns:**
             open file handle to the exporter report file (or None if file
@@ -401,7 +408,8 @@ class Exporter(object):
         if status:
             # Create the output file.
             time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-            file = "%s_%s_%s_%s.txt.tmp" % ('VIC', 'VANA', 'REP', time)
+            file = ("%s_%s_%s%s_%s.txt.tmp" %
+                    ('VIC', 'VANA', 'RE', identifier, time))
             file_path = os.path.join(dir, file)
             try:
                 log.info('Opening file "%s"' % file_path)
