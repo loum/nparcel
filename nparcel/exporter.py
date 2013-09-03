@@ -4,6 +4,7 @@ __all__ = [
 import re
 import os
 import datetime
+import operator
 
 import nparcel
 from nparcel.utils.log import log
@@ -311,18 +312,25 @@ class Exporter(object):
         file_name = None
         target_file = None
 
-        if items:
+        if not items:
+            log.info('No collected items to report')
+        else:
+            index = self.get_header_column('JOB_KEY')
+            sorted_items = sorted(items,
+                                  key=operator.itemgetter(index),
+                                  cmp=lambda x, y: int(x) - int(y))
+
             header = self.get_report_line(self.header, sequence)
 
             if out_dir is None:
                 print(header)
-                for item in items:
+                for item in sorted_items:
                     print('%s' % (self.get_report_line(item, sequence)))
             else:
                 fh = self.outfile(out_dir)
                 file_name = fh.name
                 fh.write('%s\n' % header)
-                for item in items:
+                for item in sorted_items:
                     fh.write('%s\n' % self.get_report_line(item, sequence))
                     job_item_id = item[1]
                     self._update_status(job_item_id)
@@ -332,9 +340,6 @@ class Exporter(object):
                 target_file = file_name.replace('.txt.tmp', '.txt')
                 log.info('Renaming out file to "%s"' % target_file)
                 os.rename(file_name, target_file)
-
-        else:
-            log.info('No collected items to report')
 
         return target_file
 
@@ -448,6 +453,28 @@ class Exporter(object):
         sql = self.db.jobitem.upd_collected_sql(id, time)
         self.db(sql)
         self.db.commit()
+
+    def get_header_column(self, column_name):
+        """Bit of a hard-wired fudge which just returns the list index
+        of the *column_name* column.
+
+        **Args:**
+            column_name: name of column as per the exporter headers.  For
+            example, 'JOB_KEY'
+
+        **Returns:**
+            integer value representing the index of the 'JOB_KEY' column
+            or 0 if *column_name* column is not found
+
+        """
+        index = 0
+
+        try:
+            index = list(self.header).index(column_name)
+        except ValueError, err:
+            log.warn('"%s" not in exporter header' % column_name)
+
+        return index
 
     def reset(self):
         """Initialise object state in readiness for another iteration.

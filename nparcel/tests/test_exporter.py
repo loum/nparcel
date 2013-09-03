@@ -2,6 +2,8 @@ import unittest2
 import datetime
 import tempfile
 import os
+import sys
+import StringIO
 
 import nparcel
 
@@ -422,8 +424,73 @@ WHERE id = %d""" % item[1]
                                                  'priority_item_nbr_001')
         self.assertEqual(received, expected, msg)
 
+    def test_sort(self):
+        """Sort the report.
+        """
+        self._e.set_header(('REF1',
+                            'JOB_KEY',
+                            'PICKUP_TIME',
+                            'PICKUP_POD'))
+        items = [('2185012178aa',
+                  '10',
+                  self._now,
+                  'pod_name 2185012178aa'),
+                 ('2185012178bb',
+                  '3',
+                  self._now,
+                  'pod_name 2185012178bb'),
+                 ('2185012178cc',
+                  '1',
+                  self._now,
+                  'pod_name 2185012178cc')]
+
+        stdout = sys.stdout
+        sys.stdout = received = StringIO.StringIO()
+        report_file = self._e.report(items)
+        sys.stdout = stdout
+
+        expected = ("""%s\n%s\n%s\n%s\n""" %
+                    ('REF1|JOB_KEY|PICKUP_TIME|PICKUP_POD',
+                     '2185012178cc|1|%s|pod_name 2185012178cc' % self._now,
+                     '2185012178bb|3|%s|pod_name 2185012178bb' % self._now,
+                     '2185012178aa|10|%s|pod_name 2185012178aa' % self._now))
+        msg = 'Sorted report not as expected'
+        self.assertEqual(received.getvalue(), expected, msg)
+
+        self._e.reset()
+
+    def test_header_column(self):
+        """JOB_KEY index get.
+        """
+        self._e.set_header(('REF1',
+                            'JOB_KEY',
+                            'PICKUP_TIME',
+                            'PICKUP_POD',
+                            'IDENTITY_TYPE',
+                            'IDENTITY_DATA',
+                            'ITEM_NBR',
+                            'AGENT_ID'))
+
+        received = self._e.get_header_column('banana')
+        expected = 0
+        msg = '"banana" header column index not as expected'
+        self.assertEqual(received, expected, msg)
+
+        received = self._e.get_header_column('JOB_KEY')
+        expected = 1
+        msg = 'JOB_KEY column index not as expected'
+        self.assertEqual(received, expected, msg)
+
+        received = self._e.get_header_column('AGENT_ID')
+        expected = 7
+        msg = 'AGENT_ID column index not as expected'
+        self.assertEqual(received, expected, msg)
+
+        # Ensure the headers are clean.
+        self._e.reset()
+
     @classmethod
     def tearDownClass(cls):
-        cls._r = None
+        cls._e = None
         os.removedirs(cls._dir)
         os.removedirs(cls._staging_dir)
