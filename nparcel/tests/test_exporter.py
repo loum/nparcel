@@ -178,7 +178,7 @@ class TestExporter(unittest2.TestCase):
         staging = os.path.join(self._dir, 'staging')
 
         msg = 'Export reporting file handle should not be None'
-        fh = self._e.outfile(staging)
+        fh = self._e.outfile(staging, identifier='P')
         self.assertIsNotNone(fh, msg)
 
         outfile = fh.name
