@@ -127,8 +127,9 @@ class Ftp(ftplib.FTP):
                 keys = self.get_report_file_ids(report)
 
                 for key in keys:
-                    sig_file = os.path.join(source, '%s.ps' % key)
-                    xfer_set.append(sig_file)
+                    for ext in ['ps', 'png']:
+                        sig_file = os.path.join(source, '%s.%s' % (key, ext))
+                        xfer_set.append(sig_file)
 
                 # ... and append the report file.
                 xfer_set.append(report)
