@@ -275,13 +275,9 @@ WHERE id = 1"""
 
         # Check if we can source a staging directory.
         self._e.set_out_dir(business_unit=bu)
-        out_dir = self._e.out_dir
         valid_items = self._e.process(business_unit_id=BU.get('priority'))
-                                      #out_dir=out_dir)
         sequence = '0, 1, 2, 3, 4, 5'
-        report_file = self._e.report(valid_items,
-                                     #out_dir=out_dir,
-                                     sequence=sequence)
+        report_file = self._e.report(valid_items, sequence=sequence)
 
         # Check the contents of the report file.
         fh = open(report_file)
@@ -341,7 +337,6 @@ WHERE id = %d""" % item[1]
         valid_items = []
         msg = 'No items should not create a report file'
         self.assertIsNone(self._e.report(valid_items), msg)
-                                         #out_dir=self._e.out_dir), msg)
 
         # Cleanup.
         os.rmdir(os.path.join(self._e.staging_dir, 'priority', 'out'))
