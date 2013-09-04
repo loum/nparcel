@@ -323,8 +323,8 @@ class Exporter(object):
 
         """
         file_name = None
-        target_file = None
 
+        target_files = None
         if not items:
             log.info('No collected items to report')
         else:
@@ -333,26 +333,43 @@ class Exporter(object):
                                   key=operator.itemgetter(index),
                                   cmp=lambda x, y: int(x) - int(y))
 
-            header = self.get_report_line(self.header, sequence)
+            out_file = self.dump_report_output(out_dir,
+                                               sorted_items,
+                                               sequence,
+                                               identifier)
+            if out_file is not None:
+                target_files = out_file
 
-            if out_dir is None:
-                print(header)
-                for item in sorted_items:
-                    print('%s' % (self.get_report_line(item, sequence)))
-            else:
-                fh = self.outfile(out_dir, identifier)
-                file_name = fh.name
-                fh.write('%s\n' % header)
-                for item in sorted_items:
-                    fh.write('%s\n' % self.get_report_line(item, sequence))
-                    job_item_id = item[1]
-                    self._update_status(job_item_id)
-                fh.close()
+        return target_files
 
-                # Rename the output file so that it's ready for delivery.
-                target_file = file_name.replace('.txt.tmp', '.txt')
-                log.info('Renaming out file to "%s"' % target_file)
-                os.rename(file_name, target_file)
+    def dump_report_output(self,
+                           out_dir,
+                           sorted_items,
+                           sequence,
+                           identifier):
+        """
+        """
+        target_file = None
+
+        header = self.get_report_line(self.header, sequence)
+        if out_dir is None:
+            print(header)
+            for item in sorted_items:
+                print('%s' % (self.get_report_line(item, sequence)))
+        else:
+            fh = self.outfile(out_dir, identifier)
+            file_name = fh.name
+            fh.write('%s\n' % header)
+            for item in sorted_items:
+                fh.write('%s\n' % self.get_report_line(item, sequence))
+                job_item_id = item[1]
+                self._update_status(job_item_id)
+            fh.close()
+
+            # Rename the output file so that it's ready for delivery.
+            target_file = file_name.replace('.txt.tmp', '.txt')
+            log.info('Renaming out file to "%s"' % target_file)
+            os.rename(file_name, target_file)
 
         return target_file
 
