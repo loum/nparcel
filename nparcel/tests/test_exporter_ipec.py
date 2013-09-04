@@ -141,16 +141,14 @@ class TestExporterIpec(unittest2.TestCase):
             fh.close()
 
         # Check if we can source a staging directory.
-        out_dir = self._e.get_out_directory(business_unit=bu)
+        self._e.set_out_dir(business_unit=bu)
         file_control = {'ps': False,
                         'png': True}
+        self._e.set_out_dir(business_unit='ipec')
         valid_items = self._e.process(business_unit_id=BU.get('ipec'),
-                                      out_dir=out_dir,
                                       file_control=file_control)
         sequence = '0, 1, 2, 3, 4, 5, 6, 7'
-        report_file = self._e.report(valid_items,
-                                     out_dir=out_dir,
-                                     sequence=sequence)
+        report_file = self._e.report(valid_items, sequence=sequence)
 
         # Check the contents of the report file.
         fh = open(report_file)
@@ -206,104 +204,6 @@ class TestExporterIpec(unittest2.TestCase):
             for ps_file in ps_files:
                 os.remove(os.path.join(self._archive_dir,
                                        os.path.basename(ps_file)))
-
-            # Clear the extract_id timestamp.
-            sql = """UPDATE job_item
-SET extract_ts = null
-WHERE id = %d""" % item[1]
-            self._e.db(sql)
-
-        os.rmdir(os.path.join(self._e.staging_dir, 'ipec', 'out'))
-        os.rmdir(os.path.join(self._e.staging_dir, 'ipec'))
-        self._e.set_staging_dir(value=None)
-        self._e.set_signature_dir(value=None)
-
-    def test_process_no_archive_ps_files(self):
-        """End to end collected items -- no archive ps files.
-        """
-        # Define the staging/signature directory.
-        self._e.set_signature_dir(self._dir)
-        self._e.set_staging_dir(self._staging_dir)
-
-        # Prepare the signature files.
-        bu = 'ipec'
-        sql = self._e.db.jobitem.collected_sql(business_unit=BU.get(bu))
-        self._e.db(sql)
-        items = []
-        ps_files = []
-        for row in self._e.db.rows():
-            items.append(row)
-            fh = open(os.path.join(self._e.signature_dir,
-                                   '%s.ps' % str(row[1])), 'w')
-            ps_files.append(fh.name)
-            fh.close()
-            fh = open(os.path.join(self._e.signature_dir,
-                                   '%s.png' % str(row[1])), 'w')
-            fh.close()
-
-        # Check if we can source a staging directory.
-        out_dir = self._e.get_out_directory(business_unit=bu)
-        file_control = {'ps': False,
-                        'png': True}
-        old_archive = self._e.archive_dir
-        self._e.set_archive_dir(None)
-        valid_items = self._e.process(business_unit_id=BU.get('ipec'),
-                                      out_dir=out_dir,
-                                      file_control=file_control)
-        sequence = '0, 1, 2, 3, 4, 5, 6, 7'
-        report_file = self._e.report(valid_items,
-                                     out_dir=out_dir,
-                                     sequence=sequence)
-
-        # Check the contents of the report file.
-        fh = open(report_file)
-        received = fh.read()
-        fh.close()
-        expected = ('%s|%s|%s|%s|%s|%s|%s|%s\n%s|%s|%s|%s|%s|%s|%s|%s\n' %
-                    ('REF1',
-                     'JOB_KEY',
-                     'PICKUP_TIME',
-                     'PICKUP_POD',
-                     'IDENTITY_TYPE',
-                     'IDENTITY_DATA',
-                     'ITEM_NBR',
-                     'AGENT_ID',
-                     'ipec_connote_nbr_01',
-                     '1',
-                     self._now.isoformat(' ')[:-7],
-                     'pod_name ipec 01',
-                     'License',
-                     'ipec identity 01',
-                     'ipec_item_nbr_01',
-                     'OK01'))
-        msg = 'Contents of Priority-based POD report file not as expected'
-        self.assertEqual(received, expected, msg)
-
-        # Check that the ps files were not archived.
-        ps_sig_files = []
-        for file in os.listdir(self._dir):
-            if file.endswith('.ps'):
-                ps_file = os.path.join(self._dir, file)
-                ps_sig_files.append(ps_file)
-
-        msg = 'Archived file list not as expected'
-        self.assertListEqual(ps_files, ps_sig_files, msg)
-
-        # Clean.
-        self._e.set_archive_dir(old_archive)
-        self._e.reset()
-        os.remove(report_file)
-
-        for item in items:
-            # Remove the signature files.
-            sig_file = os.path.join(self._e._staging_dir,
-                                    'ipec',
-                                    'out',
-                                    '%s.png' % str(item[1]))
-            os.remove(sig_file)
-
-            for ps_file in ps_files:
-                os.remove(ps_file)
 
             # Clear the extract_id timestamp.
             sql = """UPDATE job_item

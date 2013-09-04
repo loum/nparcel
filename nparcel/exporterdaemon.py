@@ -39,20 +39,18 @@ class ExporterDaemon(nparcel.utils.Daemon):
                 for bu, id in self.config('business_units').iteritems():
                     log.info('Starting collection report for BU "%s" ...' %
                              bu)
-                    out_dir = exporter.get_out_directory(business_unit=bu)
+                    exporter.set_out_dir(business_unit=bu)
                     bu_file_code = self.config.bu_to_file(bu)
                     file_control = self.config.get_file_control(bu_file_code)
                     items = exporter.process(int(id),
-                                             out_dir,
                                              file_control,
                                              dry=self.dry)
                     if self.dry:
-                        out_dir = None
-                    seq= self.config('exporter_fields').get(bu_file_code)
+                        exporter.set_out_dir(None)
+                    seq = self.config('exporter_fields').get(bu_file_code)
                     identifier = bu[0].upper()
                     state_rep = self.config.condition(bu, 'state_reporting')
                     exporter.report(items,
-                                    out_dir=out_dir,
                                     sequence=seq,
                                     identifier=identifier,
                                     state_reporting=state_rep)

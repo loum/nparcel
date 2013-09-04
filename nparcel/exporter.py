@@ -38,6 +38,8 @@ class Exporter(object):
         self._archive_dir = archive_dir
         self._create_dir(self._archive_dir)
 
+        self._out_dir = None
+
         self._collected_items = []
         self._header = ()
 
@@ -56,6 +58,40 @@ class Exporter(object):
         self._staging_dir = value
 
         self._create_dir(dir=self._staging_dir)
+
+    @property
+    def out_dir(self):
+        return self._out_dir
+
+    def set_out_dir(self, business_unit):
+        """Uses the *business_unit* name to construct the output directory
+        to which the report and signature files will be placed for further
+        processing.
+
+        Staging directories are based on the Business Unit.  For example,
+        the Business Unit "Priority" will create the directory
+        ``priority/out`` off the base staging directory.
+
+        Will check if the output directory structure exists before
+        attempting to create it.
+
+        **Args:**
+            business_unit: name of the Business Unit that is associated
+            with the collected items output files.
+
+        """
+        if business_unit is None:
+            self._out_dir = None
+        else:
+            log.info('Checking output directory for "%s" ...' % business_unit)
+            try:
+                self._out_dir = os.path.join(self.staging_dir,
+                                             business_unit.lower(),
+                                             'out')
+                self._create_dir(self._out_dir)
+            except AttributeError, err:
+                log.error('Output directory error: "%s"' % err)
+                self._out_dir = None
 
     @property
     def archive_dir(self):
@@ -77,39 +113,6 @@ class Exporter(object):
 
         if values is not None:
             self._header = values
-
-    def get_out_directory(self, business_unit):
-        """Uses the *business_unit* name to construct the output directory
-        to which the report and signature files will be placed for further
-        processing.
-
-        Staging directories are based on the Business Unit.  For example,
-        the Business Unit "Priority" will create the directory
-        ``priority/out`` off the base staging directory.
-
-        Will check if the output directory structure exists before
-        attempting to create it.
-
-        **Args:**
-            business_unit: name of the Business Unit that is associated
-            with the collected items output files.
-
-        **Returns:**
-            fully qualified name of the output directory if it exists and
-            is accessible.  ``None`` otherwise.
-
-        """
-        log.info('Checking output directory for "%s" ...' % business_unit)
-        try:
-            out_dir = os.path.join(self.staging_dir,
-                                   business_unit.lower(),
-                                   'out')
-            self._create_dir(out_dir)
-        except AttributeError, err:
-            log.error('Output directory error: "%s"' % err)
-            out_dir = None
-
-        return out_dir
 
     def get_collected_items(self, business_unit_id):
         """Query DB for recently collected items.
@@ -133,7 +136,6 @@ class Exporter(object):
 
     def process(self,
                 business_unit_id,
-                out_dir,
                 file_control={'ps': True},
                 dry=False):
         """
@@ -145,20 +147,20 @@ class Exporter(object):
             business_unit_id: the Business Unit id as per "business_unit.id"
             column
 
-            out_dir: next step in the processing flow.  Where report and
             signature files will be deposited to.
 
         **Kwargs:**
             file_control: dictionary structure which controls whether the
             file extension type is moved or archived.  For example, the
             following structure sets '.ps' file extensions to be moved to
-            the *out_dir* whilst ``*.png`` are moved to the *archive_dir*::
+            the :attr:`out_dir` whilst ``*.png`` are moved to the
+            :attr:`archive_dir`::
 
                 {'ps': True,
                  'png': False}
 
             Defaults to ``None`` in which case only ``*.ps`` files are moved
-            to the *out_dir*.
+            to the :attr:`out_dir`.
 
             dry: only report what would happen (do not move file)
 
@@ -173,7 +175,7 @@ class Exporter(object):
             # Attempt to move the signature file.
             for extension, send_to_out_dir in file_control.iteritems():
                 if send_to_out_dir:
-                    target_dir = out_dir
+                    target_dir = self.out_dir
                 else:
                     target_dir = self.archive_dir
 
@@ -242,8 +244,7 @@ class Exporter(object):
                 log.error('Cannot locate signature file: "%s"' % sig_file)
                 status = False
             else:
-                target = os.path.join(out_dir,
-                                      "%d.%s" % (id, extension))
+                target = os.path.join(out_dir, "%d.%s" % (id, extension))
                 log.info('Moving signature file "%s" to "%s"' %
                          (sig_file, target))
                 try:
@@ -293,12 +294,11 @@ class Exporter(object):
 
     def report(self,
                items,
-               out_dir=None,
                sequence=None,
                identifier='P',
                state_reporting=False):
         """Cycle through the newly identified collected items and produce
-        a report in the *out_dir*.
+        a report.
 
         Once an entry is made in the report, also update the database
         so that it does not appear in future runs.
@@ -307,8 +307,6 @@ class Exporter(object):
             items: list of report line item tuples
 
         **Kwargs:**
-            out_dir: the staging area to output files to
-
             sequence: business unit-based report column control
 
             identifier: business unit specific file identifier
@@ -333,8 +331,7 @@ class Exporter(object):
                                   key=operator.itemgetter(index),
                                   cmp=lambda x, y: int(x) - int(y))
 
-            out_file = self.dump_report_output(out_dir,
-                                               sorted_items,
+            out_file = self.dump_report_output(sorted_items,
                                                sequence,
                                                identifier)
             if out_file is not None:
@@ -343,7 +340,6 @@ class Exporter(object):
         return target_files
 
     def dump_report_output(self,
-                           out_dir,
                            sorted_items,
                            sequence,
                            identifier):
@@ -352,12 +348,12 @@ class Exporter(object):
         target_file = None
 
         header = self.get_report_line(self.header, sequence)
-        if out_dir is None:
+        if self.out_dir is None:
             print(header)
             for item in sorted_items:
                 print('%s' % (self.get_report_line(item, sequence)))
         else:
-            fh = self.outfile(out_dir, identifier)
+            fh = self.outfile(self.out_dir, identifier)
             file_name = fh.name
             fh.write('%s\n' % header)
             for item in sorted_items:
@@ -514,3 +510,4 @@ class Exporter(object):
         """
         del self._collected_items[:]
         self._header = ()
+        self._out_dir = None

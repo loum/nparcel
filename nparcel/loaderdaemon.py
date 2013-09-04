@@ -102,7 +102,7 @@ class LoaderDaemon(nparcel.utils.Daemon):
                     log.info('%s processing OK.' % file)
                     alerts = list(loader.alerts)
                     loader.reset(commit=commit)
-                    if not self.dry:
+                    if not self.dry and self.file is None:
                         self.archive_file(file)
 
                     # Report.

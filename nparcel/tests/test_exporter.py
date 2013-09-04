@@ -231,14 +231,15 @@ SET extract_ts = null
 WHERE id = 1"""
         self._e.db(sql)
 
-    def test_get_out_directory(self):
+    def test_set_out_directory(self):
         """Create buinsess unit output directory.
         """
         # Set the staging directory.
         self._e.set_staging_dir(value=self._dir)
 
         bu = 'priority'
-        received = self._e.get_out_directory(bu)
+        self._e.set_out_dir(bu)
+        received = self._e.out_dir
         expected = os.path.join(self._e.staging_dir, 'priority', 'out')
         msg = 'Business unit output directory incorrect'
         self.assertEqual(received, expected, msg)
@@ -247,6 +248,7 @@ WHERE id = 1"""
         os.rmdir(os.path.join(self._e.staging_dir, 'priority', 'out'))
         os.rmdir(os.path.join(self._e.staging_dir, 'priority'))
         self._e.set_staging_dir(value=None)
+        self._e.reset()
 
     def test_process(self):
         """End to end collected items.
@@ -272,12 +274,13 @@ WHERE id = 1"""
             fh.close()
 
         # Check if we can source a staging directory.
-        out_dir = self._e.get_out_directory(business_unit=bu)
-        valid_items = self._e.process(business_unit_id=BU.get('priority'),
-                                      out_dir=out_dir)
+        self._e.set_out_dir(business_unit=bu)
+        out_dir = self._e.out_dir
+        valid_items = self._e.process(business_unit_id=BU.get('priority'))
+                                      #out_dir=out_dir)
         sequence = '0, 1, 2, 3, 4, 5'
         report_file = self._e.report(valid_items,
-                                     out_dir=out_dir,
+                                     #out_dir=out_dir,
                                      sequence=sequence)
 
         # Check the contents of the report file.
@@ -334,15 +337,17 @@ WHERE id = %d""" % item[1]
 
         self._e.set_staging_dir(value=self._dir)
 
-        out_dir = self._e.get_out_directory(business_unit=bu)
+        self._e.set_out_dir(business_unit=bu)
         valid_items = []
         msg = 'No items should not create a report file'
-        self.assertIsNone(self._e.report(valid_items, out_dir=out_dir), msg)
+        self.assertIsNone(self._e.report(valid_items), msg)
+                                         #out_dir=self._e.out_dir), msg)
 
         # Cleanup.
         os.rmdir(os.path.join(self._e.staging_dir, 'priority', 'out'))
         os.rmdir(os.path.join(self._e.staging_dir, 'priority'))
         self._e.set_staging_dir(value=None)
+        self._e.reset()
 
     def test_header(self):
         """Default export file header generation.
@@ -461,6 +466,7 @@ WHERE id = %d""" % item[1]
         msg = 'Sorted report not as expected'
         self.assertEqual(received.getvalue(), expected, msg)
 
+        # Cleanup.
         self._e.reset()
 
     def test_header_column(self):
