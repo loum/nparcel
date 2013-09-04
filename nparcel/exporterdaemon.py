@@ -50,10 +50,12 @@ class ExporterDaemon(nparcel.utils.Daemon):
                         out_dir = None
                     seq= self.config('exporter_fields').get(bu_file_code)
                     identifier = bu[0].upper()
+                    state_rep = self.config.condition(bu, 'state_reporting')
                     exporter.report(items,
                                     out_dir=out_dir,
                                     sequence=seq,
-                                    identifier=identifier)
+                                    identifier=identifier,
+                                    state_reporting=state_rep)
                     exporter.reset()
             else:
                 log.error('ODBC connection failure -- aborting')

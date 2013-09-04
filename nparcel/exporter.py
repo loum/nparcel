@@ -291,7 +291,12 @@ class Exporter(object):
 
         return tuple(row_list)
 
-    def report(self, items, out_dir=None, sequence=None, identifier='P'):
+    def report(self,
+               items,
+               out_dir=None,
+               sequence=None,
+               identifier='P',
+               state_reporting=False):
         """Cycle through the newly identified collected items and produce
         a report in the *out_dir*.
 
@@ -307,6 +312,9 @@ class Exporter(object):
             sequence: business unit-based report column control
 
             identifier: business unit specific file identifier
+
+            state_reporting: Business Unit reporting is output to separate
+            files based on Agent state
 
         **Returns:**
             name of the report file that is generated

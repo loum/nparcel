@@ -11,7 +11,8 @@ FLAG_MAP = {'item_number_excp': 0,
             'send_email': 1,
             'send_sms': 2,
             'send_ps_file': 3,
-            'send_png_file': 4}
+            'send_png_file': 4,
+            'state_reporting': 5}
 
 
 class Config(object):

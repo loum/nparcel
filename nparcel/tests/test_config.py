@@ -97,9 +97,9 @@ class TestConfig(unittest2.TestCase):
 
         msg = 'Conditions map not as expected'
         received = self._c('cond')
-        expected = {'tolp': '00010',
-                    'tolf': '00010',
-                    'toli': '10001'}
+        expected = {'tolp': '000100',
+                    'tolf': '000101',
+                    'toli': '100010'}
         self.assertDictEqual(received, expected, msg)
 
         msg = 'RESTful API not as expected'
@@ -211,6 +211,23 @@ class TestConfig(unittest2.TestCase):
         # Cleanup.
         self._c._file = None
 
+    def test_condition_flag_state_based_reporting(self):
+        """Check state_reporting flag settings.
+        """
+        self._c.set_file(file=self._file)
+        self._c.parse_config()
+
+        received = self._c.condition('tolf', 'state_reporting')
+        msg = 'Fast "state_reporting" should return True'
+        self.assertTrue(received, msg)
+
+        received = self._c.condition('toli', 'state_reporting')
+        msg = 'Ipec "state_reporting" should return False'
+        self.assertFalse(received, msg)
+
+        # Cleanup.
+        self._c._file = None
+
     def test_condition_flag_undefined_bu(self):
         """Check item_excp flag settings -- undefined BU.
         """
@@ -242,7 +259,8 @@ class TestConfig(unittest2.TestCase):
                     'send_sms': False,
                     'send_email': False,
                     'send_ps_file': False,
-                    'send_png_file': False}
+                    'send_png_file': False,
+                    'state_reporting': False}
         msg = 'Dodgy Business Unit condition map should be empty dict'
         self.assertDictEqual(received, expected, msg)
 
@@ -260,7 +278,8 @@ class TestConfig(unittest2.TestCase):
                     'send_sms': False,
                     'send_email': False,
                     'send_ps_file': False,
-                    'send_png_file': True}
+                    'send_png_file': True,
+                    'state_reporting': False}
         msg = 'Valid Business Unit condition map should produce dict values'
         self.assertDictEqual(received, expected, msg)
 
