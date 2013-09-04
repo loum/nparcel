@@ -50,7 +50,8 @@ class JobItem(nparcel.Table):
     it.description as 'IDENTITY_TYPE',
     ji.identity_type_data as 'IDENTITY_DATA',
     ji.item_nbr as 'ITEM_NBR',
-    ag.code as 'AGENT_ID'
+    ag.code as 'AGENT_ID',
+    ag.state as 'AGENT_STATE'
 FROM job_item as ji, identity_type as it, job as j, agent as ag
 WHERE pickup_ts IS NOT null
 AND extract_ts IS null

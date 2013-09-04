@@ -52,5 +52,6 @@ WHERE id=%d""" % id
                 "name CHAR(100)",
                 "address CHAR(80)",
                 "suburb CHAR(30)",
+                "state CHAR(3)",
                 "postcode CHAR(4)",
                 "code CHAR(6)"]

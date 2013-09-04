@@ -19,8 +19,10 @@ class TestJobItem(unittest2.TestCase):
 
         # Prepare some sample data.
         # Agent.
-        agents = [{'code': 'N031'},
-                  {'code': 'BAD1'}]
+        agents = [{'code': 'N031',
+                   'state': 'VIC'},
+                  {'code': 'BAD1',
+                   'state': 'NSW'}]
         agent_ok = cls._db.insert(cls._db._agent.insert_sql(agents[0]))
         agent_nok = cls._db.insert(cls._db._agent.insert_sql(agents[1]))
 
@@ -159,7 +161,15 @@ class TestJobItem(unittest2.TestCase):
         received = []
         for row in self._db.rows():
             received.append(row)
-        expected = [('218501217863', 1, '%s' % self._now, 'pod_name 218501217863', 'identity_type description', 'identity 218501217863', 'priority_item_nbr_001', 'N031')]
+        expected = [('218501217863',
+                     1,
+                     '%s' % self._now,
+                     'pod_name 218501217863',
+                     'identity_type description',
+                     'identity 218501217863',
+                     'priority_item_nbr_001',
+                     'N031',
+                     'VIC')]
         msg = 'collected_sql SQL query did not return expected result'
         self.assertListEqual(received, expected)
 

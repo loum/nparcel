@@ -21,8 +21,10 @@ class TestExporter(unittest2.TestCase):
 
         # Prepare some sample data.
         # "agent" table.
-        agents = [{'code': 'N031'},
-                  {'code': 'BAD1'}]
+        agents = [{'code': 'N031',
+                   'state': 'VIC'},
+                  {'code': 'BAD1',
+                   'state': 'NSW'}]
         agent_ok = cls._e.db.insert(cls._e.db._agent.insert_sql(agents[0]))
         agent_nok = cls._e.db.insert(cls._e.db._agent.insert_sql(agents[1]))
 
@@ -117,7 +119,8 @@ class TestExporter(unittest2.TestCase):
                      'identity_type description',
                      'identity 218501217863',
                      'priority_item_nbr_001',
-                     'N031')]
+                     'N031',
+                     'VIC')]
         for row in self._e.db.rows():
             received.append(row)
         self.assertEqual(received, expected, msg)
@@ -137,7 +140,8 @@ class TestExporter(unittest2.TestCase):
                      'identity_type description',
                      'identity 21850121786x',
                      'fast_item_nbr_001',
-                     'N031')]
+                     'N031',
+                     'VIC')]
         for row in self._e.db.rows():
             received.append(row)
 
