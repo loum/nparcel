@@ -73,9 +73,15 @@ class LoaderDaemon(nparcel.utils.Daemon):
                 reporter.reset(identifier=file)
                 (bu, file_timestamp) = self.validate_file(file)
                 if bu is None or file_timestamp is None:
+                    log.error('Unable to validate file "%s":' % file)
                     continue
 
-                bu_id = int(self.config('file_bu').get(bu.lower()))
+                bu_id = self.config('file_bu').get(bu.lower())
+                if bu_id is None:
+                    log.error('Unable to get a BU Id from "%s"' % bu)
+                    continue
+
+                bu_id = int(bu_id)
                 condition_map = self.config.condition_map(bu)
                 for line in f:
                     record = line.rstrip('\r\n')
@@ -155,7 +161,25 @@ class LoaderDaemon(nparcel.utils.Daemon):
                 yield file
 
     def check_filename(self, file):
-        """
+        """Parse filename string supplied by *file* and check that it
+        conforms to the Nparcel format.
+
+        Nparcel format is based T1250_TOLc_xxx_yyyymmddhhmmss.txt where:
+
+        * c is the Business Unit name ('P' for Priority etc.)
+
+        * xxx is the optional state ('VIC' for Victoria etc.)
+
+        * yyyymmddhhmmss is the time the file was generated
+
+        **Args:**
+            file: the filename string
+
+        **Returns:**
+            boolean ``True`` if filename string conforms to Nparcel format
+
+            boolean ``False`` otherwise
+
         """
         status = False
 
@@ -185,14 +209,24 @@ class LoaderDaemon(nparcel.utils.Daemon):
 
         return status
 
-    def validate_file(self, filename=None):
-        """
+    def validate_file(self, filename):
+        """Parse the Nparcel-format filename string and attempt to extract
+        the Business Unit and file timestamp.
+
+        **Kwargs:**
+            filename: the filename string to parse
+
+        *Returns:**
+            tuple stucture as (<business_unit>, <timestamp>)
+
         """
         log.debug('Validating filename: "%s"' % filename)
-        m = re.search('T1250_(TOL.)_(\d{14})\.txt', filename)
+        m = re.search('T1250_(TOL.*)_(\d{14})\.txt', filename)
         bu = None
         dt_formatted = None
-        if m is not None:
+        if m is None:
+            log.error('Could not parse BU/time from file "%s"' % filename)
+        else:
             bu = m.group(1).lower()
             file_timestamp = m.group(2)
             parsed_time = time.strptime(file_timestamp, "%Y%m%d%H%M%S")
@@ -201,8 +235,6 @@ class LoaderDaemon(nparcel.utils.Daemon):
             dt_formatted = dt.isoformat(' ')
             log.info('Parsed BU/time "%s/%s" from file "%s"' %
                      (bu, dt_formatted, filename))
-        else:
-            log.error('Could not parse BU/time from file "%s"' % filename)
 
         return (bu, dt_formatted)
 

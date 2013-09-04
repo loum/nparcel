@@ -448,6 +448,13 @@ class Config(object):
     def bu_to_file(self, bu):
         """Return the file_bu configuration option of a given *bu*.
 
+        State-based BU to file translations are not supported.  For example,
+        tolf_vic
+
+        **Args:**
+            bu: business unit name as defined under the business_units
+            section of the config.  For example, 'priority'.
+
         **Returns:**
 
         """
@@ -457,6 +464,9 @@ class Config(object):
 
         if bu_value is not None:
             for file_bu in self.file_bu.keys():
+                if len(file_bu) > 4:
+                    # Not interested in the state based BU's.
+                    continue
                 if self.file_bu.get(file_bu) == bu_value:
                     file_code_for_bu = file_bu
                     break

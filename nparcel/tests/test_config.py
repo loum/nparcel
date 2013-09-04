@@ -79,7 +79,15 @@ class TestConfig(unittest2.TestCase):
 
         msg = 'Filename Business units not as expected'
         received = self._c('file_bu')
-        expected = {'tolp': '1', 'tolf': '2', 'toli': '3'}
+        expected = {'tolp': '1',
+                    'tolf': '2',
+                    'tolf_nsw': '2',
+                    'tolf_vic': '2',
+                    'tolf_qld': '2',
+                    'tolf_sa': '2',
+                    'tolf_wa': '2',
+                    'tolf_act': '2',
+                    'toli': '3'}
         self.assertDictEqual(received, expected, msg)
 
         msg = 'Support emails not as expected'
