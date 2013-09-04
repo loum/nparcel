@@ -9,5 +9,6 @@ from test_loaderdaemon import TestLoaderDaemon
 from test_exporterdaemon import TestExporterDaemon
 from test_exporter import TestExporter
 from test_exporter_ipec import TestExporterIpec
+from test_exporter_fast import TestExporterFast
 from test_config import TestConfig
 from test_ftp import TestFtp
