@@ -9,6 +9,8 @@ import operator
 import nparcel
 from nparcel.utils.log import log
 
+STATES = ['NSW', 'VIC', 'QLD', 'SA', 'WA', 'ACT']
+
 
 class Exporter(object):
     """Nparcel Exporter.
@@ -315,14 +317,12 @@ class Exporter(object):
             files based on Agent state
 
         **Returns:**
-            name of the report file that is generated
-
-            ``None`` otherwise
+            list of report file names that are generated
 
         """
         file_name = None
 
-        target_files = None
+        target_files = []
         if not items:
             log.info('No collected items to report')
         else:
@@ -331,18 +331,49 @@ class Exporter(object):
                                   key=operator.itemgetter(index),
                                   cmp=lambda x, y: int(x) - int(y))
 
-            out_file = self.dump_report_output(sorted_items,
-                                               sequence,
-                                               identifier)
-            if out_file is not None:
-                target_files = out_file
+            rpts = {}
+            if state_reporting:
+                log.debug('Reporting set to state based')
+                state_col = self.get_header_column('AGENT_STATE')
+
+                # Hardwired Fast fugliness.
+                nt_rows = [r for r in sorted_items if r[state_col] == 'NT']
+                tas_rows = [r for r in sorted_items if r[state_col] == 'TAS']
+
+                for state in STATES:
+                    log.debug('Reporting on state: %s' % state)
+                    rows = [r for r in sorted_items if r[state_col] == state]
+
+                    # Typical Fast fugliness, certain states tack onto others.
+                    if state == 'VIC':
+                        rows += tas_rows
+                    if state == 'SA':
+                        rows += nt_rows
+
+                    log.debug('State row count: %d' % len(rows))
+                    rpts[state] = {'id': identifier,
+                                   'items': rows}
+            else:
+                # Just one report -- and it's the default name.
+                rpts['VIC'] = {'id': identifier,
+                               'items': sorted_items}
+
+            for state, v in rpts.iteritems():
+                if v.get('items') is not None and len(v.get('items')):
+                    out_file = self.dump_report_output(v.get('items'),
+                                                    sequence,
+                                                    identifier,
+                                                    state)
+                    if out_file is not None:
+                        target_files.append(out_file)
 
         return target_files
 
     def dump_report_output(self,
                            sorted_items,
                            sequence,
-                           identifier):
+                           identifier,
+                           state='VIC'):
         """
         """
         target_file = None
@@ -353,7 +384,7 @@ class Exporter(object):
             for item in sorted_items:
                 print('%s' % (self.get_report_line(item, sequence)))
         else:
-            fh = self.outfile(self.out_dir, identifier)
+            fh = self.outfile(self.out_dir, identifier, state)
             file_name = fh.name
             fh.write('%s\n' % header)
             for item in sorted_items:
@@ -405,7 +436,7 @@ class Exporter(object):
 
         return report_line
 
-    def outfile(self, dir, identifier):
+    def outfile(self, dir, identifier, state='VIC'):
         """Creates the Exporter output file based on current timestamp
         and verifies creation at the staging directory *dir*.
 
@@ -430,7 +461,7 @@ class Exporter(object):
             # Create the output file.
             time = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
             file = ("%s_%s_%s%s_%s.txt.tmp" %
-                    ('VIC', 'VANA', 'RE', identifier, time))
+                    (state, 'VANA', 'RE', identifier, time))
             file_path = os.path.join(dir, file)
             try:
                 log.info('Opening file "%s"' % file_path)

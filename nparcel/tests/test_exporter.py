@@ -277,10 +277,11 @@ WHERE id = 1"""
         self._e.set_out_dir(business_unit=bu)
         valid_items = self._e.process(business_unit_id=BU.get('priority'))
         sequence = '0, 1, 2, 3, 4, 5'
-        report_file = self._e.report(valid_items, sequence=sequence)
+        # Returns a list, but should only get one file in this instance.
+        report_files = self._e.report(valid_items, sequence=sequence)
 
         # Check the contents of the report file.
-        fh = open(report_file)
+        fh = open(report_files[0])
         received = fh.read()
         fh.close()
         expected = ('%s|%s|%s|%s|%s|%s\n%s|%s|%s|%s|%s|%s\n' %
@@ -301,7 +302,8 @@ WHERE id = 1"""
 
         # Clean.
         self._e.reset()
-        os.remove(report_file)
+        for report_file in report_files:
+            os.remove(report_file)
 
         # Remove signature files.
         for item in items:
@@ -336,7 +338,7 @@ WHERE id = %d""" % item[1]
         self._e.set_out_dir(business_unit=bu)
         valid_items = []
         msg = 'No items should not create a report file'
-        self.assertIsNone(self._e.report(valid_items), msg)
+        self.assertListEqual(self._e.report(valid_items), [], msg)
 
         # Cleanup.
         os.rmdir(os.path.join(self._e.staging_dir, 'priority', 'out'))

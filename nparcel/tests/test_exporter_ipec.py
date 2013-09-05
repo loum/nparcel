@@ -148,10 +148,11 @@ class TestExporterIpec(unittest2.TestCase):
         valid_items = self._e.process(business_unit_id=BU.get('ipec'),
                                       file_control=file_control)
         sequence = '0, 1, 2, 3, 4, 5, 6, 7'
-        report_file = self._e.report(valid_items, sequence=sequence)
+        # Returns a list, but should only get one file in this instance.
+        report_files = self._e.report(valid_items, sequence=sequence)
 
         # Check the contents of the report file.
-        fh = open(report_file)
+        fh = open(report_files[0])
         received = fh.read()
         fh.close()
         expected = ('%s|%s|%s|%s|%s|%s|%s|%s\n%s|%s|%s|%s|%s|%s|%s|%s\n' %
@@ -191,7 +192,8 @@ class TestExporterIpec(unittest2.TestCase):
 
         # Clean.
         self._e.reset()
-        os.remove(report_file)
+        for report_file in report_files:
+            os.remove(report_file)
 
         for item in items:
             # Remove the signature files.

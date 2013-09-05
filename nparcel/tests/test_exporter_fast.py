@@ -22,9 +22,18 @@ class TestExporterFast(unittest2.TestCase):
         agents = [{'code': 'AG01',
                    'state': 'VIC'},
                   {'code': 'AG02',
-                   'state': 'NSW'}]
+                   'state': 'NSW'},
+                  {'code': 'AG03',
+                   'state': 'QLD'},
+                  {'code': 'AG04',
+                   'state': 'TAS'},
+                  {'code': 'AG05',
+                   'state': 'SA'}]
         agent_vic = cls._e.db.insert(cls._e.db._agent.insert_sql(agents[0]))
         agent_nsw = cls._e.db.insert(cls._e.db._agent.insert_sql(agents[1]))
+        agent_qld = cls._e.db.insert(cls._e.db._agent.insert_sql(agents[2]))
+        agent_tas = cls._e.db.insert(cls._e.db._agent.insert_sql(agents[3]))
+        agent_sa = cls._e.db.insert(cls._e.db._agent.insert_sql(agents[4]))
 
         cls._now = datetime.datetime.now()
         # "job" table.
@@ -35,11 +44,35 @@ class TestExporterFast(unittest2.TestCase):
                 {'card_ref_nbr': 'fast card ref 02',
                  'agent_id': agent_nsw,
                  'job_ts': '%s' % cls._now,
+                 'bu_id': BU.get('fast')},
+                {'card_ref_nbr': 'fast card ref 03',
+                 'agent_id': agent_nsw,
+                 'job_ts': '%s' % cls._now,
+                 'bu_id': BU.get('fast')},
+                {'card_ref_nbr': 'fast card ref 04',
+                 'agent_id': agent_qld,
+                 'job_ts': '%s' % cls._now,
+                 'bu_id': BU.get('fast')},
+                {'card_ref_nbr': 'fast card ref 05',
+                 'agent_id': agent_tas,
+                 'job_ts': '%s' % cls._now,
+                 'bu_id': BU.get('fast')},
+                {'card_ref_nbr': 'fast card ref 06',
+                 'agent_id': agent_sa,
+                 'job_ts': '%s' % cls._now,
                  'bu_id': BU.get('fast')}]
         sql = cls._e.db.job.insert_sql(jobs[0])
         cls._job_id_01 = cls._e.db.insert(sql=sql)
         sql = cls._e.db.job.insert_sql(jobs[1])
         cls._job_id_02 = cls._e.db.insert(sql=sql)
+        sql = cls._e.db.job.insert_sql(jobs[2])
+        cls._job_id_03 = cls._e.db.insert(sql=sql)
+        sql = cls._e.db.job.insert_sql(jobs[3])
+        cls._job_id_04 = cls._e.db.insert(sql=sql)
+        sql = cls._e.db.job.insert_sql(jobs[4])
+        cls._job_id_05 = cls._e.db.insert(sql=sql)
+        sql = cls._e.db.job.insert_sql(jobs[5])
+        cls._job_id_06 = cls._e.db.insert(sql=sql)
 
         # "identity_type" table.
         identity_types = [{'description': 'License'},
@@ -64,7 +97,35 @@ class TestExporterFast(unittest2.TestCase):
                      'extract_ts': '%s' % cls._now,
                      'pod_name': 'pod_name fast 02',
                      'identity_type_id': cls._id_type_passport,
-                     'identity_type_data': 'fast identity 02'}]
+                     'identity_type_data': 'fast identity 02'},
+                    {'connote_nbr': 'fast_connote_nbr_03',
+                     'item_nbr': 'fast_item_nbr_03',
+                     'job_id': cls._job_id_03,
+                     'pickup_ts': '%s' % cls._now,
+                     'pod_name': 'pod_name fast 03',
+                     'identity_type_id': cls._id_type_passport,
+                     'identity_type_data': 'fast identity 03'},
+                    {'connote_nbr': 'fast_connote_nbr_04',
+                     'item_nbr': 'fast_item_nbr_04',
+                     'job_id': cls._job_id_04,
+                     'pickup_ts': '%s' % cls._now,
+                     'pod_name': 'pod_name fast 04',
+                     'identity_type_id': cls._id_type_license,
+                     'identity_type_data': 'fast identity 04'},
+                    {'connote_nbr': 'fast_connote_nbr_05',
+                     'item_nbr': 'fast_item_nbr_05',
+                     'job_id': cls._job_id_05,
+                     'pickup_ts': '%s' % cls._now,
+                     'pod_name': 'pod_name fast 05',
+                     'identity_type_id': cls._id_type_license,
+                     'identity_type_data': 'fast identity 05'},
+                    {'connote_nbr': 'fast_connote_nbr_06',
+                     'item_nbr': 'fast_item_nbr_06',
+                     'job_id': cls._job_id_06,
+                     'pickup_ts': '%s' % cls._now,
+                     'pod_name': 'pod_name fast 06',
+                     'identity_type_id': cls._id_type_license,
+                     'identity_type_data': 'fast identity 06'}]
 
         for jobitem in jobitems:
             sql = cls._e.db.jobitem.insert_sql(jobitem)
@@ -113,18 +174,34 @@ class TestExporterFast(unittest2.TestCase):
             received.append(self._e.get_report_line(line=row,
                                                     sequence=self._seq))
         expected = (['%s|%s|%s|%s|%s|%s|%s' %
-                    ('fast_connote_nbr_01',
-                     '1',
-                     self._now.isoformat(' ')[:-7],
-                     'pod_name fast 01',
-                     'License',
-                     'fast identity 01',
-                     'fast_item_nbr_01')])
+                     ('fast_connote_nbr_01',
+                      '1',
+                      self._now.isoformat(' ')[:-7],
+                      'pod_name fast 01',
+                      'License',
+                      'fast identity 01',
+                      'fast_item_nbr_01'),
+                     '%s|%s|%s|%s|%s|%s|%s' %
+                     ('fast_connote_nbr_03',
+                      '3',
+                      self._now.isoformat(' ')[:-7],
+                      'pod_name fast 03',
+                      'Passport',
+                      'fast identity 03',
+                      'fast_item_nbr_03'),
+                     '%s|%s|%s|%s|%s|%s|%s' %
+                     ('fast_connote_nbr_04',
+                      '4',
+                      self._now.isoformat(' ')[:-7],
+                      'pod_name fast 04',
+                      'License',
+                      'fast identity 04',
+                      'fast_item_nbr_04')])
         msg = 'Fast Exporter report line items not as expected'
         self.assertListEqual(received, expected, msg)
 
-    def test_process_archive_ps_files(self):
-        """End to end collected items -- archive ps files.
+    def test_process_archive_png_files(self):
+        """End to end collected items -- archive png files.
         """
         # Define the staging/signature directory.
         self._e.set_signature_dir(self._dir)
@@ -135,32 +212,104 @@ class TestExporterFast(unittest2.TestCase):
         sql = self._e.db.jobitem.collected_sql(business_unit=BU.get(bu))
         self._e.db(sql)
         items = []
-        ps_files = []
+        png_files = []
         for row in self._e.db.rows():
             items.append(row)
             fh = open(os.path.join(self._e.signature_dir,
                                    '%s.ps' % str(row[1])), 'w')
-            ps_files.append(fh.name)
             fh.close()
             fh = open(os.path.join(self._e.signature_dir,
                                    '%s.png' % str(row[1])), 'w')
+            png_files.append(fh.name)
             fh.close()
 
         # Check if we can source a staging directory.
         self._e.set_out_dir(business_unit=bu)
-        file_control = {'ps': False,
-                        'png': True}
+        file_control = {'ps': True,
+                        'png': False}
         self._e.set_out_dir(business_unit='fast')
         valid_items = self._e.process(business_unit_id=BU.get('fast'),
                                       file_control=file_control)
         sequence = '0, 1, 2, 3, 4, 5, 6'
-        report_file = self._e.report(valid_items, sequence=sequence)
+        state_reporting = True
+        report_files = self._e.report(valid_items,
+                                      sequence=sequence,
+                                      identifier='I',
+                                      state_reporting=state_reporting)
 
         # Check the contents of the report file.
-        fh = open(report_file)
+        # Hardwiring states here which is crap.
+        report_files.sort()
+
+        # We should get NSW first.
+        fh = open(report_files[0])
         received = fh.read()
         fh.close()
         expected = ('%s|%s|%s|%s|%s|%s|%s\n%s|%s|%s|%s|%s|%s|%s\n' %
+                    ('REF1',
+                     'JOB_KEY',
+                     'PICKUP_TIME',
+                     'PICKUP_POD',
+                     'IDENTITY_TYPE',
+                     'IDENTITY_DATA',
+                     'ITEM_NBR',
+                     'fast_connote_nbr_03',
+                     '3',
+                     self._now.isoformat(' ')[:-7],
+                     'pod_name fast 03',
+                     'Passport',
+                     'fast identity 03',
+                     'fast_item_nbr_03'))
+        msg = 'Contents of Priority-based POD report file not as expected'
+        self.assertEqual(received, expected, msg)
+
+        # QLD,
+        fh = open(report_files[1])
+        received = fh.read()
+        fh.close()
+        expected = ('%s|%s|%s|%s|%s|%s|%s\n%s|%s|%s|%s|%s|%s|%s\n' %
+                    ('REF1',
+                     'JOB_KEY',
+                     'PICKUP_TIME',
+                     'PICKUP_POD',
+                     'IDENTITY_TYPE',
+                     'IDENTITY_DATA',
+                     'ITEM_NBR',
+                     'fast_connote_nbr_04',
+                     '4',
+                     self._now.isoformat(' ')[:-7],
+                     'pod_name fast 04',
+                     'License',
+                     'fast identity 04',
+                     'fast_item_nbr_04'))
+        self.assertEqual(received, expected, msg)
+
+        # SA,
+        fh = open(report_files[2])
+        received = fh.read()
+        fh.close()
+        expected = ('%s|%s|%s|%s|%s|%s|%s\n%s|%s|%s|%s|%s|%s|%s\n' %
+                    ('REF1',
+                     'JOB_KEY',
+                     'PICKUP_TIME',
+                     'PICKUP_POD',
+                     'IDENTITY_TYPE',
+                     'IDENTITY_DATA',
+                     'ITEM_NBR',
+                     'fast_connote_nbr_06',
+                     '6',
+                     self._now.isoformat(' ')[:-7],
+                     'pod_name fast 06',
+                     'License',
+                     'fast identity 06',
+                     'fast_item_nbr_06'))
+        self.assertEqual(received, expected, msg)
+
+        # VIC.
+        fh = open(report_files[3])
+        received = fh.read()
+        fh.close()
+        expected = ('%s|%s|%s|%s|%s|%s|%s\n%s|%s|%s|%s|%s|%s|%s\n%s|%s|%s|%s|%s|%s|%s\n' %
                     ('REF1',
                      'JOB_KEY',
                      'PICKUP_TIME',
@@ -174,40 +323,47 @@ class TestExporterFast(unittest2.TestCase):
                      'pod_name fast 01',
                      'License',
                      'fast identity 01',
-                     'fast_item_nbr_01'))
-        msg = 'Contents of Priority-based POD report file not as expected'
+                     'fast_item_nbr_01',
+                     'fast_connote_nbr_05',
+                     '5',
+                     self._now.isoformat(' ')[:-7],
+                     'pod_name fast 05',
+                     'License',
+                     'fast identity 05',
+                     'fast_item_nbr_05'))
         self.assertEqual(received, expected, msg)
 
-        # Check that the ps files are archived.
+        # Check that the png files are archived.
         archived_files = []
-        for ps_file in ps_files:
+        for png_file in png_files:
             archived_files.append(os.path.join(self._archive_dir,
-                                               os.path.basename(ps_file)))
+                                               os.path.basename(png_file)))
 
         archive_dir_files = []
         for file in os.listdir(self._archive_dir):
-            if file.endswith('.ps'):
-                ps_file = os.path.join(self._archive_dir, file)
-                archive_dir_files.append(ps_file)
+            if file.endswith('.png'):
+                png_file = os.path.join(self._archive_dir, file)
+                archive_dir_files.append(png_file)
 
         msg = 'Archived file list not as expected'
-        self.assertListEqual(archived_files, archive_dir_files, msg)
+        self.assertListEqual(sorted(archived_files), sorted(archive_dir_files), msg)
 
         # Clean.
         self._e.reset()
-        os.remove(report_file)
+        for report_file in report_files:
+            os.remove(report_file)
 
+        # Remove the archived png files.
+        for png_file in png_files:
+            os.remove(os.path.join(self._archive_dir,
+                                    os.path.basename(png_file)))
         for item in items:
             # Remove the signature files.
             sig_file = os.path.join(self._e._staging_dir,
                                     'fast',
                                     'out',
-                                    '%s.png' % str(item[1]))
+                                    '%s.ps' % str(item[1]))
             os.remove(sig_file)
-
-            for ps_file in ps_files:
-                os.remove(os.path.join(self._archive_dir,
-                                       os.path.basename(ps_file)))
 
             # Clear the extract_id timestamp.
             sql = """UPDATE job_item
