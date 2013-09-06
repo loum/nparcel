@@ -32,7 +32,7 @@ class TestSmser(unittest2.TestCase):
         # Clean up.
         self._sms.set_recipients(None)
 
-    def test_generate_url(self):
+    def test_encode_params(self):
         """Generate a URL-encoded message.
         """
         sms_msg = """Your consignment has been placed at Skylark News, 59 Skylark Street, INALA 4077. A Consignment Ref 4156736304. Please bring your photo ID with you. Enquiries 13 32 78"""
