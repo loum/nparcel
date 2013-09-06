@@ -104,13 +104,19 @@ class TestConfig(unittest2.TestCase):
 
         msg = 'RESTful API not as expected'
         received = self._c('rest')
+        e_scheme = 'https'
+        e_uri = 'apps.cinder.co/tollgroup/wsemail/emailservice.svc/sendemail'
         expected = {'sms_scheme': 'https',
-                    'sms_api': 'https://www.textmagic.com/app/api'}
+                    'sms_api': 'https://www.textmagic.com/app/api',
+                    'email_api': "%s://%s" % (e_scheme, e_uri),
+                    'email_user': '<put your email_user name here>',
+                    'email_pw': '<put your email_pw password here>'}
         self.assertDictEqual(received, expected, msg)
 
         msg = 'Exporter columns expected'
         received = self._c('exporter_fields')
         expected = {'tolp': '0,1,2,3,4,5',
+                    'tolf': '0,1,2,3,4,5,6',
                     'toli': '0,1,2,3,4,5,6,7'}
         self.assertDictEqual(received, expected, msg)
 

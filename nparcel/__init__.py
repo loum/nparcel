@@ -6,6 +6,7 @@ from nparcel.dbsession import DbSession
 from nparcel.reporter import Reporter
 from nparcel.emailer import Emailer
 from nparcel.smser import Smser
+from nparcel.rest import Rest
 from nparcel.restemailer import RestEmailer
 from nparcel.exporter import Exporter
 from nparcel.config import Config

@@ -65,7 +65,8 @@ class RestEmailer(nparcel.Smser):
 
         return encoded_msg
 
-    def send(self, subject, sender, recipient, msg, dry=False):
+    #def send(self, subject, sender, recipient, msg, dry=False):
+    def send(self, msg, dry=False):
         """Send the Email.
 
         **Args:**

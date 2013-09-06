@@ -35,7 +35,7 @@ class TestRestEmailer(unittest2.TestCase):
                                           sender=sender,
                                           recipient=recipient,
                                           msg=msg)
-        expected = ''
+        expected = 'username=%3Cput+your+email_user+name+here%3E&password=%3Cput+your+email_pw+password+here%3E&message=Content-Type%3A+text%2Fplain%3B+charset%3D%22us-ascii%22%5CnMIME-Version%3A+1.0%5CnContent-Transfer-Encoding%3A+7bit%5CnSubject%3A+Test+Message+from+Toll%5CnFrom%3A+loumar%40tollgroup.com%5CnTo%3A+loumar%40tollgroup.com%5Cn%5CnTEST+MESSAGE'
         msg = 'Encoded message not as expected'
         self.assertEqual(received, expected, msg)
 
@@ -46,7 +46,7 @@ class TestRestEmailer(unittest2.TestCase):
         self._re.set_proxy_scheme('https')
         self._re.set_api(self._api)
 
-        received = self._re.send()
+        received = self._re.send('tester', dry=True)
         msg = 'Email send should return True'
         self.assertTrue(received, msg)
 
