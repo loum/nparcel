@@ -144,7 +144,8 @@ class LoaderDaemon(nparcel.utils.Daemon):
 
                     # Check that it's not in the archive already.
                     archive_path = self.get_customer_archive(file)
-                    if os.path.exists(archive_path):
+                    if (archive_path is not None and
+                        os.path.exists(archive_path)):
                         log.error('File %s is archived' % file)
                     else:
                         files_to_process.append(file)
@@ -262,14 +263,16 @@ class LoaderDaemon(nparcel.utils.Daemon):
     def get_customer_archive(self, file):
         customer = self.get_customer(file)
         filename = os.path.basename(file)
-        m = re.search('T1250_TOL._(\d{8})\d{6}\.txt', filename)
-        file_timestamp = m.group(1)
+        archive_dir = None
+        m = re.search('T1250_TOL.*_(\d{8})\d{6}\.txt', filename)
+        if m is not None:
+            file_timestamp = m.group(1)
+            dir = os.path.join(self.config('archive_dir'),
+                                            customer,
+                                            file_timestamp)
+            archive_dir = os.path.join(dir, filename)
 
-        archive_dir = os.path.join(self.config('archive_dir'),
-                                               customer,
-                                               file_timestamp)
-
-        return os.path.join(archive_dir, filename)
+        return archive_dir
 
     def get_customer(self, file):
         """

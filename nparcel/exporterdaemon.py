@@ -49,7 +49,8 @@ class ExporterDaemon(nparcel.utils.Daemon):
                         exporter.set_out_dir(None)
                     seq = self.config('exporter_fields').get(bu_file_code)
                     identifier = bu[0].upper()
-                    state_rep = self.config.condition(bu, 'state_reporting')
+                    state_rep = self.config.condition(bu_file_code,
+                                                      'state_reporting')
                     exporter.report(items,
                                     sequence=seq,
                                     identifier=identifier,

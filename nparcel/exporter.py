@@ -283,14 +283,18 @@ class Exporter(object):
             try:
                 pickup_ts = m.group(1)
             except AttributeError, err:
-                log.error('Error cleansing pickup_ts "%s": %s' % (row[2],
-                                                                  err))
+                log.error('Cannot cleanse pickup_ts "%s": %s' % (row[2], err))
         elif isinstance(row[2], datetime.datetime):
             pickup_ts = row[2].strftime("%Y-%m-%d %H:%M:%S")
-
-        log.debug('Cleansed pickup_ts produced "%s"' % pickup_ts)
-
+        log.debug('Cleansed pickup_ts: "%s"' % pickup_ts)
         row_list[2] = pickup_ts
+
+        # Get rid of spaces around the state.
+        try:
+            row_list[8] = row_list[8].strip()
+            log.debug('Cleansed state: "%s"' % row_list[8])
+        except (IndexError, AttributeError), err:
+            log.warn('Cleansed state -- no value: %s' % err)
 
         return tuple(row_list)
 
