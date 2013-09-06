@@ -82,7 +82,7 @@ class Ftp(ftplib.FTP):
                 file = os.path.join(dir, file)
                 if os.path.isfile(file):
                     if fnmatch.fnmatch(os.path.basename(file),
-                                    'VIC_VANA_RE*.txt'):
+                                    '*_VANA_RE?_*.txt'):
                         log.info('Found report file: "%s"' % file)
                         yield file
         else:
