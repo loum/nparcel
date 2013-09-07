@@ -1,5 +1,7 @@
 import unittest2
 import datetime
+import string
+import urllib
 
 import nparcel
 
@@ -774,6 +776,42 @@ class TestLoader(unittest2.TestCase):
 
         # Restore DB state.
         self._ldr.db.connection.rollback()
+
+    def test_template_main_body_html(self):
+        """Generate the template main body -- html.
+        """
+        d = {'name': 'Auburn Newsagency',
+             'address': '119 Auburn Road',
+             'suburb': 'HAWTHORN EAST',
+             'postcode': '3123',
+             'barcode': '218501217863-barcode',
+             'item_nbr': '3456789012-item_nbr'}
+
+        f = open('nparcel/templates/email_body_html.t')
+        body_t = f.read()
+        f.close()
+        body_s = string.Template(body_t)
+        body = body_s.substitute(**d)
+
+        f = open('nparcel/images/toll_logo.png', 'rb')
+        toll_logo = urllib.quote(f.read().encode('base64'))
+        f.close()
+
+        f = open('nparcel/images/nparcel_logo.png', 'rb')
+        nparcel_logo = urllib.quote(f.read().encode('base64'))
+        f.close()
+
+        f = open('nparcel/templates/email_html.t')
+        main_t = f.read()
+        f.close()
+        main_s =  string.Template(main_t)
+        main = main_s.substitute(body=body,
+                                 toll_logo=toll_logo,
+                                 nparcel_logo=nparcel_logo)
+
+        #f = open('/media/sf_calcium/email.html', 'w')
+        #f.write(main)
+        #f.close()
 
     @classmethod
     def tearDownClass(cls):
