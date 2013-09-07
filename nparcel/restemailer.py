@@ -8,7 +8,7 @@ import nparcel.urllib2 as urllib2
 from nparcel.utils.log import log
 
 
-class RestEmailer(nparcel.Smser):
+class RestEmailer(nparcel.Rest):
     """Nparcel RestEmailer.
 
     """
@@ -17,23 +17,24 @@ class RestEmailer(nparcel.Smser):
                  recipients=None,
                  proxy=None,
                  proxy_scheme='http',
-                 api=None):
+                 api=None,
+                 api_username=None,
+                 api_password=None):
         """Nparcel RestEmailer initialiser.
         """
-        super(RestEmailer, self).__init__(recipients,
-                                          proxy,
+        super(RestEmailer, self).__init__(proxy,
                                           proxy_scheme,
-                                          api)
+                                          api,
+                                          api_username,
+                                          api_password)
 
     def encode_params(self,
                       subject,
-                      username,
-                      passwd,
                       sender,
                       recipient,
                       msg):
-        """URL encode the message so that is is compatible with URL
-        transmissions to the TextMagic API.
+        """URL encode the message so that is is compatible with REST-based
+        communications.
 
         **Args:**
             subject: email subject string
@@ -58,15 +59,14 @@ class RestEmailer(nparcel.Smser):
                          'Content-Transfer-Encoding: 7bit'))
         msg = ("%s\\nSubject: %s\\nFrom: %s\\nTo: %s\\n\\n%s" %
                (msg_preamble, subject, sender, recipient, msg))
-        f = [('username', username),
-             ('password', passwd),
+        f = [('username', self.api_username),
+             ('password', self.api_password),
              ('message', msg)]
         encoded_msg = urllib.urlencode(f)
 
         return encoded_msg
 
-    #def send(self, subject, sender, recipient, msg, dry=False):
-    def send(self, msg, dry=False):
+    def send(self, subject, sender, recipient, msg, dry=False):
         """Send the Email.
 
         **Args:**
@@ -89,12 +89,7 @@ class RestEmailer(nparcel.Smser):
         """
         status = True
 
-        subject = 'Test Message from Toll'
-        sender = 'loumar@tollgroup.com'
-        recipient = 'loumar@tollgroup.com'
         data = self.encode_params(subject=subject,
-                                  username='2c4078ee0819a37c54635957876268ec',
-                                  passwd='c13012265ca30c4dc71a43c77ba0af8d',
                                   sender=sender,
                                   recipient=recipient,
                                   msg=msg)
@@ -102,15 +97,14 @@ class RestEmailer(nparcel.Smser):
         proxy_kwargs = {}
         if self.proxy is not None:
             proxy_kwargs = {self.proxy_scheme: self.proxy}
-        log.debug('proxy kwargs: %s' % proxy_kwargs)
         proxy = urllib2.ProxyHandler(proxy_kwargs)
         auth = urllib2.HTTPBasicAuthHandler()
         opener = urllib2.build_opener(proxy,
                                       auth,
                                       urllib2.HTTPSHandler)
         urllib2.install_opener(opener)
-        req = urllib2.Request(self.api, data, {})
 
+        req = urllib2.Request(self.api, data, {})
         if not dry:
             try:
                 conn = urllib2.urlopen(req)
