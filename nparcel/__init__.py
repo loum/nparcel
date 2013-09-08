@@ -8,6 +8,7 @@ from nparcel.emailer import Emailer
 from nparcel.smser import Smser
 from nparcel.rest import Rest
 from nparcel.restemailer import RestEmailer
+from nparcel.restsmser import RestSmser
 from nparcel.exporter import Exporter
 from nparcel.config import Config
 from nparcel.ftp import Ftp

@@ -15,6 +15,10 @@ from nparcel.utils.log import log
 class RestEmailer(nparcel.Rest):
     """Nparcel RestEmailer.
 
+    .. attribute:: recipients
+
+        list of mobile numbers to send SMS to
+
     """
 
     def __init__(self,

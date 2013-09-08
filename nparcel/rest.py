@@ -15,6 +15,10 @@ class Rest(object):
 
         proxy credentials that allow for HTTP* requests via a proxy
 
+    .. attribute:: proxy_scheme
+
+        The URI scheme for the proxy
+
     .. attribute:: api
 
         URI of the RESTful API to connect to

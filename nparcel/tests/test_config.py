@@ -106,11 +106,12 @@ class TestConfig(unittest2.TestCase):
         received = self._c('rest')
         e_scheme = 'https'
         e_uri = 'apps.cinder.co/tollgroup/wsemail/emailservice.svc/sendemail'
-        expected = {'sms_scheme': 'https',
-                    'sms_api': 'https://www.textmagic.com/app/api',
+        expected = {'sms_api': 'https://api.esendex.com/v1.0/messagedispatcher',
                     'email_api': "%s://%s" % (e_scheme, e_uri),
                     'email_user': '',
-                    'email_pw': ''}
+                    'email_pw': '',
+                    'sms_user': '',
+                    'sms_pw': ''}
         self.assertDictEqual(received, expected, msg)
 
         msg = 'Exporter columns expected'

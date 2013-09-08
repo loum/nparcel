@@ -22,6 +22,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestEmailer \
 	 nparcel.tests:TestRest \
 	 nparcel.tests:TestRestEmailer \
+	 nparcel.tests:TestRestSmser \
 	 nparcel.tests:TestSmser \
 	 nparcel.tests:TestLoaderDaemon \
 	 nparcel.tests:TestExporter \

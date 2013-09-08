@@ -6,6 +6,7 @@ from test_reporter import TestReporter
 from test_emailer import TestEmailer
 from test_rest import TestRest
 from test_restemailer import TestRestEmailer
+from test_restsmser import TestRestSmser
 from test_smser import TestSmser
 from test_loaderdaemon import TestLoaderDaemon
 from test_exporterdaemon import TestExporterDaemon

@@ -50,7 +50,7 @@ class TestRestEmailer(unittest2.TestCase):
                                  sender=sender,
                                  recipient=recipient,
                                  msg=msg,
-                                 dry=False)
+                                 dry=True)
         msg = 'Email send should return True'
         self.assertTrue(received, msg)
 
