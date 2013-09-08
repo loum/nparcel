@@ -109,8 +109,8 @@ class TestConfig(unittest2.TestCase):
         expected = {'sms_scheme': 'https',
                     'sms_api': 'https://www.textmagic.com/app/api',
                     'email_api': "%s://%s" % (e_scheme, e_uri),
-                    'email_user': '<put your email_user name here>',
-                    'email_pw': '<put your email_pw password here>'}
+                    'email_user': '',
+                    'email_pw': ''}
         self.assertDictEqual(received, expected, msg)
 
         msg = 'Exporter columns expected'
@@ -151,7 +151,7 @@ class TestConfig(unittest2.TestCase):
         msg = 'Proxy kwargs should produce a populated dictionary'
         received = self._c.proxy_kwargs()
         expected = {'host': 'auproxy-farm.toll.com.au',
-                    'password': '<put your proxy password here>',
+                    'password': '',
                     'port': 8080,
                     'protocol': 'https',
                     'user': 'loumar'}

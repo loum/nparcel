@@ -34,7 +34,7 @@ class TestRestEmailer(unittest2.TestCase):
                                           sender=sender,
                                           recipient=recipient,
                                           msg=msg)
-        expected = 'username=%3Cput+your+email_user+name+here%3E&password=%3Cput+your+email_pw+password+here%3E&message=Content-Type%3A+text%2Fplain%3B+charset%3D%22us-ascii%22%5CnMIME-Version%3A+1.0%5CnContent-Transfer-Encoding%3A+7bit%5CnSubject%3A+Test+Message+from+Toll%5CnFrom%3A+loumar%40tollgroup.com%5CnTo%3A+loumar%40tollgroup.com%5Cn%5CnTEST+MESSAGE'
+        expected = 'username=&password=&message=Content-Type%3A+text%2Fplain%3B+charset%3D%22us-ascii%22%5CnMIME-Version%3A+1.0%5CnContent-Transfer-Encoding%3A+7bit%5CnSubject%3A+Test+Message+from+Toll%5CnFrom%3A+loumar%40tollgroup.com%5CnTo%3A+loumar%40tollgroup.com%5Cn%5CnTEST+MESSAGE'
         msg = 'Encoded message not as expected'
         self.assertEqual(received, expected, msg)
 
@@ -53,6 +53,22 @@ class TestRestEmailer(unittest2.TestCase):
                                  dry=False)
         msg = 'Email send should return True'
         self.assertTrue(received, msg)
+
+    def test_xxx(self):
+        """Send an email message to the REST-based interface.
+        """
+        self._re.set_recipients(['loumar@tollgroup.com'])
+        subject = 'Test Message from Toll'
+        msg = 'Test message to restful interface'
+        received = self._re.xxx(subject=subject,
+                                msg=msg,
+                                dry=True)
+
+        msg = 'Email send should return True'
+        self.assertTrue(received, msg)
+
+        # Clean up.
+        self._re.set_recipients(None)
 
     @classmethod
     def tearDownClass(cls):
