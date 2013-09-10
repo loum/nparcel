@@ -31,8 +31,15 @@ class TestLoader(unittest2.TestCase):
         conf.set_file('nparcel/conf/nparceld.conf')
         conf.parse_config()
         proxy = conf.proxy_string()
-        api = conf.rest.get('sms_api')
-        cls._ldr = nparcel.Loader(proxy=proxy, scheme='https', api=api)
+        sms_api = conf.rest.get('sms_api')
+        api_username = conf.rest.get('sms_user')
+        api_password = conf.rest.get('sms_pw')
+        sms_api_kwargs = {'api': sms_api,
+                          'api_username': api_username,
+                          'api_password': api_password}
+        cls._ldr = nparcel.Loader(proxy=proxy,
+                                  scheme='https',
+                                  sms_api=sms_api_kwargs)
         cls._job_ts = cls._ldr.db.date_now()
 
     def test_init(self):
@@ -748,10 +755,10 @@ class TestLoader(unittest2.TestCase):
     def test_sms_no_agent_id(self):
         """SMS attempt with no agent_id.
         """
-        mobiles = ['1234567890']
+        mobile = '1234567890'
         agent_id = 1
         barcode = 'xxx'
-        received = self._ldr.send_sms(agent_id, mobiles, barcode, dry=True)
+        received = self._ldr.send_sms(agent_id, mobile, barcode, dry=True)
         msg = 'SMS with no Agent Id should return False'
         self.assertFalse(received, msg)
 
@@ -759,18 +766,22 @@ class TestLoader(unittest2.TestCase):
         """SMS attempt with agent_id.
         """
         # Seed the Agent Id.
-        agent_fields = {'code': 'N031',
-                        'name': 'Auburn Newsagency',
-                        'address': '119 Auburn Road',
-                        'suburb': 'HAWTHORN EAST',
-                        'postcode': '3123'}
+        agent_fields = {'code': 'V101',
+                        'name': 'Vermont South Newsagency',
+                        'address': 'Shop 13-14; 495 Burwood Highway',
+                        'suburb': 'VERMONT',
+                        'postcode': '3133'}
         sql = self._ldr.db._agent.insert_sql(agent_fields)
         id = self._ldr.db.insert(sql)
 
-        mobiles = ['0431602145']
+        mobile = '0431602145'
         agent_id = id
-        barcode = 'xxx'
-        received = self._ldr.send_sms(agent_id, mobiles, barcode, dry=True)
+        item_nbr = 'xxx'
+        received = self._ldr.send_sms(agent_id,
+                                      mobile,
+                                      item_nbr,
+                                      base_dir='nparcel',
+                                      dry=True)
         msg = 'SMS with valid Agent Id should return True'
         self.assertTrue(received, msg)
 
@@ -809,9 +820,9 @@ class TestLoader(unittest2.TestCase):
                                  toll_logo=toll_logo,
                                  nparcel_logo=nparcel_logo)
 
-        #f = open('/media/sf_calcium/email.html', 'w')
-        #f.write(main)
-        #f.close()
+        f = open('/media/sf_titanium/email.html', 'w')
+        f.write(main)
+        f.close()
 
     @classmethod
     def tearDownClass(cls):

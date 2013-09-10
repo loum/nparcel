@@ -8,29 +8,21 @@ body {
     margin: 0;
     padding: 0;
     font-family: Century Gothic, sans-serif;
-    background-color: #d1d1d1;
 }
 table {
     position: static;
     top: 1em;
     border-collapse: collapse;
-    width: 80%;
 }
 th {
     font-weight: bold;
     padding: 0.4em;
     text-align: left;
-    width: 30%;
-}
-td {
-    font-weight: normal;
-    padding: 0.4em;
-    text-align: left;
+    width: 45%;
 }
 p.fine-print {
-    font-weight: bold;
     font-style: italic;
-    font-size: 0.75em;
+    font-size: 0.8em;
 }
 #wrapper {
     position: relative;
@@ -45,15 +37,9 @@ p.fine-print {
 }
 #footer {
     height: 36px;
+    padding-top: 20px;
     padding-bottom: 20px;
 }
-#img-left {
-    float: left;
-}
-#img-right {
-    float: right;
-}
-#fine
 </style>
 
 </head>
@@ -62,10 +48,16 @@ p.fine-print {
     <div id="wrapper">
         $body
         <div id="footer">
-            <img id="img-left" src="data:image/png;base64,
-${toll_logo}" alt="Toll logo" />
-            <img id="img-right" src="data:image/png;base64,
-${nparcel_logo}" alt="Nparcel logo" />
+            <table width="100%" align="center">
+                <tr>
+                    <td>
+                        <img src="cid:toll_logo" alt="Toll logo" />
+                    </td>
+                    <td>
+                        <img align="right" src="cid:nparcel_logo" alt="Nparcel logo" />
+                    </td>
+                </tr>
+            </table>
         </div> <!-- footer -->
     </div> <!-- wrapper -->
 </body>

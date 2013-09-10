@@ -136,7 +136,7 @@ class Loader(object):
 
     """
 
-    def __init__(self, db=None, proxy=None, scheme='http', api=None):
+    def __init__(self, db=None, proxy=None, scheme='http', sms_api=None):
         """Nparcel Loader initaliser.
 
         """
@@ -149,9 +149,12 @@ class Loader(object):
         self.alerts = []
 
         self.emailer = nparcel.Emailer()
-        self.smser = nparcel.Smser(proxy=proxy,
-                                   proxy_scheme=scheme,
-                                   api=api)
+
+        if sms_api is None:
+            sms_api = {}
+        self.smser = nparcel.RestSmser(proxy=proxy,
+                                       proxy_scheme=scheme,
+                                       **sms_api)
 
     def process(self,
                 time,
@@ -238,12 +241,14 @@ class Loader(object):
                 self.create(job_data, job_item_data)
 
             # Send out comms if the facility is enabled.
+            item_nbr = job_item_data.get('item_nbr')
             if cond_map.get('send_email'):
                 email = job_item_data.get('email_addr').split()
                 self.send_email(agent_id_row_id, email, barcode, dry)
             if cond_map.get('send_sms'):
-                mobile = job_item_data.get('phone_nbr').split()
-                self.send_sms(agent_id_row_id, mobile, barcode, dry)
+                mobiles = job_item_data.get('phone_nbr').split()
+                for mob in mobiles:
+                    self.send_sms(agent_id_row_id, mob, item_nbr, dry=dry)
 
         log.info('Conn Note: "%s" parse complete' % connote_literal)
 
@@ -681,18 +686,21 @@ class Loader(object):
 
         return status
 
-    def send_sms(self, agent_id, mobiles, barcode, dry=False):
+    def send_sms(self, agent_id, mobile, item_nbr, base_dir=None, dry=False):
         """Send out SMS comms to the list of *mobiles*.
 
         **Args:**
             agent_id: the Agent's "agent.id" private key
 
-            mobiles: list of SMS recipients
+            mobile: mobile number of the SMS recipient
 
-            barcode: job barcode
+            item_nbr: job_item.item_nbr
 
         **Kwargs:**
             dry: only report, do not actual execute
+
+            base_dir: override the standard location to search for the
+            SMS XML template (default is ``~user_home/.nparceld/templates``)
 
         **Returns:**
             ``True`` for processing success
@@ -703,25 +711,32 @@ class Loader(object):
         status = True
 
         # Send out SMS comms.
-        if mobiles is not None and len(mobiles):
-            log.debug('Sending customer SMS to "%s"' % str(mobiles))
+        if mobile is not None and not mobile:
+            log.warn('No SMS mobile contact provided')
+            status = False
 
+        if status:
             # Get agent details.
             self.db(self.db._agent.agent_sql(id=agent_id))
             agent = self.db.row
             if agent is not None:
                 (name, address, suburb, postcode) = agent
-
-                # OK, generate the SMS structure.
-                subject = 'Nparcel pickup'
-                msg = """TEST PLEASE IGNORE Your consignment has been placed at %s, %s, %s %s.  Consignment Ref %s.  Please bring your photo ID with you.  Enquiries 13 32 78""" % (name, address, suburb, postcode, barcode)
-                self.smser.set_recipients(mobiles)
-                status = self.smser.send(msg=msg, dry=dry)
             else:
                 status = False
                 err = 'SMS missing Agent details for id: %d' % agent_id
                 self.set_alert(err)
-        else:
-            log.warn('SMS list is empty')
+
+        if status:
+            d = {'name': name,
+                 'address': address,
+                 'suburb': suburb,
+                 'postcode': postcode,
+                 'item_nbr': item_nbr}
+            log.debug('Sending customer SMS to "%s"' % str(mobile))
+            d['mobile'] = mobile
+
+            # OK, generate the SMS structure.
+            sms_data = self.smser.create_comms(data=d, base_dir=base_dir)
+            status = self.smser.send(data=sms_data, dry=dry)
 
         return status

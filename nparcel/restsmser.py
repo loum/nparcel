@@ -2,6 +2,8 @@ __all__ = [
     "RestSmser",
 ]
 import re
+import os
+import string
 import base64
 
 import nparcel
@@ -29,6 +31,47 @@ class RestSmser(nparcel.Rest):
                                         api_username,
                                         api_password)
 
+    def create_comms(self, data, base_dir=None):
+        """Create the SMS data string to send.
+
+        **Args:**
+            data: dictionary structure of items to expected by the HTML
+            email templates::
+
+               {'name': 'Auburn Newsagency',
+                'address': '119 Auburn Road',
+                'suburb': 'HAWTHORN EAST',
+                'postcode': '3123',
+                'item_nbr': '3456789012-item_nbr',
+                'mobile': '0419368910'}
+
+        **Kwargs:**
+            base_dir: override the standard location to search for the
+            SMS XML template (default is ``~user_home/.nparceld/templates``).
+
+        """
+        dir = None
+        if base_dir is None:
+            dir = os.path.join(os.path.expanduser('~'),
+                               '.nparceld',
+                               'templates')
+        else:
+            dir = os.path.join(base_dir, 'templates')
+        log.debug('SMS template dir: "%s"' % dir)
+
+        sms_data = None
+        try:
+            xml_file = os.path.join(dir, 'sms_xml.t')
+            f = open(xml_file)
+            sms_t = f.read()
+            f.close()
+            sms_s = string.Template(sms_t)
+            sms_data = sms_s.substitute(**data)
+        except IOError, err:
+            log.error('Unable to source SMS XML template at "%s"' % xml_file)
+
+        return sms_data
+
     def send(self, data, dry=False):
         """Send the SMS.
 
@@ -51,6 +94,8 @@ class RestSmser(nparcel.Rest):
             proxy_kwargs = {}
             if self.proxy is not None:
                 proxy_kwargs = {self.proxy_scheme: self.proxy}
+            log.debug('proxy_scheme: %s' % self.proxy_scheme)
+            log.debug('proxy: %s' % self.proxy)
             proxy = urllib2.ProxyHandler(proxy_kwargs)
             auth = urllib2.HTTPBasicAuthHandler()
             opener = urllib2.build_opener(proxy,
@@ -64,16 +109,22 @@ class RestSmser(nparcel.Rest):
             b64str = base64.encodestring('%s:%s' %
                                          (self._api_username,
                                           self._api_password))
+            log.debug('SMS API credentials: "%s:%s"' % (self._api_username,
+                                                        self._api_password))
             req.add_header("Authorization",
                            "Basic %s" % b64str.replace('\n', ''))
 
             if not dry:
                 try:
                     conn = urllib2.urlopen(req)
+                    if conn.code != 200:
+                        log.error('SMS comms return code: %d' % conn.code)
+                        status = False
                     response = conn.read()
                     log.info('SMS receive: "%s"' % response)
                 except urllib2.URLError, e:
                     log.warn('SMS failure: %s' % e)
+                    status = False
 
         return status
 

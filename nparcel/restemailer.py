@@ -3,7 +3,10 @@ __all__ = [
 ]
 import re
 import urllib
+import string
 from email.MIMEText import MIMEText
+from email.MIMEImage import MIMEImage
+from email.MIMEMultipart import MIMEMultipart
 import getpass
 import socket
 
@@ -152,7 +155,65 @@ class RestEmailer(nparcel.Rest):
 
         return status
 
-    def xxx(self, subject, msg, dry=False):
+    def create_comms(self, subject, data):
+        """Create the MIME multipart message that can feed directly into
+        the POST construct of the Esendex RESTful API.
+
+        **Args:**
+            subject: the email subject
+
+            data: dictionary structure of items to expected by the HTML
+            email templates::
+
+                {'name': 'Auburn Newsagency',
+                 'address': '119 Auburn Road',
+                 'suburb': 'HAWTHORN EAST',
+                 'postcode': '3123',
+                 'barcode': '218501217863-barcode',
+                 'item_nbr': '3456789012-item_nbr'}
+
+        **Returns:**
+            MIME multipart-formatted serialised string
+
+        """
+        mime_msg = MIMEMultipart('related')
+        mime_msg['Subject'] = subject
+        mime_msg['From'] = self.sender
+        mime_msg['To'] = ", ".join(self.recipients)
+
+        msgAlternative = MIMEMultipart('alternative')
+        mime_msg.attach(msgAlternative)
+
+        f = open('nparcel/templates/email_body_html.t')
+        body_t = f.read()
+        f.close()
+        body_s = string.Template(body_t)
+        body = body_s.substitute(**data)
+
+        f = open('nparcel/templates/email_html.t')
+        main_t = f.read()
+        f.close()
+        main_s = string.Template(main_t)
+        main = main_s.substitute(body=body)
+
+        main_text = MIMEText(main, 'html')
+        msgAlternative.attach(main_text)
+
+        f = open('nparcel/images/toll_logo.png')
+        msgImage = MIMEImage(f.read(), 'rb')
+        f.close()
+        msgImage.add_header('Content-ID', '<toll_logo>')
+        mime_msg.attach(msgImage)
+
+        f = open('nparcel/images/nparcel_logo.png')
+        msgImage = MIMEImage(f.read(), 'rb')
+        f.close()
+        msgImage.add_header('Content-ID', '<nparcel_logo>')
+        mime_msg.attach(msgImage)
+
+        return mime_msg.as_string()
+
+    def xxx(self, data, dry=False):
         """Send the *msg*.
 
         Performs a simple validation check of the recipients and will
@@ -163,7 +224,7 @@ class RestEmailer(nparcel.Rest):
         **Args:**
             subject: the email subject
 
-            msg: email message
+            data: POST message construct
 
         **Kwargs:**
             dry: do not send, only report what would happen
@@ -184,38 +245,30 @@ class RestEmailer(nparcel.Rest):
                     break
 
         if status:
-            # OK, send the message.
-            mime_msg = MIMEText(msg)
-            mime_msg['Subject'] = subject
-            mime_msg['From'] = self.sender
-            mime_msg['To'] = ", ".join(self.recipients)
+            f = [('username', self.api_username),
+                 ('password', self.api_password),
+                 ('message', data)]
+            encoded_msg = urllib.urlencode(f)
 
-            # ... and send.
-        f = [('username', self.api_username),
-             ('password', self.api_password),
-             ('message', mime_msg.as_string())]
-        encoded_msg = urllib.urlencode(f)
+            proxy_kwargs = {}
+            if self.proxy is not None:
+                proxy_kwargs = {self.proxy_scheme: self.proxy}
+            proxy = urllib2.ProxyHandler(proxy_kwargs)
+            auth = urllib2.HTTPBasicAuthHandler()
+            opener = urllib2.build_opener(proxy,
+                                          auth,
+                                          urllib2.HTTPSHandler)
+            urllib2.install_opener(opener)
 
-        log.debug('encoded_msg: %s' % encoded_msg)
-        proxy_kwargs = {}
-        if self.proxy is not None:
-            proxy_kwargs = {self.proxy_scheme: self.proxy}
-        proxy = urllib2.ProxyHandler(proxy_kwargs)
-        auth = urllib2.HTTPBasicAuthHandler()
-        opener = urllib2.build_opener(proxy,
-                                      auth,
-                                      urllib2.HTTPSHandler)
-        urllib2.install_opener(opener)
-
-        req = urllib2.Request(self.api, encoded_msg, {})
-        if not dry:
-            try:
-                conn = urllib2.urlopen(req)
-                response = conn.read()
-                log.info('Email receive: "%s"' % response)
-            except urllib2.URLError, e:
-                status = False
-                log.warn('Email failure: %s' % e)
+            req = urllib2.Request(self.api, encoded_msg, {})
+            if not dry:
+                try:
+                    conn = urllib2.urlopen(req)
+                    response = conn.read()
+                    log.info('Email receive: "%s"' % response)
+                except urllib2.URLError, e:
+                    status = False
+                    log.warn('Email failure: %s' % e)
 
         return status
 

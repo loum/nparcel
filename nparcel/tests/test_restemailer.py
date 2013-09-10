@@ -54,21 +54,44 @@ class TestRestEmailer(unittest2.TestCase):
         msg = 'Email send should return True'
         self.assertTrue(received, msg)
 
-    def test_xxx(self):
+    def test_create_comms(self):
         """Send an email message to the REST-based interface.
         """
-        self._re.set_recipients(['loumar@tollgroup.com'])
         subject = 'Test Message from Toll'
-        msg = 'Test message to restful interface'
-        received = self._re.xxx(subject=subject,
-                                msg=msg,
-                                dry=True)
+        d = {'name': 'Auburn Newsagency',
+             'address': '119 Auburn Road',
+             'suburb': 'HAWTHORN EAST',
+             'postcode': '3123',
+             'barcode': '218501217863-barcode',
+             'item_nbr': '3456789012-item_nbr'}
+        received = self._re.create_comms(subject=subject, data=d)
 
         msg = 'Email send should return True'
         self.assertTrue(received, msg)
 
+    def test_xxx(self):
+        """Send an email message to the REST-based interface.
+        """
+        self._re.set_proxy_scheme('https')
+
+        self._re.set_recipients(['loumar@tollgroup.com'])
+        subject = 'Test Message from Toll'
+        d = {'name': 'Auburn Newsagency',
+             'address': '119 Auburn Road',
+             'suburb': 'HAWTHORN EAST',
+             'postcode': '3123',
+             'barcode': '218501217863-barcode',
+             'item_nbr': '3456789012-item_nbr'}
+        encoded_msg = self._re.create_comms(subject=subject, data=d)
+
+        self._re.xxx(data=encoded_msg, dry=True)
+
+        msg = 'Email send should return True'
+        #self.assertTrue(received, msg)
+
         # Clean up.
         self._re.set_recipients(None)
+        self._re.set_proxy_scheme('http')
 
     @classmethod
     def tearDownClass(cls):
