@@ -249,28 +249,45 @@ class Loader(object):
                 log.info('Creating Nparcel barcode "%s"' % barcode)
                 self.create(job_data, job_item_data)
 
+            send_email = cond_map.get('send_email')
+            send_sms = cond_map.get('send_sms')
+            agent_details = {}
+            if send_email or send_sms:
+                # Get agent details.
+                self.db(self.db._agent.agent_sql(id=agent_id))
+                agent = self.db.row
+                if agent is not None:
+                    (name, address, suburb, postcode) = agent
+                    agent_details = {'name': name,
+                                     'address': address,
+                                     'suburb': suburb,
+                                     'postcode': postcode}
+                else:
+                    err = 'Comms missing Agent for id: %d' % agent_id
+                    log.error(err)
+
             # Send out comms if the facility is enabled.
             email_status = True
             sms_status = True
             item_nbr = job_item_data.get('item_nbr')
-            if cond_map.get('send_email'):
+            if send_email:
                 email_addrs = job_item_data.get('email_addr').split()
                 if len(email_addrs):
-                    email_status = self.send_email(agent_id_row_id,
+                    email_status = self.send_email(agent_details,
                                                    email_addrs,
                                                    item_nbr,
                                                    barcode,
                                                    dry=dry)
                 else:
                     log.info('No email recipient have been specified')
-            if cond_map.get('send_sms'):
+            if send_sms:
                 mobiles = job_item_data.get('phone_nbr').split()
                 if len(mobiles):
                     for mob in mobiles:
-                        sms_status = self.send_sms(agent_id_row_id,
-                                                mob,
-                                                item_nbr,
-                                                dry=dry)
+                        sms_status = self.send_sms(agent_details,
+                                                   mob,
+                                                   item_nbr,
+                                                   dry=dry)
                 else:
                     log.info('No SMS recipient have been specified')
 
@@ -661,7 +678,7 @@ class Loader(object):
             log.debug('Skipping jobitems check')
 
     def send_email(self,
-                   agent_id,
+                   agent,
                    to_addresses,
                    item_nbr,
                    barcode,
@@ -670,7 +687,12 @@ class Loader(object):
         """Send out email comms to the list of *to_addresses*.
 
         **Args:**
-            agent_id: the Agent's "agent.id" private key
+            agent: dictionary of agent details similar to::
+
+                {'name': 'Vermont South Newsagency',
+                 'address': 'Shop 13-14; 495 Burwood Highway',
+                 'suburb': 'VERMONT',
+                 'postcode': '3133'}
 
             to_addresses: list of email recipients
 
@@ -691,22 +713,16 @@ class Loader(object):
             log.error('No email recipients provided')
             status = False
 
-        if status:
-            # Get agent details.
-            self.db(self.db._agent.agent_sql(id=agent_id))
-            agent = self.db.row
-            if agent is not None:
-                (name, address, suburb, postcode) = agent
-            else:
-                status = False
-                err = 'Email missing Agent details for id: %d' % agent_id
-                self.set_alert(err)
+        if status and not agent.keys():
+            status = False
+            err = 'Email missing Agent details for id: %s' % item_nbr
+            log.error(err)
 
         if status:
-            d = {'name': name,
-                 'address': address,
-                 'suburb': suburb,
-                 'postcode': postcode,
+            d = {'name': agent.get('name'),
+                 'address': agent.get('address'),
+                 'suburb': agent.get('suburb'),
+                 'postcode': agent.get('postcode'),
                  'item_nbr': item_nbr,
                  'barcode': barcode}
             log.debug('Sending customer email to "%s"' % to_addresses)
@@ -720,11 +736,16 @@ class Loader(object):
 
         return status
 
-    def send_sms(self, agent_id, mobile, item_nbr, base_dir=None, dry=False):
+    def send_sms(self, agent, mobile, item_nbr, base_dir=None, dry=False):
         """Send out SMS comms to the list of *mobiles*.
 
         **Args:**
-            agent_id: the Agent's "agent.id" private key
+            agent: dictionary of agent details similar to::
+
+                {'name': 'Vermont South Newsagency',
+                 'address': 'Shop 13-14; 495 Burwood Highway',
+                 'suburb': 'VERMONT',
+                 'postcode': '3133'}
 
             mobile: mobile number of the SMS recipient
 
@@ -748,22 +769,16 @@ class Loader(object):
             log.error('No SMS mobile contact provided')
             status = False
 
-        if status:
-            # Get agent details.
-            self.db(self.db._agent.agent_sql(id=agent_id))
-            agent = self.db.row
-            if agent is not None:
-                (name, address, suburb, postcode) = agent
-            else:
-                status = False
-                err = 'SMS missing Agent details for id: %d' % agent_id
-                self.set_alert(err)
+        if status and not agent.keys():
+            status = False
+            err = 'SMS missing Agent details for item: %s' % item_nbr
+            log.error(err)
 
         if status:
-            d = {'name': name,
-                 'address': address,
-                 'suburb': suburb,
-                 'postcode': postcode,
+            d = {'name': agent.get('name'),
+                 'address': agent.get('address'),
+                 'suburb': agent.get('suburb'),
+                 'postcode': agent.get('postcode'),
                  'item_nbr': item_nbr}
             log.debug('Sending customer SMS to "%s"' % str(mobile))
             d['mobile'] = mobile

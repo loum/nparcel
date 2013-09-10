@@ -731,10 +731,10 @@ class TestLoader(unittest2.TestCase):
         """Email attempt with no agent_id.
         """
         emails = ['dummy@dummyville.com']
-        agent_id = 1
+        agent = {}
         barcode = 'xxx'
         item_nbr = 'yyy'
-        received = self._ldr.send_email(agent_id,
+        received = self._ldr.send_email(agent,
                                         emails,
                                         item_nbr,
                                         barcode,
@@ -746,14 +746,10 @@ class TestLoader(unittest2.TestCase):
     def test_email_agent_id(self):
         """Email attempt with agent_id.
         """
-        # Seed the Agent Id.
-        agent_fields = {'code': 'S011',
-                        'name': 'Mannum Newsagency',
-                        'address': '77 Randwell Street',
-                        'suburb': 'MANNUM',
-                        'postcode': '5238'}
-        sql = self._ldr.db._agent.insert_sql(agent_fields)
-        id = self._ldr.db.insert(sql)
+        agent = {'name': 'Mannum Newsagency',
+                 'address': '77 Randwell Street',
+                 'suburb': 'MANNUM',
+                 'postcode': '5238'}
 
         email = 'no-reply@consumerdelivery.tollgroup.com'
         old_sdr = self._ldr.emailer.set_sender(email)
@@ -761,7 +757,7 @@ class TestLoader(unittest2.TestCase):
         agent_id = id
         item_nbr = 'item_nbr-xxx'
         barcode = 'barcode-xxx'
-        received = self._ldr.send_email(agent_id,
+        received = self._ldr.send_email(agent,
                                         emails,
                                         item_nbr,
                                         barcode,
@@ -770,45 +766,34 @@ class TestLoader(unittest2.TestCase):
         msg = 'Email with valid Agent Id should return True'
         self.assertTrue(received, msg)
 
-        # Restore DB state.
-        self._ldr.db.connection.rollback()
-        self._ldr.emailer.set_sender(old_sdr)
-
     def test_sms_no_agent_id(self):
         """SMS attempt with no agent_id.
         """
         mobile = '1234567890'
-        agent_id = 1
+        agent = {}
         barcode = 'xxx'
-        received = self._ldr.send_sms(agent_id, mobile, barcode, dry=True)
+        received = self._ldr.send_sms(agent, mobile, barcode, dry=True)
         msg = 'SMS with no Agent Id should return False'
         self.assertFalse(received, msg)
 
     def test_sms_agent_id(self):
         """SMS attempt with agent_id.
         """
-        # Seed the Agent Id.
-        agent_fields = {'code': 'V101',
-                        'name': 'Vermont South Newsagency',
-                        'address': 'Shop 13-14; 495 Burwood Highway',
-                        'suburb': 'VERMONT',
-                        'postcode': '3133'}
-        sql = self._ldr.db._agent.insert_sql(agent_fields)
-        id = self._ldr.db.insert(sql)
+        agent = {'name': 'Vermont South Newsagency',
+                 'address': 'Shop 13-14; 495 Burwood Highway',
+                 'suburb': 'VERMONT',
+                 'postcode': '3133'}
 
         mobile = '0431602145'
         agent_id = id
         item_nbr = 'xxx'
-        received = self._ldr.send_sms(agent_id,
+        received = self._ldr.send_sms(agent,
                                       mobile,
                                       item_nbr,
                                       base_dir='nparcel',
                                       dry=True)
         msg = 'SMS with valid Agent Id should return True'
         self.assertTrue(received, msg)
-
-        # Restore DB state.
-        self._ldr.db.connection.rollback()
 
     def test_template_main_body_html(self):
         """Generate the template main body -- html.
