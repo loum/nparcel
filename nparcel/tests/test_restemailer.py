@@ -46,11 +46,11 @@ class TestRestEmailer(unittest2.TestCase):
         recipient = 'loumar@tollgroup.com'
         msg = 'TEST MESSAGE'
 
-        received = self._re.send(subject=subject,
-                                 sender=sender,
-                                 recipient=recipient,
-                                 msg=msg,
-                                 dry=True)
+        received = self._re.send_simple(subject=subject,
+                                        sender=sender,
+                                        recipient=recipient,
+                                        msg=msg,
+                                        dry=True)
         msg = 'Email send should return True'
         self.assertTrue(received, msg)
 
@@ -66,10 +66,10 @@ class TestRestEmailer(unittest2.TestCase):
              'item_nbr': '3456789012-item_nbr'}
         received = self._re.create_comms(subject=subject, data=d)
 
-        msg = 'Email send should return True'
+        msg = 'Create comms should return a valid string'
         self.assertTrue(received, msg)
 
-    def test_xxx(self):
+    def test_send(self):
         """Send an email message to the REST-based interface.
         """
         self._re.set_proxy_scheme('https')
@@ -84,10 +84,10 @@ class TestRestEmailer(unittest2.TestCase):
              'item_nbr': '3456789012-item_nbr'}
         encoded_msg = self._re.create_comms(subject=subject, data=d)
 
-        self._re.xxx(data=encoded_msg, dry=True)
+        received = self._re.send(data=encoded_msg, dry=True)
 
         msg = 'Email send should return True'
-        #self.assertTrue(received, msg)
+        self.assertTrue(received, msg)
 
         # Clean up.
         self._re.set_recipients(None)

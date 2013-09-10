@@ -2,6 +2,7 @@ __all__ = [
     "RestEmailer",
 ]
 import re
+import os
 import urllib
 import string
 from email.MIMEText import MIMEText
@@ -25,7 +26,7 @@ class RestEmailer(nparcel.Rest):
     """
 
     def __init__(self,
-                 sender=None,
+                 sender='no-reply@consumerdelivery.tollgroup.com',
                  recipients=None,
                  proxy=None,
                  proxy_scheme='http',
@@ -105,7 +106,7 @@ class RestEmailer(nparcel.Rest):
 
         return encoded_msg
 
-    def send(self, subject, sender, recipient, msg, dry=False):
+    def send_simple(self, subject, sender, recipient, msg, dry=False):
         """Send the Email.
 
         **Args:**
@@ -126,6 +127,7 @@ class RestEmailer(nparcel.Rest):
             boolean ``False`` if the send fails
 
         """
+        log.info('Sending email comms ...')
         status = True
 
         data = self.encode_params(subject=subject,
@@ -147,6 +149,9 @@ class RestEmailer(nparcel.Rest):
         if not dry:
             try:
                 conn = urllib2.urlopen(req)
+                if conn.code != 200:
+                    log.error('Email comms return code: %d' % conn.code)
+                    status = False
                 response = conn.read()
                 log.info('Email receive: "%s"' % response)
             except urllib2.URLError, e:
@@ -155,7 +160,7 @@ class RestEmailer(nparcel.Rest):
 
         return status
 
-    def create_comms(self, subject, data):
+    def create_comms(self, subject, data, base_dir=None):
         """Create the MIME multipart message that can feed directly into
         the POST construct of the Esendex RESTful API.
 
@@ -172,10 +177,28 @@ class RestEmailer(nparcel.Rest):
                  'barcode': '218501217863-barcode',
                  'item_nbr': '3456789012-item_nbr'}
 
+        **Kwargs:**
+            base_dir: override the standard location to search for the
+            email images and templates (default
+            ``~user_home/.nparceld/templates``).
+
         **Returns:**
             MIME multipart-formatted serialised string
 
         """
+        dir = None
+        if base_dir is None:
+            template_dir = os.path.join(os.path.expanduser('~'),
+                                        '.nparceld',
+                                        'templates')
+            images_dir = os.path.join(os.path.expanduser('~'),
+                                      '.nparceld',
+                                      'images')
+        else:
+            template_dir = os.path.join(base_dir, 'templates')
+            images_dir = os.path.join(base_dir, 'images')
+            log.debug('Email template dir: "%s"' % dir)
+
         mime_msg = MIMEMultipart('related')
         mime_msg['Subject'] = subject
         mime_msg['From'] = self.sender
@@ -184,28 +207,38 @@ class RestEmailer(nparcel.Rest):
         msgAlternative = MIMEMultipart('alternative')
         mime_msg.attach(msgAlternative)
 
-        f = open('nparcel/templates/email_body_html.t')
+        f = open(os.path.join(template_dir, 'email_body_html.t'))
         body_t = f.read()
         f.close()
         body_s = string.Template(body_t)
         body = body_s.substitute(**data)
 
-        f = open('nparcel/templates/email_html.t')
+        f = open(os.path.join(images_dir, 'toll_logo.png'), 'rb')
+        toll_logo_encoded = urllib.quote(f.read().encode('base64'))
+        f.close()
+
+        f = open(os.path.join(images_dir, 'nparcel_logo.png'), 'rb')
+        np_logo_encoded = urllib.quote(f.read().encode('base64'))
+        f.close()
+
+        f = open(os.path.join(template_dir, 'email_html.t'))
         main_t = f.read()
         f.close()
         main_s = string.Template(main_t)
-        main = main_s.substitute(body=body)
+        main = main_s.substitute(body=body,
+                                 toll_logo=toll_logo_encoded,
+                                 nparcel_logo=np_logo_encoded)
 
         main_text = MIMEText(main, 'html')
         msgAlternative.attach(main_text)
 
-        f = open('nparcel/images/toll_logo.png')
-        msgImage = MIMEImage(f.read(), 'rb')
-        f.close()
-        msgImage.add_header('Content-ID', '<toll_logo>')
-        mime_msg.attach(msgImage)
+        #f = open('nparcel/images/toll_logo.png')
+        #msgImage = MIMEImage(f.read(), 'rb')
+        #f.close()
+        #msgImage.add_header('Content-ID', '<toll_logo>')
+        #mime_msg.attach(msgImage)
 
-        f = open('nparcel/images/nparcel_logo.png')
+        f = open(os.path.join(images_dir, 'nparcel_logo.png'))
         msgImage = MIMEImage(f.read(), 'rb')
         f.close()
         msgImage.add_header('Content-ID', '<nparcel_logo>')
@@ -213,8 +246,8 @@ class RestEmailer(nparcel.Rest):
 
         return mime_msg.as_string()
 
-    def xxx(self, data, dry=False):
-        """Send the *msg*.
+    def send(self, data, dry=False):
+        """Send the *data*.
 
         Performs a simple validation check of the recipients and will
         only send the email if all are OK.
@@ -222,8 +255,6 @@ class RestEmailer(nparcel.Rest):
         Empty recipient lists are ignored and no email send attempt is made.
 
         **Args:**
-            subject: the email subject
-
             data: POST message construct
 
         **Kwargs:**
@@ -233,7 +264,10 @@ class RestEmailer(nparcel.Rest):
         log.info('Sending email comms ...')
         status = True
 
-        # Verify email addresses.
+        if self.api is None:
+            log.error('No email API provided -- email not sent')
+            status = False
+
         if not len(self.recipients):
             log.warn('No email recipients provided')
             status = False
@@ -245,6 +279,12 @@ class RestEmailer(nparcel.Rest):
                     break
 
         if status:
+            log.debug('Email API username: "%s"' % self._api_username)
+            if self._api_password:
+                log.debug('Email API username: "********"')
+            else:
+                log.debug('Email API username undefined')
+
             f = [('username', self.api_username),
                  ('password', self.api_password),
                  ('message', data)]
@@ -253,6 +293,8 @@ class RestEmailer(nparcel.Rest):
             proxy_kwargs = {}
             if self.proxy is not None:
                 proxy_kwargs = {self.proxy_scheme: self.proxy}
+            log.debug('proxy_scheme: %s' % self.proxy_scheme)
+            log.debug('proxy: %s' % self.proxy)
             proxy = urllib2.ProxyHandler(proxy_kwargs)
             auth = urllib2.HTTPBasicAuthHandler()
             opener = urllib2.build_opener(proxy,
@@ -260,6 +302,7 @@ class RestEmailer(nparcel.Rest):
                                           urllib2.HTTPSHandler)
             urllib2.install_opener(opener)
 
+            log.debug('Preparing request to API: "%s"' % self.api)
             req = urllib2.Request(self.api, encoded_msg, {})
             if not dry:
                 try:
@@ -268,7 +311,7 @@ class RestEmailer(nparcel.Rest):
                     log.info('Email receive: "%s"' % response)
                 except urllib2.URLError, e:
                     status = False
-                    log.warn('Email failure: %s' % e)
+                    log.error('Email failure: %s' % e)
 
         return status
 

@@ -70,7 +70,7 @@ class TestEmailer(unittest2.TestCase):
     def test_send(self):
         """Send an email.
         """
-        self._e.set_recipients(['loumar@bananagroup.com'])
+        self._e.set_recipients(['loumar@tollgroup.com'])
         received = self._e.send(subject='Test subject',
                                 msg='Test',
                                 dry=True)

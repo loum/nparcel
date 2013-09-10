@@ -1,7 +1,7 @@
 <p>Hello,</p>
 <p>Toll Consumer Delivery attempted to deliver your parcel today, sorry we missed you.<br>
 For convenience, your parcel is awaiting collection at <b>${name}</b>, <b>${address}</b>, <b>${suburb}</b>, <b>${postcode}</b>.</p>
-<table>
+<table width="70%">
     <tr>
         <th>Tracking ref #:</th>
         <td>$barcode</td>

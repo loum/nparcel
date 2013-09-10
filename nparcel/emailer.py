@@ -47,7 +47,7 @@ class Emailer(object):
         if values is not None:
             self._recipients.extend(values)
 
-    def send(self, subject, msg, dry=False):
+    def send(self, subject, msg=None, mime_message=None, dry=False):
         """Send the *msg*.
 
         Performs a simple validation check of the recipients and will
@@ -80,10 +80,13 @@ class Emailer(object):
 
         if status:
             # OK, send the message.
-            mime_msg = MIMEText(msg)
-            mime_msg['Subject'] = subject
-            mime_msg['From'] = self.sender
-            mime_msg['To'] = ", ".join(self.recipients)
+            content = mime_message
+            if content is None:
+                mime_msg = MIMEText(msg)
+                mime_msg['Subject'] = subject
+                mime_msg['From'] = self.sender
+                mime_msg['To'] = ", ".join(self.recipients)
+                content = mime_msg.as_string()
 
             # ... and send.
             s = None
@@ -101,7 +104,7 @@ class Emailer(object):
                 try:
                     s.sendmail(self.sender,
                                self.recipients,
-                               mime_msg.as_string())
+                               content)
                 except (smtplib.SMTPRecipientsRefused,
                         smtplib.SMTPHeloError,
                         smtplib.SMTPSenderRefused,

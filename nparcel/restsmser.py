@@ -47,7 +47,7 @@ class RestSmser(nparcel.Rest):
 
         **Kwargs:**
             base_dir: override the standard location to search for the
-            SMS XML template (default is ``~user_home/.nparceld/templates``).
+            SMS XML template (default ``~user_home/.nparceld/templates``).
 
         """
         dir = None
@@ -68,7 +68,7 @@ class RestSmser(nparcel.Rest):
             sms_s = string.Template(sms_t)
             sms_data = sms_s.substitute(**data)
         except IOError, err:
-            log.error('Unable to source SMS XML template at "%s"' % xml_file)
+            log.error('Unable to source SMS template at "%s"' % xml_file)
 
         return sms_data
 
@@ -109,8 +109,11 @@ class RestSmser(nparcel.Rest):
             b64str = base64.encodestring('%s:%s' %
                                          (self._api_username,
                                           self._api_password))
-            log.debug('SMS API credentials: "%s:%s"' % (self._api_username,
-                                                        self._api_password))
+            log.debug('SMS API username: "%s"' % self._api_username)
+            if self._api_password:
+                log.debug('SMS API password: "********"')
+            else:
+                log.debug('SMS API password undefined')
             req.add_header("Authorization",
                            "Basic %s" % b64str.replace('\n', ''))
 

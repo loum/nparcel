@@ -7,7 +7,7 @@
 body {
     margin: 0;
     padding: 0;
-    font-family: Century Gothic, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
 }
 table {
     position: static;
@@ -51,10 +51,12 @@ p.fine-print {
             <table width="100%" align="center">
                 <tr>
                     <td>
-                        <img src="cid:toll_logo" alt="Toll logo" />
+                        <img src="data:image/png;base64,
+${toll_logo}" alt="Toll logo" />
                     </td>
                     <td>
-                        <img align="right" src="cid:nparcel_logo" alt="Nparcel logo" />
+                        <img align="right" src="data:image/png;base64,
+${nparcel_logo}" alt="Nparcel logo" />
                     </td>
                 </tr>
             </table>

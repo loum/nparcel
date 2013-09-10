@@ -136,7 +136,12 @@ class Loader(object):
 
     """
 
-    def __init__(self, db=None, proxy=None, scheme='http', sms_api=None):
+    def __init__(self,
+                 db=None,
+                 proxy=None,
+                 scheme='http',
+                 sms_api=None,
+                 email_api=None):
         """Nparcel Loader initaliser.
 
         """
@@ -148,7 +153,11 @@ class Loader(object):
         self.parser = nparcel.Parser(fields=FIELDS)
         self.alerts = []
 
-        self.emailer = nparcel.Emailer()
+        if email_api is None:
+            email_api = {}
+        self.emailer = nparcel.RestEmailer(proxy=proxy,
+                                           proxy_scheme=scheme,
+                                           **email_api)
 
         if sms_api is None:
             sms_api = {}
@@ -241,14 +250,29 @@ class Loader(object):
                 self.create(job_data, job_item_data)
 
             # Send out comms if the facility is enabled.
+            email_status = True
+            sms_status = True
             item_nbr = job_item_data.get('item_nbr')
             if cond_map.get('send_email'):
-                email = job_item_data.get('email_addr').split()
-                self.send_email(agent_id_row_id, email, barcode, dry)
+                email_addrs = job_item_data.get('email_addr').split()
+                if len(email_addrs):
+                    email_status = self.send_email(agent_id_row_id,
+                                                   email_addrs,
+                                                   item_nbr,
+                                                   barcode,
+                                                   dry=dry)
+                else:
+                    log.info('No email recipient have been specified')
             if cond_map.get('send_sms'):
                 mobiles = job_item_data.get('phone_nbr').split()
-                for mob in mobiles:
-                    self.send_sms(agent_id_row_id, mob, item_nbr, dry=dry)
+                if len(mobiles):
+                    for mob in mobiles:
+                        sms_status = self.send_sms(agent_id_row_id,
+                                                mob,
+                                                item_nbr,
+                                                dry=dry)
+                else:
+                    log.info('No SMS recipient have been specified')
 
         log.info('Conn Note: "%s" parse complete' % connote_literal)
 
@@ -639,7 +663,9 @@ class Loader(object):
     def send_email(self,
                    agent_id,
                    to_addresses,
+                   item_nbr,
                    barcode,
+                   base_dir=None,
                    dry=False):
         """Send out email comms to the list of *to_addresses*.
 
@@ -661,28 +687,36 @@ class Loader(object):
         """
         status = True
 
-        # Send out email comms.
-        if to_addresses is not None and len(to_addresses):
-            log.debug('Sending customer email to "%s"' % to_addresses)
+        if to_addresses is None or not len(to_addresses):
+            log.error('No email recipients provided')
+            status = False
 
+        if status:
             # Get agent details.
             self.db(self.db._agent.agent_sql(id=agent_id))
             agent = self.db.row
             if agent is not None:
                 (name, address, suburb, postcode) = agent
-
-                # OK, generate the email structure.
-                subject = 'TEST ONLY PLEASE IGNORE --  Nparcel pickup'
-                msg = """Your consignment has been placed at %s, %s, %s %s.  Consignment Ref %s.  Please bring your photo ID with you.  Enquiries 13 32 78""" % (name, address, suburb, postcode, barcode)
-                self.emailer.set_recipients(to_addresses)
-                status = self.emailer.send(subject=subject,
-                                           msg=msg,
-                                           dry=dry)
             else:
                 status = False
-                log.warn('Email no Agent details for id: %d' % agent_id)
-        else:
-            log.warn('Email list is empty')
+                err = 'Email missing Agent details for id: %d' % agent_id
+                self.set_alert(err)
+
+        if status:
+            d = {'name': name,
+                 'address': address,
+                 'suburb': suburb,
+                 'postcode': postcode,
+                 'item_nbr': item_nbr,
+                 'barcode': barcode}
+            log.debug('Sending customer email to "%s"' % to_addresses)
+
+            self.emailer.set_recipients(to_addresses)
+            subject = 'Toll Consumer Delivery parcel ref# %s' % item_nbr
+            encoded_msg = self.emailer.create_comms(subject=subject,
+                                                    data=d,
+                                                    base_dir=base_dir)
+            status = self.emailer.send(data=encoded_msg, dry=dry)
 
         return status
 
@@ -710,9 +744,8 @@ class Loader(object):
         """
         status = True
 
-        # Send out SMS comms.
-        if mobile is not None and not mobile:
-            log.warn('No SMS mobile contact provided')
+        if mobile is None or not mobile:
+            log.error('No SMS mobile contact provided')
             status = False
 
         if status:

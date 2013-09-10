@@ -32,14 +32,21 @@ class TestLoader(unittest2.TestCase):
         conf.parse_config()
         proxy = conf.proxy_string()
         sms_api = conf.rest.get('sms_api')
-        api_username = conf.rest.get('sms_user')
-        api_password = conf.rest.get('sms_pw')
+        email_api = conf.rest.get('email_api')
+        sms_api_username = conf.rest.get('sms_user')
+        sms_api_password = conf.rest.get('sms_pw')
         sms_api_kwargs = {'api': sms_api,
-                          'api_username': api_username,
-                          'api_password': api_password}
+                          'api_username': sms_api_username,
+                          'api_password': sms_api_password}
+        e_api_username = conf.rest.get('email_user')
+        e_api_password = conf.rest.get('email_pw')
+        e_api_kwargs = {'api': email_api,
+                        'api_username': e_api_username,
+                        'api_password': e_api_password}
         cls._ldr = nparcel.Loader(proxy=proxy,
                                   scheme='https',
-                                  sms_api=sms_api_kwargs)
+                                  sms_api=sms_api_kwargs,
+                                  email_api=e_api_kwargs)
         cls._job_ts = cls._ldr.db.date_now()
 
     def test_init(self):
@@ -726,7 +733,13 @@ class TestLoader(unittest2.TestCase):
         emails = ['dummy@dummyville.com']
         agent_id = 1
         barcode = 'xxx'
-        received = self._ldr.send_email(agent_id, emails, barcode, dry=True)
+        item_nbr = 'yyy'
+        received = self._ldr.send_email(agent_id,
+                                        emails,
+                                        item_nbr,
+                                        barcode,
+                                        base_dir='nparcel',
+                                        dry=True)
         msg = 'Email with no Agent Id should return False'
         self.assertFalse(received, msg)
 
@@ -734,23 +747,32 @@ class TestLoader(unittest2.TestCase):
         """Email attempt with agent_id.
         """
         # Seed the Agent Id.
-        agent_fields = {'code': 'N031',
-                        'name': 'Auburn Newsagency',
-                        'address': '119 Auburn Road',
-                        'suburb': 'HAWTHORN EAST',
-                        'postcode': '3123'}
+        agent_fields = {'code': 'S011',
+                        'name': 'Mannum Newsagency',
+                        'address': '77 Randwell Street',
+                        'suburb': 'MANNUM',
+                        'postcode': '5238'}
         sql = self._ldr.db._agent.insert_sql(agent_fields)
         id = self._ldr.db.insert(sql)
 
-        emails = ['dummy@dummyville.com']
+        email = 'no-reply@consumerdelivery.tollgroup.com'
+        old_sdr = self._ldr.emailer.set_sender(email)
+        emails = ['loumar@tollgroup.com']
         agent_id = id
-        barcode = 'xxx'
-        received = self._ldr.send_email(agent_id, emails, barcode, dry=True)
+        item_nbr = 'item_nbr-xxx'
+        barcode = 'barcode-xxx'
+        received = self._ldr.send_email(agent_id,
+                                        emails,
+                                        item_nbr,
+                                        barcode,
+                                        base_dir='nparcel',
+                                        dry=True)
         msg = 'Email with valid Agent Id should return True'
         self.assertTrue(received, msg)
 
         # Restore DB state.
         self._ldr.db.connection.rollback()
+        self._ldr.emailer.set_sender(old_sdr)
 
     def test_sms_no_agent_id(self):
         """SMS attempt with no agent_id.
