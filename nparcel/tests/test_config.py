@@ -111,7 +111,8 @@ class TestConfig(unittest2.TestCase):
                     'email_user': '',
                     'email_pw': '',
                     'sms_user': '',
-                    'sms_pw': ''}
+                    'sms_pw': '',
+                    'failed_email': 'loumar@tollgroup.com'}
         self.assertDictEqual(received, expected, msg)
 
         msg = 'Exporter columns expected'
