@@ -249,12 +249,14 @@ class Config(object):
             user = self._config.get('db', 'user')
             password = self._config.get('db', 'password')
             port = self._config.get('db', 'port')
+            if port is not None and port:
+                port = int(port)
             kwargs = {'driver': driver,
                       'host': host,
                       'database': database,
                       'user': user,
                       'password': password,
-                      'port': int(port)}
+                      'port': port}
         except ConfigParser.NoOptionError, err:
             log.error('Missing DB key via config: %s' % err)
 
@@ -290,11 +292,13 @@ class Config(object):
             user = self._config.get('proxy', 'user')
             password = self._config.get('proxy', 'password')
             port = self._config.get('proxy', 'port')
+            if port is not None and port:
+                port = int(port)
             protocol = self._config.get('proxy', 'protocol')
             kwargs = {'host': host,
                       'user': user,
                       'password': password,
-                      'port': int(port),
+                      'port': port,
                       'protocol': protocol}
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:

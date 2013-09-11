@@ -40,9 +40,11 @@ class TestLoader(unittest2.TestCase):
                           'api_password': sms_api_password}
         e_api_username = conf.rest.get('email_user')
         e_api_password = conf.rest.get('email_pw')
+        e_api_support = conf.rest.get('failed_email')
         e_api_kwargs = {'api': email_api,
                         'api_username': e_api_username,
-                        'api_password': e_api_password}
+                        'api_password': e_api_password,
+                        'support': e_api_support}
         cls._ldr = nparcel.Loader(proxy=proxy,
                                   scheme='https',
                                   sms_api=sms_api_kwargs,
@@ -117,7 +119,6 @@ class TestLoader(unittest2.TestCase):
 
         # Restore DB state.
         self._ldr.db.connection.rollback()
-
 
     def test_processor_valid_record_single_quote(self):
         """Process valid raw T1250 line.
@@ -753,7 +754,8 @@ class TestLoader(unittest2.TestCase):
 
         email = 'no-reply@consumerdelivery.tollgroup.com'
         old_sdr = self._ldr.emailer.set_sender(email)
-        emails = ['loumar@tollgroup.com']
+        #emails = ['loumar@tollgroup.com']
+        emails = ['John.Varsamis@tollgroup.com']
         agent_id = id
         item_nbr = 'item_nbr-xxx'
         barcode = 'barcode-xxx'
@@ -764,6 +766,30 @@ class TestLoader(unittest2.TestCase):
                                         base_dir='nparcel',
                                         dry=True)
         msg = 'Email with valid Agent Id should return True'
+        self.assertTrue(received, msg)
+
+    def test_email_failure(self):
+        """Email failure.
+        """
+        agent = {'name': 'Mannum Newsagency',
+                 'address': '77 Randwell Street',
+                 'suburb': 'MANNUM',
+                 'postcode': '5238'}
+
+        email = 'no-reply@consumerdelivery.tollgroup.com'
+        old_sdr = self._ldr.emailer.set_sender(email)
+        emails = self._ldr.emailer.support
+        agent_id = id
+        item_nbr = 'item_nbr-xxx'
+        barcode = 'barcode-xxx'
+        received = self._ldr.send_email(agent,
+                                        emails,
+                                        item_nbr,
+                                        barcode,
+                                        base_dir='nparcel',
+                                        err=True,
+                                        dry=True)
+        msg = 'Failed Email notification should return True'
         self.assertTrue(received, msg)
 
     def test_sms_no_agent_id(self):
@@ -822,7 +848,7 @@ class TestLoader(unittest2.TestCase):
         f = open('nparcel/templates/email_html.t')
         main_t = f.read()
         f.close()
-        main_s =  string.Template(main_t)
+        main_s = string.Template(main_t)
         main = main_s.substitute(body=body,
                                  toll_logo=toll_logo,
                                  nparcel_logo=nparcel_logo)

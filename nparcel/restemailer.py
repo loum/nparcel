@@ -32,7 +32,8 @@ class RestEmailer(nparcel.Rest):
                  proxy_scheme='http',
                  api=None,
                  api_username=None,
-                 api_password=None):
+                 api_password=None,
+                 support=None):
         """Nparcel RestEmailer initialiser.
         """
         super(RestEmailer, self).__init__(proxy,
@@ -51,6 +52,11 @@ class RestEmailer(nparcel.Rest):
         else:
             self._recipients = recipients
 
+        if support is None:
+            self._support = []
+        else:
+            self._support = support.split(',')
+
     @property
     def sender(self):
         return self._sender
@@ -67,6 +73,13 @@ class RestEmailer(nparcel.Rest):
 
         if values is not None:
             self._recipients.extend(values)
+
+    @property
+    def support(self):
+        return self._support
+
+    def set_support(self, value):
+        self._support = value.split(',')
 
     def encode_params(self,
                       subject,
@@ -160,7 +173,7 @@ class RestEmailer(nparcel.Rest):
 
         return status
 
-    def create_comms(self, subject, data, base_dir=None):
+    def create_comms(self, subject, data, base_dir=None, err=False):
         """Create the MIME multipart message that can feed directly into
         the POST construct of the Esendex RESTful API.
 
@@ -197,7 +210,8 @@ class RestEmailer(nparcel.Rest):
         else:
             template_dir = os.path.join(base_dir, 'templates')
             images_dir = os.path.join(base_dir, 'images')
-            log.debug('Email template dir: "%s"' % dir)
+            log.debug('Email template/images dir: "%s/%s"' %
+                      (template_dir, images_dir))
 
         mime_msg = MIMEMultipart('related')
         mime_msg['Subject'] = subject
@@ -207,7 +221,11 @@ class RestEmailer(nparcel.Rest):
         msgAlternative = MIMEMultipart('alternative')
         mime_msg.attach(msgAlternative)
 
-        f = open(os.path.join(template_dir, 'email_body_html.t'))
+        body_html = 'email_body_html.t'
+        if err:
+            body_html = 'email_err_body_html.t'
+
+        f = open(os.path.join(template_dir, body_html))
         body_t = f.read()
         f.close()
         body_s = string.Template(body_t)

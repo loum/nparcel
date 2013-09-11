@@ -253,18 +253,7 @@ class Loader(object):
             send_sms = cond_map.get('send_sms')
             agent_details = {}
             if send_email or send_sms:
-                # Get agent details.
-                self.db(self.db._agent.agent_sql(id=agent_id))
-                agent = self.db.row
-                if agent is not None:
-                    (name, address, suburb, postcode) = agent
-                    agent_details = {'name': name,
-                                     'address': address,
-                                     'suburb': suburb,
-                                     'postcode': postcode}
-                else:
-                    err = 'Comms missing Agent for id: %d' % agent_id
-                    log.error(err)
+                agent_details = self.get_agent_details(agent_id)
 
             # Send out comms if the facility is enabled.
             email_status = True
@@ -277,6 +266,7 @@ class Loader(object):
                                                    email_addrs,
                                                    item_nbr,
                                                    barcode,
+                                                   err=False,
                                                    dry=dry)
                 else:
                     log.info('No email recipient have been specified')
@@ -291,9 +281,51 @@ class Loader(object):
                 else:
                     log.info('No SMS recipient have been specified')
 
+            if not sms_status or not email_status:
+                log.info('Sending comms failure notification to "%s"' %
+                         self.emailer.support)
+                email_addrs = self.emailer.support.split(',')
+                self.send_email(agent_details,
+                                email_addrs,
+                                item_nbr,
+                                barcode,
+                                err=True,
+                                dry=dry)
+
         log.info('Conn Note: "%s" parse complete' % connote_literal)
 
         return status
+
+    def get_agent_details(self, agent_id):
+        """Get agent details.
+
+        **Args:**
+            agent_id: as per the agent.id table column
+
+        **Returns:**
+            dictionary structure capturing the Agent's details similar to::
+
+                {'name': 'Vermont South Newsagency',
+                 'address': 'Shop 13-14; 495 Burwood Highway',
+                 'suburb': 'VERMONT',
+                 'postcode': '3133'}
+
+        """
+        agent_details = {}
+
+        self.db(self.db._agent.agent_sql(id=agent_id))
+        agent_row = self.db.row
+        if agent_row is not None:
+            (name, address, suburb, postcode) = agent_row
+            agent_details = {'name': name,
+                             'address': address,
+                             'suburb': suburb,
+                             'postcode': postcode}
+        else:
+            err = 'Comms missing Agent for id: %d' % agent_id
+            log.error(err)
+
+        return agent_details
 
     def barcode_exists(self, barcode):
         """
@@ -683,6 +715,7 @@ class Loader(object):
                    item_nbr,
                    barcode,
                    base_dir=None,
+                   err=False,
                    dry=False):
         """Send out email comms to the list of *to_addresses*.
 
@@ -729,9 +762,12 @@ class Loader(object):
 
             self.emailer.set_recipients(to_addresses)
             subject = 'Toll Consumer Delivery parcel ref# %s' % item_nbr
+            if err:
+                subject = 'FAILED NOTIFICATION - ' + subject
             encoded_msg = self.emailer.create_comms(subject=subject,
                                                     data=d,
-                                                    base_dir=base_dir)
+                                                    base_dir=base_dir,
+                                                    err=err)
             status = self.emailer.send(data=encoded_msg, dry=dry)
 
         return status

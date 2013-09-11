@@ -34,7 +34,8 @@ class LoaderDaemon(nparcel.utils.Daemon):
                    'api_password': self.config.rest.get('sms_pw')}
         email_api = {'api': self.config.rest.get('email_api'),
                      'api_username': self.config.rest.get('email_user'),
-                     'api_password': self.config.rest.get('email_pw')}
+                     'api_password': self.config.rest.get('email_pw'),
+                     'support': self.config.rest.get('failed_email')}
         loader = nparcel.Loader(db=self.config.db_kwargs(),
                                 proxy=self.config.proxy_string(),
                                 scheme=self.config.rest.get('sms_scheme'),

@@ -51,12 +51,10 @@ p.fine-print {
             <table width="100%" align="center">
                 <tr>
                     <td>
-                        <img src="data:image/png;base64,
-${toll_logo}" alt="Toll logo" />
+                        <img src="https://nparcel.tollgroup.com/view/img/toll2.png" />
                     </td>
                     <td>
-                        <img align="right" src="data:image/png;base64,
-${nparcel_logo}" alt="Nparcel logo" />
+                        <img align="right" src="https://nparcel.tollgroup.com/view/img/nparcel2.png" alt="Nparcel logo" />
                     </td>
                 </tr>
             </table>
