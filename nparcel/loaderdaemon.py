@@ -170,10 +170,13 @@ class LoaderDaemon(nparcel.utils.Daemon):
         return files_to_process
 
     def files(self, path):
-        for file in os.listdir(path):
-            file = os.path.join(path, file)
-            if os.path.isfile(file):
-                yield file
+        try:
+            for file in os.listdir(path):
+                file = os.path.join(path, file)
+                if os.path.isfile(file):
+                    yield file
+        except OSError, err:
+            log.error(err)
 
     def check_filename(self, file):
         """Parse filename string supplied by *file* and check that it
