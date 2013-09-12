@@ -26,7 +26,7 @@ p.fine-print {
 }
 #wrapper {
     position: relative;
-    width: 60%;
+    width: 95%;
     height: auto;
     margin: 15px auto;
     background-color: #fff;

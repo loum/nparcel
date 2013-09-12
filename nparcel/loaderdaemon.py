@@ -91,11 +91,13 @@ class LoaderDaemon(nparcel.utils.Daemon):
 
                 bu_id = int(bu_id)
                 condition_map = self.config.condition_map(bu)
+                eof_found = False
                 for line in f:
                     record = line.rstrip('\r\n')
                     if record == '%%EOF':
                         log.info('EOF found')
                         status = True
+                        eof_found = True
                         break
                     else:
                         reporter(loader.process(file_timestamp,
@@ -104,6 +106,10 @@ class LoaderDaemon(nparcel.utils.Daemon):
                                                 condition_map,
                                                 self.dry))
                 f.close()
+
+                if not status and not eof_found:
+                    log.error("%s - %s" % ('File closed before EOF found',
+                                           'all line items ignored'))
 
                 # Report the results.
                 if status:

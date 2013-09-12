@@ -284,9 +284,8 @@ class Loader(object):
             if not sms_status or not email_status:
                 log.info('Sending comms failure notification to "%s"' %
                          self.emailer.support)
-                email_addrs = self.emailer.support.split(',')
                 self.send_email(agent_details,
-                                email_addrs,
+                                self.emailer.support,
                                 item_nbr,
                                 barcode,
                                 err=True,
@@ -809,6 +808,10 @@ class Loader(object):
             status = False
             err = 'SMS missing Agent details for item: %s' % item_nbr
             log.error(err)
+
+        if status and not self.smser.validate(mobile):
+            status = False
+            log.error('SMS mobile "%s" did not validate' % mobile)
 
         if status:
             d = {'name': agent.get('name'),

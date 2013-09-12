@@ -126,7 +126,7 @@ class RestSmser(nparcel.Rest):
                     response = conn.read()
                     log.info('SMS receive: "%s"' % response)
                 except urllib2.URLError, e:
-                    log.warn('SMS failure: %s' % e)
+                    log.error('SMS failure: %s' % e)
                     status = False
 
         return status
@@ -160,12 +160,12 @@ class RestSmser(nparcel.Rest):
         if m is None:
             status = False
             err += "not 10 digits"
-            log.warn(err)
+            log.info(err)
 
         if status:
             if mobile_number[0:2] != '04':
                 status = False
                 err += 'does not start with "04"'
-                log.warn(err)
+                log.info(err)
 
         return status
