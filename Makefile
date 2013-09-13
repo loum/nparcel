@@ -44,10 +44,12 @@ rpm:
 docs:
 	PYTHONPATH=$(PYTHONPATH) sphinx-build -b html doc/source doc/build
 
+build: docs rpm
+
 test:
 	$(NOSE) $(TEST)
 
 clean:
 	$(GIT) clean -xdf
 
-.PHONY: test
+.PHONY: docs rpm test

@@ -6,5 +6,5 @@
 RestSmser
 =========
 
-.. automodule:: nparcel.smser
+.. automodule:: nparcel.restsmser
     :members:
