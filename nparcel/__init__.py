@@ -5,7 +5,6 @@ from nparcel.loader import Loader
 from nparcel.dbsession import DbSession
 from nparcel.reporter import Reporter
 from nparcel.emailer import Emailer
-from nparcel.smser import Smser
 from nparcel.rest import Rest
 from nparcel.restemailer import RestEmailer
 from nparcel.restsmser import RestSmser

@@ -1,5 +1,8 @@
 .. Nparcel B2C Parser
 
+.. toctree::
+    :maxdepth: 2
+
 Parser
 ======
 

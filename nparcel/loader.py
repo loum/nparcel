@@ -130,7 +130,7 @@ POSTCODE_MAP = {'NSW': {
 class Loader(object):
     """Nparcel Loader object.
 
-    .. attributes:: db
+    .. attribute:: db
 
         :class:`nparcel.DbSession` object
 
@@ -406,7 +406,7 @@ class Loader(object):
         according to the logic defined in the callback.
 
         **Args:**
-            as per :method:`table_column_map`
+            as per :meth:`table_column_map`
 
         """
         for field_name, v in map.iteritems():
@@ -429,7 +429,7 @@ class Loader(object):
         field value is empty.
 
         **Args:**
-            as per :method:`table_column_map`
+            as per :meth:`table_column_map`
 
         """
         for field_name, v in map.iteritems():
@@ -447,7 +447,7 @@ class Loader(object):
         if the current field value is empty.
 
         **Args:**
-            *fields* and *map* as per :method:`table_column_map`
+            *fields* and *map* as per :meth:`table_column_map`
 
             item_number_excp: boolean flag which controls whether a
             missing "Item Number" raises an exception (if set to ``True``)
@@ -476,10 +476,10 @@ class Loader(object):
         "required" raise an exception.
 
         **Args:**
-            as per :method:`table_column_map`
+            as per :meth:`table_column_map`
 
         **Returns:**
-            as per :method:`table_column_map`
+            as per :meth:`table_column_map`
 
         """
         for field_name, v in map.iteritems():

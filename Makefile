@@ -1,6 +1,7 @@
 PY=/usr/bin/env python
 NOSE=/usr/bin/nosetests -s -v
 GIT=/usr/bin/git
+PYTHONPATH=.
 
 # The TEST variable can be set to allow you to control which tests
 # to run.  For example, if the current project has a test set defined at
@@ -23,7 +24,6 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestRest \
 	 nparcel.tests:TestRestEmailer \
 	 nparcel.tests:TestRestSmser \
-	 nparcel.tests:TestSmser \
 	 nparcel.tests:TestLoaderDaemon \
 	 nparcel.tests:TestExporter \
 	 nparcel.tests:TestExporterIpec \
@@ -42,7 +42,7 @@ rpm:
 	$(PY) setup.py bdist_rpm
 
 docs:
-	sphinx-build -b html nparcel/doc/source nparcel/doc/build
+	PYTHONPATH=$(PYTHONPATH) sphinx-build -b html doc/source doc/build
 
 test:
 	$(NOSE) $(TEST)
