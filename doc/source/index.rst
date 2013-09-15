@@ -1,44 +1,44 @@
 .. Nparcel B2C Replicator documentation master file
 
-Nparcel Replicator
-==================
+Nparcel B2C Replicator
+======================
 
-Accepts a standard 1250 file of the consignments delivered to a newsagent.
-Once the consignment is collected by the consumer or Toll as part of
-aged / damaged process, a file is sent back to the freight management
-system with the POD collected details and electronic signature file.
+Overview
+--------
+
+The Nparcel B2C Replicator package presents an interface to the various Toll
+divisions to upload missed parcel collection information into the Nparcel
+portal at http://www.naparcel.com.au
+
+Accepts a standard 1250 file of the consignments delivered to an Agent.
+Once the consignment is collected by the consumer (or Toll as part of
+aged / damaged process), a Proof of Delivery report file is sent back to
+the freight management system with a copy of the associated signature file.
 
 The Nparcel Replicator manages the following components:
 
-* Loads T1250* files from upstream BU's
+* Loads T1250* files from upstream Business Units
 * Sends customer notifications via email and/or SMS
 * Extracts and delivers Proof of Delivery information
 
-Nparcel Modules
-===============
+.. image:: _static/nparcel_overview.png
+    :align: center
+    :alt: Nparcel B2C Replicator overview
 
+*The Nparcel B2C Replicator workflow*
+
+Contents
+--------
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
-    config.rst
-    parser.rst
-    dbsession.rst
+    modules/index.rst
 
-    loaderdaemon.rst
-    loader.rst
+Software Package Build
+----------------------
 
-    emailer.rst
-    exporterdaemon.rst
-    exporter.rst
-
-    reporter.rst
-
-    rest.rst
-    restemailer.rst
-    restsmser.rst
-
-    ftp.rst
-
+Operations
+----------
 
 Indices and tables
 ==================
