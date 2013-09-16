@@ -6,8 +6,8 @@ import sys
 import ftplib
 import fnmatch
 import socket
-import ConfigParser
 
+import nparcel
 from nparcel.utils.log import log
 
 
@@ -15,16 +15,17 @@ class Ftp(ftplib.FTP):
     """Nparcel FTP client.
     """
 
-    def __init__(self,
-                 config_file='npftp.conf'):
+    def __init__(self, config_file='npftp.conf'):
         """Nparcel Ftp initialisation.
+
         """
         ftplib.FTP.__init__(self)
 
-        self._config = ConfigParser.SafeConfigParser()
+        self._config = nparcel.Config()
+        self._config.set_config_file(config_file)
+
         self._xfers = []
 
-        self.set_config_file(config_file)
 
     @property
     def config(self):
@@ -34,22 +35,6 @@ class Ftp(ftplib.FTP):
     def xfers(self):
         return self._xfers
 
-    @property
-    def config_file(self):
-        return self._config_file
-
-    def set_config_file(self, value):
-        self._config_file = value
-
-        if self._config_file is not None:
-            if os.path.exists(self._config_file):
-                log.info('Parsing config file: "%s"' % self._config_file)
-                self._config.read(self._config_file)
-            else:
-                log.critical('Unable to locate config file: "%s"' %
-                             self._config_file)
-                sys.exit(1)
-
     def _parse_config(self):
         """Read config items from the configuration file.
 
@@ -57,9 +42,7 @@ class Ftp(ftplib.FTP):
         connection to process.
 
         """
-        if self.config_file is None:
-            log.critical('Cannot parse config -- no file defined')
-            sys.exit(1)
+        self._config.parse_config()
 
         # Parse each section.
         for section in self._config.sections():
@@ -70,7 +53,7 @@ class Ftp(ftplib.FTP):
         """Identifies report files in directory *dir*.
 
         **Args:**
-            dir: the directory to search for report files.
+            *dir*: the directory to search for report files.
 
         **Returns:**
             list of report files
@@ -92,7 +75,7 @@ class Ftp(ftplib.FTP):
         """Parse report file and extract a list of JOB_KEY's
 
         **Args:**
-            file: fully qualified name to the report file
+            *file*: fully qualified name to the report file
 
         **Returns:**
             list of JOB_KEY values
@@ -141,9 +124,9 @@ class Ftp(ftplib.FTP):
         """Transfer files defined by *files* list.
 
         **Args:**
-            xfer: the config section of the current FTP context.
+            *xfer*: the config section of the current FTP context.
 
-            files: list of files to transfer
+            *files*: list of files to transfer
 
         """
         host = self.config.get(xfer, 'host')

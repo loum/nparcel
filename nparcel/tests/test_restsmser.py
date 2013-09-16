@@ -117,7 +117,7 @@ class TestRestSmser(unittest2.TestCase):
              'suburb': 'HAWTHORN EAST',
              'postcode': '3123',
              'item_nbr': '1234567890_item_nbr',
-             'mobile': '0419368910'}
+             'mobile': '0431602145'}
         received = self._rsms.create_comms(data=d, base_dir='nparcel')
 
         f = open('nparcel/tests/create_comms_valid_data_structure.out')

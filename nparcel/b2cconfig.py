@@ -230,14 +230,14 @@ class B2CConfig(object):
         sqlite instance.
 
         **Returns:**
-            dictionary-based data structure of the form:
+            dictionary-based data structure of the form::
 
-            kwargs = {'driver': ...,
-                      'host': ...,
-                      'database': ...,
-                      'user': ...,
-                      'password': ...,
-                      'port': ...}
+                kwargs = {'driver': ...,
+                        'host': ...,
+                        'database': ...,
+                        'user': ...,
+                        'password': ...,
+                        'port': ...}
 
         """
         kwargs = None
@@ -266,7 +266,7 @@ class B2CConfig(object):
         """Extract proxy connectivity information from the configuration.
 
         Proxy connectivity information is taken from the ``[proxy]``
-        section in the configuration file.  A typical example is:
+        section in the configuration file.  A typical example is::
 
             [proxy]
             host = auproxy-farm.toll.com.au
@@ -276,13 +276,13 @@ class B2CConfig(object):
             protocol = https
 
         **Returns:**
-            dictionary-based data structure of the form:
+            dictionary-based data structure of the form::
 
-            kwargs = {'host': ...,
-                      'user': ...,
-                      'password': ...,
-                      'port': ...,
-                      'protocol': ...}
+                kwargs = {'host': ...,
+                        'user': ...,
+                        'password': ...,
+                        'port': ...,
+                        'protocol': ...}
 
         """
         kwargs = None
@@ -312,14 +312,14 @@ class B2CConfig(object):
         ``None``).
 
         **Kwargs:**
-            kwargs as per the return value of the :meth:`proxy_kwargs`
+            *kwargs* as per the return value of the :meth:`proxy_kwargs`
             method
 
         **Returns:**
             string that could be fed directly into a HTTP/S header
-            to handle proxy authentication in the request.  Example:
+            to handle proxy authentication in the request.  Example::
 
-                http://louamr:<passwd>@auproxy-farm.toll.com.aus:8080
+                http://loumar:<passwd>@auproxy-farm.toll.com.aus:8080
 
         """
         values = None
@@ -347,9 +347,9 @@ class B2CConfig(object):
         """Return the *bu* condition *flag* value.
 
         **Args:**
-            bu: the name of the Business Unit.
+            *bu*: the name of the Business Unit.
 
-            flag: name of the flag to process.
+            *flag*: name of the flag to process.
 
         **Returns:**
             boolean ``True`` if flag is '1'
@@ -383,7 +383,7 @@ class B2CConfig(object):
         """Return the *bu* condition map values.
 
         **Args:**
-            bu: the name of the Business Unit.
+            *bu*: the name of the Business Unit.
 
         **Returns:**
             dict representing all of the condition flags for the *bu*
@@ -405,7 +405,8 @@ class B2CConfig(object):
         Verifies if the facility denoted by *flag* is a required component.
 
         **Args:**
-            flag: the name of the flag as per the FLAG_MAP options to verify
+            *flag*: the name of the flag as per the ``FLAG_MAP`` options to
+            verify
 
         **Returns:**
             boolean ``True`` if any flag in the set is '1'
@@ -432,12 +433,12 @@ class B2CConfig(object):
         values.
 
         **Args:**
-            bu: the name of the Business Unit.
+            *bu*: the name of the Business Unit.
 
         **Returns:**
-            dictionary representing all of the file contril condition flags
-            for the *bu*.  For example, if Business Unit has a send_ps_file
-            flag '0' and send_png_file flag '1'::
+            dictionary representing all of the file control condition flags
+            for the *bu*.  For example, if Business Unit has a
+            ``send_ps_file`` flag ``0`` and ``send_png_file`` flag ``1``::
 
                 {'ps': False,
                  'png': True}
@@ -457,7 +458,7 @@ class B2CConfig(object):
         tolf_vic
 
         **Args:**
-            bu: business unit name as defined under the business_units
+            *bu*: business unit name as defined under the business_units
             section of the config.  For example, 'priority'.
 
         **Returns:**

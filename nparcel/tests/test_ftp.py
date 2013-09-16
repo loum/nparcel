@@ -20,17 +20,6 @@ class TestFtp(unittest2.TestCase):
         msg = 'Object is not an nparcel.Ftp'
         self.assertIsInstance(self._ftp, nparcel.Ftp, msg)
 
-    def test_parse_config_no_file(self):
-        """Parse config with no file provided.
-        """
-        old_config = self._ftp.config_file
-        self._ftp.set_config_file(None)
-
-        self.assertRaises(SystemExit, self._ftp._parse_config)
-
-        # Cleanup.
-        self._ftp.set_config_file(old_config)
-
     def test_parse_config_items(self):
         """Verify required configuration items.
         """

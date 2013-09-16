@@ -7,6 +7,7 @@ Modules
     :maxdepth: 2
 
     config.rst
+    b2cconfig.rst
     parser.rst
     dbsession.rst
 
