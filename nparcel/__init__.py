@@ -11,6 +11,7 @@ from nparcel.restsmser import RestSmser
 from nparcel.exporter import Exporter
 from nparcel.config import Config
 from nparcel.ftp import Ftp
+from nparcel.reminder import Reminder
 from table import Table
 from table.job import Job
 from table.jobitem import JobItem

@@ -19,6 +19,8 @@ Modules
 
     reporter.rst
 
+    reminder.rst
+
     rest.rst
     restemailer.rst
     restsmser.rst
