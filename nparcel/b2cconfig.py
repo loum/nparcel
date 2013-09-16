@@ -1,5 +1,5 @@
 __all__ = [
-    "Config",
+    "B2CConfig",
 ]
 import os
 import sys
@@ -15,7 +15,7 @@ FLAG_MAP = {'item_number_excp': 0,
             'state_reporting': 5}
 
 
-class Config(object):
+class B2CConfig(object):
     """Nparcel Config class.
 
     :class:`nparcel.Config` captures the configuration items required
@@ -215,7 +215,7 @@ class Config(object):
         """Extract database connectivity information from the configuration.
 
         Database connectivity information is taken from the ``[db]``
-        section in the configuration file.  A typical example is:
+        section in the configuration file.  A typical example is::
 
             [db]
             driver = FreeTDS

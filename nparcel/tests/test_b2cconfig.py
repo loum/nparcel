@@ -3,18 +3,18 @@ import unittest2
 import nparcel
 
 
-class TestConfig(unittest2.TestCase):
+class TestB2CConfig(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
         cls._file = 'nparcel/conf/nparceld.conf'
-        cls._c = nparcel.Config()
+        cls._c = nparcel.B2CConfig()
 
     def test_init(self):
-        """Initialise a Config object.
+        """Initialise a B2CConfig object.
         """
-        msg = 'Object is not a nparcel.Config'
-        self.assertIsInstance(self._c, nparcel.Config, msg)
+        msg = 'Object is not a nparcel.B2CConfig'
+        self.assertIsInstance(self._c, nparcel.B2CConfig, msg)
 
     def test_set_missing_config_file(self):
         """Set missing config file.

@@ -27,7 +27,7 @@ class TestLoader(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        conf = nparcel.Config()
+        conf = nparcel.B2CConfig()
         conf.set_file('nparcel/conf/nparceld.conf')
         conf.parse_config()
         proxy = conf.proxy_string()

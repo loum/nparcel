@@ -12,6 +12,6 @@ from test_exporterdaemon import TestExporterDaemon
 from test_exporter import TestExporter
 from test_exporter_ipec import TestExporterIpec
 from test_exporter_fast import TestExporterFast
-from test_config import TestConfig
+from test_b2cconfig import TestB2CConfig
 from test_ftp import TestFtp
 from test_reminder import TestReminder

@@ -19,7 +19,7 @@ class ExporterDaemon(nparcel.utils.Daemon):
 
         self.dry = dry
 
-        self.config = nparcel.Config(file=config)
+        self.config = nparcel.B2CConfig(file=config)
 
     def _start(self, event):
         signal.signal(signal.SIGTERM, self._exit_handler)
