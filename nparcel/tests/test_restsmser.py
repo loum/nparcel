@@ -10,7 +10,7 @@ class TestRestSmser(unittest2.TestCase):
     def setUpClass(cls):
         cls._rsms = nparcel.RestSmser()
         conf = nparcel.B2CConfig()
-        conf.set_file('nparcel/conf/nparceld.conf')
+        conf.set_config_file('nparcel/conf/nparceld.conf')
         conf.parse_config()
         cls._proxy = conf.proxy_string()
         cls._api = conf.rest.get('sms_api')

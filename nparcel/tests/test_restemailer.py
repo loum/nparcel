@@ -10,7 +10,7 @@ class TestRestEmailer(unittest2.TestCase):
         cls._re = nparcel.RestEmailer()
 
         conf = nparcel.B2CConfig()
-        conf.set_file('nparcel/conf/nparceld.conf')
+        conf.set_config_file('nparcel/conf/nparceld.conf')
         conf.parse_config()
         cls._re.set_proxy(conf.proxy_string())
         cls._re.set_api(conf.rest.get('email_api'))

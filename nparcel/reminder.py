@@ -12,10 +12,8 @@ class Reminder(object):
         path name to the configuration file
 
     """
-
     def __init__(self, config='npremind.conf'):
         """Nparcel Reminder initialisation.
 
-        
         """
         pass

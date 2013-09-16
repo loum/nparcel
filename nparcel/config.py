@@ -23,12 +23,24 @@ class Config(ConfigParser.SafeConfigParser):
         ConfigParser.SafeConfigParser.__init__(self)
 
         self._config_file = config_file
+        if self._config_file is not None:
+            self.set_config_file(self._config_file)
 
     @property
     def config_file(self):
         return self._config_file
 
     def set_config_file(self, value):
+        """Set the configuration file to *value* and attempt to read
+        the contents (unless *value* is ``None``).
+
+        File contents should be as per :mod:`ConfigParser` format.
+
+        **Args:**
+            *value*: typically the path to the configuration file.
+
+        """
+        log.debug('Setting config file to "%s"' % value)
         self._config_file = value
 
         if self._config_file is not None:

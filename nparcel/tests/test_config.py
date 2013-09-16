@@ -7,7 +7,10 @@ class TestConfig(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._r = nparcel.Config()
+        cls._file = 'nparcel/conf/nparceld.conf'
+
+    def setUp(self):
+        self._r = nparcel.Config()
 
     def test_init(self):
         """Initialise a Config object.
@@ -18,13 +21,7 @@ class TestConfig(unittest2.TestCase):
     def test_parse_config_no_file(self):
         """Read config with no file provided.
         """
-        old_config = self._r.config_file
-        self._r.set_config_file(None)
-
         self.assertRaises(SystemExit, self._r.parse_config)
-
-        # Cleanup.
-        self._r.set_config_file(old_config)
 
     def test_read_config(self):
         """Read valid config.
@@ -34,10 +31,10 @@ class TestConfig(unittest2.TestCase):
         msg = 'Config should read without error and return None'
         self.assertIsNone(received, msg)
 
-        # Cleanup.
-        self._r.set_config_file(old_config)
+    def tearDown(self):
+        self._c = None
 
     @classmethod
     def tearDownClass(cls):
-        cls._r = None
-        del cls._r
+        cls._file = None
+        del cls._file

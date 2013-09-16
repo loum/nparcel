@@ -8,7 +8,9 @@ class TestB2CConfig(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._file = 'nparcel/conf/nparceld.conf'
-        cls._c = nparcel.B2CConfig()
+
+    def setUp(self):
+        self._c = nparcel.B2CConfig()
 
     def test_init(self):
         """Initialise a B2CConfig object.
@@ -16,29 +18,10 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Object is not a nparcel.B2CConfig'
         self.assertIsInstance(self._c, nparcel.B2CConfig, msg)
 
-    def test_set_missing_config_file(self):
-        """Set missing config file.
-        """
-        self.assertRaises(SystemExit, self._c.set_file, 'dodgy')
-
-    def test_set_valid_config_file(self):
-        """Set a valid config file.
-        """
-        msg = 'Valid config file assignment should return None'
-        self.assertIsNone(self._c.set_file(file=self._file), msg)
-
-        # Cleanup.
-        self._c._file = None
-
-    def test_parse_config_no_file(self):
-        """Parse items from the config -- no file.
-        """
-        self.assertRaises(SystemExit, self._c.parse_config)
-
     def test_parse_config(self):
         """Parse items from the config.
         """
-        self._c.set_file(file=self._file)
+        self._c.set_config_file(self._file)
         self._c.parse_config()
 
         # Check against expected config items.
@@ -106,7 +89,8 @@ class TestB2CConfig(unittest2.TestCase):
         received = self._c('rest')
         e_scheme = 'https'
         e_uri = 'apps.cinder.co/tollgroup/wsemail/emailservice.svc/sendemail'
-        expected = {'sms_api': 'https://api.esendex.com/v1.0/messagedispatcher',
+        sms_api = 'https://api.esendex.com/v1.0/messagedispatcher'
+        expected = {'sms_api': sms_api,
                     'email_api': "%s://%s" % (e_scheme, e_uri),
                     'email_user': '',
                     'email_pw': '',
@@ -122,32 +106,24 @@ class TestB2CConfig(unittest2.TestCase):
                     'toli': '0,1,2,3,4,5,6,7'}
         self.assertDictEqual(received, expected, msg)
 
-        # Cleanup.
-        self._c._file = None
-
     def test_db_kwargs_no_items(self):
         """Produce a DB connection string -- no items.
         """
-        self._c.set_file(file=self._file)
-        self._c.parse_config()
+        self._c.set_config_file(self._file)
 
         msg = 'DB connection string should be None'
         self.assertIsNone(self._c.db_kwargs(), msg)
 
-        # Cleanup.
-        self._c._file = None
-
     def test_proxy_kwargs_no_items(self):
         """Produce a proxy connection dictionary structure -- no items.
         """
-        self._c._config.remove_section('proxy')
         msg = 'Proxy connection string should return None'
         self.assertIsNone(self._c.proxy_kwargs(), msg)
 
     def test_proxy_kwargs(self):
         """Produce a proxy connection dictionary structure.
         """
-        self._c.set_file(file=self._file)
+        self._c.set_config_file(self._file)
         self._c.parse_config()
 
         msg = 'Proxy kwargs should produce a populated dictionary'
@@ -158,9 +134,6 @@ class TestB2CConfig(unittest2.TestCase):
                     'protocol': 'https',
                     'user': 'loumar'}
         self.assertDictEqual(received, expected, msg)
-
-        # Cleanup.
-        self._c._file = None
 
     def test_proxy_string_no_values(self):
         """Produce a proxy string -- no values.
@@ -183,46 +156,35 @@ class TestB2CConfig(unittest2.TestCase):
     def test_condition_flag_item_excp_true(self):
         """Check item_excp flag settings -- True.
         """
-        self._c.set_file(file=self._file)
+        self._c.set_config_file(self._file)
         self._c.parse_config()
 
         received = self._c.condition('toli', 'item_number_excp')
         msg = 'Flag value "1" should return True'
         self.assertTrue(received, msg)
 
-        # Cleanup.
-        self._c._file = None
-
     def test_condition_flag_item_excp_false(self):
         """Check item_excp flag settings -- False.
         """
-        self._c.set_file(file=self._file)
-        self._c.parse_config()
+        self._c.set_config_file(self._file)
 
         received = self._c.condition('tolp', 'item_number_excp')
         msg = 'Flag value "0" should return False'
         self.assertFalse(received, msg)
 
-        # Cleanup.
-        self._c._file = None
-
     def test_condition_flag_undefined_flag(self):
         """Check item_excp flag settings -- undefined flag.
         """
-        self._c.set_file(file=self._file)
-        self._c.parse_config()
+        self._c.set_config_file(self._file)
 
         received = self._c.condition('toli', 'banana')
         msg = 'Flag value "banana" should return False'
         self.assertFalse(received, msg)
 
-        # Cleanup.
-        self._c._file = None
-
     def test_condition_flag_state_based_reporting(self):
         """Check state_reporting flag settings.
         """
-        self._c.set_file(file=self._file)
+        self._c.set_config_file(self._file)
         self._c.parse_config()
 
         received = self._c.condition('tolf', 'state_reporting')
@@ -233,21 +195,14 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Ipec "state_reporting" should return False'
         self.assertFalse(received, msg)
 
-        # Cleanup.
-        self._c._file = None
-
     def test_condition_flag_undefined_bu(self):
         """Check item_excp flag settings -- undefined BU.
         """
-        self._c.set_file(file=self._file)
-        self._c.parse_config()
+        self._c.set_config_file(self._file)
 
         received = self._c.condition('fruit', 'item_number_excp')
         msg = 'Undefined BU value "fruit" should return False'
         self.assertFalse(received, msg)
-
-        # Cleanup.
-        self._c._file = None
 
     def test_condition_no_conditions(self):
         """Check condition settings -- missing condition.
@@ -259,8 +214,7 @@ class TestB2CConfig(unittest2.TestCase):
     def test_condition_map_no_bu(self):
         """Check condition map -- missing Business Unit.
         """
-        self._c.set_file(file=self._file)
-        self._c.parse_config()
+        self._c.set_config_file(self._file)
 
         received = self._c.condition_map('banana')
         expected = {'item_number_excp': False,
@@ -272,13 +226,10 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Dodgy Business Unit condition map should be empty dict'
         self.assertDictEqual(received, expected, msg)
 
-        # Cleanup.
-        self._c._file = None
-
     def test_condition_map_valid_bu(self):
         """Check condition map -- valid Business Unit.
         """
-        self._c.set_file(file=self._file)
+        self._c.set_config_file(self._file)
         self._c.parse_config()
 
         received = self._c.condition_map('toli')
@@ -291,26 +242,18 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Valid Business Unit condition map should produce dict values'
         self.assertDictEqual(received, expected, msg)
 
-        # Cleanup.
-        self._c._file = None
-
     def test_required_facility_when_flag_not_set(self):
         """Required facility when a flag is not set.
         """
-        self._c.set_file(file=self._file)
-        self._c.parse_config()
+        self._c.set_config_file(self._file)
 
         msg = 'Facility check should return False if flag is set'
         self.assertFalse(self._c.required_facility('send_sms'), msg)
 
-        # Cleanup.
-        self._c._file = None
-
     def test_required_facility_when_flag_set(self):
         """Required facility when a flag is set.
         """
-        self._c.set_file(file=self._file)
-        self._c.parse_config()
+        self._c.set_config_file(self._file)
 
         old_flag = self._c.cond.get('toli', 'send_sms')
         self._c.cond['toli'] = '10100'
@@ -318,14 +261,10 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Facility check should return True if flag is set'
         self.assertTrue(self._c.required_facility('send_sms'), msg)
 
-        # Cleanup.
-        self._c.cond['toli'] = old_flag
-        self._c._file = None
-
     def test_file_control(self):
         """Check file control dictionary structure.
         """
-        self._c.set_file(file=self._file)
+        self._c.set_config_file(self._file)
         self._c.parse_config()
 
         received = self._c.get_file_control('tolp')
@@ -343,13 +282,10 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Bogus file control dictionary not as expected'
         self.assertDictEqual(received, expected, msg)
 
-        # Cleanup.
-        self._c._file = None
-
     def test_bu_to_file(self):
         """Translate business unit name to file name code.
         """
-        self._c.set_file(file=self._file)
+        self._c.set_config_file(self._file)
         self._c.parse_config()
 
         received = self._c.bu_to_file('priority')
@@ -371,10 +307,11 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Dodgy bu_to_file translation not None'
         self.assertIsNone(received, msg)
 
-        # Cleanup.
-        self._c._file = None
+    def tearDown(self):
+        self._c = None
+        del self._c
 
     @classmethod
     def tearDownClass(cls):
         cls._file = None
-        cls._c = None
+        del cls._file

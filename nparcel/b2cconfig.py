@@ -1,10 +1,10 @@
 __all__ = [
     "B2CConfig",
 ]
-import os
 import sys
-import ConfigParser
 
+import nparcel
+import ConfigParser
 from nparcel.utils.log import log
 
 FLAG_MAP = {'item_number_excp': 0,
@@ -15,7 +15,7 @@ FLAG_MAP = {'item_number_excp': 0,
             'state_reporting': 5}
 
 
-class B2CConfig(object):
+class B2CConfig(nparcel.Config):
     """Nparcel Config class.
 
     :class:`nparcel.Config` captures the configuration items required
@@ -67,9 +67,7 @@ class B2CConfig(object):
     def __init__(self, file=None):
         """Nparcel Config initialisation.
         """
-
-        self._file = file
-        self._config = ConfigParser.SafeConfigParser()
+        nparcel.Config.__init__(self, file)
 
         self.dirs_to_check = []
         self.archive = None
@@ -83,13 +81,21 @@ class B2CConfig(object):
         self.rest = {}
         self.exporter_fields = {}
 
-        if self._file is not None:
-            self.set_file(self._file)
-            self.parse_config()
-
     def __call__(self, item=None):
+        """Handle a call to the object itself.
+
+        **Args:**
+            *item*: config option to lookup
+
+        **Returns**:
+            The value of the config option if *item* is not ``None``
+
+            reference to self if *item* is ``None``
+
+        """
+        log.debug('Check against config item: "%s"' % item)
         if item is None:
-            return self._config
+            return self
 
         value = None
         if item == 'in_dirs':
@@ -117,71 +123,57 @@ class B2CConfig(object):
         elif item == 'exporter_fields':
             value = self.exporter_fields
 
+        log.debug('Config item: "%s" value: "%s"' % (item, value))
+
         return value
-
-    def set_file(self, file):
-        """
-        """
-        self._file = file
-
-        if os.path.exists(self._file):
-            log.debug('Parsing config file: "%s"' % file)
-            self._config.read(file)
-        else:
-            log.critical('Unable to locate config file: "%s"' % file)
-            sys.exit(1)
 
     def parse_config(self):
         """Read config items from the configuration file.
 
         """
-        # Required items (fail if otherwise).
-        if self._file is None:
-            log.critical('Cannot parse config -- no file defined')
-            sys.exit(1)
+        nparcel.Config.parse_config(self)
 
         try:
-            self.dirs_to_check = self._config.get('dirs', 'in').split(',')
+            self.dirs_to_check = self.get('dirs', 'in').split(',')
             log.debug('Loader directories to check %s' %
                       str(self.dirs_to_check))
 
-            self.archive = self._config.get('dirs', 'archive')
+            self.archive = self.get('dirs', 'archive')
             log.debug('Loader archive directory %s' % self.archive)
 
-            self.staging_base = self._config.get('dirs', 'staging_base')
+            self.staging_base = self.get('dirs', 'staging_base')
             log.debug('Exporter staging base %s' % self.staging_base)
 
-            self.signature = self._config.get('dirs', 'signature')
+            self.signature = self.get('dirs', 'signature')
             log.debug('Exporter signature directory %s' % self.signature)
 
-            self.business_units = dict(self._config.items('business_units'))
+            self.business_units = dict(self.items('business_units'))
             log.debug('Exporter Business Units %s' %
                       self.business_units.keys())
 
-            self.file_bu = dict(self._config.items('file_bu'))
-            log.debug('Exporter File Business Units %s' %
-                      self.file_bu.keys())
+            self.file_bu = dict(self.items('file_bu'))
+            log.debug('Exporter File Business Units %s' % self.file_bu)
         except ConfigParser.NoOptionError, err:
             log.critical('Missing required config: %s' % err)
             sys.exit(1)
 
         # Optional items (defaults provided).
         try:
-            self.loader_loop = int(self._config.get('timeout',
+            self.loader_loop = int(self.get('timeout',
                                                     'loader_loop'))
         except ConfigParser.NoOptionError, err:
             log.warn('Loader loop time not provided: %s' % err)
             pass
 
         try:
-            self.exporter_loop = int(self._config.get('timeout',
+            self.exporter_loop = int(self.get('timeout',
                                                       'exporter_loop'))
         except ConfigParser.NoOptionError, err:
             log.warn('Exporter loop time not provided: %s' % err)
             pass
 
         try:
-            self.support_emails = self._config.get('email',
+            self.support_emails = self.get('email',
                                                    'support').split(',')
         except ConfigParser.NoOptionError, err:
             log.warn('Support emails not provided: %s' % err)
@@ -190,7 +182,7 @@ class B2CConfig(object):
         # Business unit condiitons.  No probs if they are missing -- will
         # just default to '0' (False) for each flag.
         try:
-            self.cond = dict(self._config.items('conditions'))
+            self.cond = dict(self.items('conditions'))
             log.debug('Business Unit conditions %s' % self.cond.keys())
         except ConfigParser.NoSectionError, err:
             log.warn('Missing Business Unit conditions in config')
@@ -198,7 +190,7 @@ class B2CConfig(object):
         # RESTful APIs.  May not need these if facility is not required
         # by any of the BU's
         try:
-            self.rest = dict(self._config.items('rest'))
+            self.rest = dict(self.items('rest'))
             log.debug('RESTful APIs %s' % str(self.rest))
         except ConfigParser.NoSectionError, err:
             log.warn('No RESTful APIs in config')
@@ -206,7 +198,7 @@ class B2CConfig(object):
         # Exporter business unit-based column output and ordering.
         # Default is to simply display order as per query.
         try:
-            self.exporter_fields = dict(self._config.items('exporter_fields'))
+            self.exporter_fields = dict(self.items('exporter_fields'))
             log.debug('Exporter fields %s' % str(self.exporter_fields))
         except ConfigParser.NoSectionError, err:
             log.warn('No Exporter column output ordering in config')
@@ -243,12 +235,12 @@ class B2CConfig(object):
         kwargs = None
 
         try:
-            host = self._config.get('db', 'host')
-            driver = self._config.get('db', 'driver')
-            database = self._config.get('db', 'database')
-            user = self._config.get('db', 'user')
-            password = self._config.get('db', 'password')
-            port = self._config.get('db', 'port')
+            host = self.get('db', 'host')
+            driver = self.get('db', 'driver')
+            database = self.get('db', 'database')
+            user = self.get('db', 'user')
+            password = self.get('db', 'password')
+            port = self.get('db', 'port')
             if port is not None and port:
                 port = int(port)
             kwargs = {'driver': driver,
@@ -288,13 +280,13 @@ class B2CConfig(object):
         kwargs = None
 
         try:
-            host = self._config.get('proxy', 'host')
-            user = self._config.get('proxy', 'user')
-            password = self._config.get('proxy', 'password')
-            port = self._config.get('proxy', 'port')
+            host = self.get('proxy', 'host')
+            user = self.get('proxy', 'user')
+            password = self.get('proxy', 'password')
+            port = self.get('proxy', 'port')
             if port is not None and port:
                 port = int(port)
-            protocol = self._config.get('proxy', 'protocol')
+            protocol = self.get('proxy', 'protocol')
             kwargs = {'host': host,
                       'user': user,
                       'password': password,

@@ -25,6 +25,7 @@ class LoaderDaemon(nparcel.utils.Daemon):
         self.dry = dry
 
         self.config = nparcel.B2CConfig(file=config)
+        self.config.parse_config()
 
     def _start(self, event):
         signal.signal(signal.SIGTERM, self._exit_handler)
