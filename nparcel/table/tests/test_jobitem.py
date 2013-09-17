@@ -41,16 +41,27 @@ class TestJobItem(unittest2.TestCase):
             sql = cls._db.identity_type.insert_sql(identity_type)
             id_type_id = cls._db.insert(sql=sql)
 
-        # "job_items" table.
+        # "job_item" table.
         jobitems = [{'connote_nbr': '218501217863',
                      'item_nbr': 'priority_item_nbr_001',
                      'job_id': priority_job_id,
+                     'created_ts': '%s' % cls._now,
                      'pickup_ts': '%s' % cls._now,
                      'pod_name': 'pod_name 218501217863',
                      'identity_type_id': id_type_id,
-                     'identity_type_data': 'identity 218501217863'}]
+                     'identity_type_data': 'identity 218501217863'},
+                    {'connote_nbr': '218501217old',
+                     'item_nbr': 'priority_item_nbr_old',
+                     'job_id': priority_job_id,
+                     'created_ts': '%s' %
+                      (cls._now - datetime.timedelta(seconds=864000)),
+                     'pod_name': 'pod_name 218501217old',
+                     'identity_type_id': id_type_id,
+                     'identity_type_data': 'identity 218501217old'}]
         sql = cls._db.jobitem.insert_sql(jobitems[0])
         cls._valid_job_item_id_01 = cls._db.insert(sql=sql)
+        sql = cls._db.jobitem.insert_sql(jobitems[1])
+        cls._valid_job_item_id_02 = cls._db.insert(sql=sql)
 
         cls._db.commit()
 
@@ -173,7 +184,25 @@ class TestJobItem(unittest2.TestCase):
         msg = 'collected_sql SQL query did not return expected result'
         self.assertListEqual(received, expected)
 
+    def test_reminder_sql(self):
+        """Verify the uncollected_sql SQL string.
+        """
+        start_time = self._now - datetime.timedelta(seconds=(86400 * 11))
+        old_time = self._now - datetime.timedelta(seconds=(86400 * 4))
+        sql = self._db.jobitem.uncollected_sql(start_time, old_time)
+        self._db(sql)
+
+        received = []
+        for row in self._db.rows():
+            received.append(row)
+        expected = [(self._valid_job_item_id_02,)]
+        msg = 'uncollected_sql SQL query did not return expected result'
+        self.assertListEqual(received, expected)
+
     @classmethod
     def tearDownClass(cls):
         cls._db.close()
         cls._db = None
+        del cls._db
+        del cls._valid_job_item_id_01
+        del cls._valid_job_item_id_02
