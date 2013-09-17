@@ -10,26 +10,34 @@ class TestConfig(unittest2.TestCase):
         cls._file = 'nparcel/conf/nparceld.conf'
 
     def setUp(self):
-        self._r = nparcel.Config()
+        self._c = nparcel.Config()
 
     def test_init(self):
         """Initialise a Config object.
         """
         msg = 'Object is not a nparcel.Config'
-        self.assertIsInstance(self._r, nparcel.Config, msg)
+        self.assertIsInstance(self._c, nparcel.Config, msg)
 
     def test_parse_config_no_file(self):
         """Read config with no file provided.
         """
-        self.assertRaises(SystemExit, self._r.parse_config)
+        self.assertRaises(SystemExit, self._c.parse_config)
 
     def test_read_config(self):
         """Read valid config.
         """
-        old_config = self._r.config_file
-        received = self._r.set_config_file('nparcel/conf/nparceld.conf')
+        old_config = self._c.config_file
+        received = self._c.set_config_file('nparcel/conf/nparceld.conf')
         msg = 'Config should read without error and return None'
         self.assertIsNone(received, msg)
+
+    def test_db_kwargs_no_items(self):
+        """Produce a DB connection string -- no items.
+        """
+        self._c.set_config_file(self._file)
+
+        msg = 'DB connection string should be None'
+        self.assertIsNone(self._c.db_kwargs(), msg)
 
     def tearDown(self):
         self._c = None

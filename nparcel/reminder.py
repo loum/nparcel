@@ -26,10 +26,15 @@ class Reminder(object):
         date when delayed notifications start
 
     """
-    def __init__(self, config_file=None):
+    def __init__(self, config_file=None, db=None):
         """Nparcel Reminder initialisation.
 
         """
+        if db is None:
+            db = {}
+        self.db = nparcel.DbSession(**db)
+        self.db.connect()
+
         self._notification_delay = 345600
         self._start_date = datetime.datetime(2013, 9, 15, 0, 0, 0)
 

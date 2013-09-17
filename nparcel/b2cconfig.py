@@ -205,57 +205,6 @@ class B2CConfig(nparcel.Config):
         except ConfigParser.NoSectionError, err:
             log.warn('No Exporter column output ordering in config')
 
-    def db_kwargs(self):
-        """Extract database connectivity information from the configuration.
-
-        Database connectivity information is taken from the ``[db]``
-        section in the configuration file.  A typical example is::
-
-            [db]
-            driver = FreeTDS
-            host = SQVDBAUT07
-            database = Nparcel
-            user = npscript
-            password = <passwd>
-            port =  1442
-
-        Base assumptions on "host" keyword.  No "host" means this must be a
-        test scenario in which case the database session is a memory-based
-        sqlite instance.
-
-        **Returns:**
-            dictionary-based data structure of the form::
-
-                kwargs = {'driver': ...,
-                        'host': ...,
-                        'database': ...,
-                        'user': ...,
-                        'password': ...,
-                        'port': ...}
-
-        """
-        kwargs = None
-
-        try:
-            host = self.get('db', 'host')
-            driver = self.get('db', 'driver')
-            database = self.get('db', 'database')
-            user = self.get('db', 'user')
-            password = self.get('db', 'password')
-            port = self.get('db', 'port')
-            if port is not None and port:
-                port = int(port)
-            kwargs = {'driver': driver,
-                      'host': host,
-                      'database': database,
-                      'user': user,
-                      'password': password,
-                      'port': port}
-        except ConfigParser.NoOptionError, err:
-            log.error('Missing DB key via config: %s' % err)
-
-        return kwargs
-
     def proxy_kwargs(self):
         """Extract proxy connectivity information from the configuration.
 

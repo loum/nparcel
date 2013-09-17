@@ -106,14 +106,6 @@ class TestB2CConfig(unittest2.TestCase):
                     'toli': '0,1,2,3,4,5,6,7'}
         self.assertDictEqual(received, expected, msg)
 
-    def test_db_kwargs_no_items(self):
-        """Produce a DB connection string -- no items.
-        """
-        self._c.set_config_file(self._file)
-
-        msg = 'DB connection string should be None'
-        self.assertIsNone(self._c.db_kwargs(), msg)
-
     def test_proxy_kwargs_no_items(self):
         """Produce a proxy connection dictionary structure -- no items.
         """
