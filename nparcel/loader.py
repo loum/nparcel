@@ -260,7 +260,7 @@ class Loader(object):
                     email_status = self.send_email(agent_details,
                                                    email_addrs,
                                                    item_nbr,
-                                                   barcode,
+                                                   connote,
                                                    err=False,
                                                    dry=dry)
                 else:

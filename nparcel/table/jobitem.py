@@ -157,3 +157,27 @@ AND pickup_ts IS NULL
 AND reminder_ts IS NULL""" % (start_date, uncollected_period)
 
         return sql
+
+    def job_item_agent_details_sql(self, job_item_id):
+        """SQL wrapper to extract the agent details against a *job_item_id*.
+
+        **Args:**
+            job_item_id: the jobitem.id value to search against
+
+        **Returns:**
+            the SQL string
+
+        """
+        sql = """SELECT ag.name,
+       ag.address,
+       ag.suburb,
+       ag.postcode,
+       ji.connote_nbr,
+       ji.item_nbr,
+       ji.created_ts
+FROM job_item as ji, job as j, agent as ag
+WHERE ji.job_id = j.id
+AND j.agent_id = ag.id
+AND ji.id = %d""" % job_item_id
+
+        return sql

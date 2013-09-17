@@ -25,6 +25,10 @@ class Reminder(object):
 
         date when delayed notifications start
 
+    .. attribute:: hold_period
+
+        period (in seconds) that the uncollected parcel will be held for
+
     """
     def __init__(self, config_file=None, db=None):
         """Nparcel Reminder initialisation.
@@ -40,6 +44,8 @@ class Reminder(object):
 
         self._config = nparcel.Config()
         self._config.set_config_file(config_file)
+
+        self._hold_period = 691200
 
     @property
     def config(self):
@@ -58,6 +64,13 @@ class Reminder(object):
 
     def set_start_date(self, value):
         self._start_date = value
+
+    @property
+    def hold_period(self):
+        return self._hold_period
+
+    def set_hold_period(self, value):
+        self._hold_period = value
 
     def parse_config(self):
         """Read config items form the Reminder configuration file.
@@ -124,6 +137,50 @@ class Reminder(object):
         self.parse_config()
         for id in self.get_uncollected_items():
             log.info('Identified uncollected job_item.id: %d' % id)
+            template_details = self.get_agent_details(id)
+
             processed_ids.append(id)
 
         return processed_ids
+
+    def get_agent_details(self, agent_id):
+        """Get agent details.
+
+        **Args:**
+            agent_id: as per the agent.id table column
+
+        **Returns:**
+            dictionary structure capturing the Agent's details similar to::
+
+                {'name': 'Vermont South Newsagency',
+                 'address': 'Shop 13-14; 495 Burwood Highway',
+                 'suburb': 'VERMONT',
+                 'postcode': '3133',
+                 'connote': 'abcd',
+                 'item_nbr': '12345678',
+                 'created_ts': '2013-09-15 00:00:00'}
+
+        """
+        agent_details = {}
+
+        sql = self.db.jobitem.job_item_agent_details_sql(agent_id)
+        self.db(sql)
+        agents = []
+        for row in self.db.rows():
+            agents.append(row)
+
+        if len(agents) == 1:
+            log.debug('job_item.id %d detail: "%s"' % (agent_id, agents[0]))
+
+            (name, addr, suburb, pc, connote, item_nbr, ts) = agents[0]
+            agent_details = {'name': name,
+                             'address': addr,
+                             'suburb': suburb,
+                             'postcode': pc,
+                             'connote': connote,
+                             'item_nbr': item_nbr,
+                             'created_ts': ts}
+        else:
+            log.error('job_item.id %d agent list: "%s"' % (id, agents))
+
+        return agent_details

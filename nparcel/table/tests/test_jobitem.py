@@ -20,9 +20,17 @@ class TestJobItem(unittest2.TestCase):
         # Prepare some sample data.
         # Agent.
         agents = [{'code': 'N031',
-                   'state': 'VIC'},
+                   'state': 'VIC',
+                   'name': 'N031 Name',
+                   'address': 'N031 Address',
+                   'postcode': '1234',
+                   'suburb': 'N031 Suburb'},
                   {'code': 'BAD1',
-                   'state': 'NSW'}]
+                   'state': 'NSW',
+                   'name': 'BAD1 Name',
+                   'address': 'BAD1 Address',
+                   'postcode': '5678',
+                   'suburb': 'BAD1 Suburb'}]
         agent_ok = cls._db.insert(cls._db._agent.insert_sql(agents[0]))
         agent_nok = cls._db.insert(cls._db._agent.insert_sql(agents[1]))
 
@@ -198,6 +206,26 @@ class TestJobItem(unittest2.TestCase):
         expected = [(self._valid_job_item_id_02,)]
         msg = 'uncollected_sql SQL query did not return expected result'
         self.assertListEqual(received, expected)
+
+    def test_job_item_agent_details_sql(self):
+        """Verify the job_item_agent_details_sql SQL string.
+        """
+        job_item_id = self._valid_job_item_id_01
+        sql = self._db.jobitem.job_item_agent_details_sql(job_item_id)
+        self._db(sql)
+
+        received = []
+        for row in self._db.rows():
+            received.append(row)
+        expected = [('N031 Name',
+                     'N031 Address',
+                     'N031 Suburb',
+                     '1234',
+                     '218501217863',
+                     'priority_item_nbr_001',
+                     self._now.isoformat(' '))]
+        msg = 'Agent details based on job_item.id not as expected'
+        self.assertListEqual(received, expected, msg)
 
     @classmethod
     def tearDownClass(cls):
