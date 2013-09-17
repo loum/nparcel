@@ -42,6 +42,45 @@ class TestConfig(unittest2.TestCase):
     def tearDown(self):
         self._c = None
 
+    def test_proxy_kwargs_no_items(self):
+        """Produce a proxy connection dictionary structure -- no items.
+        """
+        msg = 'Proxy connection string should return None'
+        self.assertIsNone(self._c.proxy_kwargs(), msg)
+
+    def test_proxy_kwargs(self):
+        """Produce a proxy connection dictionary structure.
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        msg = 'Proxy kwargs should produce a populated dictionary'
+        received = self._c.proxy_kwargs()
+        expected = {'host': 'auproxy-farm.toll.com.au',
+                    'password': '',
+                    'port': 8080,
+                    'protocol': 'https',
+                    'user': 'loumar'}
+        self.assertDictEqual(received, expected, msg)
+
+    def test_proxy_string_no_values(self):
+        """Produce a proxy string -- no values.
+        """
+        msg = 'Proxy string with no kwargs should return None'
+        self.assertIsNone(self._c.proxy_string(), msg)
+
+    def test_proxy_string(self):
+        """Produce a proxy string.
+        """
+        kwargs = {'host': 'auproxy-farm.toll.com.au',
+                  'user': 'loumar',
+                  'password': 'pw',
+                  'port': '8080'}
+        msg = 'Proxy string generation incorrect'
+        received = self._c.proxy_string(kwargs)
+        expected = 'loumar:pw@auproxy-farm.toll.com.au:8080'
+        self.assertEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._file = None
