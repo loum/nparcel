@@ -30,7 +30,8 @@ class JobItem(nparcel.Table):
                 "pod_name CHAR(40)",
                 "identity_type_id INTEGER",
                 "identity_type_data CHAR(30)",
-                "extract_ts TIMESTAMP"]
+                "extract_ts TIMESTAMP",
+                "reminder_ts TIMESTAMP"]
 
     def collected_sql(self, business_unit):
         """SQL wrapper to extract the collected items from the "jobitems"
@@ -134,5 +135,25 @@ AND item_nbr = '%s'""" % (self._name, connote, item_nbr)
         sql = """SELECT id
 FROM %s
 WHERE item_nbr = '%s'""" % (self._name, item_nbr)
+
+        return sql
+
+    def uncollected_sql(self, start_date, uncollected_period):
+        """SQL wrapper to extract the job_item records which remain
+        uncollected after *uncollected_period* has elapsed.
+
+        **Args:**
+            uncollected_period: job_item.created_ts value that defines
+            an uncollected parcel
+
+        **Returns:**
+            the SQL string
+
+        """
+        sql = """SELECT id
+FROM job_item
+WHERE (created_ts > '%s' AND created_ts < '%s')
+AND pickup_ts IS NULL
+AND reminder_ts IS NULL""" % (start_date, uncollected_period)
 
         return sql
