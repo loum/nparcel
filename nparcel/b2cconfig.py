@@ -81,51 +81,53 @@ class B2CConfig(nparcel.Config):
         self.rest = {}
         self.exporter_fields = {}
 
-    def __call__(self, item=None):
-        """Handle a call to the object itself.
+    @property
+    def in_dirs(self):
+        return self.dirs_to_check
 
-        **Args:**
-            *item*: config option to lookup
+    @property
+    def archive_dir(self):
+        return self.archive
 
-        **Returns**:
-            The value of the config option if *item* is not ``None``
+    @property
+    def staging_base(self):
+        return self.staging_base
 
-            reference to self if *item* is ``None``
+    @property
+    def signature_dir(self):
+        return self.signature
 
-        """
-        log.debug('Check against config item: "%s"' % item)
-        if item is None:
-            return self
+    @property
+    def loader_loop(self):
+        return self.loader_loop
 
-        value = None
-        if item == 'in_dirs':
-            value = self.dirs_to_check
-        elif item == 'archive_dir':
-            value = self.archive
-        elif item == 'staging_base':
-            value = self.staging_base
-        elif item == 'signature_dir':
-            value = self.signature
-        elif item == 'loader_loop':
-            value = self.loader_loop
-        elif item == 'exporter_loop':
-            value = self.exporter_loop
-        elif item == 'business_units':
-            value = self.business_units
-        elif item == 'file_bu':
-            value = self.file_bu
-        elif item == 'support_emails':
-            value = self.support_emails
-        elif item == 'cond':
-            value = self.cond
-        elif item == 'rest':
-            value = self.rest
-        elif item == 'exporter_fields':
-            value = self.exporter_fields
+    @property
+    def exporter_loop(self):
+        return self.exporter_loop
 
-        log.debug('Config item: "%s" value: "%s"' % (item, value))
+    @property
+    def business_units(self):
+        return self.business_units
 
-        return value
+    @property
+    def file_bu(self):
+        return self.file_bu
+
+    @property
+    def support_emails(self):
+        return self.support_emails
+
+    @property
+    def cond(self):
+        return self.cond
+
+    @property
+    def rest(self):
+        return self.rest
+
+    @property
+    def exporter_fields(self):
+        return self.exporter_fields
 
     def parse_config(self):
         """Read config items from the configuration file.

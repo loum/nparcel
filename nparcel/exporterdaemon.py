@@ -25,9 +25,9 @@ class ExporterDaemon(nparcel.utils.Daemon):
     def _start(self, event):
         signal.signal(signal.SIGTERM, self._exit_handler)
 
-        sig_dir = self.config('signature_dir')
-        staging_dir = self.config('staging_base')
-        archive_dir = self.config('archive_dir')
+        sig_dir = self.config.signature_dir
+        staging_dir = self.config.staging_base
+        archive_dir = self.config.archive_dir
         if archive_dir is not None:
             archive_dir = os.path.join(archive_dir, 'signature')
         exporter = nparcel.Exporter(db=self.config.db_kwargs(),
@@ -37,7 +37,7 @@ class ExporterDaemon(nparcel.utils.Daemon):
 
         while not event.isSet():
             if exporter.db():
-                for bu, id in self.config('business_units').iteritems():
+                for bu, id in self.config.business_units.iteritems():
                     log.info('Starting collection report for BU "%s" ...' %
                              bu)
                     exporter.set_out_dir(business_unit=bu)
@@ -48,7 +48,7 @@ class ExporterDaemon(nparcel.utils.Daemon):
                                              dry=self.dry)
                     if self.dry:
                         exporter.set_out_dir(None)
-                    seq = self.config('exporter_fields').get(bu_file_code)
+                    seq = self.config.exporter_fields.get(bu_file_code)
                     identifier = bu[0].upper()
                     state_rep = self.config.condition(bu_file_code,
                                                       'state_reporting')
@@ -67,7 +67,7 @@ class ExporterDaemon(nparcel.utils.Daemon):
                     log.info('Dry run iteration complete -- aborting')
                     event.set()
                 else:
-                    time.sleep(self.config('exporter_loop'))
+                    time.sleep(self.config.exporter_loop)
 
     def _exit_handler(self, signal, frame):
         log_msg = '%s --' % type(self).__name__

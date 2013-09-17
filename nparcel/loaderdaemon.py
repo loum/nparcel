@@ -44,7 +44,7 @@ class LoaderDaemon(nparcel.utils.Daemon):
                                 email_api=email_api)
         reporter = nparcel.Reporter()
         emailer = nparcel.Emailer()
-        np_support = self.config('support_emails')
+        np_support = self.config.support_emails
 
         commit = True
         if self.dry:
@@ -85,7 +85,7 @@ class LoaderDaemon(nparcel.utils.Daemon):
                     log.error('Unable to validate file "%s":' % file)
                     continue
 
-                bu_id = self.config('file_bu').get(bu.lower())
+                bu_id = self.config.file_bu.get(bu.lower())
                 if bu_id is None:
                     log.error('Unable to get a BU Id from "%s"' % bu)
                     continue
@@ -139,7 +139,7 @@ class LoaderDaemon(nparcel.utils.Daemon):
                     log.info('Dry run iteration complete -- aborting')
                     event.set()
                 else:
-                    time.sleep(self.config('loader_loop'))
+                    time.sleep(self.config.loader_loop)
 
     def _exit_handler(self, signal, frame):
         log_msg = '%s --' % type(self).__name__
@@ -151,7 +151,7 @@ class LoaderDaemon(nparcel.utils.Daemon):
         """
         files_to_process = []
 
-        for dir in self.config('in_dirs'):
+        for dir in self.config.in_dirs:
             log.info('Looking for files at: %s ...' % dir)
             for file in self.files(dir):
                 if self.check_filename(file) and self.check_eof_flag(file):
@@ -285,9 +285,9 @@ class LoaderDaemon(nparcel.utils.Daemon):
         m = re.search('T1250_TOL.*_(\d{8})\d{6}\.txt', filename)
         if m is not None:
             file_timestamp = m.group(1)
-            dir = os.path.join(self.config('archive_dir'),
-                                            customer,
-                                            file_timestamp)
+            dir = os.path.join(self.config.archive_dir,
+                               customer,
+                               file_timestamp)
             archive_dir = os.path.join(dir, filename)
 
         return archive_dir

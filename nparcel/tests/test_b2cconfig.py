@@ -26,42 +26,42 @@ class TestB2CConfig(unittest2.TestCase):
 
         # Check against expected config items.
         msg = 'Directories to check not as expected'
-        received = self._c('in_dirs')
+        received = self._c.in_dirs
         expected = ['/var/ftp/pub/nparcel/priority/in']
         self.assertListEqual(received, expected, msg)
 
         msg = 'Archive directory not as expected'
-        received = self._c('archive_dir')
+        received = self._c.archive_dir
         expected = '/data/nparcel/archive'
         self.assertEqual(received, expected, msg)
 
         msg = 'Signature directory not as expected'
-        received = self._c('signature_dir')
+        received = self._c.signature_dir
         expected = '/data/www/nparcel/data/signature'
         self.assertEqual(received, expected, msg)
 
         msg = 'Staging base directory not as expected'
-        received = self._c('staging_base')
+        received = self._c.staging_base
         expected = '/var/ftp/pub/nparcel'
         self.assertEqual(received, expected, msg)
 
         msg = 'Loader loop not as expected'
-        received = self._c('loader_loop')
+        received = self._c.loader_loop
         expected = 30
         self.assertEqual(received, expected, msg)
 
         msg = 'Exporter loop not as expected'
-        received = self._c('exporter_loop')
+        received = self._c.exporter_loop
         expected = 300
         self.assertEqual(received, expected, msg)
 
         msg = 'Business units not as expected'
-        received = self._c('business_units')
+        received = self._c.business_units
         expected = {'priority': '1', 'fast': '2', 'ipec': '3'}
         self.assertDictEqual(received, expected, msg)
 
         msg = 'Filename Business units not as expected'
-        received = self._c('file_bu')
+        received = self._c.file_bu
         expected = {'tolp': '1',
                     'tolf': '2',
                     'tolf_nsw': '2',
@@ -74,19 +74,19 @@ class TestB2CConfig(unittest2.TestCase):
         self.assertDictEqual(received, expected, msg)
 
         msg = 'Support emails not as expected'
-        received = self._c('support_emails')
+        received = self._c.support_emails
         expected = ['loumar@tollgroup.com']
         self.assertListEqual(received, expected, msg)
 
         msg = 'Conditions map not as expected'
-        received = self._c('cond')
+        received = self._c.cond
         expected = {'tolp': '000100',
                     'tolf': '000101',
                     'toli': '100010'}
         self.assertDictEqual(received, expected, msg)
 
         msg = 'RESTful API not as expected'
-        received = self._c('rest')
+        received = self._c.rest
         e_scheme = 'https'
         e_uri = 'apps.cinder.co/tollgroup/wsemail/emailservice.svc/sendemail'
         sms_api = 'https://api.esendex.com/v1.0/messagedispatcher'
@@ -100,7 +100,7 @@ class TestB2CConfig(unittest2.TestCase):
         self.assertDictEqual(received, expected, msg)
 
         msg = 'Exporter columns expected'
-        received = self._c('exporter_fields')
+        received = self._c.exporter_fields
         expected = {'tolp': '0,1,2,3,4,5',
                     'tolf': '0,1,2,3,4,5,6',
                     'toli': '0,1,2,3,4,5,6,7'}
