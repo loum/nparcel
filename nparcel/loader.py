@@ -165,26 +165,21 @@ class Loader(object):
                                        proxy_scheme=scheme,
                                        **sms_api)
 
-    def process(self,
-                time,
-                raw_record,
-                bu_id,
-                cond_map,
-                dry=False):
+    def process(self, time, raw_record, bu_id, cond_map, dry=False):
         """Extracts, validates and inserts/updates an Nparcel record.
 
         **Args:**
-            time: as identified by the input file timestamp
+            *time*: as identified by the input file timestamp
 
-            raw_record: raw record directly from a T1250 file.
+            *raw_record*: raw record directly from a T1250 file.
 
-            bu_id: the Business Unit id as per "business_unit.id"
+            *bu_id*: the Business Unit id as per "business_unit.id"
 
-            conditions: dict representing all of the condition flags for
+            *conditions*: dict representing all of the condition flags for
             the Business Unit
 
         **Kwargs:**
-            dry: only report, do not actual execute
+            *dry*: only report, do not execute
 
         **Returns:**
             boolean ``True`` if processing was successful

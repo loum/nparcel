@@ -36,7 +36,7 @@ class Reminder(object):
         self.db.connect()
 
         self._notification_delay = 345600
-        self._start_date = datetime.datetime(2013, 9, 15, 0, 0, 0)
+        self._start_date = datetime.datetime(2013, 9, 10, 0, 0, 0)
 
         self._config = nparcel.Config()
         self._config.set_config_file(config_file)
@@ -88,3 +88,42 @@ class Reminder(object):
             start_time = time.strptime(config_start, "%Y-%m-%d %H:%M:%S")
             dt = datetime.datetime.fromtimestamp(time.mktime(start_time))
             self.set_start_date(dt)
+
+    def get_uncollected_items(self):
+        """Generator which returns the uncollected job_item.id's.
+
+        **Returns:**
+            list of integer values that represent the job_item.id's of
+            uncollected parcels.
+
+        """
+        job_items = []
+
+        now = datetime.datetime.now()
+        delayed_dt = datetime.timedelta(seconds=self.notification_delay)
+        threshold_dt = now - delayed_dt
+        sql = self.db.jobitem.uncollected_sql(self.start_date, threshold_dt)
+        self.db(sql)
+
+        for row in self.db.rows():
+            yield row[0]
+
+    def process(self, dry=False):
+        """Identifies uncollected parcels and sends notifications.
+
+        **Kwargs:**
+            *dry*: only report, do not execute
+
+        **Returns:**
+            list of uncollected job_items that were successfully
+            processed
+
+        """
+        processed_ids = []
+
+        self.parse_config()
+        for id in self.get_uncollected_items():
+            log.info('Identified uncollected job_item.id: %d' % id)
+            processed_ids.append(id)
+
+        return processed_ids

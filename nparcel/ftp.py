@@ -26,7 +26,6 @@ class Ftp(ftplib.FTP):
 
         self._xfers = []
 
-
     @property
     def config(self):
         return self._config
@@ -96,7 +95,11 @@ class Ftp(ftplib.FTP):
         return keys
 
     def process(self, dry=False):
-        """
+        """Transfer signature files and reports.
+
+        **Kwargs:**
+            *dry*: only report, do not execute
+
         """
         self._parse_config()
         for xfer in self.xfers:
