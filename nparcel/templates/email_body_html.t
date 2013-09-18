@@ -4,7 +4,7 @@ For convenience, your parcel is awaiting collection at <b>${name}</b>, <b>${addr
 <table width="70%">
     <tr>
         <th>Tracking ref #:</th>
-        <td>$barcode</td>
+        <td>$connote</td>
     </tr>
     <tr>
         <th>Parcel ref #:</th>

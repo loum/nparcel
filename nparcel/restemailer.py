@@ -173,7 +173,12 @@ class RestEmailer(nparcel.Rest):
 
         return status
 
-    def create_comms(self, subject, data, base_dir=None, err=False):
+    def create_comms(self,
+                     subject,
+                     data,
+                     base_dir=None,
+                     template='body',
+                     err=False):
         """Create the MIME multipart message that can feed directly into
         the POST construct of the Esendex RESTful API.
 
@@ -221,9 +226,10 @@ class RestEmailer(nparcel.Rest):
         msgAlternative = MIMEMultipart('alternative')
         mime_msg.attach(msgAlternative)
 
-        body_html = 'email_body_html.t'
+        body_html = 'email_%s_html.t' % template
         if err:
-            body_html = 'email_err_body_html.t'
+            body_html = 'email_err_%s_html.t' % template
+        log.debug('Email body template: "%s"' % body_html)
 
         f = open(os.path.join(template_dir, body_html))
         body_t = f.read()

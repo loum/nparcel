@@ -30,7 +30,12 @@ class Reminder(object):
         period (in seconds) that the uncollected parcel will be held for
 
     """
-    def __init__(self, config_file=None, db=None):
+    def __init__(self,
+                 config_file=None,
+                 db=None,
+                 proxy=None,
+                 scheme='http',
+                 email_api=None):
         """Nparcel Reminder initialisation.
 
         """
@@ -46,6 +51,12 @@ class Reminder(object):
         self._config.set_config_file(config_file)
 
         self._hold_period = 691200
+
+        if email_api is None:
+            email_api = {}
+        self.emailer = nparcel.RestEmailer(proxy=proxy,
+                                           proxy_scheme=scheme,
+                                           **email_api)
 
     @property
     def config(self):
@@ -134,7 +145,6 @@ class Reminder(object):
         """
         processed_ids = []
 
-        self.parse_config()
         for id in self.get_uncollected_items():
             log.info('Identified uncollected job_item.id: %d' % id)
             template_details = self.get_agent_details(id)
@@ -184,3 +194,68 @@ class Reminder(object):
             log.error('job_item.id %d agent list: "%s"' % (id, agents))
 
         return agent_details
+
+    def send_email(self,
+                   item_details,
+                   base_dir=None,
+                   template='body',
+                   err=False,
+                   dry=False):
+        """Send out email comms to the list of *to_addresses*.
+
+        **Args:**
+            *agent*: dictionary of agent details similar to::
+
+                {'name': 'Vermont South Newsagency',
+                 'address': 'Shop 13-14; 495 Burwood Highway',
+                 'suburb': 'VERMONT',
+                 'postcode': '3133'}
+
+            *to_addresses*: list of email recipients
+
+        **Kwargs:**
+            *template*: the HTML body template to use
+
+            *dry*: only report, do not actual execute
+
+        **Returns:**
+            ``True`` for processing success
+
+            ``False`` for processing failure
+
+        """
+        status = True
+
+        to_address = item_details.get('email')
+        if to_address is None:
+            log.error('No email recipients provided')
+            status = False
+
+        item_nbr = item_details.get('item_nbr')
+        if status and item_nbr is None:
+            status = False
+            err = 'Email missing Agent details for id: %s' % item_nbr
+            log.error(err)
+
+        if status:
+            d = {'name': item_details.get('name'),
+                 'address': item_details.get('address'),
+                 'suburb': item_details.get('suburb'),
+                 'postcode': item_details.get('postcode'),
+                 'connote': item_details.get('connote'),
+                 'item_nbr': item_nbr,
+                 'date': item_details.get('date')}
+            log.debug('Sending customer email to "%s"' % to_address)
+
+            self.emailer.set_recipients([to_address])
+            subject = 'Toll Consumer Delivery parcel ref# %s' % item_nbr
+            if err:
+                subject = 'FAILED NOTIFICATION - ' + subject
+            encoded_msg = self.emailer.create_comms(subject=subject,
+                                                    data=d,
+                                                    base_dir=base_dir,
+                                                    template=template,
+                                                    err=err)
+            status = self.emailer.send(data=encoded_msg, dry=dry)
+
+        return status

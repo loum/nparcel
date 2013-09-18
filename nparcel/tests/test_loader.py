@@ -543,7 +543,49 @@ class TestLoader(unittest2.TestCase):
         postcode = 2000
         received = self._ldr.translate_postcode(postcode)
         expected = 'NSW'
-        msg = 'Valid postcode translation to state failed -- valid'
+        msg = 'Valid postcode (NSW) translation to state failed -- valid'
+        self.assertEqual(received, expected, msg)
+
+        postcode = 4123
+        received = self._ldr.translate_postcode(postcode)
+        expected = 'QLD'
+        msg = 'Valid postcode (QLD) translation to state failed -- valid'
+        self.assertEqual(received, expected, msg)
+
+        postcode = 9123
+        received = self._ldr.translate_postcode(postcode)
+        expected = 'QLD'
+        msg = 'Valid postcode (QLD) translation to state failed -- valid'
+        self.assertEqual(received, expected, msg)
+
+        postcode = 5023
+        received = self._ldr.translate_postcode(postcode)
+        expected = 'SA'
+        msg = 'Valid postcode (SA) translation to state failed -- valid'
+        self.assertEqual(received, expected, msg)
+
+        postcode = 5855
+        received = self._ldr.translate_postcode(postcode)
+        expected = 'SA'
+        msg = 'Valid postcode (SA) translation to state failed -- valid'
+        self.assertEqual(received, expected, msg)
+
+        postcode = 6125
+        received = self._ldr.translate_postcode(postcode)
+        expected = 'WA'
+        msg = 'Valid postcode (WA) translation to state failed -- valid'
+        self.assertEqual(received, expected, msg)
+
+        postcode = 7100
+        received = self._ldr.translate_postcode(postcode)
+        expected = 'TAS'
+        msg = 'Valid postcode (TAS) translation to state failed -- valid'
+        self.assertEqual(received, expected, msg)
+
+        postcode = 900
+        received = self._ldr.translate_postcode(postcode)
+        expected = 'NT'
+        msg = 'Valid postcode (NT) translation to state failed -- valid'
         self.assertEqual(received, expected, msg)
 
     def test_invalid_translate_postcode_range_based(self):
@@ -733,12 +775,12 @@ class TestLoader(unittest2.TestCase):
         """
         emails = ['dummy@dummyville.com']
         agent = {}
-        barcode = 'xxx'
+        connote = 'xxx'
         item_nbr = 'yyy'
         received = self._ldr.send_email(agent,
                                         emails,
                                         item_nbr,
-                                        barcode,
+                                        connote,
                                         base_dir='nparcel',
                                         dry=True)
         msg = 'Email with no Agent Id should return False'
@@ -754,15 +796,14 @@ class TestLoader(unittest2.TestCase):
 
         email = 'no-reply@consumerdelivery.tollgroup.com'
         old_sdr = self._ldr.emailer.set_sender(email)
-        #emails = ['loumar@tollgroup.com']
-        emails = ['John.Varsamis@tollgroup.com']
+        emails = ['loumar@tollgroup.com']
         agent_id = id
         item_nbr = 'item_nbr-xxx'
-        barcode = 'barcode-xxx'
+        connote = 'connote-xxx'
         received = self._ldr.send_email(agent,
                                         emails,
                                         item_nbr,
-                                        barcode,
+                                        connote,
                                         base_dir='nparcel',
                                         dry=True)
         msg = 'Email with valid Agent Id should return True'
@@ -781,11 +822,11 @@ class TestLoader(unittest2.TestCase):
         emails = self._ldr.emailer.support
         agent_id = id
         item_nbr = 'item_nbr-xxx'
-        barcode = 'barcode-xxx'
+        connote = 'connote-xxx'
         received = self._ldr.send_email(agent,
                                         emails,
                                         item_nbr,
-                                        barcode,
+                                        connote,
                                         base_dir='nparcel',
                                         err=True,
                                         dry=True)
@@ -828,7 +869,7 @@ class TestLoader(unittest2.TestCase):
              'address': '119 Auburn Road',
              'suburb': 'HAWTHORN EAST',
              'postcode': '3123',
-             'barcode': '218501217863-barcode',
+             'connote': '218501217863-connote',
              'item_nbr': '3456789012-item_nbr'}
 
         f = open('nparcel/templates/email_body_html.t')

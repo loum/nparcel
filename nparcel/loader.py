@@ -285,7 +285,7 @@ class Loader(object):
                 self.send_email(agent_details,
                                 self.emailer.support,
                                 item_nbr,
-                                barcode,
+                                connote,
                                 err=True,
                                 dry=dry)
 
@@ -710,7 +710,7 @@ class Loader(object):
                    agent,
                    to_addresses,
                    item_nbr,
-                   barcode,
+                   connote,
                    base_dir=None,
                    err=False,
                    dry=False):
@@ -754,7 +754,7 @@ class Loader(object):
                  'suburb': agent.get('suburb'),
                  'postcode': agent.get('postcode'),
                  'item_nbr': item_nbr,
-                 'barcode': barcode}
+                 'connote': connote}
             log.debug('Sending customer email to "%s"' % to_addresses)
 
             self.emailer.set_recipients(to_addresses)
