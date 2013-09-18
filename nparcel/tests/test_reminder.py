@@ -8,35 +8,17 @@ class TestReminder(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-#        # Seed data.
-#        agent = {'code': 'N031',
-#                 'state': 'VIC',
-#                 'name': 'N031 Name',
-#                 'address': 'N031 Address',
-#                 'postcode': '1234',
-#                 'suburb': 'N031 Suburb'}
-#        sql = self._r.db._agent.insert_sql(agent)
-#        agent_id = self._r.db.insert(sql)
-#
-#        cls._now = datetime.datetime.now()
-#        job = {'agent_id': agent_id,
-#               'job_ts': '%s' % cls._now,
-#               'bu_id': 1}
-#        sql = self._r.db.job.insert_sql(job)
-#        job_01 = self._r.db.insert(sql)
-#
-#        jobitem = {'connote_nbr': 'con_001',
-#                   'item_nbr': 'item_nbr_001',
-#                   'job_id': job_01,
-#                   'created_ts': '%s' % self._now}
-#        sql = self._r.db.jobitem.insert_sql(jobitem)
-#        self._id_000 = self._r.db.insert(sql)
-
         # Prepare our Reminder object.
         conf = nparcel.B2CConfig()
         conf.set_config_file('nparcel/conf/nparceld.conf')
         conf.parse_config()
         proxy = conf.proxy_string()
+        sms_api = conf.rest.get('sms_api')
+        sms_api_username = conf.rest.get('sms_user')
+        sms_api_password = conf.rest.get('sms_pw')
+        sms_api_kwargs = {'api': sms_api,
+                          'api_username': sms_api_username,
+                          'api_password': sms_api_password}
         e_api = conf.rest.get('email_api')
         e_api_username = conf.rest.get('email_user')
         e_api_password = conf.rest.get('email_pw')
@@ -48,6 +30,7 @@ class TestReminder(unittest2.TestCase):
 
         cls._r = nparcel.Reminder(proxy=proxy,
                                   scheme='https',
+                                  sms_api=sms_api_kwargs,
                                   email_api=e_api_kwargs)
 
         agents = [{'code': 'N031',
@@ -158,6 +141,27 @@ class TestReminder(unittest2.TestCase):
                                       base_dir='nparcel',
                                       template='rem',
                                       dry=True)
+        msg = 'Reminder email send should return True'
+        self.assertTrue(received)
+
+    def test_send_sms(self):
+        """Send email.
+        """
+        date = self._now + datetime.timedelta(seconds=self._r.hold_period)
+        details = {'name': 'Mannum Newsagency',
+                   'address': '77 Randwell Street',
+                   'suburb': 'MANNUM',
+                   'postcode': '5238',
+                   'item_nbr': 'item_nbr_1234',
+                   'mobile': '0431602145',
+                   'date': '%s' % date.strftime('%Y-%m-%d')}
+
+        received = self._r.send_sms(details,
+                                    base_dir='nparcel',
+                                    template='sms_rem',
+                                    dry=True)
+        msg = 'Reminder SMS send should return True'
+        self.assertTrue(received)
 
     @classmethod
     def tearDownClass(cls):

@@ -156,17 +156,17 @@ class Loader(object):
         self.parser = nparcel.Parser(fields=FIELDS)
         self.alerts = []
 
-        if email_api is None:
-            email_api = {}
-        self.emailer = nparcel.RestEmailer(proxy=proxy,
-                                           proxy_scheme=scheme,
-                                           **email_api)
-
         if sms_api is None:
             sms_api = {}
         self.smser = nparcel.RestSmser(proxy=proxy,
                                        proxy_scheme=scheme,
                                        **sms_api)
+
+        if email_api is None:
+            email_api = {}
+        self.emailer = nparcel.RestEmailer(proxy=proxy,
+                                           proxy_scheme=scheme,
+                                           **email_api)
 
     def process(self, time, raw_record, bu_id, cond_map, dry=False):
         """Extracts, validates and inserts/updates an Nparcel record.
@@ -785,10 +785,10 @@ class Loader(object):
             item_nbr: job_item.item_nbr
 
         **Kwargs:**
-            dry: only report, do not actual execute
-
             base_dir: override the standard location to search for the
             SMS XML template (default is ``~user_home/.nparceld/templates``)
+
+            dry: only report, do not actual execute
 
         **Returns:**
             ``True`` for processing success

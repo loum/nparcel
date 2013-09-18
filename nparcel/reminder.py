@@ -35,6 +35,7 @@ class Reminder(object):
                  db=None,
                  proxy=None,
                  scheme='http',
+                 sms_api=None,
                  email_api=None):
         """Nparcel Reminder initialisation.
 
@@ -47,6 +48,12 @@ class Reminder(object):
         self._notification_delay = notification_delay
         self._start_date = datetime.datetime(2013, 9, 10, 0, 0, 0)
         self._hold_period = hold_period
+
+        if sms_api is None:
+            sms_api = {}
+        self.smser = nparcel.RestSmser(proxy=proxy,
+                                       proxy_scheme=scheme,
+                                       **sms_api)
 
         if email_api is None:
             email_api = {}
@@ -196,7 +203,7 @@ class Reminder(object):
         item_nbr = item_details.get('item_nbr')
         if status and item_nbr is None:
             status = False
-            err = 'Email missing Agent details for id: %s' % item_nbr
+            err = 'Email reminder missing details: %s' % str(item_details)
             log.error(err)
 
         if status:
@@ -219,5 +226,72 @@ class Reminder(object):
                                                     template=template,
                                                     err=err)
             status = self.emailer.send(data=encoded_msg, dry=dry)
+
+        return status
+
+    def send_sms(self,
+                 item_details,
+                 base_dir=None,
+                 template='sms_rem',
+                 dry=False):
+        """Send out reminder SMS comms to the list of *mobiles*.
+
+        **Args:**
+            item_details: dictionary of SMS details similar to::
+
+                {'name': 'Vermont South Newsagency',
+                 'address': 'Shop 13-14; 495 Burwood Highway',
+                 'suburb': 'VERMONT',
+                 'postcode': '3133',
+                 'item_nbr': '12345678',
+                 'mobile': '0431602135',
+                 'date': '2013 09 15'}
+
+        **Kwargs:**
+            *template*: the XML template used to generate the SMS content
+
+            *base_dir*: override the standard location to search for the
+            SMS XML template (default is ``~user_home/.nparceld/templates``)
+
+            *dry*: only report, do not actual execute
+
+        **Returns:**
+            ``True`` for processing success
+
+            ``False`` for processing failure
+
+        """
+        status = True
+
+        mobile = item_details.get('mobile')
+        if mobile is None or not mobile:
+            log.error('No SMS mobile contact provided')
+            status = False
+
+        item_nbr = item_details.get('item_nbr')
+        if status and item_nbr is None:
+            status = False
+            err = 'SMS reminder missing item_nbr: %s' % str(item_details)
+            log.error(err)
+
+        if status and not self.smser.validate(mobile):
+            status = False
+            log.error('SMS mobile "%s" did not validate' % mobile)
+
+        if status:
+            d = {'name': item_details.get('name'),
+                 'address': item_details.get('address'),
+                 'suburb': item_details.get('suburb'),
+                 'postcode': item_details.get('postcode'),
+                 'item_nbr': item_nbr,
+                 'date': item_details.get('date')}
+            log.debug('Sending customer SMS to "%s"' % str(mobile))
+            d['mobile'] = mobile
+
+            # OK, generate the SMS structure.
+            sms_data = self.smser.create_comms(data=d,
+                                               template=template,
+                                               base_dir=base_dir)
+            status = self.smser.send(data=sms_data, dry=dry)
 
         return status
