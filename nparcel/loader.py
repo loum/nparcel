@@ -111,11 +111,14 @@ POSTCODE_MAP = {'NSW': {
                         (9000, 9999)],
                     'exceptions': []},
                 'SA': {
-                    'ranges': [],
+                    'ranges': [
+                        (5000, 5799)
+                        (5800, 5999)],
                     'exceptions': []},
                 'WA': {
                     'ranges': [
-                        (5000, 5999)],
+                        (6000, 6797),
+                        (6800, 6999)],
                     'exceptions': []},
                 'TAS': {
                     'ranges': [
@@ -495,7 +498,7 @@ class Loader(object):
         try:
             postcode = int(postcode)
         except ValueError, e:
-            log.warn('Unable to convert "%s" to an integer' % postcode)
+            log.warn('Unable to translate postcode "%s"' % postcode)
 
         if isinstance(postcode, int):
             for postcode_state, postcode_ranges in POSTCODE_MAP.iteritems():
