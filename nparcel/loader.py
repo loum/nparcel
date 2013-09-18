@@ -112,7 +112,7 @@ POSTCODE_MAP = {'NSW': {
                     'exceptions': []},
                 'SA': {
                     'ranges': [
-                        (5000, 5799)
+                        (5000, 5799),
                         (5800, 5999)],
                     'exceptions': []},
                 'WA': {
