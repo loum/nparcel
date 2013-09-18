@@ -1,9 +1,7 @@
 __all__ = [
     "Reminder",
 ]
-import time
 import datetime
-import ConfigParser
 
 import nparcel
 from nparcel.utils.log import log
@@ -31,7 +29,9 @@ class Reminder(object):
 
     """
     def __init__(self,
-                 config_file=None,
+                 notification_delay=345600,
+                 start_date=datetime.datetime(2013, 9, 10, 0, 0, 0),
+                 hold_period=691200,
                  db=None,
                  proxy=None,
                  scheme='http',
@@ -44,23 +44,15 @@ class Reminder(object):
         self.db = nparcel.DbSession(**db)
         self.db.connect()
 
-        self._notification_delay = 345600
+        self._notification_delay = notification_delay
         self._start_date = datetime.datetime(2013, 9, 10, 0, 0, 0)
-
-        self._config = nparcel.Config()
-        self._config.set_config_file(config_file)
-
-        self._hold_period = 691200
+        self._hold_period = hold_period
 
         if email_api is None:
             email_api = {}
         self.emailer = nparcel.RestEmailer(proxy=proxy,
                                            proxy_scheme=scheme,
                                            **email_api)
-
-    @property
-    def config(self):
-        return self._config
 
     @property
     def notification_delay(self):
@@ -82,36 +74,6 @@ class Reminder(object):
 
     def set_hold_period(self, value):
         self._hold_period = value
-
-    def parse_config(self):
-        """Read config items form the Reminder configuration file.
-
-        """
-        self.config.parse_config()
-
-        # notification_delay.
-        try:
-            config_delay = self.config.get('misc', 'notification_delay')
-            log.debug('Parsed notification delay: "%s"' % config_delay)
-        except ConfigParser.NoOptionError, err:
-            log.warn('No configured notification delay')
-            config_delay = None
-
-        if config_delay is not None:
-            self.set_notification_delay(int(config_delay))
-
-        # start_date.
-        try:
-            config_start = self.config.get('misc', 'start_date')
-            log.debug('Parsed start date: "%s"' % config_start)
-        except ConfigParser.NoOptionError, err:
-            log.warn('No configured start date')
-            config_start = None
-
-        if config_start is not None:
-            start_time = time.strptime(config_start, "%Y-%m-%d %H:%M:%S")
-            dt = datetime.datetime.fromtimestamp(time.mktime(start_time))
-            self.set_start_date(dt)
 
     def get_uncollected_items(self):
         """Generator which returns the uncollected job_item.id's.

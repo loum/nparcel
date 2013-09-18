@@ -2,6 +2,8 @@ __all__ = [
     "B2CConfig",
 ]
 import sys
+import time
+import datetime
 
 import nparcel
 import ConfigParser
@@ -129,6 +131,27 @@ class B2CConfig(nparcel.Config):
     def exporter_fields(self):
         return self.exporter_fields
 
+    @property
+    def notification_delay(self):
+        return self._notification_delay
+
+    def set_notification_delay(self, value):
+        self._notification_delay = value
+
+    @property
+    def start_date(self):
+        return self._start_date
+
+    def set_start_date(self, value):
+        self._start_date = value
+
+    @property
+    def hold_period(self):
+        return self._hold_period
+
+    def set_hold_period(self, value):
+        self._hold_period = value
+
     def parse_config(self):
         """Read config items from the configuration file.
 
@@ -168,8 +191,7 @@ class B2CConfig(nparcel.Config):
             pass
 
         try:
-            self.exporter_loop = int(self.get('timeout',
-                                                      'exporter_loop'))
+            self.exporter_loop = int(self.get('timeout', 'exporter_loop'))
         except ConfigParser.NoOptionError, err:
             log.warn('Exporter loop time not provided: %s' % err)
             pass
@@ -204,6 +226,36 @@ class B2CConfig(nparcel.Config):
             log.debug('Exporter fields %s' % str(self.exporter_fields))
         except ConfigParser.NoSectionError, err:
             log.warn('No Exporter column output ordering in config')
+
+        # Reminder notification_delay.
+        try:
+            notification_delay = self.get('reminder', 'notification_delay')
+            self.set_notification_delay(int(notification_delay))
+            log.debug('Parsed reminder notification delay: "%s"' %
+                      notification_delay)
+        except ConfigParser.NoOptionError, err:
+            log.warn('No configured reminder notification delay')
+            self.set_notification_delay(None)
+
+        # Reminder start_date.
+        try:
+            start_date = self.get('reminder', 'start_date')
+            start_time = time.strptime(start_date, "%Y-%m-%d %H:%M:%S")
+            dt = datetime.datetime.fromtimestamp(time.mktime(start_time))
+            self.set_start_date(dt)
+            log.debug('Parsed reminder start date: "%s"' % start_date)
+        except ConfigParser.NoOptionError, err:
+            log.warn('No configured reminder start date')
+            self.set_start_date(None)
+
+        # Reminder hold_period.
+        try:
+            hold_period = self.get('reminder', 'hold_period')
+            self.set_hold_period(int(hold_period))
+            log.debug('Parsed reminder hold period: "%s"' % hold_period)
+        except ConfigParser.NoOptionError, err:
+            log.warn('No configured reminder hold period')
+            self.set_hold_period(None)
 
     def condition(self, bu, flag):
         """Return the *bu* condition *flag* value.

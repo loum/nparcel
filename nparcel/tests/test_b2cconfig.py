@@ -1,4 +1,5 @@
 import unittest2
+import datetime
 
 import nparcel
 
@@ -105,6 +106,22 @@ class TestB2CConfig(unittest2.TestCase):
                     'tolf': '0,1,2,3,4,5,6',
                     'toli': '0,1,2,3,4,5,6,7'}
         self.assertDictEqual(received, expected, msg)
+
+        # Reminders.
+        received = self._c.notification_delay
+        expected = 345600
+        msg = 'Reminder notification_delay error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.start_date
+        expected = datetime.datetime(2013, 9, 10, 0, 0, 0)
+        msg = 'Reminder start_date error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.hold_period
+        expected = 691200
+        msg = 'Reminder hold_period error'
+        self.assertEqual(received, expected, msg)
 
     def test_condition_flag_item_excp_true(self):
         """Check item_excp flag settings -- True.
