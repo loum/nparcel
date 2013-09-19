@@ -6,7 +6,6 @@ import os
 import urllib
 import string
 from email.MIMEText import MIMEText
-from email.MIMEImage import MIMEImage
 from email.MIMEMultipart import MIMEMultipart
 import getpass
 import socket
@@ -197,8 +196,7 @@ class RestEmailer(nparcel.Rest):
 
         **Kwargs:**
             base_dir: override the standard location to search for the
-            email images and templates (default
-            ``~user_home/.nparceld/templates``).
+            templates (default ``~user_home/.nparceld/templates``).
 
         **Returns:**
             MIME multipart-formatted serialised string
@@ -209,14 +207,9 @@ class RestEmailer(nparcel.Rest):
             template_dir = os.path.join(os.path.expanduser('~'),
                                         '.nparceld',
                                         'templates')
-            images_dir = os.path.join(os.path.expanduser('~'),
-                                      '.nparceld',
-                                      'images')
         else:
             template_dir = os.path.join(base_dir, 'templates')
-            images_dir = os.path.join(base_dir, 'images')
-            log.debug('Email template/images dir: "%s/%s"' %
-                      (template_dir, images_dir))
+            log.debug('Email template dir: "%s"' % template_dir)
 
         mime_msg = MIMEMultipart('related')
         mime_msg['Subject'] = subject
@@ -237,36 +230,14 @@ class RestEmailer(nparcel.Rest):
         body_s = string.Template(body_t)
         body = body_s.substitute(**data)
 
-        f = open(os.path.join(images_dir, 'toll_logo.png'), 'rb')
-        toll_logo_encoded = urllib.quote(f.read().encode('base64'))
-        f.close()
-
-        f = open(os.path.join(images_dir, 'nparcel_logo.png'), 'rb')
-        np_logo_encoded = urllib.quote(f.read().encode('base64'))
-        f.close()
-
         f = open(os.path.join(template_dir, 'email_html.t'))
         main_t = f.read()
         f.close()
         main_s = string.Template(main_t)
-        main = main_s.substitute(body=body,
-                                 toll_logo=toll_logo_encoded,
-                                 nparcel_logo=np_logo_encoded)
+        main = main_s.substitute(body=body)
 
         main_text = MIMEText(main, 'html')
         msgAlternative.attach(main_text)
-
-        #f = open('nparcel/images/toll_logo.png')
-        #msgImage = MIMEImage(f.read(), 'rb')
-        #f.close()
-        #msgImage.add_header('Content-ID', '<toll_logo>')
-        #mime_msg.attach(msgImage)
-
-        f = open(os.path.join(images_dir, 'nparcel_logo.png'))
-        msgImage = MIMEImage(f.read(), 'rb')
-        f.close()
-        msgImage.add_header('Content-ID', '<nparcel_logo>')
-        mime_msg.attach(msgImage)
 
         return mime_msg.as_string()
 
