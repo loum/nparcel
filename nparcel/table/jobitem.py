@@ -175,7 +175,9 @@ AND reminder_ts IS NULL""" % (start_date, uncollected_period)
        ag.postcode,
        ji.connote_nbr,
        ji.item_nbr,
-       ji.created_ts
+       ji.created_ts,
+       ji.email_addr,
+       ji.phone_nbr
 FROM job_item as ji, job as j, agent as ag
 WHERE ji.job_id = j.id
 AND j.agent_id = ag.id

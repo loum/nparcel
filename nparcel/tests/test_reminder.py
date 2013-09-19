@@ -32,6 +32,7 @@ class TestReminder(unittest2.TestCase):
                                   scheme='https',
                                   sms_api=sms_api_kwargs,
                                   email_api=e_api_kwargs)
+        cls._r.set_template_base('nparcel')
 
         agents = [{'code': 'N031',
                    'state': 'VIC',
@@ -66,20 +67,28 @@ class TestReminder(unittest2.TestCase):
         aged = cls._now - datetime.timedelta(seconds=(86400 * 5))
         jobitems = [{'connote_nbr': 'con_001',
                      'item_nbr': 'item_nbr_001',
+                     'email_addr': 'loumar@tollgroup.com',
+                     'phone_nbr': '0431602145',
                      'job_id': job_01,
                      'created_ts': '%s' % cls._now},
                     {'connote_nbr': 'con_002',
                      'item_nbr': 'item_nbr_002',
+                     'email_addr': 'loumar@tollgroup.com',
+                     'phone_nbr': '0431602145',
                      'job_id': job_01,
                      'created_ts': '%s' % aged},
                     {'connote_nbr': 'con_003',
                      'item_nbr': 'item_nbr_003',
+                     'email_addr': 'loumar@tollgroup.com',
+                     'phone_nbr': '0431602145',
                      'job_id': job_01,
                      'created_ts': '%s' % aged,
                      'pickup_ts': '%s' % cls._now,
                      'reminder_ts': '%s' % cls._now},
                     {'connote_nbr': 'con_004',
                      'item_nbr': 'item_nbr_004',
+                     'email_addr': 'loumar@tollgroup.com',
+                     'phone_nbr': '0431602145',
                      'job_id': job_01,
                      'created_ts': '%s' % aged,
                      'reminder_ts': '%s' % cls._now}]
@@ -101,8 +110,7 @@ class TestReminder(unittest2.TestCase):
     def test_process(self):
         """Check processing.
         """
-
-        received = self._r.process()
+        received = self._r.process(dry=False)
         expected = [self._id_001]
         msg = 'List of processed uncollected items incorrect'
         self.assertListEqual(received, expected, msg)
@@ -115,9 +123,11 @@ class TestReminder(unittest2.TestCase):
         """
         received = self._r.get_agent_details(self._id_000)
         expected = {'address': 'N031 Address',
-                    'connote': 'con_001',
+                    'connote_nbr': 'con_001',
                     'created_ts': '%s' % self._now,
                     'item_nbr': 'item_nbr_001',
+                    'email_addr': 'loumar@tollgroup.com',
+                    'phone_nbr': '0431602145',
                     'name': 'N031 Name',
                     'postcode': '1234',
                     'suburb': 'N031 Suburb'}
@@ -132,13 +142,12 @@ class TestReminder(unittest2.TestCase):
                    'address': '77 Randwell Street',
                    'suburb': 'MANNUM',
                    'postcode': '5238',
-                   'connote': 'connote_1234',
+                   'connote_nbr': 'connote_1234',
                    'item_nbr': 'item_nbr_1234',
-                   'email': 'loumar@tollgroup.com',
+                   'email_addr': 'loumar@tollgroup.com',
                    'date': '%s' % date}
 
         received = self._r.send_email(details,
-                                      base_dir='nparcel',
                                       template='rem',
                                       dry=True)
         msg = 'Reminder email send should return True'
@@ -153,11 +162,10 @@ class TestReminder(unittest2.TestCase):
                    'suburb': 'MANNUM',
                    'postcode': '5238',
                    'item_nbr': 'item_nbr_1234',
-                   'mobile': '0431602145',
+                   'phone_nbr': '0431602145',
                    'date': '%s' % date}
 
         received = self._r.send_sms(details,
-                                    base_dir='nparcel',
                                     template='sms_rem',
                                     dry=True)
         msg = 'Reminder SMS send should return True'

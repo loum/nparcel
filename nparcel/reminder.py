@@ -29,6 +29,11 @@ class Reminder(object):
 
         period (in seconds) that the uncollected parcel will be held for
 
+    .. attribute:: template_base
+
+        override the standard location to search for the
+        SMS XML template (default is ``~user_home/.nparceld/templates``)
+
     """
     def __init__(self,
                  notification_delay=345600,
@@ -63,6 +68,8 @@ class Reminder(object):
                                            proxy_scheme=scheme,
                                            **email_api)
 
+        self._template_base = None
+
     @property
     def notification_delay(self):
         return self._notification_delay
@@ -83,6 +90,13 @@ class Reminder(object):
 
     def set_hold_period(self, value):
         self._hold_period = value
+
+    @property
+    def template_base(self):
+        return self._template_base
+
+    def set_template_base(self, value):
+        self._template_base = value
 
     def get_uncollected_items(self):
         """Generator which returns the uncollected job_item.id's.
@@ -106,6 +120,13 @@ class Reminder(object):
     def process(self, dry=False):
         """Identifies uncollected parcels and sends notifications.
 
+        For each uncollected parcel (``job_item.id``), details such as
+        Agent information, contact mobile and email and created timestamp
+        are extracted from the database.
+
+        A reminder message will be send to the customer if a valid mobile
+        and/or email address is found.
+
         **Kwargs:**
             *dry*: only report, do not execute
 
@@ -117,10 +138,22 @@ class Reminder(object):
         processed_ids = []
 
         for id in self.get_uncollected_items():
-            log.info('Identified uncollected job_item.id: %d' % id)
+            log.info('Preparing reminder notice for job_item.id: %d' % id)
             template_details = self.get_agent_details(id)
 
-            processed_ids.append(id)
+            returned_date = template_details.get('created_ts')
+            template_details['date'] = self.get_return_date(returned_date)
+
+            email_status = self.send_email(template_details,
+                                           template='rem',
+                                           err=False,
+                                           dry=dry)
+            sms_status = self.send_sms(template_details,
+                                       template='sms_rem',
+                                       dry=dry)
+
+            if email_status or sms_status:
+                processed_ids.append(id)
 
         return processed_ids
 
@@ -143,7 +176,7 @@ class Reminder(object):
         """
         return_date = None
 
-        log.debug('Preparing return date against "%s"' % created_ts)
+        log.debug('Preparing return date against "%s" ...' % created_ts)
         created_str = None
         if created_ts is not None:
             # Handle sqlite and MSSQL dates differently.
@@ -162,6 +195,8 @@ class Reminder(object):
             dt = datetime.datetime.fromtimestamp(time.mktime(ts))
             returned_dt = dt + datetime.timedelta(seconds=self.hold_period)
             return_date = returned_dt.strftime('%A %d %B %Y')
+
+        log.debug('Return date set as: "%s"' % return_date)
 
         return return_date
 
@@ -187,29 +222,24 @@ class Reminder(object):
 
         sql = self.db.jobitem.job_item_agent_details_sql(agent_id)
         self.db(sql)
+        columns = self.db.columns()
+        log.debug('columns: %s' % columns)
         agents = []
         for row in self.db.rows():
             agents.append(row)
 
-        if len(agents) == 1:
+        if len(agents) != 1:
+            log.error('job_item.id %d agent list: "%s"' % (id, agents))
+        else:
+            agent_details = [None] * (len(columns) + len(agents[0]))
+            agent_details[::2] = columns
+            agent_details[1::2] = agents[0]
             log.debug('job_item.id %d detail: "%s"' % (agent_id, agents[0]))
 
-            (name, addr, suburb, pc, connote, item_nbr, ts) = agents[0]
-            agent_details = {'name': name,
-                             'address': addr,
-                             'suburb': suburb,
-                             'postcode': pc,
-                             'connote': connote,
-                             'item_nbr': item_nbr,
-                             'created_ts': ts}
-        else:
-            log.error('job_item.id %d agent list: "%s"' % (id, agents))
-
-        return agent_details
+        return dict(zip(agent_details[0::2], agent_details[1::2]))
 
     def send_email(self,
                    item_details,
-                   base_dir=None,
                    template='body',
                    err=False,
                    dry=False):
@@ -238,7 +268,7 @@ class Reminder(object):
         """
         status = True
 
-        to_address = item_details.get('email')
+        to_address = item_details.get('email_addr')
         if to_address is None:
             log.error('No email recipients provided')
             status = False
@@ -250,21 +280,15 @@ class Reminder(object):
             log.error(err)
 
         if status:
-            d = {'name': item_details.get('name'),
-                 'address': item_details.get('address'),
-                 'suburb': item_details.get('suburb'),
-                 'postcode': item_details.get('postcode'),
-                 'connote': item_details.get('connote'),
-                 'item_nbr': item_nbr,
-                 'date': item_details.get('date')}
-            log.debug('Sending customer email to "%s"' % to_address)
+            log.info('Sending customer email to "%s"' % to_address)
 
             self.emailer.set_recipients([to_address])
             subject = 'Toll Consumer Delivery parcel ref# %s' % item_nbr
             if err:
                 subject = 'FAILED NOTIFICATION - ' + subject
+            base_dir = self.template_base
             encoded_msg = self.emailer.create_comms(subject=subject,
-                                                    data=d,
+                                                    data=item_details,
                                                     base_dir=base_dir,
                                                     template=template,
                                                     err=err)
@@ -274,7 +298,6 @@ class Reminder(object):
 
     def send_sms(self,
                  item_details,
-                 base_dir=None,
                  template='sms_rem',
                  dry=False):
         """Send out reminder SMS comms to the list of *mobiles*.
@@ -287,14 +310,11 @@ class Reminder(object):
                  'suburb': 'VERMONT',
                  'postcode': '3133',
                  'item_nbr': '12345678',
-                 'mobile': '0431602135',
+                 'phone_nbr': '0431602135',
                  'date': '2013 09 15'}
 
         **Kwargs:**
             *template*: the XML template used to generate the SMS content
-
-            *base_dir*: override the standard location to search for the
-            SMS XML template (default is ``~user_home/.nparceld/templates``)
 
             *dry*: only report, do not actual execute
 
@@ -306,7 +326,7 @@ class Reminder(object):
         """
         status = True
 
-        mobile = item_details.get('mobile')
+        mobile = item_details.get('phone_nbr')
         if mobile is None or not mobile:
             log.error('No SMS mobile contact provided')
             status = False
@@ -322,17 +342,11 @@ class Reminder(object):
             log.error('SMS mobile "%s" did not validate' % mobile)
 
         if status:
-            d = {'name': item_details.get('name'),
-                 'address': item_details.get('address'),
-                 'suburb': item_details.get('suburb'),
-                 'postcode': item_details.get('postcode'),
-                 'item_nbr': item_nbr,
-                 'date': item_details.get('date')}
-            log.debug('Sending customer SMS to "%s"' % str(mobile))
-            d['mobile'] = mobile
+            log.info('Sending customer SMS to "%s"' % str(mobile))
 
             # OK, generate the SMS structure.
-            sms_data = self.smser.create_comms(data=d,
+            base_dir = self.template_base
+            sms_data = self.smser.create_comms(data=item_details,
                                                template=template,
                                                base_dir=base_dir)
             status = self.smser.send(data=sms_data, dry=dry)

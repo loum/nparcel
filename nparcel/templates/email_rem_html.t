@@ -3,7 +3,7 @@
 <table width="70%">
     <tr>
         <th>Tracking ref #:</th>
-        <td>$connote</td>
+        <td>$connote_nbr</td>
     </tr>
     <tr>
         <th>Parcel ref #:</th>
