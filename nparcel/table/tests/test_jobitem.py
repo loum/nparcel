@@ -227,6 +227,16 @@ class TestJobItem(unittest2.TestCase):
         msg = 'Agent details based on job_item.id not as expected'
         self.assertListEqual(received, expected, msg)
 
+    def test_update_reminder_ts(self):
+        """Verify the update_reminder_ts SQL string.
+        """
+        job_item_id = self._valid_job_item_id_01
+        sql = self._db.jobitem.update_reminder_ts(job_item_id)
+        self._db(sql)
+
+        # Cleanup.
+        self._db.rollback()
+
     @classmethod
     def tearDownClass(cls):
         cls._db.close()

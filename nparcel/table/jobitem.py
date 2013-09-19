@@ -1,6 +1,8 @@
 __all__ = [
     "JobItem",
 ]
+import datetime
+
 import nparcel
 
 
@@ -11,7 +13,6 @@ class JobItem(nparcel.Table):
     def __init__(self):
         """
         """
-        self._name = 'job_item'
         super(JobItem, self).__init__('job_item')
 
     @property
@@ -94,7 +95,7 @@ WHERE id = %d
         """
         sql = """SELECT id
 FROM %s
-WHERE connote_nbr = '%s'""" % (self._name, connote)
+WHERE connote_nbr = '%s'""" % (self.name, connote)
 
         return sql
 
@@ -116,7 +117,7 @@ WHERE connote_nbr = '%s'""" % (self._name, connote)
         sql = """SELECT id
 FROM %s
 WHERE connote_nbr = '%s'
-AND item_nbr = '%s'""" % (self._name, connote, item_nbr)
+AND item_nbr = '%s'""" % (self.name, connote, item_nbr)
 
         return sql
 
@@ -134,7 +135,7 @@ AND item_nbr = '%s'""" % (self._name, connote, item_nbr)
         """
         sql = """SELECT id
 FROM %s
-WHERE item_nbr = '%s'""" % (self._name, item_nbr)
+WHERE item_nbr = '%s'""" % (self.name, item_nbr)
 
         return sql
 
@@ -179,5 +180,26 @@ FROM job_item as ji, job as j, agent as ag
 WHERE ji.job_id = j.id
 AND j.agent_id = ag.id
 AND ji.id = %d""" % job_item_id
+
+        return sql
+
+    def update_reminder_ts(self, id, ts=None):
+        """SQL wrapper to update the ``job_item.reminder_ts`` to *ts*
+        timestamp.
+
+        **Args:**
+            id: integer value relating to the ``job_item.id``
+
+        **Returns:**
+            the SQL string
+
+        """
+        if ts is None:
+            ts = datetime.datetime.now().isoformat(' ')[:-3]
+
+        sql = """UPDATE %s
+SET reminder_ts = '%s'
+WHERE id = %d
+""" % (self.name, ts, id)
 
         return sql
