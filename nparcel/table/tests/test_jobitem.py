@@ -57,7 +57,9 @@ class TestJobItem(unittest2.TestCase):
                      'pickup_ts': '%s' % cls._now,
                      'pod_name': 'pod_name 218501217863',
                      'identity_type_id': id_type_id,
-                     'identity_type_data': 'identity 218501217863'},
+                     'identity_type_data': 'identity 218501217863',
+                     'email_addr': 'loumar@tollgroup.com',
+                     'phone_nbr': '0431602145'},
                     {'connote_nbr': '218501217old',
                      'item_nbr': 'priority_item_nbr_old',
                      'job_id': priority_job_id,
@@ -223,15 +225,17 @@ class TestJobItem(unittest2.TestCase):
                      '1234',
                      '218501217863',
                      'priority_item_nbr_001',
-                     self._now.isoformat(' '))]
+                     self._now.isoformat(' '),
+                     'loumar@tollgroup.com',
+                     '0431602145')]
         msg = 'Agent details based on job_item.id not as expected'
         self.assertListEqual(received, expected, msg)
 
-    def test_update_reminder_ts(self):
+    def test_update_reminder_ts_sql(self):
         """Verify the update_reminder_ts SQL string.
         """
         job_item_id = self._valid_job_item_id_01
-        sql = self._db.jobitem.update_reminder_ts(job_item_id)
+        sql = self._db.jobitem.update_reminder_ts_sql(job_item_id)
         self._db(sql)
 
         # Cleanup.

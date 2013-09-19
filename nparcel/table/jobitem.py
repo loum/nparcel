@@ -185,7 +185,7 @@ AND ji.id = %d""" % job_item_id
 
         return sql
 
-    def update_reminder_ts(self, id, ts=None):
+    def update_reminder_ts_sql(self, id, ts=None):
         """SQL wrapper to update the ``job_item.reminder_ts`` to *ts*
         timestamp.
 

@@ -755,7 +755,6 @@ class Loader(object):
                  'postcode': agent.get('postcode'),
                  'item_nbr': item_nbr,
                  'connote': connote}
-            log.debug('Sending customer email to "%s"' % to_addresses)
 
             self.emailer.set_recipients(to_addresses)
             subject = 'Toll Consumer Delivery parcel ref# %s' % item_nbr

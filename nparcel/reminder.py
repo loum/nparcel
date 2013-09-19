@@ -152,7 +152,19 @@ class Reminder(object):
                                        template='sms_rem',
                                        dry=dry)
 
-            if email_status or sms_status:
+            if not sms_status or not email_status:
+                log.info('Sending comms failure notification to "%s"' %
+                          self.emailer.support)
+                for addr in self.emailer.support:
+                    template_details['email_addr'] = addr
+                    email_status = self.send_email(template_details,
+                                                   template='rem',
+                                                   err=True,
+                                                   dry=dry)
+            else:
+                log.info('Setting job_item %d reminder sent flag' % id)
+                if not dry:
+                    self.db(self.db.jobitem.update_reminder_ts_sql(id))
                 processed_ids.append(id)
 
         return processed_ids
@@ -246,14 +258,13 @@ class Reminder(object):
         """Send out email comms to the list of *to_addresses*.
 
         **Args:**
-            *agent*: dictionary of agent details similar to::
+            *item_details*: dictionary of details expected by the email
+            template similar to::
 
                 {'name': 'Vermont South Newsagency',
                  'address': 'Shop 13-14; 495 Burwood Highway',
                  'suburb': 'VERMONT',
                  'postcode': '3133'}
-
-            *to_addresses*: list of email recipients
 
         **Kwargs:**
             *template*: the HTML body template to use
@@ -280,9 +291,7 @@ class Reminder(object):
             log.error(err)
 
         if status:
-            log.info('Sending customer email to "%s"' % to_address)
-
-            self.emailer.set_recipients([to_address])
+            self.emailer.set_recipients(to_address.split(','))
             subject = 'Toll Consumer Delivery parcel ref# %s' % item_nbr
             if err:
                 subject = 'FAILED NOTIFICATION - ' + subject

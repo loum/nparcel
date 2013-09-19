@@ -110,9 +110,49 @@ class TestReminder(unittest2.TestCase):
     def test_process(self):
         """Check processing.
         """
-        received = self._r.process(dry=False)
+        dry = True
+        received = self._r.process(dry=dry)
         expected = [self._id_001]
         msg = 'List of processed uncollected items incorrect'
+        self.assertListEqual(received, expected, msg)
+
+        if not dry:
+            # ... and process again (no records should return)
+            received = self._r.process(dry=dry)
+            expected = []
+            msg = 'Second pass of processed uncollected items incorrect'
+            self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        self._r.db.rollback()
+
+    def test_process_failed_sms(self):
+        """Check processing -- failed SMS.
+        """
+        sql = """UPDATE job_item
+SET phone_nbr = '05431602145'
+WHERE id = %d""" % self._id_001
+        self._r.db(sql)
+
+        received = self._r.process(dry=True)
+        expected = []
+        msg = 'List of uncollected items incorrect -- failed SMS'
+        self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        self._r.db.rollback()
+
+    def test_process_failed_email(self):
+        """Check processing -- failed email.
+        """
+        sql = """UPDATE job_item
+SET email_addr = '@@@.tollgroup.com'
+WHERE id = %d""" % self._id_001
+        self._r.db(sql)
+
+        received = self._r.process(dry=True)
+        expected = []
+        msg = 'List of uncollected items incorrect -- failed email'
         self.assertListEqual(received, expected, msg)
 
         # Cleanup.
