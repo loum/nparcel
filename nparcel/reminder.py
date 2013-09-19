@@ -1,6 +1,8 @@
 __all__ = [
     "Reminder",
 ]
+import re
+import time
 import datetime
 
 import nparcel
@@ -121,6 +123,47 @@ class Reminder(object):
             processed_ids.append(id)
 
         return processed_ids
+
+    def get_return_date(self, created_ts):
+        """Creates the return date in a nicely formatted output.
+
+        Dates could be string based ("2013-09-19 08:52:13.308266") or
+        a :class:`datetime.datetime` object.
+
+        **Args:**
+            *created_ts*: the date the parcel was created
+
+        **Returns:**
+            string representation of the "return to sender" date in the
+            format "<Day full name> <day of month> <month> <year>".  For
+            example::
+
+                Sunday 15 September 2013
+
+        """
+        return_date = None
+
+        log.debug('Preparing return date against "%s"' % created_ts)
+        created_str = None
+        if created_ts is not None:
+            # Handle sqlite and MSSQL dates differently.
+            if isinstance(created_ts, str):
+                r = re.compile('(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\.\d*')
+                m = r.match(created_ts)
+                try:
+                    created_str = m.group(1)
+                except AttributeError, err:
+                    log.error('Date not found "%s": %s' % (created_ts, err))
+            else:
+                created_str = created_ts.strftime("%Y-%m-%d %H:%M:%S")
+
+        if created_str is not None:
+            ts = time.strptime(created_str, "%Y-%m-%d %H:%M:%S")
+            dt = datetime.datetime.fromtimestamp(time.mktime(ts))
+            returned_dt = dt + datetime.timedelta(seconds=self.hold_period)
+            return_date = returned_dt.strftime('%A %d %B %Y')
+
+        return return_date
 
     def get_agent_details(self, agent_id):
         """Get agent details.

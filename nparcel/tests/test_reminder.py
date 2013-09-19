@@ -127,7 +127,7 @@ class TestReminder(unittest2.TestCase):
     def test_send_email(self):
         """Send email.
         """
-        date = self._now + datetime.timedelta(seconds=self._r.hold_period)
+        date = self._r.get_return_date(self._now)
         details = {'name': 'Mannum Newsagency',
                    'address': '77 Randwell Street',
                    'suburb': 'MANNUM',
@@ -135,7 +135,7 @@ class TestReminder(unittest2.TestCase):
                    'connote': 'connote_1234',
                    'item_nbr': 'item_nbr_1234',
                    'email': 'loumar@tollgroup.com',
-                   'date': '%s' % date.strftime('%Y-%m-%d')}
+                   'date': '%s' % date}
 
         received = self._r.send_email(details,
                                       base_dir='nparcel',
@@ -147,14 +147,14 @@ class TestReminder(unittest2.TestCase):
     def test_send_sms(self):
         """Send email.
         """
-        date = self._now + datetime.timedelta(seconds=self._r.hold_period)
+        date = self._r.get_return_date(self._now)
         details = {'name': 'Mannum Newsagency',
                    'address': '77 Randwell Street',
                    'suburb': 'MANNUM',
                    'postcode': '5238',
                    'item_nbr': 'item_nbr_1234',
                    'mobile': '0431602145',
-                   'date': '%s' % date.strftime('%Y-%m-%d')}
+                   'date': '%s' % date}
 
         received = self._r.send_sms(details,
                                     base_dir='nparcel',
@@ -162,6 +162,32 @@ class TestReminder(unittest2.TestCase):
                                     dry=True)
         msg = 'Reminder SMS send should return True'
         self.assertTrue(received)
+
+    def test_get_return_date_string_based(self):
+        """Create the return date -- string based.
+        """
+        date_str = '2013-09-19 08:52:13.308266'
+        received = self._r.get_return_date(date_str)
+        expected = 'Friday 27 September 2013'
+        msg = 'Generated returned date error -- string input'
+        self.assertEqual(received, expected, msg)
+
+    def test_get_return_date_none(self):
+        """Create the return date -- None.
+        """
+        date_str = None
+        received = self._r.get_return_date(date_str)
+        msg = 'Generated returned date error -- None'
+        self.assertIsNone(received, msg)
+
+    def test_get_return_date_datetime_based(self):
+        """Create the return date -- datetime based.
+        """
+        date_datetime = datetime.datetime(2013, 9, 19, 8, 52, 13, 308266)
+        received = self._r.get_return_date(date_datetime)
+        expected = 'Friday 27 September 2013'
+        msg = 'Generated returned date error -- datetime input'
+        self.assertEqual(received, expected, msg)
 
     @classmethod
     def tearDownClass(cls):
