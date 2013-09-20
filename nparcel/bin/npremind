@@ -12,11 +12,11 @@ from nparcel.utils.log import (log,
 
 
 def main():
-    """Nparcel FTP push main sequence.
+    """Nparcel reminder notification main sequence.
     """
-    config = os.path.join(os.path.expanduser('~'),
-                          '.nparceld',
-                          'npftp.conf')
+    config_file = os.path.join(os.path.expanduser('~'),
+                                '.nparceld',
+                                'nparceld.conf')
 
     usage = "usage: %prog [options]"
     parser = OptionParser(usage=usage)
@@ -32,8 +32,8 @@ def main():
                       help='dry run - show what would have been done')
     parser.add_option('-c', '--config',
                       dest='config',
-                      default=config,
-                      help='override default config "%s"' % config)
+                      default=config_file,
+                      help='override default config "%s"' % config_file)
     (options, args) = parser.parse_args()
 
     if options.dry is not None:
@@ -48,14 +48,31 @@ def main():
     dry = options.dry is not None
     log.info('Processing dry run %s' % dry)
 
+    conf = nparcel.B2CConfig(file=config_file)
+    conf.parse_config()
+    proxy = conf.proxy_string()
+
     # Start processing.
-    ftp = nparcel.Ftp(config_file=options.config)
+    rem = nparcel.Reminder(db=conf.db_kwargs(),
+                           proxy=proxy,
+                           scheme=conf.proxy_scheme,
+                           sms_api=conf.sms_api_kwargs,
+                           email_api=conf.email_api_kwargs)
+
+    if conf.notification_delay is not None:
+        rem.set_notification_delay(conf.notification_delay)
+    if conf.start_date is not None:
+        rem.set_start_date(conf.start_date)
+    if conf.hold_period is not None:
+        rem.set_hold_period(conf.hold_period)
 
     script_name = inspect.getfile(inspect.currentframe())
     scrip_name = os.path.basename(script_name)
     log.info('Starting %s ...' % script_name)
     rollover()
-    ftp.process(dry=options.dry)
+    # TODO -- remove this placeholder when ready.
+    options.dry = True
+    rem.process(dry=options.dry)
     log.info('Completed %s' % script_name)
 
 if __name__ == '__main__':

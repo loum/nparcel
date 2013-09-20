@@ -53,7 +53,7 @@ class Reminder(object):
         self.db.connect()
 
         self._notification_delay = notification_delay
-        self._start_date = datetime.datetime(2013, 9, 10, 0, 0, 0)
+        self._start_date = start_date
         self._hold_period = hold_period
 
         if sms_api is None:
@@ -111,7 +111,9 @@ class Reminder(object):
         now = datetime.datetime.now()
         delayed_dt = datetime.timedelta(seconds=self.notification_delay)
         threshold_dt = now - delayed_dt
-        sql = self.db.jobitem.uncollected_sql(self.start_date, threshold_dt)
+        threshold_dt_str = threshold_dt.strftime('%Y-%m-%d %H:%M:%S')
+        sql = self.db.jobitem.uncollected_sql(self.start_date,
+                                              threshold_dt_str)
         self.db(sql)
 
         for row in self.db.rows():
@@ -144,10 +146,12 @@ class Reminder(object):
             returned_date = template_details.get('created_ts')
             template_details['date'] = self.get_return_date(returned_date)
 
+            email_status = True
+            sms_status = True
             email_status = self.send_email(template_details,
-                                           template='rem',
-                                           err=False,
-                                           dry=dry)
+                                            template='rem',
+                                            err=False,
+                                            dry=dry)
             sms_status = self.send_sms(template_details,
                                        template='sms_rem',
                                        dry=dry)
@@ -230,18 +234,18 @@ class Reminder(object):
                  'created_ts': '2013-09-15 00:00:00'}
 
         """
-        agent_details = {}
+        agent_details = []
 
         sql = self.db.jobitem.job_item_agent_details_sql(agent_id)
         self.db(sql)
         columns = self.db.columns()
-        log.debug('columns: %s' % columns)
         agents = []
         for row in self.db.rows():
             agents.append(row)
 
         if len(agents) != 1:
-            log.error('job_item.id %d agent list: "%s"' % (id, agents))
+            log.error('job_item.id %d agent list: "%s"' %
+                      (agent_id, agents))
         else:
             agent_details = [None] * (len(columns) + len(agents[0]))
             agent_details[::2] = columns

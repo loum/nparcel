@@ -13,25 +13,10 @@ class TestReminder(unittest2.TestCase):
         conf.set_config_file('nparcel/conf/nparceld.conf')
         conf.parse_config()
         proxy = conf.proxy_string()
-        sms_api = conf.rest.get('sms_api')
-        sms_api_username = conf.rest.get('sms_user')
-        sms_api_password = conf.rest.get('sms_pw')
-        sms_api_kwargs = {'api': sms_api,
-                          'api_username': sms_api_username,
-                          'api_password': sms_api_password}
-        e_api = conf.rest.get('email_api')
-        e_api_username = conf.rest.get('email_user')
-        e_api_password = conf.rest.get('email_pw')
-        e_api_support = conf.rest.get('failed_email')
-        e_api_kwargs = {'api': e_api,
-                        'api_username': e_api_username,
-                        'api_password': e_api_password,
-                        'support': e_api_support}
-
         cls._r = nparcel.Reminder(proxy=proxy,
-                                  scheme='https',
-                                  sms_api=sms_api_kwargs,
-                                  email_api=e_api_kwargs)
+                                  scheme=conf.proxy_scheme,
+                                  sms_api=conf.sms_api_kwargs,
+                                  email_api=conf.email_api_kwargs)
         cls._r.set_template_base('nparcel')
 
         agents = [{'code': 'N031',
@@ -122,6 +107,21 @@ class TestReminder(unittest2.TestCase):
             expected = []
             msg = 'Second pass of processed uncollected items incorrect'
             self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        self._r.db.rollback()
+
+    def test_process_no_recipients(self):
+        """Check processing -- no recipients.
+        """
+        sql = """UPDATE job_item
+SET phone_nbr = '', email_addr = ''
+WHERE id = %d""" % self._id_001
+        self._r.db(sql)
+        dry = True
+        received = self._r.process(dry=dry)
+        expected = [self._id_001]
+        msg = 'Processed uncollected items incorrect -- no recipients'
 
         # Cleanup.
         self._r.db.rollback()

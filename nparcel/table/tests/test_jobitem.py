@@ -67,7 +67,8 @@ class TestJobItem(unittest2.TestCase):
                       (cls._now - datetime.timedelta(seconds=864000)),
                      'pod_name': 'pod_name 218501217old',
                      'identity_type_id': id_type_id,
-                     'identity_type_data': 'identity 218501217old'}]
+                     'identity_type_data': 'identity 218501217old',
+                     'email_addr': 'loumar@tollgroup.com'}]
         sql = cls._db.jobitem.insert_sql(jobitems[0])
         cls._valid_job_item_id_01 = cls._db.insert(sql=sql)
         sql = cls._db.jobitem.insert_sql(jobitems[1])

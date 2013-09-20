@@ -131,10 +131,10 @@ class Config(ConfigParser.SafeConfigParser):
             dictionary-based data structure of the form::
 
                 kwargs = {'host': ...,
-                        'user': ...,
-                        'password': ...,
-                        'port': ...,
-                        'protocol': ...}
+                          'user': ...,
+                          'password': ...,
+                          'port': ...,
+                          'protocol': ...}
 
         """
         kwargs = None
@@ -194,3 +194,81 @@ class Config(ConfigParser.SafeConfigParser):
                 proxy += ':' + str(values.get('port'))
 
         return proxy
+
+    @property
+    def proxy_scheme(self):
+        return self.get('proxy', 'protocol')
+
+    @property
+    def sms_api_kwargs(self):
+        """Extract SMS API information from the configuration.
+
+        SMS API information is taken from the ``[rest]``
+        section in the configuration file.  A typical example is::
+
+            [rest]
+            sms_api = https://api.esendex.com/v1.0/messagedispatcher
+            sms_user = username
+            sms_pw = password
+
+        **Returns:**
+            dictionary-based data structure of the form::
+
+                kwargs = {'api': ...,
+                          'api_username': ...,
+                          'api_password': ...}
+
+        """
+        kwargs = {'api': None,
+                  'api_username': None,
+                  'api_password': None}
+
+        try:
+            kwargs['api'] = self.get('rest', 'sms_api')
+            kwargs['api_username'] = self.get('rest', 'sms_user')
+            kwargs['api_password'] = self.get('rest', 'sms_pw')
+
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.error('Config proxy: %s' % err)
+
+        return kwargs
+
+    @property
+    def email_api_kwargs(self):
+        """Extract email API information from the configuration.
+
+        Email API information is taken from the ``[rest]``
+        section in the configuration file.  A typical example is::
+
+            [rest]
+            email_api = https://apps.cinder.co/tollgroup...
+            email_user = username
+            email_pw = password
+            failed_email = loumar@tollgroup.com
+
+        **Returns:**
+            dictionary-based data structure of the form::
+
+                kwargs = {'api': ...,
+                          'api_username': ...,
+                          'api_password': ...,
+                          'support': ...}
+
+        """
+        kwargs = {'api': None,
+                  'api_username': None,
+                  'api_password': None,
+                  'support': None}
+
+        try:
+            kwargs['api'] = self.get('rest', 'email_api')
+            kwargs['api_username'] = self.get('rest', 'email_user')
+            kwargs['api_password'] = self.get('rest', 'email_pw')
+            kwargs['support'] = self.get('rest', 'failed_email')
+
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.error('Config proxy: %s' % err)
+
+        return kwargs

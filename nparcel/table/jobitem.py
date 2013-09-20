@@ -155,6 +155,7 @@ WHERE item_nbr = '%s'""" % (self.name, item_nbr)
 FROM job_item
 WHERE (created_ts > '%s' AND created_ts < '%s')
 AND pickup_ts IS NULL
+AND (email_addr != '' OR phone_nbr != '')
 AND reminder_ts IS NULL""" % (start_date, uncollected_period)
 
         return sql
