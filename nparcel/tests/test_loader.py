@@ -894,10 +894,6 @@ class TestLoader(unittest2.TestCase):
                                  toll_logo=toll_logo,
                                  nparcel_logo=nparcel_logo)
 
-        f = open('/media/sf_titanium/email.html', 'w')
-        f.write(main)
-        f.close()
-
     @classmethod
     def tearDownClass(cls):
         cls._ldr = None
