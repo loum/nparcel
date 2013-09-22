@@ -1,1 +1,4 @@
-recursive-include  doc/build/ *.html *.png *.js *.css
+recursive-include doc/build/ *.html *.png *.js *.css
+recursive-include nparcel/templates *.t
+include nparcel/utils/conf/*.conf
+include nparcel/conf/*.conf
