@@ -1,7 +1,10 @@
 import os
 import glob
 import fnmatch
+import shutil
 from distutils.core import setup
+
+VERSION = '0.11'
 
 
 def opj(*args):
@@ -14,6 +17,7 @@ def find_data_files(srcdir, *wildcards, **kw):
     returned in a format to be used for install_data.
 
     """
+
     def walk_helper(arg, dirname, files):
         names = []
         lst, wildcards = arg
@@ -24,7 +28,15 @@ def find_data_files(srcdir, *wildcards, **kw):
 
                 if (fnmatch.fnmatch(filename, wc_name) and
                     not os.path.isdir(filename)):
-                    names.append(filename)
+                    if kw.get('version') is None:
+                        names.append(filename)
+                    else:
+                        versioned_file = '%s.%s' % (filename,
+                                                    kw.get('version'))
+                        shutil.copyfile(filename, versioned_file)
+                        names.append('%s.%s' % (filename,
+                                                kw.get('version')))
+
         if names:
             lst.append((dirname, names))
 
@@ -44,16 +56,26 @@ files = find_data_files('doc/build/',
                         '*.js',
                         '*.css',
                         recursive=True)
+template_files = find_data_files('nparcel/templates/', '*.t')
+nparcel_conf_file = find_data_files('nparcel/conf/',
+                                    '*.conf',
+                                    version=VERSION)
+log_conf_file = find_data_files('nparcel/utils/conf/',
+                                '*.conf',
+                                version=VERSION)
 
+files = files + template_files + nparcel_conf_file + log_conf_file
 
 setup(name='python-nparcel',
-      version='0.10',
+      version=VERSION,
       description='Nparcel B2C Replicator',
       author='Lou Markovski',
       author_email='lou.markovski@tollgroup.com',
       url='https://nparcel.tollgroup.com',
       scripts=['nparcel/bin/nploaderd',
                'nparcel/bin/npexporterd',
-               'nparcel/bin/npftp'],
+               'nparcel/bin/npremind',
+               'nparcel/bin/npftp',
+               'nparcel/bin/npinit'],
       packages=['nparcel', 'nparcel.table', 'nparcel.utils'],
       data_files=files)

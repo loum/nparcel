@@ -31,6 +31,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestB2CConfig \
 	 nparcel.tests:TestFtp \
 	 nparcel.tests:TestReminder \
+	 nparcel.tests:TestInit \
 	 nparcel.table.tests:TestAgent \
 	 nparcel.table.tests:TestJob \
 	 nparcel.table.tests:TestJobItem \

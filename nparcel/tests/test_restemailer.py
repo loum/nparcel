@@ -62,9 +62,11 @@ class TestRestEmailer(unittest2.TestCase):
              'address': '119 Auburn Road',
              'suburb': 'HAWTHORN EAST',
              'postcode': '3123',
-             'barcode': '218501217863-barcode',
+             'connote': '218501217863-connote',
              'item_nbr': '3456789012-item_nbr'}
-        received = self._re.create_comms(subject=subject, data=d)
+        received = self._re.create_comms(subject=subject,
+                                         data=d,
+                                         base_dir='nparcel')
 
         msg = 'Create comms should return a valid string'
         self.assertTrue(received, msg)
@@ -80,9 +82,11 @@ class TestRestEmailer(unittest2.TestCase):
              'address': '119 Auburn Road',
              'suburb': 'HAWTHORN EAST',
              'postcode': '3123',
-             'barcode': '218501217863-barcode',
+             'connote': '218501217863-connote',
              'item_nbr': '3456789012-item_nbr'}
-        encoded_msg = self._re.create_comms(subject=subject, data=d)
+        encoded_msg = self._re.create_comms(subject=subject,
+                                            data=d,
+                                            base_dir='nparcel')
 
         received = self._re.send(data=encoded_msg, dry=True)
 
