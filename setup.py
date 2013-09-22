@@ -75,6 +75,7 @@ setup(name='python-nparcel',
       scripts=['nparcel/bin/nploaderd',
                'nparcel/bin/npexporterd',
                'nparcel/bin/npremind',
-               'nparcel/bin/npftp'],
+               'nparcel/bin/npftp',
+               'nparcel/bin/npinit'],
       packages=['nparcel', 'nparcel.table', 'nparcel.utils'],
       data_files=files)

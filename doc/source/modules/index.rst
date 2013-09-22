@@ -6,6 +6,8 @@ Modules
 .. toctree::
     :maxdepth: 2
 
+    init.rst
+
     config.rst
     b2cconfig.rst
     parser.rst
