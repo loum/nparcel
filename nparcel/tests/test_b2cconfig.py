@@ -212,6 +212,22 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Valid Business Unit condition map should produce dict values'
         self.assertDictEqual(received, expected, msg)
 
+    def test_condition_map_tolf(self):
+        """Check condition map -- Fast state based BU.
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        received = self._c.condition_map('tolf_nsw')
+        expected = {'item_number_excp': False,
+                    'send_sms': False,
+                    'send_email': False,
+                    'send_ps_file': True,
+                    'send_png_file': False,
+                    'state_reporting': True}
+        msg = 'Fast condition map should produce dict values'
+        self.assertDictEqual(received, expected, msg)
+
     def test_required_facility_when_flag_not_set(self):
         """Required facility when a flag is not set.
         """

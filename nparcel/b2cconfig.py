@@ -203,7 +203,7 @@ class B2CConfig(nparcel.Config):
             log.warn('Support emails not provided: %s' % err)
             pass
 
-        # Business unit condiitons.  No probs if they are missing -- will
+        # Business unit conditons.  No probs if they are missing -- will
         # just default to '0' (False) for each flag.
         try:
             self.cond = dict(self.items('conditions'))
@@ -297,7 +297,9 @@ class B2CConfig(nparcel.Config):
         """Return the *bu* condition map values.
 
         **Args:**
-            *bu*: the name of the Business Unit.
+            *bu*: the name of the Business Unit.  Only the first 4
+            characters are accepted.  For example, ``tolf_nsw`` will be
+            interpreted as ``tolf``.
 
         **Returns:**
             dict representing all of the condition flags for the *bu*
@@ -305,6 +307,7 @@ class B2CConfig(nparcel.Config):
         """
         c_map = {}
 
+        bu = bu[:4]
         for flag in FLAG_MAP.keys():
             status = self.condition(bu, flag)
             log.debug('bu/flag - status | %s/%s - %s' % (bu, flag, status))
