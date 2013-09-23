@@ -168,7 +168,7 @@ VALUES ("%s", "%s")""" % (bc, self._job_ts)
         # Cleanup.
         self._db.connection.rollback()
 
-    def jobitem_nbr_based_job_sql(self):
+    def test_jobitem_nbr_based_job_sql(self):
         """Verify the jobitem_based_job_search_sql string.
         """
         now = datetime.datetime.now()
@@ -222,6 +222,63 @@ VALUES ("%s", "%s")""" % (bc, self._job_ts)
         expected = (job_id,)
         msg = 'jobitem based job id query results not as expected'
         self.assertEqual(received, expected, msg)
+
+        # Cleanup.
+        self._db.connection.rollback()
+
+    def test_job_table_postcode_sql(self):
+        """Verify postcode_sql SQL string
+        """
+        jobs = [{'address_1': '250 Tilt Road',
+                 'bu_id': 1,
+                 'card_ref_nbr': '1234567890',
+                 'job_ts': self._job_ts,
+                 'status': 1,
+                 'postcode': 3754,
+                 'suburb': 'Doreen',
+                 'state': 'VIC'},
+                {'address_1': '170 Vanessa Avenue',
+                 'bu_id': 1,
+                 'card_ref_nbr': '2345678901',
+                 'job_ts': self._job_ts,
+                 'status': 1},
+                {'address_1': '40 Cobb Street',
+                 'bu_id': 1,
+                 'card_ref_nbr': '3456789012',
+                 'job_ts': self._job_ts,
+                 'status': 1,
+                 'postcode': ''},
+                {'address_1': '17 Gabriel Terrace',
+                 'bu_id': 1,
+                 'card_ref_nbr': '4567890123',
+                 'job_ts': self._job_ts,
+                 'status': 1,
+                 'postcode': '3752'}]
+        job_000 = self._db.insert(self._job.insert_sql(jobs[0]))
+        job_001 = self._db.insert(self._job.insert_sql(jobs[1]))
+        job_002 = self._db.insert(self._job.insert_sql(jobs[2]))
+        job_003 = self._db.insert(self._job.insert_sql(jobs[3]))
+
+        received = []
+        self._db(self._job.postcode_sql())
+        for row in self._db.rows():
+            received.append(row)
+        expected = [(1, '3754', 'VIC'),
+                    (4, '3752', None)]
+        msg = 'Postcode SQL returned unexpected list of values'
+        self.assertListEqual(received, expected, msg)
+
+        sql = self._db.job.update_postcode_sql(job_003, 'VIC')
+        self._db(sql)
+
+        received = []
+        self._db(self._job.postcode_sql())
+        for row in self._db.rows():
+            received.append(row)
+        expected = [(1, '3754', 'VIC'),
+                    (4, '3752', 'VIC')]
+        msg = 'Postcode SQL (post update) returned unexpected list'
+        self.assertListEqual(received, expected, msg)
 
         # Cleanup.
         self._db.connection.rollback()

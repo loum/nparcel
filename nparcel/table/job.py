@@ -110,3 +110,36 @@ WHERE (ji.connote_nbr = '%s' AND
 ORDER by j.job_ts DESC""" % (connote, item_nbr)
 
         return sql
+
+    def postcode_sql(self):
+        """Generate SQL that queries the job table for records for the
+        postcode and state.
+
+        **Returns:**
+            the SQL string
+
+        """
+        sql = """SELECT id, postcode, state
+FROM %s
+WHERE postcode IS NOT NULL and postcode != ''""" % self.name
+
+        return sql
+
+    def update_postcode_sql(self, id, state):
+        """Generate SQL that updates the job table for records for the
+        postcode and state.
+
+        **Args:**
+            *id*: integer value relating to the ``job.id`` to update
+
+            *state*: value to update the ``job.state`` column with
+
+        **Returns:**
+            the SQL string
+
+        """
+        sql = """UPDATE %s
+SET state = '%s'
+WHERE id = %d""" % (self.name, state, id)
+
+        return sql

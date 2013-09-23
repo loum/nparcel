@@ -76,6 +76,7 @@ setup(name='python-nparcel',
                'nparcel/bin/npexporterd',
                'nparcel/bin/npremind',
                'nparcel/bin/npftp',
-               'nparcel/bin/npinit'],
+               'nparcel/bin/npinit',
+               'nparcel/bin/nppostcode'],
       packages=['nparcel', 'nparcel.table', 'nparcel.utils'],
       data_files=files)

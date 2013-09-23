@@ -491,6 +491,13 @@ class Loader(object):
 
     def translate_postcode(self, postcode):
         """Translate postcode information to state.
+
+        **Args:**
+            *postcode*: integer representing a postcode (for example, 3754)
+
+        **Returns:**
+            string representing the state of the translated postcode
+
         """
         log.debug('Translating raw postcode value: "%s" ...' % postcode)
 
