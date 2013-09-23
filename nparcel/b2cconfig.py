@@ -395,3 +395,213 @@ class B2CConfig(nparcel.Config):
                     break
 
         return file_code_for_bu
+
+    def db_kwargs(self):
+        """Extract database connectivity information from the configuration.
+
+        Database connectivity information is taken from the ``[db]``
+        section in the configuration file.  A typical example is::
+
+            [db]
+            driver = FreeTDS
+            host = SQVDBAUT07
+            database = Nparcel
+            user = npscript
+            password = <passwd>
+            port =  1442
+
+        Base assumptions on "host" keyword.  No "host" means this must be a
+        test scenario in which case the database session is a memory-based
+        sqlite instance.
+
+        **Returns:**
+            dictionary-based data structure of the form::
+
+                kwargs = {'driver': ...,
+                          'host': ...,
+                          'database': ...,
+                          'user': ...,
+                          'password': ...,
+                          'port': ...}
+
+        """
+        kwargs = None
+
+        try:
+            host = self.get('db', 'host')
+            driver = self.get('db', 'driver')
+            database = self.get('db', 'database')
+            user = self.get('db', 'user')
+            password = self.get('db', 'password')
+            port = self.get('db', 'port')
+            if port is not None and port:
+                port = int(port)
+            kwargs = {'driver': driver,
+                      'host': host,
+                      'database': database,
+                      'user': user,
+                      'password': password,
+                      'port': port}
+        except ConfigParser.NoOptionError, err:
+            log.error('Missing DB key via config: %s' % err)
+
+        return kwargs
+
+    def proxy_kwargs(self):
+        """Extract proxy connectivity information from the configuration.
+
+        Proxy connectivity information is taken from the ``[proxy]``
+        section in the configuration file.  A typical example is::
+
+            [proxy]
+            host = auproxy-farm.toll.com.au
+            user = <username>
+            password = <passwd>
+            port = 8080
+            protocol = https
+
+        **Returns:**
+            dictionary-based data structure of the form::
+
+                kwargs = {'host': ...,
+                          'user': ...,
+                          'password': ...,
+                          'port': ...,
+                          'protocol': ...}
+
+        """
+        kwargs = None
+
+        try:
+            host = self.get('proxy', 'host')
+            user = self.get('proxy', 'user')
+            password = self.get('proxy', 'password')
+            port = self.get('proxy', 'port')
+            if port is not None and port:
+                port = int(port)
+            protocol = self.get('proxy', 'protocol')
+            kwargs = {'host': host,
+                      'user': user,
+                      'password': password,
+                      'port': port,
+                      'protocol': protocol}
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.error('Config proxy: %s' % err)
+
+        return kwargs
+
+    def proxy_string(self, kwargs=None):
+        """Constructs a proxy string based on the *kwargs* dictionary
+        structure or :attr:`proxy` attribute (in that order if *kwargs* is
+        ``None``).
+
+        **Kwargs:**
+            *kwargs* as per the return value of the :meth:`proxy_kwargs`
+            method
+
+        **Returns:**
+            string that could be fed directly into a HTTP/S header
+            to handle proxy authentication in the request.  Example::
+
+                http://loumar:<passwd>@auproxy-farm.toll.com.aus:8080
+
+        """
+        values = None
+        if kwargs is not None:
+            values = kwargs
+        else:
+            values = self.proxy_kwargs()
+        proxy = None
+        if values is not None:
+            # Check if we have a username and password.
+            if (values.get('user') is not None and
+                values.get('password') is not None):
+                proxy = ("%s:%s@" % (values.get('user'),
+                                     values.get('password')))
+
+            if values.get('host') is not None:
+                proxy += values.get('host')
+
+            if values.get('port') is not None:
+                proxy += ':' + str(values.get('port'))
+
+        return proxy
+
+    @property
+    def proxy_scheme(self):
+        return self.get('proxy', 'protocol')
+
+    @property
+    def sms_api_kwargs(self):
+        """Extract SMS API information from the configuration.
+
+        SMS API information is taken from the ``[rest]``
+        section in the configuration file.  A typical example is::
+
+            [rest]
+            sms_api = https://api.esendex.com/v1.0/messagedispatcher
+            sms_user = username
+            sms_pw = password
+
+        **Returns:**
+            dictionary-based data structure of the form::
+
+                kwargs = {'api': ...,
+                          'api_username': ...,
+                          'api_password': ...}
+
+        """
+        kwargs = {'api': None,
+                  'api_username': None,
+                  'api_password': None}
+
+        try:
+            kwargs['api'] = self.get('rest', 'sms_api')
+            kwargs['api_username'] = self.get('rest', 'sms_user')
+            kwargs['api_password'] = self.get('rest', 'sms_pw')
+
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.error('Config proxy: %s' % err)
+
+        return kwargs
+
+    @property
+    def email_api_kwargs(self):
+        """Extract email API information from the configuration.
+
+        Email API information is taken from the ``[rest]``
+        section in the configuration file.  A typical example is::
+
+            [rest]
+            email_api = https://apps.cinder.co/tollgroup...
+            email_user = username
+            email_pw = password
+            failed_email = loumar@tollgroup.com
+
+        **Returns:**
+            dictionary-based data structure of the form::
+
+                kwargs = {'api': ...,
+                          'api_username': ...,
+                          'api_password': ...,
+                          'support': ...}
+
+        """
+        kwargs = {'api': None,
+                  'api_username': None,
+                  'api_password': None,
+                  'support': None}
+
+        try:
+            kwargs['api'] = self.get('rest', 'email_api')
+            kwargs['api_username'] = self.get('rest', 'email_user')
+            kwargs['api_password'] = self.get('rest', 'email_pw')
+            kwargs['support'] = self.get('rest', 'failed_email')
+
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.error('Config proxy: %s' % err)
+
+        return kwargs
