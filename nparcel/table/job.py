@@ -28,7 +28,8 @@ class Job(nparcel.Table):
                 "suburb CHAR(30)",
                 "postcode CHAR(4)",
                 "state CHAR(3)",
-                "status INTEGER"]
+                "status INTEGER",
+                "service_code INTEGER"]
 
     def check_barcode(self, barcode):
         """

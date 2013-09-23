@@ -21,6 +21,7 @@ MANUFACTURED_BC_UPD_LINE = """3142357006912345      YMLML11TOLP130413  Diane Don
 SINGLE_QUOTE_LINE = """080102033141          YMLML11TOLP130815  MISS S D'ARCY                           13 FITZGERALD RD              ESSENDON                      MELBOURNE                     3040                                                                                                                 MISS S D'ARCY                             NEXT RETAIL LTD               LEICESTER                                                                     4159214753     V098                                                                                                                                   00001000001                                                                      Parcels Overnight                   DESFORD ROAD                  ENDERBY                                                                                                              FVAN000098                                                                                                 GB                            AUSTRALIA                                                                                                                                                                                                         VI                                               """
 DODGY_POSTCODE = """574000244915          YMLML11TOLP130715  AMAL DOUKARI                            41 BLAMEY ST 1501 KELVIN GROVEQUEEN SLAND 4059              ;                             ;                                                                                                                    AMAL DOUKARI                              GUANGZHOU YASHUNDA LTD                                      362000                                          4159054556     Q067                                                                                                                                   00001000001                                                                      Parcels Overnight                   NO.83 MEIGUI YUAN QU E 3 BAIYUGUANGZHOU GUANGDONG                                                                                                  Q067                                                                                                       CHINA                         AUSTRALIA                                                                                                                                                                                                      GU ;                                                """
 VALID_ITEM_NUMBER = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111     N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                               1234567890                                                              HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
+PE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111     N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                            3         N031                               1234567890                                                              HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
 
 
 class TestLoader(unittest2.TestCase):
@@ -89,6 +90,50 @@ class TestLoader(unittest2.TestCase):
 
         # Restore DB state.
         self._ldr.db.connection.rollback()
+
+    def test_processor_valid_primary_elect(self):
+        """Process valid raw T1250 line -- primary elect.
+        """
+        # Seed the Agent Id.
+        agent_fields = {'code': 'N031'}
+        self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
+
+        msg = 'Valid T1250 record should process OK'
+        self.assertTrue(self._ldr.process(self._job_ts,
+                                          PE,
+                                          FILE_BU.get('toli'),
+                                          COND_MAP_IPEC), msg)
+
+        # Restore DB state.
+        self._ldr.db.connection.rollback()
+
+    def test_table_column_map_for_primary_elect(self):
+        """Primary elect valid raw T1250 line and map job table elements.
+        """
+        # Seed the Agent Id.
+        agent_fields = {'code': 'N031'}
+        self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
+
+        fields = self._ldr.parser.parse_line(PE)
+        fields['job_ts'] = self._job_ts
+        fields['bu_id'] = int(FILE_BU.get('tolp'))
+        received = self._ldr.table_column_map(fields,
+                                              nparcel.loader.JOB_MAP,
+                                              COND_MAP)
+        expected = {'address_1': '31 Bridge st,',
+                    'address_2': 'Lane Cove,',
+                    'agent_id': 1,
+                    'bu_id': 1,
+                    'card_ref_nbr': '4156536111',
+                    'job_ts': self._job_ts,
+                    'postcode': '2066',
+                    'service_code': '3',
+                    'state': 'NSW',
+                    'status': 1,
+                    'suburb': 'Australia Other'}
+        msg = 'Valid record Job table translation error'
+        self.assertDictEqual(received, expected, msg)
+
 
     def test_processor_invalid_record_item_number(self):
         """Process valid raw T1250 line -- no item number, exception.
@@ -508,6 +553,7 @@ class TestLoader(unittest2.TestCase):
                     'card_ref_nbr': '4156536111',
                     'job_ts': self._job_ts,
                     'postcode': '2066',
+                    'service_code': '',
                     'state': 'NSW',
                     'status': 1,
                     'suburb': 'Australia Other'}

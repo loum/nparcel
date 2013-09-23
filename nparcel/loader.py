@@ -33,6 +33,8 @@ FIELDS = {'Conn Note': {'offset': 0,
                             'length': 60},
           'Mobile Number': {'offset': 825,
                             'length': 10},
+          'Service Code': {'offset': 842,
+                           'length': 1},
           'Item Number': {'offset': 887,
                           'length': 32}}
 JOB_MAP = {'Agent Id': {
@@ -62,7 +64,9 @@ JOB_MAP = {'Agent Id': {
                'default': 1},
            'job_ts': {
                'column': 'job_ts',
-               'required': True}}
+               'required': True},
+           'Service Code': {
+               'column': 'service_code'}}
 JOB_ITEM_MAP = {'Conn Note': {
                     'column': 'connote_nbr',
                     'required': True},
