@@ -31,24 +31,10 @@ class TestLoader(unittest2.TestCase):
         conf.set_config_file('nparcel/conf/nparceld.conf')
         conf.parse_config()
         proxy = conf.proxy_string()
-        sms_api = conf.rest.get('sms_api')
-        email_api = conf.rest.get('email_api')
-        sms_api_username = conf.rest.get('sms_user')
-        sms_api_password = conf.rest.get('sms_pw')
-        sms_api_kwargs = {'api': sms_api,
-                          'api_username': sms_api_username,
-                          'api_password': sms_api_password}
-        e_api_username = conf.rest.get('email_user')
-        e_api_password = conf.rest.get('email_pw')
-        e_api_support = conf.rest.get('failed_email')
-        e_api_kwargs = {'api': email_api,
-                        'api_username': e_api_username,
-                        'api_password': e_api_password,
-                        'support': e_api_support}
         cls._ldr = nparcel.Loader(proxy=proxy,
                                   scheme='https',
-                                  sms_api=sms_api_kwargs,
-                                  email_api=e_api_kwargs)
+                                  sms_api=conf.sms_api_kwargs,
+                                  email_api=conf.email_api_kwargs)
         cls._job_ts = cls._ldr.db.date_now()
 
     def test_init(self):

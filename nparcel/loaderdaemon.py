@@ -30,18 +30,11 @@ class LoaderDaemon(nparcel.utils.Daemon):
     def _start(self, event):
         signal.signal(signal.SIGTERM, self._exit_handler)
 
-        sms_api = {'api': self.config.rest.get('sms_api'),
-                   'api_username': self.config.rest.get('sms_user'),
-                   'api_password': self.config.rest.get('sms_pw')}
-        email_api = {'api': self.config.rest.get('email_api'),
-                     'api_username': self.config.rest.get('email_user'),
-                     'api_password': self.config.rest.get('email_pw'),
-                     'support': self.config.rest.get('failed_email')}
         loader = nparcel.Loader(db=self.config.db_kwargs(),
                                 proxy=self.config.proxy_string(),
-                                scheme=self.config.rest.get('sms_scheme'),
-                                sms_api=sms_api,
-                                email_api=email_api)
+                                scheme=self.config.proxy_scheme,
+                                sms_api=self.config.sms_api_kwargs,
+                                email_api=self.config.email_api_kwargs)
         reporter = nparcel.Reporter()
         emailer = nparcel.Emailer()
         np_support = self.config.support_emails

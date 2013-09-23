@@ -767,6 +767,9 @@ class Loader(object):
             subject = 'Toll Consumer Delivery parcel ref# %s' % item_nbr
             if err:
                 subject = 'FAILED NOTIFICATION - ' + subject
+            else:
+                log.debug('Sending customer email to "%s"' %
+                          str(to_addresses))
             encoded_msg = self.emailer.create_comms(subject=subject,
                                                     data=d,
                                                     base_dir=base_dir,
