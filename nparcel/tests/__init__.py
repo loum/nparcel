@@ -9,6 +9,7 @@ from test_restemailer import TestRestEmailer
 from test_restsmser import TestRestSmser
 from test_loaderdaemon import TestLoaderDaemon
 from test_exporterdaemon import TestExporterDaemon
+from test_primaryelectdaemon import TestPrimaryElectDaemon
 from test_exporter import TestExporter
 from test_exporter_ipec import TestExporterIpec
 from test_exporter_fast import TestExporterFast

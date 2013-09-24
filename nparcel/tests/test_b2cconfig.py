@@ -51,6 +51,11 @@ class TestB2CConfig(unittest2.TestCase):
         expected = 30
         self.assertEqual(received, expected, msg)
 
+        msg = 'Primary elect loop not as expected'
+        received = self._c.pe_loop
+        expected = 30
+        self.assertEqual(received, expected, msg)
+
         msg = 'Exporter loop not as expected'
         received = self._c.exporter_loop
         expected = 300
