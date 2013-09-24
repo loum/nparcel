@@ -16,4 +16,5 @@ from test_config import TestConfig
 from test_b2cconfig import TestB2CConfig
 from test_ftp import TestFtp
 from test_reminder import TestReminder
+from test_primaryelect import TestPrimaryElect
 from test_init import TestInit

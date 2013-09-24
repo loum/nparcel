@@ -13,6 +13,7 @@ from nparcel.config import Config
 from nparcel.b2cconfig import B2CConfig
 from nparcel.ftp import Ftp
 from nparcel.reminder import Reminder
+from nparcel.primaryelect import PrimaryElect
 from nparcel.init import Init
 from table import Table
 from table.job import Job

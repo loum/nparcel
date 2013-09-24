@@ -24,6 +24,8 @@ Modules
 
     reminder.rst
 
+    primaryelect.rst
+
     rest.rst
     restemailer.rst
     restsmser.rst
