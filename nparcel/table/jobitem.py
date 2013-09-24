@@ -206,3 +206,26 @@ WHERE id = %d
 """ % (self.name, ts, id)
 
         return sql
+
+    def connote_base_primary_elect_job(self, connote):
+        """SQL wrapper to verify if a *connote* is associated with a primary
+        elect job.
+
+        Primary elect jobs are identified by a integer value 3 in the
+        ``job.service_code`` column.
+
+        **Args:**
+            connote: the jobitem.connote value to search against.
+
+        **Returns:**
+            the SQL string
+
+        """
+        sql = """SELECT ji.id
+FROM job as j, %s as ji
+WHERE ji.job_id = j.id
+AND ji.connote_nbr = '%s'
+AND (ji.email_addr != '' OR ji.phone_nbr != '')
+AND j.service_code = 3""" % (self.name, connote)
+
+        return sql

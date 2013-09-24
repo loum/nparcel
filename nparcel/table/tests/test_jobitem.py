@@ -39,9 +39,16 @@ class TestJobItem(unittest2.TestCase):
         jobs = [{'card_ref_nbr': 'priority ref',
                  'agent_id': agent_ok,
                  'job_ts': '%s' % cls._now,
+                 'bu_id': BU['priority']},
+                {'card_ref_nbr': 'primary_elect_card_ref',
+                 'agent_id': agent_ok,
+                 'job_ts': '%s' % cls._now,
+                 'service_code': 3,
                  'bu_id': BU['priority']}]
         sql = cls._db.job.insert_sql(jobs[0])
         priority_job_id = cls._db.insert(sql=sql)
+        sql = cls._db.job.insert_sql(jobs[1])
+        pe_job_id = cls._db.insert(sql=sql)
 
         # "identity_type" table.
         identity_types = [{'description': 'identity_type description'}]
@@ -68,11 +75,27 @@ class TestJobItem(unittest2.TestCase):
                      'pod_name': 'pod_name 218501217old',
                      'identity_type_id': id_type_id,
                      'identity_type_data': 'identity 218501217old',
-                     'email_addr': 'loumar@tollgroup.com'}]
+                     'email_addr': 'loumar@tollgroup.com'},
+                    {'connote_nbr': 'pe_connote',
+                     'item_nbr': 'pe_item_nbr',
+                     'job_id': pe_job_id,
+                     'created_ts': '%s' % cls._now,
+                     'email_addr': 'loumar@tollgroup.com',
+                     'phone_nbr': '0431602145'},
+                    {'connote_nbr': 'pe_connote_02',
+                     'item_nbr': 'pe_item_nbr',
+                     'job_id': pe_job_id,
+                     'created_ts': '%s' % cls._now,
+                     'email_addr': '',
+                     'phone_nbr': ''}]
         sql = cls._db.jobitem.insert_sql(jobitems[0])
         cls._valid_job_item_id_01 = cls._db.insert(sql=sql)
         sql = cls._db.jobitem.insert_sql(jobitems[1])
         cls._valid_job_item_id_02 = cls._db.insert(sql=sql)
+        sql = cls._db.jobitem.insert_sql(jobitems[2])
+        cls._valid_job_item_id_03 = cls._db.insert(sql=sql)
+        sql = cls._db.jobitem.insert_sql(jobitems[3])
+        cls._valid_job_item_id_04 = cls._db.insert(sql=sql)
 
         cls._db.commit()
 
@@ -242,6 +265,20 @@ class TestJobItem(unittest2.TestCase):
         # Cleanup.
         self._db.rollback()
 
+    def test_connote_base_primary_elect_job(self):
+        """Verify connote_base_primary_elect_job SQL string.
+        """
+        connote = 'pe_connote'
+        sql = self._db.jobitem.connote_base_primary_elect_job(connote)
+        self._db(sql)
+
+        received = []
+        for row in self._db.rows():
+            received.append(row)
+        expected = [(self._valid_job_item_id_03,)]
+        msg = 'connote_base_primary_elect_job return list incorrect'
+        self.assertListEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._db.close()
@@ -249,3 +286,4 @@ class TestJobItem(unittest2.TestCase):
         del cls._db
         del cls._valid_job_item_id_01
         del cls._valid_job_item_id_02
+        del cls._valid_job_item_id_03

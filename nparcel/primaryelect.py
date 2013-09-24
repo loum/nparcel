@@ -4,7 +4,7 @@ __all__ = [
 import nparcel
 
 
-class PrimaryElect(object):
+class PrimaryElect(nparcel.Reminder):
     """Nparcel PrimaryElect class.
 
     .. attribute:: template_base
@@ -21,28 +21,8 @@ class PrimaryElect(object):
                  email_api=None):
         """Nparcel PrimaryElect initialisation.
         """
-        if db is None:
-            db = {}
-        self.db = nparcel.DbSession(**db)
-        self.db.connect()
-
-        if sms_api is None:
-            sms_api = {}
-        self.smser = nparcel.RestSmser(proxy=proxy,
-                                       proxy_scheme=scheme,
-                                       **sms_api)
-
-        if email_api is None:
-            email_api = {}
-        self.emailer = nparcel.RestEmailer(proxy=proxy,
-                                           proxy_scheme=scheme,
-                                           **email_api)
-
-        self._template_base = None
-
-    @property
-    def template_base(self):
-        return self._template_base
-
-    def set_template_base(self, value):
-        self._template_base = value
+        super(nparcel.PrimaryElect, self).__init__(db=db,
+                                                   proxy=proxy,
+                                                   scheme=scheme,
+                                                   sms_api=sms_api,
+                                                   email_api=email_api)
