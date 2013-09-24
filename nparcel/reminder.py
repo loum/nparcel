@@ -157,8 +157,6 @@ class Reminder(object):
                                        dry=dry)
 
             if not sms_status or not email_status:
-                log.info('Sending comms failure notification to "%s"' %
-                          self.emailer.support)
                 for addr in self.emailer.support:
                     template_details['email_addr'] = addr
                     email_status = self.send_email(template_details,
@@ -298,7 +296,12 @@ class Reminder(object):
             self.emailer.set_recipients(to_address.split(','))
             subject = 'Toll Consumer Delivery parcel ref# %s' % item_nbr
             if err:
+                log.info('Sending comms failure notification to "%s"' %
+                          str(self.emailer.support))
                 subject = 'FAILED NOTIFICATION - ' + subject
+            else:
+                log.info('Sending customer email to "%s"' %
+                         str(self.emailer.recipients))
             base_dir = self.template_base
             encoded_msg = self.emailer.create_comms(subject=subject,
                                                     data=item_details,

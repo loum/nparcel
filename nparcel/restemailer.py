@@ -209,7 +209,6 @@ class RestEmailer(nparcel.Rest):
                                         'templates')
         else:
             template_dir = os.path.join(base_dir, 'templates')
-            log.debug('Email template dir: "%s"' % template_dir)
 
         mime_msg = MIMEMultipart('related')
         mime_msg['Subject'] = subject
@@ -222,9 +221,10 @@ class RestEmailer(nparcel.Rest):
         body_html = 'email_%s_html.t' % template
         if err:
             body_html = 'email_err_%s_html.t' % template
-        log.debug('Email body template: "%s"' % body_html)
 
-        f = open(os.path.join(template_dir, body_html))
+        html_template = os.path.join(template_dir, body_html)
+        log.debug('Email body template: "%s"' % html_template)
+        f = open(html_template)
         body_t = f.read()
         f.close()
         body_s = string.Template(body_t)

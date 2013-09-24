@@ -57,11 +57,11 @@ class RestSmser(nparcel.Rest):
                                'templates')
         else:
             dir = os.path.join(base_dir, 'templates')
-        log.debug('SMS template dir: "%s"' % dir)
 
         sms_data = None
         try:
             xml_file = os.path.join(dir, '%s_xml.t' % template)
+            log.debug('SMS template: "%s"' % xml_file)
             f = open(xml_file)
             sms_t = f.read()
             f.close()
