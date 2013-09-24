@@ -127,13 +127,12 @@ class TestLoader(unittest2.TestCase):
                     'card_ref_nbr': '4156536111',
                     'job_ts': self._job_ts,
                     'postcode': '2066',
-                    'service_code': '3',
+                    'service_code': 3,
                     'state': 'NSW',
                     'status': 1,
                     'suburb': 'Australia Other'}
         msg = 'Valid record Job table translation error'
         self.assertDictEqual(received, expected, msg)
-
 
     def test_processor_invalid_record_item_number(self):
         """Process valid raw T1250 line -- no item number, exception.
@@ -553,7 +552,7 @@ class TestLoader(unittest2.TestCase):
                     'card_ref_nbr': '4156536111',
                     'job_ts': self._job_ts,
                     'postcode': '2066',
-                    'service_code': '',
+                    'service_code': 'NULL',
                     'state': 'NSW',
                     'status': 1,
                     'suburb': 'Australia Other'}
@@ -636,6 +635,31 @@ class TestLoader(unittest2.TestCase):
         received = self._ldr.translate_postcode(postcode)
         expected = 'NSW'
         msg = 'Valid postcode translation to state failed -- exceptions'
+        self.assertEqual(received, expected, msg)
+
+    def test_translate_service_code(self):
+        """Translate service code.
+        """
+        sc = '3'
+        received = self._ldr.translate_service_code(sc)
+        expected = 3
+        msg = 'Service Code translation failed'
+        self.assertEqual(received, expected, msg)
+
+    def test_translate_service_code_invalid(self):
+        """Translate service code -- invalid scenarios.
+        """
+        expected = 'NULL'
+        sc = ''
+        received = self._ldr.translate_service_code(sc)
+        msg = 'Service Code ("") translation failed'
+        #self.assertIsNone(received, msg)
+        self.assertEqual(received, expected, msg)
+
+        sc = None
+        received = self._ldr.translate_service_code(sc)
+        msg = 'Service Code (None) translation failed'
+        #self.assertIsNone(received, msg)
         self.assertEqual(received, expected, msg)
 
     def test_jobitem_table_column_map_for_a_valid_raw_record(self):

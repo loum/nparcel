@@ -19,10 +19,10 @@ class Table(object):
         escaped_values = []
         cleansed_values = []
 
-        # Escape single quotes.
         for value in values:
             new_value = value
             if isinstance(value, str):
+                # Escape single quotes.
                 new_value = re.sub("'", "''", value)
 
             escaped_values.append(new_value)
@@ -35,9 +35,11 @@ class Table(object):
 
             cleansed_values.append(new_value)
 
+        values = ', '.join(map(str, cleansed_values))
+        values = values.replace("'NULL'", "NULL")
         sql = """INSERT INTO %s (%s)
 VALUES (%s)""" % (self.name,
                   ', '.join(columns),
-                  ', '.join(map(str, cleansed_values)))
+                  values)
 
         return sql

@@ -66,7 +66,8 @@ JOB_MAP = {'Agent Id': {
                'column': 'job_ts',
                'required': True},
            'Service Code': {
-               'column': 'service_code'}}
+               'column': 'service_code',
+               'callback': 'translate_service_code'}}
 JOB_ITEM_MAP = {'Conn Note': {
                     'column': 'connote_nbr',
                     'required': True},
@@ -528,6 +529,32 @@ class Loader(object):
             log.debug('Postcode/state - %d/"%s"' % (postcode, state))
 
         return state
+
+    def translate_service_code(self, service_code):
+        """Translate postcode information to state.
+
+        **Args:**
+            *service_code*: raw Service Code value.  In the case of primary,
+            elect it is the character '3'.
+
+        **Returns:**
+            integer representation of the raw Service Code, or ``None``
+            if an error condition is encountered.
+
+        """
+        log.debug('Translating raw Service Code value: "%s" ...' %
+                  service_code)
+
+        translated_sc = 'NULL'
+        if service_code and service_code is not None:
+            try:
+                translated_sc = int(service_code)
+                log.debug('Service code translated to %d' % translated_sc)
+            except (TypeError, ValueError), e:
+                log.warn('Unable to translate Service Code "%s": %s' %
+                         (service_code, e))
+
+        return translated_sc
 
     def date_now(self, *args):
         """
