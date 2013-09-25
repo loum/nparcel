@@ -40,6 +40,7 @@ for loc in locations:
         logging.config.fileConfig(source)
         source.close()
         found_log_config = True
+        break
     except:
         pass
 
