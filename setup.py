@@ -85,5 +85,6 @@ setup(name='python-nparcel',
       package_dir={'nparcel': 'nparcel'},
       package_data={'nparcel': ['conf/*.conf.[0-9]*.[0-9]*',
                                 'templates/*.t',
-                                'utils/conf/*.conf.[0-9]*.[0-9]*']},
+                                'utils/conf/*.conf.[0-9]*.[0-9]*',
+                                'conf/init.conf']},
       data_files=files)

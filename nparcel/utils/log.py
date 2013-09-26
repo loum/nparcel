@@ -47,12 +47,10 @@ for loc in locations:
 # Holy crap!  Some black magic to identify logger handlers ...
 # The calling script will be the outermost call in the stack.  Parse the
 # resulting frame to get the name of the script.
-s = inspect.stack()
-logger_name = os.path.basename(s[-1][1])
-if (logger_name == 'nosetests' or
-    logger_name == '<stdin>' or
-    logger_name == 'npinit'):
-    logger_name = None
+logger_name = None
+if found_log_config:
+    s = inspect.stack()
+    logger_name = os.path.basename(s[-1][1])
 
 
 log = logging.getLogger(logger_name)

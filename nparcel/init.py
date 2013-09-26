@@ -44,7 +44,7 @@ class Init(object):
                                        '.nparceld')):
         """Nparcel Initialiser initialiser.
         """
-        path = os.path.join(self.path, 'conf', 'init.conf')
+        path = os.path.join(self.path, 'nparcel', 'conf', 'init.conf')
         if config_file is not None:
             path = config_file
         log.debug('Preparing initialisation config file: "%s"' % path)
@@ -65,7 +65,7 @@ class Init(object):
 
     @property
     def path(self):
-        return os.path.dirname(os.path.realpath(__file__))
+        return os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
     @property
     def unconditional_files(self):
@@ -120,7 +120,8 @@ class Init(object):
         conditionals = self.conditional_files
 
         for dir in self.conditional_dirs:
-            files = [os.path.join(dir, x) for x in os.listdir(dir)]
+            dir_file_list = os.listdir(os.path.join(self.path, dir))
+            files = [os.path.join(self.path, dir, x) for x in dir_file_list]
             if len(files):
                 conditionals.extend(files)
 
@@ -131,7 +132,8 @@ class Init(object):
         unconditionals = list(self.unconditional_files)
 
         for dir in self.unconditional_dirs:
-            files = [os.path.join(dir, x) for x in os.listdir(dir)]
+            dir_file_list = os.listdir(os.path.join(self.path, dir))
+            files = [os.path.join(self.path, dir, x) for x in dir_file_list]
             if len(files):
                 unconditionals.extend(files)
 

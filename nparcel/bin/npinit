@@ -47,7 +47,7 @@ def main():
     init = nparcel.Init(config_file=config_file)
 
     script_name = inspect.getfile(inspect.currentframe())
-    scrip_name = os.path.basename(script_name)
+    script_name = os.path.basename(script_name)
     log.info('Starting %s ...' % script_name)
     init.parse_config()
 
