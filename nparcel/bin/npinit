@@ -65,12 +65,17 @@ def main():
         m = r.search(conf_file)
         if m is not None:
             log.debug('Found unconditional config file "%s"' % conf_file)
-            init.copy_file(conf_file, conditional=False, dry=dry)
+            init.copy_file(conf_file,
+                           dir='conf',
+                           conditional=False,
+                           dry=dry)
     for conf_file in init.conditionals:
         m = r.search(conf_file)
         if m is not None:
             log.debug('Found conditional config file "%s"' % conf_file)
-            init.copy_file(conf_file, dry=dry)
+            init.copy_file(conf_file,
+                           dir='conf',
+                           dry=dry)
 
     # Copy over the template files.
     r = re.compile('.t$')

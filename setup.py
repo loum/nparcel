@@ -38,7 +38,10 @@ def find_data_files(srcdir, *wildcards, **kw):
                                                 kw.get('version')))
 
         if names:
-            lst.append((dirname, names))
+            if kw.get('target_dir') is None:
+                lst.append(('', names))
+            else:
+                lst.append((kw.get('target_dir'), names))
 
     file_list = []
     recursive = kw.get('recursive', True)
@@ -55,7 +58,8 @@ files = find_data_files('doc/build/',
                         '*.png',
                         '*.js',
                         '*.css',
-                        recursive=True)
+                        recursive=True,
+                        target_dir='doc/build')
 template_files = find_data_files('nparcel/templates/', '*.t')
 nparcel_conf_file = find_data_files('nparcel/conf/',
                                     '*.conf',
@@ -63,8 +67,6 @@ nparcel_conf_file = find_data_files('nparcel/conf/',
 log_conf_file = find_data_files('nparcel/utils/conf/',
                                 '*.conf',
                                 version=VERSION)
-
-files = files + template_files + nparcel_conf_file + log_conf_file
 
 setup(name='python-nparcel',
       version=VERSION,
@@ -77,6 +79,11 @@ setup(name='python-nparcel',
                'nparcel/bin/npremind',
                'nparcel/bin/npftp',
                'nparcel/bin/npinit',
-               'nparcel/bin/nppostcode'],
+               'nparcel/bin/nppostcode',
+               'nparcel/bin/npprimaryelectd'],
       packages=['nparcel', 'nparcel.table', 'nparcel.utils'],
+      package_dir={'nparcel': 'nparcel'},
+      package_data={'nparcel': ['conf/*.conf.[0-9]*.[0-9]*',
+                                'templates/*.t',
+                                'utils/conf/*.conf.[0-9]*.[0-9]*']},
       data_files=files)
