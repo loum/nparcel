@@ -6,9 +6,7 @@ import inspect
 from optparse import OptionParser
 
 import nparcel
-from nparcel.utils.log import (log,
-                               set_log_level,
-                               set_console)
+from nparcel.utils.log import log, set_log_level
 
 
 def main():
@@ -30,9 +28,6 @@ def main():
                       dest='config',
                       help='override default config')
     (options, args) = parser.parse_args()
-
-    if options.dry is not None:
-        set_console()
 
     # Enable detailed logging if required.
     if options.verbose == 0:

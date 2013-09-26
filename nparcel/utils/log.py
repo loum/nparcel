@@ -49,7 +49,9 @@ for loc in locations:
 # resulting frame to get the name of the script.
 s = inspect.stack()
 logger_name = os.path.basename(s[-1][1])
-if logger_name == 'nosetests' or logger_name == '<stdin>':
+if (logger_name == 'nosetests' or
+    logger_name == '<stdin>' or
+    logger_name == 'npinit'):
     logger_name = None
 
 
@@ -109,7 +111,7 @@ def set_log_level(level='INFO'):
     """
     level_map = {
         'INFO': logging.INFO,
-        'DEBUG': logging.DEBUG
+        'DEBUG': logging.DEBUG,
     }
 
     log.setLevel(level_map[level])
