@@ -1,6 +1,9 @@
 __all__ = [
     "StopParser",
 ]
+import csv
+
+from nparcel.utils.log import log
 
 
 class StopParser(object):
@@ -11,8 +14,11 @@ class StopParser(object):
         A dictionary based data structure that identifies the elements
         of interest.
 
+    .. in_file:: csv file to parse
+
     """
     _fields = {}
+    _in_file = None
 
     def __init__(self, fields=None):
         """StopParser initialisation.
@@ -30,3 +36,28 @@ class StopParser(object):
                 self._fields[k] = v
         else:
             raise TypeError('Token assignment expected dictionary')
+
+    @property
+    def in_file(self):
+        return self._in_file
+
+    def set_in_file(self, value):
+        self._in_file = value
+
+    def read(self, column=None):
+        """Parses the csv file denoted by :attr:`in_file`.
+
+        **Args:**
+            *column*: the CSV header to extract.  For example, "Con Note".
+
+        """
+        if self.in_file is not None:
+            try:
+                fh = open(self.in_file, 'rb')
+                reader = csv.DictReader(fh)
+                for rowdict in reader:
+                    yield rowdict.pop(column)
+            except IOError, err:
+                log.error('Unable to open file "%s"' % self.in_file)
+        else:
+            log.warn('No csv file has been provided')
