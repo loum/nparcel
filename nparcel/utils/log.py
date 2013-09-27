@@ -51,6 +51,8 @@ logger_name = None
 if found_log_config:
     s = inspect.stack()
     logger_name = os.path.basename(s[-1][1])
+    if logger_name == 'nosetests' or logger_name == '<stdout>':
+        logger_name = None
 
 
 log = logging.getLogger(logger_name)

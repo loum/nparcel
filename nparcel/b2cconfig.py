@@ -69,6 +69,7 @@ class B2CConfig(nparcel.Config):
         dictionary of business unit exporter ordered columns
 
     """
+    _proxy_scheme = 'https'
 
     def __init__(self, file=None):
         """Nparcel Config initialisation.
@@ -493,15 +494,15 @@ class B2CConfig(nparcel.Config):
             port = self.get('proxy', 'port')
             if port is not None and port:
                 port = int(port)
-            protocol = self.get('proxy', 'protocol')
+            self._proxy_scheme = self.get('proxy', 'protocol')
             kwargs = {'host': host,
                       'user': user,
                       'password': password,
                       'port': port,
-                      'protocol': protocol}
+                      'protocol': self._proxy_scheme}
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
-            log.error('Config proxy: %s' % err)
+            log.warn('Config proxy: %s' % err)
 
         return kwargs
 
@@ -544,7 +545,10 @@ class B2CConfig(nparcel.Config):
 
     @property
     def proxy_scheme(self):
-        return self.get('proxy', 'protocol')
+        return self._proxy_scheme
+
+    def set_proxy_scheme(self, value):
+        self._proxy_scheme = value
 
     @property
     def sms_api_kwargs(self):
