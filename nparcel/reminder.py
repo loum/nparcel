@@ -167,6 +167,7 @@ class Reminder(object):
                 log.info('Setting job_item %d reminder sent flag' % id)
                 if not dry:
                     self.db(self.db.jobitem.update_reminder_ts_sql(id))
+                    self.db.commit()
                 processed_ids.append(id)
 
         return processed_ids

@@ -7,8 +7,7 @@ from optparse import OptionParser
 import nparcel
 from nparcel.utils.log import (log,
                                set_log_level,
-                               set_console,
-                               rollover)
+                               set_console)
 
 
 def main():
@@ -69,10 +68,7 @@ def main():
     script_name = inspect.getfile(inspect.currentframe())
     scrip_name = os.path.basename(script_name)
     log.info('Starting %s ...' % script_name)
-    rollover()
-    # TODO -- remove this placeholder when ready.
-    options.dry = True
-    rem.process(dry=options.dry)
+    rem.process(dry=dry)
     log.info('Completed %s' % script_name)
 
 if __name__ == '__main__':

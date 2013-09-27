@@ -18,6 +18,7 @@ PYTHONPATH=.
 TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestLoaderIpec \
 	 nparcel.tests:TestParser \
+	 nparcel.tests:TestStopParser \
 	 nparcel.tests:TestDbSession \
 	 nparcel.tests:TestReporter \
 	 nparcel.tests:TestEmailer \

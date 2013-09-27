@@ -581,7 +581,7 @@ class B2CConfig(nparcel.Config):
 
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
-            log.error('Config proxy: %s' % err)
+            log.warn('Config proxy: %s' % err)
 
         return kwargs
 
@@ -620,6 +620,6 @@ class B2CConfig(nparcel.Config):
 
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
-            log.error('Config proxy: %s' % err)
+            log.warn('Config proxy: %s' % err)
 
         return kwargs

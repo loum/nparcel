@@ -2,6 +2,7 @@ from nparcel.loaderdaemon import LoaderDaemon
 from nparcel.exporterdaemon import ExporterDaemon
 from nparcel.primaryelectdaemon import PrimaryElectDaemon
 from nparcel.parser import Parser
+from nparcel.stopparser import StopParser
 from nparcel.loader import Loader
 from nparcel.dbsession import DbSession
 from nparcel.reporter import Reporter

@@ -23,6 +23,7 @@ Modules
     reporter.rst
 
     reminder.rst
+    stopparser.rst
 
     primaryelect.rst
 
