@@ -114,11 +114,16 @@ class TestPrimaryElect(unittest2.TestCase):
     def test_process(self):
         """Check processing.
         """
+        dry = True
         connotes = ['con_001', 'con_002', 'con_003']
-        received = self._pe.process(connotes, dry=True)
+        received = self._pe.process(connotes, dry=dry)
         expected = [self._id_001]
         msg = 'List of processed primary elect items incorrect'
         self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        if not dry:
+            self._pe.db.rollback()
 
     def test_process_failed_delivery(self):
         """Check processing -- failed delivery.

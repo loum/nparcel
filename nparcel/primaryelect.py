@@ -94,6 +94,10 @@ class PrimaryElect(nparcel.Reminder):
                                                        err=True,
                                                        dry=dry)
                 else:
+                    log.info('Setting job_item %d notify flag' % id)
+                    if not dry:
+                        self.db(self.db.jobitem.update_notify_ts_sql(id))
+                        self.db.commit()
                     processed_ids.append(id)
 
         return processed_ids

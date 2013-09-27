@@ -11,7 +11,7 @@ class JobItem(nparcel.Table):
     """
 
     def __init__(self):
-        """
+        """Nparcel job_item table initialiser.
         """
         super(JobItem, self).__init__('job_item')
 
@@ -32,7 +32,8 @@ class JobItem(nparcel.Table):
                 "identity_type_id INTEGER",
                 "identity_type_data CHAR(30)",
                 "extract_ts TIMESTAMP",
-                "reminder_ts TIMESTAMP"]
+                "reminder_ts TIMESTAMP",
+                "notify_ts TIMESTAMP"]
 
     def collected_sql(self, business_unit):
         """SQL wrapper to extract the collected items from the "jobitems"
@@ -187,11 +188,22 @@ AND ji.id = %d""" % job_item_id
         return sql
 
     def update_reminder_ts_sql(self, id, ts=None):
+        return self.update_timestamp_sql(id, column='reminder_ts', ts=ts)
+
+    def update_notify_ts_sql(self, id, ts=None):
+        return self.update_timestamp_sql(id, column='notify_ts', ts=ts)
+
+    def update_timestamp_sql(self, id, column, ts=None):
         """SQL wrapper to update the ``job_item.reminder_ts`` to *ts*
         timestamp.
 
         **Args:**
-            id: integer value relating to the ``job_item.id``
+            *id*: integer value relating to the ``job_item.id``
+
+            *column*: the timestamp column to update
+
+        **Kwargs:**
+            *ts*: override the current time
 
         **Returns:**
             the SQL string
@@ -201,9 +213,9 @@ AND ji.id = %d""" % job_item_id
             ts = datetime.datetime.now().isoformat(' ')[:-3]
 
         sql = """UPDATE %s
-SET reminder_ts = '%s'
+SET %s = '%s'
 WHERE id = %d
-""" % (self.name, ts, id)
+""" % (self.name, column, ts, id)
 
         return sql
 

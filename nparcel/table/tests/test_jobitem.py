@@ -259,8 +259,68 @@ class TestJobItem(unittest2.TestCase):
         """Verify the update_reminder_ts SQL string.
         """
         job_item_id = self._valid_job_item_id_01
+
+        sql = """SELECT id
+FROM job_item
+WHERE id = %d
+AND reminder_ts IS NOT NULL""" % job_item_id
+        self._db(sql)
+        received = []
+        for row in self._db.rows():
+            received.append(row)
+        expected = []
+        msg = 'job_item list should be empty before reminder_ts update'
+        self.assertListEqual(received, expected, msg)
+
         sql = self._db.jobitem.update_reminder_ts_sql(job_item_id)
         self._db(sql)
+
+        sql = """SELECT id
+FROM job_item
+WHERE id = %d
+AND reminder_ts IS NOT NULL""" % job_item_id
+        self._db(sql)
+        received = []
+        for row in self._db.rows():
+            received.append(row)
+        expected = [(job_item_id, )]
+        msg = 'job_item list not as expected after reminder_ts update'
+        self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        self._db.rollback()
+
+    def test_update_notify_ts_sql(self):
+        """Verify the update_notify_ts SQL string.
+        """
+        job_item_id = self._valid_job_item_id_01
+
+        sql = """SELECT id
+FROM job_item
+WHERE id = %d
+AND notify_ts IS NOT NULL""" % job_item_id
+        self._db(sql)
+        received = []
+        for row in self._db.rows():
+            received.append(row)
+        expected = []
+        msg = 'job_item list should be empty before notify_ts update'
+        self.assertListEqual(received, expected, msg)
+
+        sql = self._db.jobitem.update_notify_ts_sql(job_item_id)
+        self._db(sql)
+
+        sql = """SELECT id
+FROM job_item
+WHERE id = %d
+AND notify_ts IS NOT NULL""" % job_item_id
+        self._db(sql)
+        received = []
+        for row in self._db.rows():
+            received.append(row)
+        expected = [(job_item_id, )]
+        msg = 'job_item list not as expected after notify_ts update'
+        self.assertListEqual(received, expected, msg)
 
         # Cleanup.
         self._db.rollback()
