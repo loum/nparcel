@@ -150,7 +150,7 @@ class Loader(object):
                  scheme='http',
                  sms_api=None,
                  email_api=None):
-        """Nparcel Loader initaliser.
+        """Nparcel Loader initialiser.
 
         """
         if db is None:

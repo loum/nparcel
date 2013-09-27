@@ -9,6 +9,9 @@ from nparcel.utils.log import log
 
 
 class PrimaryElectDaemon(nparcel.utils.Daemon):
+    """PrimaryElectDaemon class.
+
+    """
 
     def __init__(self,
                  pidfile,
@@ -22,6 +25,8 @@ class PrimaryElectDaemon(nparcel.utils.Daemon):
 
         self.config = nparcel.B2CConfig(file=config)
         self.config.parse_config()
+
+        self.parser = nparcel.StopParser()
 
     def _start(self, event):
         signal.signal(signal.SIGTERM, self._exit_handler)
@@ -41,10 +46,9 @@ class PrimaryElectDaemon(nparcel.utils.Daemon):
                     # file has been given on the command line.
                     files.append(self.file)
                     event.set()
-                else:
-                    # TODO -- file processing
-                    #files.extend(self.get_files())
-                    pass
+                # Only support command line file processing for now.
+                #else:
+                #    files.extend(self.get_files())
             else:
                 log.error('ODBC connection failure -- aborting')
                 event.set()
@@ -53,12 +57,10 @@ class PrimaryElectDaemon(nparcel.utils.Daemon):
             # Start processing files.
             for file in files:
                 log.info('Processing file: "%s" ...' % file)
-                status = False
-                try:
-                    f = open(file, 'r')
-                except IOError, e:
-                    log.error('File error "%s": %s' % (file, str(e)))
-                    continue
+                self.parser.set_in_file(file)
+                for con in self.parser.read('Con Note'):
+                    log.info('Checking connote: "%s"' % con)
+                    pe.process([con], dry=self.dry)
 
             if not event.isSet():
                 # Only makes sense to do one iteration of a dry run.
