@@ -8,10 +8,9 @@ from nparcel.utils.log import log
 class PrimaryElect(nparcel.Reminder):
     """Nparcel PrimaryElect class.
 
-    .. attribute:: template_base
+    .. attribute:: comms_dir
 
-        override the standard location to search for the
-        SMS XML template (default is ``~user_home/.nparceld/templates``)
+        directory where comms files are kept for further processing
 
     """
     def __init__(self,
@@ -19,7 +18,8 @@ class PrimaryElect(nparcel.Reminder):
                  proxy=None,
                  scheme='http',
                  sms_api=None,
-                 email_api=None):
+                 email_api=None,
+                 comms_dir=None):
         """Nparcel PrimaryElect initialisation.
         """
         super(nparcel.PrimaryElect, self).__init__(db=db,

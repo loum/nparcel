@@ -40,6 +40,10 @@ class B2CConfig(nparcel.Config):
 
         directory where POD signature files are kept.
 
+    .. attribute:: comms (loader, primary elect)
+
+        directory where comms files are kept for further processing
+
     .. attribute loader_loop (loader)
 
         time (seconds) between loader processing iterations.
@@ -60,6 +64,11 @@ class B2CConfig(nparcel.Config):
 
         dictionary of Business unit special condition flags
 
+    .. attribute:: email
+
+        list of email addresses to be advised of support related processing
+        issues
+
     .. attribute:: rest (loader)
 
         dictionary of RESTful interfaces for SMS and email
@@ -69,41 +78,46 @@ class B2CConfig(nparcel.Config):
         dictionary of business unit exporter ordered columns
 
     """
+    _dirs_to_check = []
+    _archive = None
+    _staging_base = None
+    _signature = None
+    _comms = None
+    _loader_loop = 30
+    _pe_loop = 30
+    _exporter_loop = 900
     _proxy_scheme = 'https'
+    _business_units = {}
+    _file_bu = {}
+    _cond = {}
+    _support_emails = []
+    _rest = {}
+    _exporter_fields = {}
 
     def __init__(self, file=None):
         """Nparcel Config initialisation.
         """
         nparcel.Config.__init__(self, file)
 
-        self.dirs_to_check = []
-        self.archive = None
-        self.signature = None
-        self.loader_loop = 30
-        self.pe_loop = 30
-        self.exporter_loop = 900
-        self.business_units = {}
-        self.file_bu = {}
-        self.support_emails = []
-        self.cond = {}
-        self.rest = {}
-        self.exporter_fields = {}
-
     @property
     def in_dirs(self):
-        return self.dirs_to_check
+        return self._dirs_to_check
 
     @property
     def archive_dir(self):
-        return self.archive
+        return self._archive
 
     @property
     def staging_base(self):
-        return self.staging_base
+        return self._staging_base
 
     @property
     def signature_dir(self):
-        return self.signature
+        return self._signature
+
+    @property
+    def comms_dir(self):
+        return self._comms
 
     @property
     def loader_loop(self):
@@ -111,35 +125,35 @@ class B2CConfig(nparcel.Config):
 
     @property
     def pe_loop(self):
-        return self.pe_loop
+        return self._pe_loop
 
     @property
     def exporter_loop(self):
-        return self.exporter_loop
+        return self._exporter_loop
 
     @property
     def business_units(self):
-        return self.business_units
+        return self._business_units
 
     @property
     def file_bu(self):
-        return self.file_bu
+        return self._file_bu
 
     @property
     def support_emails(self):
-        return self.support_emails
+        return self._support_emails
 
     @property
     def cond(self):
-        return self.cond
+        return self._cond
 
     @property
     def rest(self):
-        return self.rest
+        return self._rest
 
     @property
     def exporter_fields(self):
-        return self.exporter_fields
+        return self._exporter_fields
 
     @property
     def notification_delay(self):
@@ -169,25 +183,28 @@ class B2CConfig(nparcel.Config):
         nparcel.Config.parse_config(self)
 
         try:
-            self.dirs_to_check = self.get('dirs', 'in').split(',')
+            self._dirs_to_check = self.get('dirs', 'in').split(',')
             log.debug('Loader directories to check %s' %
-                      str(self.dirs_to_check))
+                      str(self._dirs_to_check))
 
-            self.archive = self.get('dirs', 'archive')
-            log.debug('Loader archive directory %s' % self.archive)
+            self._archive = self.get('dirs', 'archive')
+            log.debug('Loader archive directory %s' % self._archive)
 
-            self.staging_base = self.get('dirs', 'staging_base')
-            log.debug('Exporter staging base %s' % self.staging_base)
+            self._staging_base = self.get('dirs', 'staging_base')
+            log.debug('Exporter staging base %s' % self._staging_base)
 
-            self.signature = self.get('dirs', 'signature')
-            log.debug('Exporter signature directory %s' % self.signature)
+            self._signature = self.get('dirs', 'signature')
+            log.debug('Exporter signature directory %s' % self._signature)
 
-            self.business_units = dict(self.items('business_units'))
+            self._comms = self.get('dirs', 'comms')
+            log.debug('Comms file directory %s' % self._comms)
+
+            self._business_units = dict(self.items('business_units'))
             log.debug('Exporter Business Units %s' %
-                      self.business_units.keys())
+                      self._business_units.keys())
 
-            self.file_bu = dict(self.items('file_bu'))
-            log.debug('Exporter File Business Units %s' % self.file_bu)
+            self._file_bu = dict(self.items('file_bu'))
+            log.debug('Exporter File Business Units %s' % self._file_bu)
         except ConfigParser.NoOptionError, err:
             log.critical('Missing required config: %s' % err)
             sys.exit(1)
@@ -200,20 +217,19 @@ class B2CConfig(nparcel.Config):
             pass
 
         try:
-            self.pe_loop = int(self.get('timeout', 'pe_loop'))
+            self._pe_loop = int(self.get('timeout', 'pe_loop'))
         except ConfigParser.NoOptionError, err:
             log.warn('Primary elect loop time not provided: %s' % err)
             pass
 
         try:
-            self.exporter_loop = int(self.get('timeout', 'exporter_loop'))
+            self._exporter_loop = int(self.get('timeout', 'exporter_loop'))
         except ConfigParser.NoOptionError, err:
             log.warn('Exporter loop time not provided: %s' % err)
             pass
 
         try:
-            self.support_emails = self.get('email',
-                                                   'support').split(',')
+            self._support_emails = self.get('email', 'support').split(',')
         except ConfigParser.NoOptionError, err:
             log.warn('Support emails not provided: %s' % err)
             pass
@@ -221,7 +237,7 @@ class B2CConfig(nparcel.Config):
         # Business unit conditons.  No probs if they are missing -- will
         # just default to '0' (False) for each flag.
         try:
-            self.cond = dict(self.items('conditions'))
+            self._cond = dict(self.items('conditions'))
             log.debug('Business Unit conditions %s' % self.cond.keys())
         except ConfigParser.NoSectionError, err:
             log.warn('Missing Business Unit conditions in config')
@@ -229,16 +245,16 @@ class B2CConfig(nparcel.Config):
         # RESTful APIs.  May not need these if facility is not required
         # by any of the BU's
         try:
-            self.rest = dict(self.items('rest'))
-            log.debug('RESTful APIs %s' % str(self.rest))
+            self._rest = dict(self.items('rest'))
+            log.debug('RESTful APIs %s' % str(self._rest))
         except ConfigParser.NoSectionError, err:
             log.warn('No RESTful APIs in config')
 
         # Exporter business unit-based column output and ordering.
         # Default is to simply display order as per query.
         try:
-            self.exporter_fields = dict(self.items('exporter_fields'))
-            log.debug('Exporter fields %s' % str(self.exporter_fields))
+            self._exporter_fields = dict(self.items('exporter_fields'))
+            log.debug('Exporter fields %s' % str(self._exporter_fields))
         except ConfigParser.NoSectionError, err:
             log.warn('No Exporter column output ordering in config')
 

@@ -29,11 +29,6 @@ class Reminder(object):
 
         period (in seconds) that the uncollected parcel will be held for
 
-    .. attribute:: template_base
-
-        override the standard location to search for the
-        SMS XML template (default is ``~user_home/.nparceld/templates``)
-
     """
     def __init__(self,
                  notification_delay=345600,
@@ -43,7 +38,8 @@ class Reminder(object):
                  proxy=None,
                  scheme='http',
                  sms_api=None,
-                 email_api=None):
+                 email_api=None,
+                 comms_dir=None):
         """Nparcel Reminder initialisation.
 
         """

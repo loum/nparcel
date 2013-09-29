@@ -36,14 +36,19 @@ class TestB2CConfig(unittest2.TestCase):
         expected = '/data/nparcel/archive'
         self.assertEqual(received, expected, msg)
 
+        msg = 'Staging base directory not as expected'
+        received = self._c.staging_base
+        expected = '/var/ftp/pub/nparcel'
+        self.assertEqual(received, expected, msg)
+
         msg = 'Signature directory not as expected'
         received = self._c.signature_dir
         expected = '/data/www/nparcel/data/signature'
         self.assertEqual(received, expected, msg)
 
-        msg = 'Staging base directory not as expected'
-        received = self._c.staging_base
-        expected = '/var/ftp/pub/nparcel'
+        msg = 'Comms directory not as expected'
+        received = self._c.comms_dir
+        expected = '/data/www/nparcel/data/comms'
         self.assertEqual(received, expected, msg)
 
         msg = 'Loader loop not as expected'
