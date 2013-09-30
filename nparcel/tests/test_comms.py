@@ -23,6 +23,39 @@ class TestComms(unittest2.TestCase):
         cls._c.set_template_base('nparcel')
         cls._now = datetime.datetime.now()
 
+        agents = [{'code': 'N031',
+                   'state': 'VIC',
+                   'name': 'N031 Name',
+                   'address': 'N031 Address',
+                   'postcode': '1234',
+                   'suburb': 'N031 Suburb'},
+                  {'code': 'BAD1',
+                   'state': 'NSW',
+                   'name': 'BAD1 Name',
+                   'address': 'BAD1 Address',
+                   'postcode': '5678',
+                   'suburb': 'BAD1 Suburb'}]
+        sql = cls._c.db._agent.insert_sql(agents[0])
+        agent_01 = cls._c.db.insert(sql)
+        sql = cls._c.db._agent.insert_sql(agents[1])
+        agent_02 = cls._c.db.insert(sql)
+
+        cls._now = datetime.datetime.now()
+        jobs = [{'agent_id': agent_01,
+                 'job_ts': '%s' % cls._now,
+                 'bu_id': 1}]
+        sql = cls._c.db.job.insert_sql(jobs[0])
+        job_01 = cls._c.db.insert(sql)
+
+        jobitems = [{'connote_nbr': 'con_001',
+                     'item_nbr': 'item_nbr_001',
+                     'email_addr': 'loumar@tollgroup.com',
+                     'phone_nbr': '0431602145',
+                     'job_id': job_01,
+                     'created_ts': '%s' % cls._now}]
+        sql = cls._c.db.jobitem.insert_sql(jobitems[0])
+        cls._id_000 = cls._c.db.insert(sql)
+
     def test_init(self):
         """Initialise a Comms object.
         """
@@ -149,10 +182,10 @@ class TestComms(unittest2.TestCase):
     def test_comms_file_missing_directory(self):
         """Get files from missing comms dir.
         """
-        comms_files = ['email.1.rem',
-                       'email.1111.pe',
-                       'sms.2.rem',
-                       'sms.2222.pe']
+        comms_files = ['1.rem',
+                       '1111.pe',
+                       '2.rem',
+                       '2222.pe']
         dodgy = ['banana',
                  'email.rem.3']
         for f in comms_files + dodgy:
@@ -168,6 +201,58 @@ class TestComms(unittest2.TestCase):
         for f in comms_files + dodgy:
             os.remove(os.path.join(self._c.comms_dir, f))
 
+    def test_process(self):
+        """Test processing.
+        """
+        #comms_files = ['%d.rem' % self._id_000,
+        #               '%d.pe' % self._id_000]
+        comms_files = ['%d.rem' % self._id_000]
+        dodgy = ['banana',
+                 'email.rem.3']
+        for f in comms_files + dodgy:
+            fh = open(os.path.join(self._c.comms_dir, f), 'w')
+            fh.close()
+
+        self._c.process(dry=True)
+
+        # Cleanup.
+        for f in comms_files + dodgy:
+            os.remove(os.path.join(self._c.comms_dir, f))
+
+    def test_get_agent_details(self):
+        """Verify agent details.
+        """
+        received = self._c.get_agent_details(self._id_000)
+        expected = {'address': 'N031 Address',
+                    'connote_nbr': 'con_001',
+                    'created_ts': '%s' % self._now,
+                    'item_nbr': 'item_nbr_001',
+                    'email_addr': 'loumar@tollgroup.com',
+                    'phone_nbr': '0431602145',
+                    'name': 'N031 Name',
+                    'postcode': '1234',
+                    'suburb': 'N031 Suburb'}
+        msg = 'job_item.id based Agent details incorrect'
+        self.assertDictEqual(received, expected, msg)
+
+    def test_parse_comm_filename(self):
+        """Verify the parse_comm_filename.
+        """
+        received = self._c.parse_comm_filename('')
+        expected = ()
+        msg = 'Filename "" incorrect'
+        self.assertTupleEqual(received, expected, msg)
+
+        received = self._c.parse_comm_filename('333.pe')
+        expected = (333, 'pe')
+        msg = 'Filename "333.pe" incorrect'
+        self.assertTupleEqual(received, expected, msg)
+
+        received = self._c.parse_comm_filename('email..pe')
+        expected = ()
+        msg = 'Filename "email..pe" incorrect'
+        self.assertTupleEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._c = None
@@ -175,3 +260,4 @@ class TestComms(unittest2.TestCase):
         os.removedirs(cls._comms_dir)
         del cls._comms_dir
         del cls._now
+        del cls._id_000

@@ -1,9 +1,7 @@
 __all__ = [
     "Reminder",
 ]
-import re
 import os
-import time
 import datetime
 
 import nparcel
@@ -52,7 +50,6 @@ class Reminder(object):
 
         self._notification_delay = notification_delay
         self._start_date = start_date
-        #self._hold_period = hold_period
 
         if sms_api is None:
             sms_api = {}
@@ -141,59 +138,19 @@ class Reminder(object):
         processed_ids = []
 
         for id in self.get_uncollected_items():
-            for action in ['email', 'sms']:
-                comms_file = "%s.%d.%s" % (action, id, 'rem')
-                abs_comms_file = os.path.join(self.comms_dir,
-                                                  comms_file)
-                log.info('Writing Reminder comms file to "%s"' %
-                         abs_comms_file)
-                try:
-                    fh = open(abs_comms_file, 'w')
-                    fh.close()
-                except IOError, err:
-                    log.error('Unable to open comms file %s: %s' %
-                              (abs_comms_file, err))
+            comms_file = "%d.%s" % (id, 'rem')
+            abs_comms_file = os.path.join(self.comms_dir, comms_file)
+            log.info('Writing Reminder comms file to "%s"' % abs_comms_file)
+            try:
+                fh = open(abs_comms_file, 'w')
+                fh.close()
+            except IOError, err:
+                log.error('Unable to open comms file %s: %s' %
+                          (abs_comms_file, err))
+
             processed_ids.append(id)
 
         return processed_ids
-
-    def get_agent_details(self, agent_id):
-        """Get agent details.
-
-        **Args:**
-            agent_id: as per the agent.id table column
-
-        **Returns:**
-            dictionary structure capturing the Agent's details similar to::
-
-                {'name': 'Vermont South Newsagency',
-                 'address': 'Shop 13-14; 495 Burwood Highway',
-                 'suburb': 'VERMONT',
-                 'postcode': '3133',
-                 'connote': 'abcd',
-                 'item_nbr': '12345678',
-                 'created_ts': '2013-09-15 00:00:00'}
-
-        """
-        agent_details = []
-
-        sql = self.db.jobitem.job_item_agent_details_sql(agent_id)
-        self.db(sql)
-        columns = self.db.columns()
-        agents = []
-        for row in self.db.rows():
-            agents.append(row)
-
-        if len(agents) != 1:
-            log.error('job_item.id %d agent list: "%s"' %
-                      (agent_id, agents))
-        else:
-            agent_details = [None] * (len(columns) + len(agents[0]))
-            agent_details[::2] = columns
-            agent_details[1::2] = agents[0]
-            log.debug('job_item.id %d detail: "%s"' % (agent_id, agents[0]))
-
-        return dict(zip(agent_details[0::2], agent_details[1::2]))
 
     def _create_dir(self, dir):
         """Helper method to manage the creation of a directory.

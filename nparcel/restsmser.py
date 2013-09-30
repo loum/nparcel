@@ -31,7 +31,7 @@ class RestSmser(nparcel.Rest):
                                         api_username,
                                         api_password)
 
-    def create_comms(self, data, template='sms', base_dir=None):
+    def create_comms(self, data, template='body', base_dir=None):
         """Create the SMS data string to send.
 
         **Args:**
@@ -60,7 +60,7 @@ class RestSmser(nparcel.Rest):
 
         sms_data = None
         try:
-            xml_file = os.path.join(dir, '%s_xml.t' % template)
+            xml_file = os.path.join(dir, 'sms_%s_xml.t' % template)
             log.debug('SMS template: "%s"' % xml_file)
             f = open(xml_file)
             sms_t = f.read()

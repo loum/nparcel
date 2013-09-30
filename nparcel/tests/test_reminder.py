@@ -107,10 +107,8 @@ class TestReminder(unittest2.TestCase):
         # Check that the comms files were written out.
         received = [os.path.join(self._comms_dir,
                                  x) for x in os.listdir(self._comms_dir)]
-        expected = [os.path.join(self._comms_dir, '%s.%d.%s') %
-                    ('email', self._id_001, 'rem'),
-                    os.path.join(self._comms_dir, '%s.%d.%s') %
-                    ('sms', self._id_001, 'rem')]
+        expected = [os.path.join(self._comms_dir, '%d.%s') %
+                    (self._id_001, 'rem')]
         msg = 'Comms directory file list error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -132,22 +130,6 @@ WHERE id = %d""" % self._id_001
 
         # Cleanup.
         self._r.db.rollback()
-
-    def test_get_agent_details(self):
-        """Verify agent details.
-        """
-        received = self._r.get_agent_details(self._id_000)
-        expected = {'address': 'N031 Address',
-                    'connote_nbr': 'con_001',
-                    'created_ts': '%s' % self._now,
-                    'item_nbr': 'item_nbr_001',
-                    'email_addr': 'loumar@tollgroup.com',
-                    'phone_nbr': '0431602145',
-                    'name': 'N031 Name',
-                    'postcode': '1234',
-                    'suburb': 'N031 Suburb'}
-        msg = 'job_item.id based Agent details incorrect'
-        self.assertDictEqual(received, expected, msg)
 
     @classmethod
     def tearDownClass(cls):

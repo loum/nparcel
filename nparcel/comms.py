@@ -81,6 +81,53 @@ class Comms(object):
     def set_template_base(self, value):
         self._template_base = value
 
+    def process(self, dry=False):
+        """Slurps communication files from :attr:`comms_dir` and attempts
+        to send comms via appropratie medium.
+
+        Successful notifications will set the ``job_item.notify`` column
+        if the corresponding ``job_item.id``.
+
+        """
+        for comm_file in self.get_comms_files():
+            log.info('Processing comms file: "%s" ...' % comm_file)
+
+            try:
+                filename = os.path.basename(comm_file)
+                (id, template) = self.parse_comm_filename(filename)
+            except ValueError, err:
+                log.error('%s processing error: %s' % (comm_file, err))
+                continue
+
+            if template == 'rem':
+                template_items = self.get_agent_details(id)
+                returned_date = template_items.get('created_ts')
+                template_items['date'] = self.get_return_date(returned_date)
+
+            email_status = True
+            sms_status = True
+            email_status = self.send_email(template_items,
+                                           template=template,
+                                           err=False,
+                                           dry=dry)
+            sms_status = self.send_sms(template_items,
+                                       template=template,
+                                       dry=dry)
+
+            if not sms_status or not email_status:
+                for addr in self.emailer.support:
+                    template_items['email_addr'] = addr
+                    email_status = self.send_email(template_items,
+                                                   template=template,
+                                                   err=True,
+                                                   dry=dry)
+            else:
+                if template == 'rem':
+                    log.info('Setting job_item %d reminder sent flag' % id)
+                    if not dry:
+                        self.db(self.db.jobitem.update_reminder_ts_sql(id))
+                        self.db.commit()
+
     def send_sms(self,
                  item_details,
                  template='sms_rem',
@@ -237,12 +284,10 @@ class Comms(object):
 
         Comms files are matched based on the following pattern::
 
-            <action>.<job_item.id>.<template>
+            <job_item.id>.<template>
 
         where:
 
-        * ``<action> is the supported communication type (either SMS or
-          email)
         * ``<job_item.id>`` is the integer based primary key from the
           job_item table
         * ``<template>`` is the string template used to build the message
@@ -250,7 +295,7 @@ class Comms(object):
 
         **Returns:**
             list of files to process or empty list if the :attr:`comms_dir`
-            is not defined or deos not exist
+            is not defined or does not exist
 
         """
         comms_files = []
@@ -263,9 +308,77 @@ class Comms(object):
                           self.comms_dir)
             else:
                 for f in os.listdir(self.comms_dir):
-                    if fnmatch.fnmatch(f, '[a-zA-Z]*.[0-9]*.[a-zA-Z]*'):
+                    if fnmatch.fnmatch(f, '[0-9]*.[a-zA-Z]*'):
                         comms_files.append(os.path.join(self.comms_dir, f))
         else:
             log.error('Comms dir is not defined')
 
         return comms_files
+
+    def get_agent_details(self, agent_id):
+        """Get agent details.
+
+        **Args:**
+            agent_id: as per the agent.id table column
+
+        **Returns:**
+            dictionary structure capturing the Agent's details similar to::
+
+                {'name': 'Vermont South Newsagency',
+                 'address': 'Shop 13-14; 495 Burwood Highway',
+                 'suburb': 'VERMONT',
+                 'postcode': '3133',
+                 'connote': 'abcd',
+                 'item_nbr': '12345678',
+                 'created_ts': '2013-09-15 00:00:00'}
+
+        """
+        agent_details = []
+
+        sql = self.db.jobitem.job_item_agent_details_sql(agent_id)
+        self.db(sql)
+        columns = self.db.columns()
+        agents = []
+        for row in self.db.rows():
+            agents.append(row)
+
+        if len(agents) != 1:
+            log.error('job_item.id %d agent list: "%s"' %
+                      (agent_id, agents))
+        else:
+            agent_details = [None] * (len(columns) + len(agents[0]))
+            agent_details[::2] = columns
+            agent_details[1::2] = agents[0]
+            log.debug('job_item.id %d detail: "%s"' % (agent_id, agents[0]))
+
+        return dict(zip(agent_details[0::2], agent_details[1::2]))
+
+    def parse_comm_filename(self, filename):
+        """Parse the comm *filename* and extract the job_item.id
+        and template.
+
+        **Args:**
+            *filename*: the filename to parse
+
+        **Returns:**
+            tuple representation of the *filename* in the form::
+
+                (<id>, "<template>")
+
+            For example::
+
+                ("email", 1, "pe")
+
+        """
+        comm_parse = ()
+
+        r = re.compile("(\d+)\.(pe|rem)")
+        m = r.match(filename)
+        if m:
+            try:
+                comm_parse = (int(m.group(1)), m.group(2))
+            except IndexError, err:
+                log.error('Unable to parse filename "%s": %s' %
+                          (filename, err))
+
+        return comm_parse
