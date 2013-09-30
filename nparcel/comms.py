@@ -13,6 +13,10 @@ from nparcel.utils.log import log
 class Comms(object):
     """Nparcel Comms class.
 
+    .. attribute:: hold_period
+
+        period (in seconds) that the uncollected parcel will be held for
+
     """
     _hold_period = 691200
     _template_base = None
@@ -190,3 +194,61 @@ class Comms(object):
         log.debug('Return date set as: "%s"' % return_date)
 
         return return_date
+
+    def send_email(self,
+                   item_details,
+                   template='body',
+                   err=False,
+                   dry=False):
+        """Send out email comms to the list of *to_addresses*.
+
+        **Args:**
+            *item_details*: dictionary of details expected by the email
+            template similar to::
+
+                {'name': 'Vermont South Newsagency',
+                 'address': 'Shop 13-14; 495 Burwood Highway',
+                 'suburb': 'VERMONT',
+                 'postcode': '3133'}
+
+        **Kwargs:**
+            *template*: the HTML body template to use
+
+            *dry*: only report, do not actual execute
+
+        **Returns:**
+            ``True`` for processing success
+
+            ``False`` for processing failure
+
+        """
+        status = True
+
+        to_address = item_details.get('email_addr')
+        if to_address is None:
+            log.error('No email recipients provided')
+            status = False
+
+        item_nbr = item_details.get('item_nbr')
+        subject = 'TEST COMMS'
+        if status and item_nbr is not None:
+            subject = 'Toll Consumer Delivery parcel ref# %s' % item_nbr
+
+        if status:
+            self.emailer.set_recipients(to_address.split(','))
+            if err:
+                log.info('Sending comms failure notification to "%s"' %
+                          str(self.emailer.support))
+                subject = 'FAILED NOTIFICATION - ' + subject
+            else:
+                log.info('Sending customer email to "%s"' %
+                         str(self.emailer.recipients))
+            base_dir = self.template_base
+            encoded_msg = self.emailer.create_comms(subject=subject,
+                                                    data=item_details,
+                                                    base_dir=base_dir,
+                                                    template=template,
+                                                    err=err)
+            status = self.emailer.send(data=encoded_msg, dry=dry)
+
+        return status

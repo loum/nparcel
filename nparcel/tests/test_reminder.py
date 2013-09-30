@@ -10,7 +10,6 @@ class TestReminder(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # Prepare our Reminder object.
         conf = nparcel.B2CConfig()
         conf.set_config_file('nparcel/conf/nparceld.conf')
         conf.parse_config()
@@ -182,24 +181,24 @@ WHERE id = %d""" % self._id_001
         msg = 'job_item.id based Agent details incorrect'
         self.assertDictEqual(received, expected, msg)
 
-    def test_send_email(self):
-        """Send email.
-        """
-        date = self._r.get_return_date(self._now)
-        details = {'name': 'Mannum Newsagency',
-                   'address': '77 Randwell Street',
-                   'suburb': 'MANNUM',
-                   'postcode': '5238',
-                   'connote_nbr': 'connote_1234',
-                   'item_nbr': 'item_nbr_1234',
-                   'email_addr': 'loumar@tollgroup.com',
-                   'date': '%s' % date}
-
-        received = self._r.send_email(details,
-                                      template='rem',
-                                      dry=True)
-        msg = 'Reminder email send should return True'
-        self.assertTrue(received)
+#    def test_send_email(self):
+#        """Send email.
+#        """
+#        date = self._r.get_return_date(self._now)
+#        details = {'name': 'Mannum Newsagency',
+#                   'address': '77 Randwell Street',
+#                   'suburb': 'MANNUM',
+#                   'postcode': '5238',
+#                   'connote_nbr': 'connote_1234',
+#                   'item_nbr': 'item_nbr_1234',
+#                   'email_addr': 'loumar@tollgroup.com',
+#                   'date': '%s' % date}
+#
+#        received = self._r.send_email(details,
+#                                      template='rem',
+#                                      dry=True)
+#        msg = 'Reminder email send should return True'
+#        self.assertTrue(received)
 
 #    def test_send_sms(self):
 #        """Send email.
@@ -219,31 +218,31 @@ WHERE id = %d""" % self._id_001
 #        msg = 'Reminder SMS send should return True'
 #        self.assertTrue(received)
 
-    def test_get_return_date_string_based(self):
-        """Create the return date -- string based.
-        """
-        date_str = '2013-09-19 08:52:13.308266'
-        received = self._r.get_return_date(date_str)
-        expected = 'Friday 27 September 2013'
-        msg = 'Generated returned date error -- string input'
-        self.assertEqual(received, expected, msg)
-
-    def test_get_return_date_none(self):
-        """Create the return date -- None.
-        """
-        date_str = None
-        received = self._r.get_return_date(date_str)
-        msg = 'Generated returned date error -- None'
-        self.assertIsNone(received, msg)
-
-    def test_get_return_date_datetime_based(self):
-        """Create the return date -- datetime based.
-        """
-        date_datetime = datetime.datetime(2013, 9, 19, 8, 52, 13, 308266)
-        received = self._r.get_return_date(date_datetime)
-        expected = 'Friday 27 September 2013'
-        msg = 'Generated returned date error -- datetime input'
-        self.assertEqual(received, expected, msg)
+#    def test_get_return_date_string_based(self):
+#        """Create the return date -- string based.
+#        """
+#        date_str = '2013-09-19 08:52:13.308266'
+#        received = self._r.get_return_date(date_str)
+#        expected = 'Friday 27 September 2013'
+#        msg = 'Generated returned date error -- string input'
+#        self.assertEqual(received, expected, msg)
+#
+#    def test_get_return_date_none(self):
+#        """Create the return date -- None.
+#        """
+#        date_str = None
+#        received = self._r.get_return_date(date_str)
+#        msg = 'Generated returned date error -- None'
+#        self.assertIsNone(received, msg)
+#
+#    def test_get_return_date_datetime_based(self):
+#        """Create the return date -- datetime based.
+#        """
+#        date_datetime = datetime.datetime(2013, 9, 19, 8, 52, 13, 308266)
+#        received = self._r.get_return_date(date_datetime)
+#        expected = 'Friday 27 September 2013'
+#        msg = 'Generated returned date error -- datetime input'
+#        self.assertEqual(received, expected, msg)
 
     @classmethod
     def tearDownClass(cls):
