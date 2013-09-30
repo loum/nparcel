@@ -5,6 +5,7 @@ import os
 import re
 import time
 import datetime
+import fnmatch
 
 import nparcel
 from nparcel.utils.log import log
@@ -17,9 +18,14 @@ class Comms(object):
 
         period (in seconds) that the uncollected parcel will be held for
 
+    .. attribute:: comms_dir
+
+         directory where comms files are read from for further processing
+
     """
     _hold_period = 691200
     _template_base = None
+    _comms_dir = None
 
     def __init__(self,
                  hold_period=None,
@@ -51,7 +57,8 @@ class Comms(object):
                                            proxy_scheme=scheme,
                                            **email_api)
 
-        self.set_comms_dir(comms_dir)
+        if comms_dir is not None:
+            self.set_comms_dir(comms_dir)
 
     @property
     def hold_period(self):
@@ -65,8 +72,7 @@ class Comms(object):
         return self._comms_dir
 
     def set_comms_dir(self, value):
-        if self._create_dir(value):
-            self._comms_dir = value
+        self._comms_dir = value
 
     @property
     def template_base(self):
@@ -74,33 +80,6 @@ class Comms(object):
 
     def set_template_base(self, value):
         self._template_base = value
-
-    def _create_dir(self, dir):
-        """Helper method to manage the creation of a directory.
-
-        **Args:**
-            dir: the name of the directory structure to create.
-
-        **Returns:**
-            boolean ``True`` if directory exists.
-
-            boolean ``False`` if the directory does not exist and the
-            attempt to create it fails.
-
-        """
-        status = True
-
-        # Attempt to create the directory if it does not exist.
-        if dir is not None and not os.path.exists(dir):
-            try:
-                log.info('Creating directory "%s"' % dir)
-                os.makedirs(dir)
-            except OSError, err:
-                status = False
-                log.error('Unable to create directory "%s": %s"' %
-                          (dir, err))
-
-        return status
 
     def send_sms(self,
                  item_details,
@@ -252,3 +231,41 @@ class Comms(object):
             status = self.emailer.send(data=encoded_msg, dry=dry)
 
         return status
+
+    def get_comms_files(self):
+        """Produce a list of files in the :attr:`comms_dir`.
+
+        Comms files are matched based on the following pattern::
+
+            <action>.<job_item.id>.<template>
+
+        where:
+
+        * ``<action> is the supported communication type (either SMS or
+          email)
+        * ``<job_item.id>`` is the integer based primary key from the
+          job_item table
+        * ``<template>`` is the string template used to build the message
+          content
+
+        **Returns:**
+            list of files to process or empty list if the :attr:`comms_dir`
+            is not defined or deos not exist
+
+        """
+        comms_files = []
+
+        log.debug('Comms dir: %s' % self.comms_dir)
+
+        if self.comms_dir is not None:
+            if not os.path.exists(self.comms_dir):
+                log.error('Comms directory "%s" does not exist' %
+                          self.comms_dir)
+            else:
+                for f in os.listdir(self.comms_dir):
+                    if fnmatch.fnmatch(f, '[a-zA-Z]*.[0-9]*.[a-zA-Z]*'):
+                        comms_files.append(os.path.join(self.comms_dir, f))
+        else:
+            log.error('Comms dir is not defined')
+
+        return comms_files

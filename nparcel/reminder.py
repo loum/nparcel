@@ -26,19 +26,16 @@ class Reminder(object):
 
         date when delayed notifications start
 
-#    .. attribute:: hold_period
-#
-#        period (in seconds) that the uncollected parcel will be held for
-
     .. attribute:: comms_dir
 
-        directory where comms files are kept for further processing
+        directory where comms files are sent for further processing
 
     """
+    _comms_dir = None
+
     def __init__(self,
                  notification_delay=345600,
                  start_date=datetime.datetime(2013, 9, 10, 0, 0, 0),
-#                 hold_period=691200,
                  db=None,
                  proxy=None,
                  scheme='http',
@@ -69,7 +66,8 @@ class Reminder(object):
                                            proxy_scheme=scheme,
                                            **email_api)
 
-        self.set_comms_dir(comms_dir)
+        if comms_dir is not None:
+            self.set_comms_dir(comms_dir)
         self._template_base = None
 
     @property
@@ -85,13 +83,6 @@ class Reminder(object):
 
     def set_start_date(self, value):
         self._start_date = value
-
-#    @property
-#    def hold_period(self):
-#        return self._hold_period
-#
-#    def set_hold_period(self, value):
-#        self._hold_period = value
 
     @property
     def comms_dir(self):
@@ -164,79 +155,7 @@ class Reminder(object):
                               (abs_comms_file, err))
             processed_ids.append(id)
 
-#            template_details = self.get_agent_details(id)
-#
-#            returned_date = template_details.get('created_ts')
-#            template_details['date'] = self.get_return_date(returned_date)
-#
-#            email_status = True
-#            sms_status = True
-#            email_status = self.send_email(template_details,
-#                                           template='rem',
-#                                           err=False,
-#                                           dry=dry)
-#            sms_status = self.send_sms(template_details,
-#                                       template='sms_rem',
-#                                       dry=dry)
-#
-#            if not sms_status or not email_status:
-#                for addr in self.emailer.support:
-#                    template_details['email_addr'] = addr
-#                    email_status = self.send_email(template_details,
-#                                                   template='rem',
-#                                                   err=True,
-#                                                   dry=dry)
-#            else:
-#                log.info('Setting job_item %d reminder sent flag' % id)
-#                if not dry:
-#                    self.db(self.db.jobitem.update_reminder_ts_sql(id))
-#                    self.db.commit()
-#                processed_ids.append(id)
-
         return processed_ids
-
-#    def get_return_date(self, created_ts):
-#        """Creates the return date in a nicely formatted output.
-#
-#        Dates could be string based ("2013-09-19 08:52:13.308266") or
-#        a :class:`datetime.datetime` object.
-#
-#        **Args:**
-#            *created_ts*: the date the parcel was created
-#
-#        **Returns:**
-#            string representation of the "return to sender" date in the
-#            format "<Day full name> <day of month> <month> <year>".  For
-#            example::
-#
-#                Sunday 15 September 2013
-#
-#        """
-#        return_date = None
-#
-#        log.debug('Preparing return date against "%s" ...' % created_ts)
-#        created_str = None
-#        if created_ts is not None:
-#            # Handle sqlite and MSSQL dates differently.
-#            if isinstance(created_ts, str):
-#                r = re.compile('(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\.\d*')
-#                m = r.match(created_ts)
-#                try:
-#                    created_str = m.group(1)
-#                except AttributeError, err:
-#                    log.error('Date not found "%s": %s' % (created_ts, err))
-#            else:
-#                created_str = created_ts.strftime("%Y-%m-%d %H:%M:%S")
-#
-#        if created_str is not None:
-#            ts = time.strptime(created_str, "%Y-%m-%d %H:%M:%S")
-#            dt = datetime.datetime.fromtimestamp(time.mktime(ts))
-#            returned_dt = dt + datetime.timedelta(seconds=self.hold_period)
-#            return_date = returned_dt.strftime('%A %d %B %Y')
-#
-#        log.debug('Return date set as: "%s"' % return_date)
-#
-#        return return_date
 
     def get_agent_details(self, agent_id):
         """Get agent details.
@@ -275,123 +194,6 @@ class Reminder(object):
             log.debug('job_item.id %d detail: "%s"' % (agent_id, agents[0]))
 
         return dict(zip(agent_details[0::2], agent_details[1::2]))
-
-#    def send_email(self,
-#                   item_details,
-#                   template='body',
-#                   err=False,
-#                   dry=False):
-#        """Send out email comms to the list of *to_addresses*.
-#
-#        **Args:**
-#            *item_details*: dictionary of details expected by the email
-#            template similar to::
-#
-#                {'name': 'Vermont South Newsagency',
-#                 'address': 'Shop 13-14; 495 Burwood Highway',
-#                 'suburb': 'VERMONT',
-#                 'postcode': '3133'}
-#
-#        **Kwargs:**
-#            *template*: the HTML body template to use
-#
-#            *dry*: only report, do not actual execute
-#
-#        **Returns:**
-#            ``True`` for processing success
-#
-#            ``False`` for processing failure
-#
-#        """
-#        status = True
-#
-#        to_address = item_details.get('email_addr')
-#        if to_address is None:
-#            log.error('No email recipients provided')
-#            status = False
-#
-#        item_nbr = item_details.get('item_nbr')
-#        if status and item_nbr is None:
-#            status = False
-#            err = 'Email reminder missing details: %s' % str(item_details)
-#            log.error(err)
-#
-#        if status:
-#            self.emailer.set_recipients(to_address.split(','))
-#            subject = 'Toll Consumer Delivery parcel ref# %s' % item_nbr
-#            if err:
-#                log.info('Sending comms failure notification to "%s"' %
-#                          str(self.emailer.support))
-#                subject = 'FAILED NOTIFICATION - ' + subject
-#            else:
-#                log.info('Sending customer email to "%s"' %
-#                         str(self.emailer.recipients))
-#            base_dir = self.template_base
-#            encoded_msg = self.emailer.create_comms(subject=subject,
-#                                                    data=item_details,
-#                                                    base_dir=base_dir,
-#                                                    template=template,
-#                                                    err=err)
-#            status = self.emailer.send(data=encoded_msg, dry=dry)
-#
-#        return status
-
-#    def send_sms(self,
-#                 item_details,
-#                 template='sms_rem',
-#                 dry=False):
-#        """Send out reminder SMS comms to the list of *mobiles*.
-#
-#        **Args:**
-#            item_details: dictionary of SMS details similar to::
-#
-#                {'name': 'Vermont South Newsagency',
-#                 'address': 'Shop 13-14; 495 Burwood Highway',
-#                 'suburb': 'VERMONT',
-#                 'postcode': '3133',
-#                 'item_nbr': '12345678',
-#                 'phone_nbr': '0431602135',
-#                 'date': '2013 09 15'}
-#
-#        **Kwargs:**
-#            *template*: the XML template used to generate the SMS content
-#
-#            *dry*: only report, do not actual execute
-#
-#        **Returns:**
-#            ``True`` for processing success
-#
-#            ``False`` for processing failure
-#
-#        """
-#        status = True
-#
-#        mobile = item_details.get('phone_nbr')
-#        if mobile is None or not mobile:
-#            log.error('No SMS mobile contact provided')
-#            status = False
-#
-#        item_nbr = item_details.get('item_nbr')
-#        if status and item_nbr is None:
-#            status = False
-#            err = 'SMS reminder missing item_nbr: %s' % str(item_details)
-#            log.error(err)
-#
-#        if status and not self.smser.validate(mobile):
-#            status = False
-#            log.error('SMS mobile "%s" did not validate' % mobile)
-#
-#        if status:
-#            log.info('Sending customer SMS to "%s"' % str(mobile))
-#
-#            # OK, generate the SMS structure.
-#            base_dir = self.template_base
-#            sms_data = self.smser.create_comms(data=item_details,
-#                                               template=template,
-#                                               base_dir=base_dir)
-#            status = self.smser.send(data=sms_data, dry=dry)
-#
-#        return status
 
     def _create_dir(self, dir):
         """Helper method to manage the creation of a directory.

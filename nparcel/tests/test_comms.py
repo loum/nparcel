@@ -116,6 +116,58 @@ class TestComms(unittest2.TestCase):
         msg = 'Reminder email send should return True'
         self.assertTrue(received)
 
+    def test_comms_file_not_set(self):
+        """Get files from comms dir when attribute is not set.
+        """
+        old_comms_dir = self._c.comms_dir
+        self._c.set_comms_dir(None)
+
+        received = self._c.get_comms_files()
+        expected = []
+        msg = 'Unset comms_dir should return empty list'
+        self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        self._c.set_comms_dir(old_comms_dir)
+
+    def test_comms_file_missing_directory(self):
+        """Get files from missing comms dir.
+        """
+        old_comms_dir = self._c.comms_dir
+        dir = tempfile.mkdtemp()
+        self._c.set_comms_dir(dir)
+        os.removedirs(dir)
+
+        received = self._c.get_comms_files()
+        expected = []
+        msg = 'Unset comms_dir should return empty list'
+        self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        self._c.set_comms_dir(old_comms_dir)
+
+    def test_comms_file_missing_directory(self):
+        """Get files from missing comms dir.
+        """
+        comms_files = ['email.1.rem',
+                       'email.1111.pe',
+                       'sms.2.rem',
+                       'sms.2222.pe']
+        dodgy = ['banana',
+                 'email.rem.3']
+        for f in comms_files + dodgy:
+            fh = open(os.path.join(self._c.comms_dir, f), 'w')
+            fh.close()
+
+        received = self._c.get_comms_files()
+        expected = [os.path.join(self._c.comms_dir, x) for x in comms_files]
+        msg = 'Unset comms_dir should return empty list'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Cleanup.
+        for f in comms_files + dodgy:
+            os.remove(os.path.join(self._c.comms_dir, f))
+
     @classmethod
     def tearDownClass(cls):
         cls._c = None
