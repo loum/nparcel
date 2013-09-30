@@ -7,7 +7,7 @@ import nparcel
 from nparcel.utils.log import log
 
 
-class PrimaryElect(nparcel.Reminder):
+class PrimaryElect(object):
     """Nparcel PrimaryElect class.
 
     .. attribute:: comms_dir
@@ -15,21 +15,35 @@ class PrimaryElect(nparcel.Reminder):
         directory where comms files are kept for further processing
 
     """
-    def __init__(self,
-                 db=None,
-                 proxy=None,
-                 scheme='http',
-                 sms_api=None,
-                 email_api=None,
-                 comms_dir=None):
+    _comms_dir = None
+    _template_base = None
+
+    def __init__(self, db=None, comms_dir=None):
         """Nparcel PrimaryElect initialisation.
+
         """
-        super(nparcel.PrimaryElect, self).__init__(db=db,
-                                                   proxy=proxy,
-                                                   scheme=scheme,
-                                                   sms_api=sms_api,
-                                                   email_api=email_api,
-                                                   comms_dir=comms_dir)
+        if db is None:
+            db = {}
+        self.db = nparcel.DbSession(**db)
+        self.db.connect()
+
+        if comms_dir is not None:
+            self.set_comms_dir(comms_dir)
+
+    @property
+    def comms_dir(self):
+        return self._comms_dir
+
+    def set_comms_dir(self, value):
+        if self._create_dir(value):
+            self._comms_dir = value
+
+    @property
+    def template_base(self):
+        return self._template_base
+
+    def set_template_base(self, value):
+        self._template_base = value
 
     def get_primary_elect_job_item_id(self, connote):
         """Return ``jobitem.id`` whose connote is associated with a
@@ -115,3 +129,30 @@ class PrimaryElect(nparcel.Reminder):
 #                    processed_ids.append(id)
 
         return processed_ids
+
+    def _create_dir(self, dir):
+        """Helper method to manage the creation of a directory.
+
+        **Args:**
+            dir: the name of the directory structure to create.
+
+        **Returns:**
+            boolean ``True`` if directory exists.
+
+            boolean ``False`` if the directory does not exist and the
+            attempt to create it fails.
+
+        """
+        status = True
+
+        # Attempt to create the directory if it does not exist.
+        if dir is not None and not os.path.exists(dir):
+            try:
+                log.info('Creating directory "%s"' % dir)
+                os.makedirs(dir)
+            except OSError, err:
+                status = False
+                log.error('Unable to create directory "%s": %s"' %
+                          (dir, err))
+
+        return status

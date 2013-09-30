@@ -30,15 +30,12 @@ class Reminder(object):
 
     """
     _comms_dir = None
+    _template_base = None
 
     def __init__(self,
                  notification_delay=345600,
                  start_date=datetime.datetime(2013, 9, 10, 0, 0, 0),
                  db=None,
-                 proxy=None,
-                 scheme='http',
-                 sms_api=None,
-                 email_api=None,
                  comms_dir=None):
         """Nparcel Reminder initialisation.
 
@@ -51,21 +48,8 @@ class Reminder(object):
         self._notification_delay = notification_delay
         self._start_date = start_date
 
-        if sms_api is None:
-            sms_api = {}
-        self.smser = nparcel.RestSmser(proxy=proxy,
-                                       proxy_scheme=scheme,
-                                       **sms_api)
-
-        if email_api is None:
-            email_api = {}
-        self.emailer = nparcel.RestEmailer(proxy=proxy,
-                                           proxy_scheme=scheme,
-                                           **email_api)
-
         if comms_dir is not None:
             self.set_comms_dir(comms_dir)
-        self._template_base = None
 
     @property
     def notification_delay(self):

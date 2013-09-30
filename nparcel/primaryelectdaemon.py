@@ -32,10 +32,6 @@ class PrimaryElectDaemon(nparcel.utils.Daemon):
         signal.signal(signal.SIGTERM, self._exit_handler)
 
         pe = nparcel.PrimaryElect(db=self.config.db_kwargs(),
-                                  proxy=self.config.proxy_string(),
-                                  scheme=self.config.proxy_scheme,
-                                  sms_api=self.config.sms_api_kwargs,
-                                  email_api=self.config.email_api_kwargs,
                                   comms_dir=self.config.comms_dir)
 
         while not event.isSet():

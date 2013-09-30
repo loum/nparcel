@@ -10,17 +10,8 @@ class TestPrimaryElect(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # Prepare our PrimaryElect object.
-        conf = nparcel.B2CConfig()
-        conf.set_config_file('nparcel/conf/nparceld.conf')
-        conf.parse_config()
-        proxy = conf.proxy_string()
         cls._comms_dir = tempfile.mkdtemp()
-        cls._pe = nparcel.PrimaryElect(proxy=proxy,
-                                       scheme=conf.proxy_scheme,
-                                       sms_api=conf.sms_api_kwargs,
-                                       email_api=conf.email_api_kwargs,
-                                       comms_dir=cls._comms_dir)
+        cls._pe = nparcel.PrimaryElect(comms_dir=cls._comms_dir)
         cls._pe.set_template_base('nparcel')
 
         agents = [{'code': 'N031',

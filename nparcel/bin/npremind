@@ -49,14 +49,10 @@ def main():
 
     conf = nparcel.B2CConfig(file=config_file)
     conf.parse_config()
-    proxy = conf.proxy_string()
 
     # Start processing.
     rem = nparcel.Reminder(db=conf.db_kwargs(),
-                           proxy=proxy,
-                           scheme=conf.proxy_scheme,
-                           sms_api=conf.sms_api_kwargs,
-                           email_api=conf.email_api_kwargs)
+                           comms_dir=conf.comms_dir)
 
     if conf.notification_delay is not None:
         rem.set_notification_delay(conf.notification_delay)
