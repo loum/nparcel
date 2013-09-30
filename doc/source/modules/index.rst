@@ -22,6 +22,8 @@ Modules
 
     reporter.rst
 
+    service.rst
+
     reminder.rst
     stopparser.rst
 

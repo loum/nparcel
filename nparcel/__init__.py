@@ -14,6 +14,7 @@ from nparcel.exporter import Exporter
 from nparcel.config import Config
 from nparcel.b2cconfig import B2CConfig
 from nparcel.ftp import Ftp
+from nparcel.service import Service
 from nparcel.reminder import Reminder
 from nparcel.primaryelect import PrimaryElect
 from nparcel.init import Init

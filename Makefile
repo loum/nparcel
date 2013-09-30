@@ -32,6 +32,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestConfig \
 	 nparcel.tests:TestB2CConfig \
 	 nparcel.tests:TestFtp \
+	 nparcel.tests:TestService \
 	 nparcel.tests:TestReminder \
 	 nparcel.tests:TestPrimaryElect \
 	 nparcel.tests:TestInit \
