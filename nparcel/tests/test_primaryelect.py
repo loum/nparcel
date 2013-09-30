@@ -12,7 +12,6 @@ class TestPrimaryElect(unittest2.TestCase):
     def setUpClass(cls):
         cls._comms_dir = tempfile.mkdtemp()
         cls._pe = nparcel.PrimaryElect(comms_dir=cls._comms_dir)
-        cls._pe.set_template_base('nparcel')
 
         agents = [{'code': 'N031',
                    'state': 'VIC',

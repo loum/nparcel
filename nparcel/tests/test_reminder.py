@@ -12,7 +12,6 @@ class TestReminder(unittest2.TestCase):
     def setUpClass(cls):
         cls._comms_dir = tempfile.mkdtemp()
         cls._r = nparcel.Reminder(comms_dir=cls._comms_dir)
-        cls._r.set_template_base('nparcel')
 
         agents = [{'code': 'N031',
                    'state': 'VIC',

@@ -6,10 +6,9 @@ import datetime
 
 import nparcel
 from nparcel.utils.log import log
-from nparcel.utils.files import create_dir
 
 
-class Reminder(object):
+class Reminder(nparcel.Service):
     """Nparcel Reminder class.
 
     .. attribute:: config
@@ -30,27 +29,18 @@ class Reminder(object):
         directory where comms files are sent for further processing
 
     """
-    _comms_dir = None
-    _template_base = None
-
     def __init__(self,
-                 notification_delay=345600,
-                 start_date=datetime.datetime(2013, 9, 10, 0, 0, 0),
                  db=None,
-                 comms_dir=None):
+                 comms_dir=None,
+                 notification_delay=345600,
+                 start_date=datetime.datetime(2013, 9, 10, 0, 0, 0)):
         """Nparcel Reminder initialisation.
 
         """
-        if db is None:
-            db = {}
-        self.db = nparcel.DbSession(**db)
-        self.db.connect()
+        super(nparcel.Reminder, self).__init__(db=db, comms_dir=comms_dir)
 
         self._notification_delay = notification_delay
         self._start_date = start_date
-
-        if comms_dir is not None:
-            self.set_comms_dir(comms_dir)
 
     @property
     def notification_delay(self):
@@ -65,21 +55,6 @@ class Reminder(object):
 
     def set_start_date(self, value):
         self._start_date = value
-
-    @property
-    def comms_dir(self):
-        return self._comms_dir
-
-    def set_comms_dir(self, value):
-        if create_dir(value):
-            self._comms_dir = value
-
-    @property
-    def template_base(self):
-        return self._template_base
-
-    def set_template_base(self, value):
-        self._template_base = value
 
     def get_uncollected_items(self):
         """Generator which returns the uncollected job_item.id's.

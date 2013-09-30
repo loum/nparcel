@@ -5,46 +5,18 @@ import os
 
 import nparcel
 from nparcel.utils.log import log
-from nparcel.utils.files import create_dir
 
 
-class PrimaryElect(object):
+class PrimaryElect(nparcel.Service):
     """Nparcel PrimaryElect class.
 
-    .. attribute:: comms_dir
-
-        directory where comms files are kept for further processing
-
     """
-    _comms_dir = None
-    _template_base = None
-
     def __init__(self, db=None, comms_dir=None):
         """Nparcel PrimaryElect initialisation.
 
         """
-        if db is None:
-            db = {}
-        self.db = nparcel.DbSession(**db)
-        self.db.connect()
-
-        if comms_dir is not None:
-            self.set_comms_dir(comms_dir)
-
-    @property
-    def comms_dir(self):
-        return self._comms_dir
-
-    def set_comms_dir(self, value):
-        if create_dir(value):
-            self._comms_dir = value
-
-    @property
-    def template_base(self):
-        return self._template_base
-
-    def set_template_base(self, value):
-        self._template_base = value
+        super(nparcel.PrimaryElect, self).__init__(db=db,
+                                                   comms_dir=comms_dir)
 
     def get_primary_elect_job_item_id(self, connote):
         """Return ``jobitem.id`` whose connote is associated with a

@@ -28,6 +28,9 @@ class Service(object):
         self.db = nparcel.DbSession(**db)
         self.db.connect()
 
+        if comms_dir is not None:
+            self.set_comms_dir(comms_dir)
+
     @property
     def comms_dir(self):
         return self._comms_dir
