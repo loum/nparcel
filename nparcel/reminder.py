@@ -2,6 +2,7 @@ __all__ = [
     "Reminder",
 ]
 import re
+import os
 import time
 import datetime
 
@@ -28,6 +29,10 @@ class Reminder(object):
     .. attribute:: hold_period
 
         period (in seconds) that the uncollected parcel will be held for
+
+    .. attribute:: comms_dir
+
+        directory where comms files are kept for further processing
 
     """
     def __init__(self,
@@ -64,6 +69,7 @@ class Reminder(object):
                                            proxy_scheme=scheme,
                                            **email_api)
 
+        self.set_comms_dir(comms_dir)
         self._template_base = None
 
     @property
@@ -86,6 +92,14 @@ class Reminder(object):
 
     def set_hold_period(self, value):
         self._hold_period = value
+
+    @property
+    def comms_dir(self):
+        return self._comms_dir
+
+    def set_comms_dir(self, value):
+        if self._create_dir(value):
+            self._comms_dir = value
 
     @property
     def template_base(self):
@@ -136,35 +150,48 @@ class Reminder(object):
         processed_ids = []
 
         for id in self.get_uncollected_items():
-            log.info('Preparing reminder notice for job_item.id: %d' % id)
-            template_details = self.get_agent_details(id)
+            for action in ['email', 'sms']:
+                comms_file = "%s.%d.%s" % (action, id, 'rem')
+                abs_comms_file = os.path.join(self.comms_dir,
+                                                  comms_file)
+                log.info('Writing Reminder comms file to "%s"' %
+                         abs_comms_file)
+                try:
+                    fh = open(abs_comms_file, 'w')
+                    fh.close()
+                except IOError, err:
+                    log.error('Unable to open comms file %s: %s' %
+                              (abs_comms_file, err))
+            processed_ids.append(id)
 
-            returned_date = template_details.get('created_ts')
-            template_details['date'] = self.get_return_date(returned_date)
-
-            email_status = True
-            sms_status = True
-            email_status = self.send_email(template_details,
-                                            template='rem',
-                                            err=False,
-                                            dry=dry)
-            sms_status = self.send_sms(template_details,
-                                       template='sms_rem',
-                                       dry=dry)
-
-            if not sms_status or not email_status:
-                for addr in self.emailer.support:
-                    template_details['email_addr'] = addr
-                    email_status = self.send_email(template_details,
-                                                   template='rem',
-                                                   err=True,
-                                                   dry=dry)
-            else:
-                log.info('Setting job_item %d reminder sent flag' % id)
-                if not dry:
-                    self.db(self.db.jobitem.update_reminder_ts_sql(id))
-                    self.db.commit()
-                processed_ids.append(id)
+#            template_details = self.get_agent_details(id)
+#
+#            returned_date = template_details.get('created_ts')
+#            template_details['date'] = self.get_return_date(returned_date)
+#
+#            email_status = True
+#            sms_status = True
+#            email_status = self.send_email(template_details,
+#                                           template='rem',
+#                                           err=False,
+#                                           dry=dry)
+#            sms_status = self.send_sms(template_details,
+#                                       template='sms_rem',
+#                                       dry=dry)
+#
+#            if not sms_status or not email_status:
+#                for addr in self.emailer.support:
+#                    template_details['email_addr'] = addr
+#                    email_status = self.send_email(template_details,
+#                                                   template='rem',
+#                                                   err=True,
+#                                                   dry=dry)
+#            else:
+#                log.info('Setting job_item %d reminder sent flag' % id)
+#                if not dry:
+#                    self.db(self.db.jobitem.update_reminder_ts_sql(id))
+#                    self.db.commit()
+#                processed_ids.append(id)
 
         return processed_ids
 
@@ -363,5 +390,32 @@ class Reminder(object):
                                                template=template,
                                                base_dir=base_dir)
             status = self.smser.send(data=sms_data, dry=dry)
+
+        return status
+
+    def _create_dir(self, dir):
+        """Helper method to manage the creation of a directory.
+
+        **Args:**
+            dir: the name of the directory structure to create.
+
+        **Returns:**
+            boolean ``True`` if directory exists.
+
+            boolean ``False`` if the directory does not exist and the
+            attempt to create it fails.
+
+        """
+        status = True
+
+        # Attempt to create the directory if it does not exist.
+        if dir is not None and not os.path.exists(dir):
+            try:
+                log.info('Creating directory "%s"' % dir)
+                os.makedirs(dir)
+            except OSError, err:
+                status = False
+                log.error('Unable to create directory "%s": %s"' %
+                          (dir, err))
 
         return status

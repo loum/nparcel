@@ -1,6 +1,8 @@
 __all__ = [
     "PrimaryElect",
 ]
+import os
+
 import nparcel
 from nparcel.utils.log import log
 
@@ -26,7 +28,8 @@ class PrimaryElect(nparcel.Reminder):
                                                    proxy=proxy,
                                                    scheme=scheme,
                                                    sms_api=sms_api,
-                                                   email_api=email_api)
+                                                   email_api=email_api,
+                                                   comms_dir=comms_dir)
 
     def get_primary_elect_job_item_id(self, connote):
         """Return ``jobitem.id`` whose connote is associated with a
@@ -58,8 +61,7 @@ class PrimaryElect(nparcel.Reminder):
 
         **Returns:**
             list of primary elect job_items for whom notifications were
-            successfully sent
-            processed
+            successfully processed
 
         """
         processed_ids = []
@@ -69,35 +71,47 @@ class PrimaryElect(nparcel.Reminder):
 
         for connote in connotes:
             log.info('Checking primary elect connote: "%s"' % connote)
-            ids = self.get_primary_elect_job_item_id(connote)
+            for id in self.get_primary_elect_job_item_id(connote):
+                for action in ['email', 'sms']:
+                    comms_file = "%s.%d.%s" % (action, id, 'pe')
+                    abs_comms_file = os.path.join(self.comms_dir,
+                                                  comms_file)
+                    log.info('Writing Primary Elect comms file to "%s"' %
+                             abs_comms_file)
+                    try:
+                        fh = open(abs_comms_file, 'w')
+                        fh.close()
+                    except IOError, err:
+                        log.error('Unable to open comms file %s: %s' %
+                                  (abs_comms_file, err))
+                processed_ids.append(id)
 
-            log.debug('Connote "%s" job_item ids %s' % (connote, ids))
-            for id in ids:
-                template_details = self.get_agent_details(id)
-                log.debug('template_details: %s' % template_details)
-
-                email_status = True
-                sms_status = True
-                email_status = self.send_email(template_details,
-                                             template='pe',
-                                             err=False,
-                                             dry=dry)
-                sms_status = self.send_sms(template_details,
-                                           template='sms_pe',
-                                           dry=dry)
-
-                if not sms_status or not email_status:
-                    for addr in self.emailer.support:
-                        template_details['email_addr'] = addr
-                        email_status = self.send_email(template_details,
-                                                       template='pe',
-                                                       err=True,
-                                                       dry=dry)
-                else:
-                    log.info('Setting job_item %d notify flag' % id)
-                    if not dry:
-                        self.db(self.db.jobitem.update_notify_ts_sql(id))
-                        self.db.commit()
-                    processed_ids.append(id)
+#            for id in ids:
+#                template_details = self.get_agent_details(id)
+#                log.debug('template_details: %s' % template_details)
+#
+#                email_status = True
+#                sms_status = True
+#                email_status = self.send_email(template_details,
+#                                             template='pe',
+#                                             err=False,
+#                                             dry=dry)
+#                sms_status = self.send_sms(template_details,
+#                                           template='sms_pe',
+#                                           dry=dry)
+#
+#                if not sms_status or not email_status:
+#                    for addr in self.emailer.support:
+#                        template_details['email_addr'] = addr
+#                        email_status = self.send_email(template_details,
+#                                                       template='pe',
+#                                                       err=True,
+#                                                       dry=dry)
+#                else:
+#                    log.info('Setting job_item %d notify flag' % id)
+#                    if not dry:
+#                        self.db(self.db.jobitem.update_notify_ts_sql(id))
+#                        self.db.commit()
+#                    processed_ids.append(id)
 
         return processed_ids

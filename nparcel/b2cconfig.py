@@ -474,7 +474,7 @@ class B2CConfig(nparcel.Config):
                       'password': password,
                       'port': port}
         except ConfigParser.NoOptionError, err:
-            log.error('Missing DB key via config: %s' % err)
+            log.info('Missing DB key via config: %s' % err)
 
         return kwargs
 

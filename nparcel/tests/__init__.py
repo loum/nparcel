@@ -20,3 +20,4 @@ from test_ftp import TestFtp
 from test_reminder import TestReminder
 from test_primaryelect import TestPrimaryElect
 from test_init import TestInit
+from test_comms import TestComms

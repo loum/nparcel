@@ -27,6 +27,7 @@ Modules
 
     primaryelect.rst
 
+    comms.rst
     rest.rst
     restemailer.rst
     restsmser.rst

@@ -14,7 +14,9 @@ class StopParser(object):
         A dictionary based data structure that identifies the elements
         of interest.
 
-    .. in_file:: csv file to parse
+    .. attribute:: in_file
+
+        csv file to parse
 
     """
     _fields = {}

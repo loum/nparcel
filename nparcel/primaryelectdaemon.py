@@ -36,7 +36,7 @@ class PrimaryElectDaemon(nparcel.utils.Daemon):
                                   scheme=self.config.proxy_scheme,
                                   sms_api=self.config.sms_api_kwargs,
                                   email_api=self.config.email_api_kwargs,
-                                  comms_dir=self.comms_dir)
+                                  comms_dir=self.config.comms_dir)
 
         while not event.isSet():
             files = []

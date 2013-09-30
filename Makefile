@@ -35,6 +35,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestReminder \
 	 nparcel.tests:TestPrimaryElect \
 	 nparcel.tests:TestInit \
+	 nparcel.tests:TestComms \
 	 nparcel.table.tests:TestAgent \
 	 nparcel.table.tests:TestJob \
 	 nparcel.table.tests:TestJobItem \
