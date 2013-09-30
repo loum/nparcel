@@ -336,62 +336,62 @@ class Reminder(object):
 
         return status
 
-    def send_sms(self,
-                 item_details,
-                 template='sms_rem',
-                 dry=False):
-        """Send out reminder SMS comms to the list of *mobiles*.
-
-        **Args:**
-            item_details: dictionary of SMS details similar to::
-
-                {'name': 'Vermont South Newsagency',
-                 'address': 'Shop 13-14; 495 Burwood Highway',
-                 'suburb': 'VERMONT',
-                 'postcode': '3133',
-                 'item_nbr': '12345678',
-                 'phone_nbr': '0431602135',
-                 'date': '2013 09 15'}
-
-        **Kwargs:**
-            *template*: the XML template used to generate the SMS content
-
-            *dry*: only report, do not actual execute
-
-        **Returns:**
-            ``True`` for processing success
-
-            ``False`` for processing failure
-
-        """
-        status = True
-
-        mobile = item_details.get('phone_nbr')
-        if mobile is None or not mobile:
-            log.error('No SMS mobile contact provided')
-            status = False
-
-        item_nbr = item_details.get('item_nbr')
-        if status and item_nbr is None:
-            status = False
-            err = 'SMS reminder missing item_nbr: %s' % str(item_details)
-            log.error(err)
-
-        if status and not self.smser.validate(mobile):
-            status = False
-            log.error('SMS mobile "%s" did not validate' % mobile)
-
-        if status:
-            log.info('Sending customer SMS to "%s"' % str(mobile))
-
-            # OK, generate the SMS structure.
-            base_dir = self.template_base
-            sms_data = self.smser.create_comms(data=item_details,
-                                               template=template,
-                                               base_dir=base_dir)
-            status = self.smser.send(data=sms_data, dry=dry)
-
-        return status
+#    def send_sms(self,
+#                 item_details,
+#                 template='sms_rem',
+#                 dry=False):
+#        """Send out reminder SMS comms to the list of *mobiles*.
+#
+#        **Args:**
+#            item_details: dictionary of SMS details similar to::
+#
+#                {'name': 'Vermont South Newsagency',
+#                 'address': 'Shop 13-14; 495 Burwood Highway',
+#                 'suburb': 'VERMONT',
+#                 'postcode': '3133',
+#                 'item_nbr': '12345678',
+#                 'phone_nbr': '0431602135',
+#                 'date': '2013 09 15'}
+#
+#        **Kwargs:**
+#            *template*: the XML template used to generate the SMS content
+#
+#            *dry*: only report, do not actual execute
+#
+#        **Returns:**
+#            ``True`` for processing success
+#
+#            ``False`` for processing failure
+#
+#        """
+#        status = True
+#
+#        mobile = item_details.get('phone_nbr')
+#        if mobile is None or not mobile:
+#            log.error('No SMS mobile contact provided')
+#            status = False
+#
+#        item_nbr = item_details.get('item_nbr')
+#        if status and item_nbr is None:
+#            status = False
+#            err = 'SMS reminder missing item_nbr: %s' % str(item_details)
+#            log.error(err)
+#
+#        if status and not self.smser.validate(mobile):
+#            status = False
+#            log.error('SMS mobile "%s" did not validate' % mobile)
+#
+#        if status:
+#            log.info('Sending customer SMS to "%s"' % str(mobile))
+#
+#            # OK, generate the SMS structure.
+#            base_dir = self.template_base
+#            sms_data = self.smser.create_comms(data=item_details,
+#                                               template=template,
+#                                               base_dir=base_dir)
+#            status = self.smser.send(data=sms_data, dry=dry)
+#
+#        return status
 
     def _create_dir(self, dir):
         """Helper method to manage the creation of a directory.

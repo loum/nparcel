@@ -201,23 +201,23 @@ WHERE id = %d""" % self._id_001
         msg = 'Reminder email send should return True'
         self.assertTrue(received)
 
-    def test_send_sms(self):
-        """Send email.
-        """
-        date = self._r.get_return_date(self._now)
-        details = {'name': 'Mannum Newsagency',
-                   'address': '77 Randwell Street',
-                   'suburb': 'MANNUM',
-                   'postcode': '5238',
-                   'item_nbr': 'item_nbr_1234',
-                   'phone_nbr': '0431602145',
-                   'date': '%s' % date}
-
-        received = self._r.send_sms(details,
-                                    template='sms_rem',
-                                    dry=True)
-        msg = 'Reminder SMS send should return True'
-        self.assertTrue(received)
+#    def test_send_sms(self):
+#        """Send email.
+#        """
+#        date = self._r.get_return_date(self._now)
+#        details = {'name': 'Mannum Newsagency',
+#                   'address': '77 Randwell Street',
+#                   'suburb': 'MANNUM',
+#                   'postcode': '5238',
+#                   'item_nbr': 'item_nbr_1234',
+#                   'phone_nbr': '0431602145',
+#                   'date': '%s' % date}
+#
+#        received = self._r.send_sms(details,
+#                                    template='sms_rem',
+#                                    dry=True)
+#        msg = 'Reminder SMS send should return True'
+#        self.assertTrue(received)
 
     def test_get_return_date_string_based(self):
         """Create the return date -- string based.
