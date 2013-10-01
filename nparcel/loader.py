@@ -135,12 +135,8 @@ POSTCODE_MAP = {'NSW': {
                     'exceptions': []}}
 
 
-class Loader(object):
+class Loader(nparcel.Service):
     """Nparcel Loader object.
-
-    .. attribute:: db
-
-        :class:`nparcel.DbSession` object
 
     """
 
@@ -153,10 +149,7 @@ class Loader(object):
         """Nparcel Loader initialiser.
 
         """
-        if db is None:
-            db = {}
-        self.db = nparcel.DbSession(**db)
-        self.db.connect()
+        super(nparcel.Loader, self).__init__(db=db)
 
         self.parser = nparcel.Parser(fields=FIELDS)
         self.alerts = []

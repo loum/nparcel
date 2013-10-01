@@ -3,6 +3,7 @@ from nparcel.exporterdaemon import ExporterDaemon
 from nparcel.primaryelectdaemon import PrimaryElectDaemon
 from nparcel.parser import Parser
 from nparcel.stopparser import StopParser
+from nparcel.service import Service
 from nparcel.loader import Loader
 from nparcel.dbsession import DbSession
 from nparcel.reporter import Reporter
@@ -14,7 +15,6 @@ from nparcel.exporter import Exporter
 from nparcel.config import Config
 from nparcel.b2cconfig import B2CConfig
 from nparcel.ftp import Ftp
-from nparcel.service import Service
 from nparcel.reminder import Reminder
 from nparcel.primaryelect import PrimaryElect
 from nparcel.init import Init
