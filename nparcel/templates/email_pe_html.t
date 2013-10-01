@@ -11,6 +11,5 @@ You have elected to have your parcel delivered to <b>${name}</b>, <b>${address}<
         <td>$item_nbr</td>
     </tr>
 </table>
-<p>Please collect your parcel from the above address as soon as possible.<br>
-Please bring your photo-ID to collect your parcel.</p>
+<p>Please bring your photo-ID and collect your parcel from the above address as soon as possible.</p>
 <p class="fine-print">*** Please note that this is an automatically generated email - replies will not be answered</p>

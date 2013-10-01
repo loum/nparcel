@@ -118,30 +118,14 @@ class TestPrimaryElect(unittest2.TestCase):
         # Check that the comms files were written out.
         received = [os.path.join(self._comms_dir,
                                  x) for x in os.listdir(self._comms_dir)]
-        expected = [os.path.join(self._comms_dir, '%s.%d.%s') %
-                    ('email', self._id_001, 'pe'),
-                    os.path.join(self._comms_dir, '%s.%d.%s') %
-                    ('sms', self._id_001, 'pe')]
+        expected = [os.path.join(self._comms_dir, '%d.%s') %
+                    (self._id_001, 'pe')]
         msg = 'Comms directory file list error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
         # Cleanup.
         for comms_file in received:
             os.remove(comms_file)
-
-#    def test_process_failed_delivery(self):
-#        """Check processing -- failed delivery.
-#        """
-#        sql = """UPDATE job_item
-#SET phone_nbr = '0531602145'
-#WHERE id = %d""" % self._id_001
-#        self._pe.db(sql)
-#
-#        connotes = ['con_001', 'con_002', 'con_003']
-#        received = self._pe.process(connotes, dry=True)
-#        expected = []
-#        msg = 'List of processed primary elect items incorrect'
-#        self.assertListEqual(received, expected, msg)
 
     @classmethod
     def tearDownClass(cls):

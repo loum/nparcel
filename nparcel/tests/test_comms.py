@@ -62,7 +62,19 @@ class TestComms(unittest2.TestCase):
         msg = 'Object is not a nparcel.Comms'
         self.assertIsInstance(self._c, nparcel.Comms, msg)
 
-    def test_send_sms(self):
+    def test_send_sms_test(self):
+        """Send test SMS.
+        """
+        date = self._c.get_return_date(self._now)
+        details = {'phone_nbr': '0431602145'}
+
+        received = self._c.send_sms(details,
+                                    template='test',
+                                    dry=True)
+        msg = 'Test SMS send should return True'
+        self.assertTrue(received)
+
+    def test_send_sms_reminder(self):
         """Send reminder SMS.
         """
         date = self._c.get_return_date(self._now)
@@ -75,21 +87,27 @@ class TestComms(unittest2.TestCase):
                    'date': '%s' % date}
 
         received = self._c.send_sms(details,
-                                    template='sms_rem',
+                                    template='rem',
                                     dry=True)
         msg = 'Reminder SMS send should return True'
         self.assertTrue(received)
 
-    def test_send_sms_test(self):
-        """Send test SMS.
+    def test_send_sms_primary_elect(self):
+        """Send primary elect SMS.
         """
         date = self._c.get_return_date(self._now)
-        details = {'phone_nbr': '0431602145'}
+        details = {'name': 'Primary Elect Newsagency',
+                   'address': '77 Primary Street',
+                   'suburb': 'ELECT',
+                   'postcode': '5238',
+                   'item_nbr': 'item_nbr_pe',
+                   'phone_nbr': '0431602145',
+                   'date': '%s' % date}
 
         received = self._c.send_sms(details,
-                                    template='sms_test',
+                                    template='pe',
                                     dry=True)
-        msg = 'Test SMS send should return True'
+        msg = 'Primary Elect SMS send should return True'
         self.assertTrue(received)
 
     def test_get_return_date_string_based(self):
@@ -131,7 +149,7 @@ class TestComms(unittest2.TestCase):
         self.assertTrue(received)
 
     def test_send_email_reminder(self):
-        """Send reminder email.
+        """Send reminder email comms.
         """
         date = self._c.get_return_date(self._now)
         details = {'name': 'Mannum Newsagency',
@@ -147,6 +165,25 @@ class TestComms(unittest2.TestCase):
                                       template='rem',
                                       dry=True)
         msg = 'Reminder email send should return True'
+        self.assertTrue(received)
+
+    def test_send_email_primary_elect(self):
+        """Send primary elect email comms.
+        """
+        date = self._c.get_return_date(self._now)
+        details = {'name': 'PE Newsagency',
+                   'address': '77 Primary Elect Street',
+                   'suburb': 'Primaryville',
+                   'postcode': '5238',
+                   'connote_nbr': 'connote_pe',
+                   'item_nbr': 'item_nbr_pe',
+                   'email_addr': 'loumar@tollgroup.com',
+                   'date': '%s' % date}
+
+        received = self._c.send_email(details,
+                                      template='pe',
+                                      dry=True)
+        msg = 'Primary elect email send should return True'
         self.assertTrue(received)
 
     def test_comms_file_not_set(self):

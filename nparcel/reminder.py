@@ -104,10 +104,9 @@ class Reminder(nparcel.Service):
             try:
                 fh = open(abs_comms_file, 'w')
                 fh.close()
+                processed_ids.append(id)
             except IOError, err:
                 log.error('Unable to open comms file %s: %s' %
                           (abs_comms_file, err))
-
-            processed_ids.append(id)
 
         return processed_ids
