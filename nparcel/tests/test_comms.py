@@ -95,19 +95,33 @@ class TestComms(unittest2.TestCase):
     def test_send_sms_primary_elect(self):
         """Send primary elect SMS.
         """
-        date = self._c.get_return_date(self._now)
         details = {'name': 'Primary Elect Newsagency',
                    'address': '77 Primary Street',
                    'suburb': 'ELECT',
                    'postcode': '5238',
                    'item_nbr': 'item_nbr_pe',
-                   'phone_nbr': '0431602145',
-                   'date': '%s' % date}
+                   'phone_nbr': '0431602145'}
 
         received = self._c.send_sms(details,
                                     template='pe',
                                     dry=True)
         msg = 'Primary Elect SMS send should return True'
+        self.assertTrue(received)
+
+    def test_send_sms_loader(self):
+        """Send loader SMS.
+        """
+        details = {'name': 'Loader Newsagency',
+                   'address': '10 Loader Street',
+                   'suburb': 'Loaderville',
+                   'postcode': '3019',
+                   'item_nbr': 'item_nbr_loader',
+                   'phone_nbr': '0431602145'}
+
+        received = self._c.send_sms(details,
+                                    template='body',
+                                    dry=True)
+        msg = 'Loader SMS send should return True'
         self.assertTrue(received)
 
     def test_get_return_date_string_based(self):
@@ -170,20 +184,35 @@ class TestComms(unittest2.TestCase):
     def test_send_email_primary_elect(self):
         """Send primary elect email comms.
         """
-        date = self._c.get_return_date(self._now)
         details = {'name': 'PE Newsagency',
                    'address': '77 Primary Elect Street',
                    'suburb': 'Primaryville',
                    'postcode': '5238',
                    'connote_nbr': 'connote_pe',
                    'item_nbr': 'item_nbr_pe',
-                   'email_addr': 'loumar@tollgroup.com',
-                   'date': '%s' % date}
+                   'email_addr': 'loumar@tollgroup.com'}
 
         received = self._c.send_email(details,
                                       template='pe',
                                       dry=True)
         msg = 'Primary elect email send should return True'
+        self.assertTrue(received)
+
+    def test_send_email_loader(self):
+        """Send loader email comms.
+        """
+        details = {'name': 'Loader Newsagency',
+                   'address': '77 Loader Street',
+                   'suburb': 'Loadertown',
+                   'postcode': '5238',
+                   'connote_nbr': 'connote_loader',
+                   'item_nbr': 'item_nbr_loader',
+                   'email_addr': 'loumar@tollgroup.com'}
+
+        received = self._c.send_email(details,
+                                      template='body',
+                                      dry=True)
+        msg = 'Loader email send should return True'
         self.assertTrue(received)
 
     def test_comms_file_not_set(self):

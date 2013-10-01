@@ -2,7 +2,7 @@
 <messages>
   <accountreference>EX0111642</accountreference>
   <message>
-    <to>${mobile}</to>
+    <to>${phone_nbr}</to>
     <body>TEST -- Your parcel ref# $item_nbr has been delivered to ${name}, ${address}, ${suburb}, ${postcode}.
 
 Please bring your photo-ID for collection</body>
