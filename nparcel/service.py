@@ -1,7 +1,10 @@
 __all__ = [
     "Service",
 ]
+import os
+
 import nparcel
+from nparcel.utils.log import log
 from nparcel.utils.files import create_dir
 
 
@@ -38,3 +41,36 @@ class Service(object):
     def set_comms_dir(self, value):
         if create_dir(value):
             self._comms_dir = value
+
+    def flag_comms(self, id, service, dry=False):
+        """Prepare the comms file for further processsing.
+
+        **Args:**
+            *id*: the ``job_item.id`` for comms
+
+            *service*: the comms service template
+
+        **Kwargs:**
+            *dry*: only report, do not actually execute
+
+        **Returns:**
+            ``True`` for processing success
+
+            ``False`` for processing failure
+
+        """
+        status = True
+
+        comms_file = "%d.%s" % (id, service)
+        abs_comms_file = os.path.join(self.comms_dir, comms_file)
+        log.info('Writing comms file to "%s"' % abs_comms_file)
+        try:
+            if not dry:
+                fh = open(abs_comms_file, 'w')
+                fh.close()
+        except IOError, err:
+            log.error('Unable to open comms file %s: %s' %
+                      (abs_comms_file, err))
+            status = False
+
+        return status

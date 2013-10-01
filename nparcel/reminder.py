@@ -24,10 +24,6 @@ class Reminder(nparcel.Service):
 
         date when delayed notifications start
 
-    .. attribute:: comms_dir
-
-        directory where comms files are sent for further processing
-
     """
     def __init__(self,
                  db=None,
@@ -84,8 +80,8 @@ class Reminder(nparcel.Service):
         Agent information, contact mobile and email and created timestamp
         are extracted from the database.
 
-        A reminder message will be send to the customer if a valid mobile
-        and/or email address is found.
+        A reminder message will be flagged if the customer has a valid
+        mobile and/or email address.
 
         **Kwargs:**
             *dry*: only report, do not execute

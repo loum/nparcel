@@ -140,31 +140,14 @@ class Loader(nparcel.Service):
 
     """
 
-    def __init__(self,
-                 db=None,
-                 proxy=None,
-                 scheme='http',
-                 sms_api=None,
-                 email_api=None):
+    def __init__(self, db=None, comms_dir=None):
         """Nparcel Loader initialiser.
 
         """
-        super(nparcel.Loader, self).__init__(db=db)
+        super(nparcel.Loader, self).__init__(db=db, comms_dir=comms_dir)
 
         self.parser = nparcel.Parser(fields=FIELDS)
         self.alerts = []
-
-        if sms_api is None:
-            sms_api = {}
-        self.smser = nparcel.RestSmser(proxy=proxy,
-                                       proxy_scheme=scheme,
-                                       **sms_api)
-
-        if email_api is None:
-            email_api = {}
-        self.emailer = nparcel.RestEmailer(proxy=proxy,
-                                           proxy_scheme=scheme,
-                                           **email_api)
 
     def process(self, time, raw_record, bu_id, cond_map, dry=False):
         """Extracts, validates and inserts/updates an Nparcel record.
@@ -234,58 +217,65 @@ class Loader(nparcel.Service):
             # OK, update or create ...
             agent_id = fields.get('Agent Id')
             agent_id_row_id = job_data.get('agent_id')
+            job_item_id = None
             if job_id is not None:
                 log.info('Updating Nparcel barcode "%s" agent ID "%s"' %
                          (barcode, agent_id))
-                self.update(job_id,
-                            agent_id_row_id,
-                            job_item_data,
-                            skip_jobitem_chk)
+                job_item_id = self.update(job_id,
+                                          agent_id_row_id,
+                                          job_item_data,
+                                          skip_jobitem_chk)
             else:
                 log.info('Creating Nparcel barcode "%s"' % barcode)
-                self.create(job_data, job_item_data)
+                job_item_id = self.create(job_data, job_item_data)
 
             send_email = cond_map.get('send_email')
             send_sms = cond_map.get('send_sms')
-            agent_details = {}
-            if send_email or send_sms:
-                agent_details = self.get_agent_details(agent_id)
+            if job_item_id is not None and (send_email or send_sms):
+                self.flag_comms(job_item_id, 'body', dry=dry)
+            else:
+                log.info('Not setting comms flag for job_item_id %s' %
+                         str(job_item_id))
 
-            # Send out comms if the facility is enabled.
-            email_status = True
-            sms_status = True
-            item_nbr = job_item_data.get('item_nbr')
-            if send_email:
-                email_addrs = job_item_data.get('email_addr').split()
-                if len(email_addrs):
-                    email_status = self.send_email(agent_details,
-                                                   email_addrs,
-                                                   item_nbr,
-                                                   connote,
-                                                   err=False,
-                                                   dry=dry)
-                else:
-                    log.info('No email recipient have been specified')
-            if send_sms:
-                mobiles = job_item_data.get('phone_nbr').split()
-                if len(mobiles):
-                    for mob in mobiles:
-                        sms_status = self.send_sms(agent_details,
-                                                   mob,
-                                                   item_nbr,
-                                                   dry=dry)
-                else:
-                    log.info('No SMS recipient have been specified')
-
-            if not sms_status or not email_status:
-                log.info('Sending comms failure notification to "%s"' %
-                         self.emailer.support)
-                self.send_email(agent_details,
-                                self.emailer.support,
-                                item_nbr,
-                                connote,
-                                err=True,
-                                dry=dry)
+#            agent_details = {}
+#            if send_email or send_sms:
+#                agent_details = self.get_agent_details(agent_id)
+#
+#            # Send out comms if the facility is enabled.
+#            email_status = True
+#            sms_status = True
+#            item_nbr = job_item_data.get('item_nbr')
+#            if send_email:
+#                email_addrs = job_item_data.get('email_addr').split()
+#                if len(email_addrs):
+#                    email_status = self.send_email(agent_details,
+#                                                   email_addrs,
+#                                                   item_nbr,
+#                                                   connote,
+#                                                   err=False,
+#                                                   dry=dry)
+#                else:
+#                    log.info('No email recipient have been specified')
+#            if send_sms:
+#                mobiles = job_item_data.get('phone_nbr').split()
+#                if len(mobiles):
+#                    for mob in mobiles:
+#                        sms_status = self.send_sms(agent_details,
+#                                                   mob,
+#                                                   item_nbr,
+#                                                   dry=dry)
+#                else:
+#                    log.info('No SMS recipient have been specified')
+#
+#            if not sms_status or not email_status:
+#                log.info('Sending comms failure notification to "%s"' %
+#                         self.emailer.support)
+#                self.send_email(agent_details,
+#                                self.emailer.support,
+#                                item_nbr,
+#                                connote,
+#                                err=True,
+#                                dry=dry)
 
         log.info('Conn Note: "%s" parse complete' % connote_literal)
 
@@ -677,9 +667,12 @@ class Loader(nparcel.Service):
     def create(self, job_data, jobitem_data):
         """
         **Args:**
-            job_data: dictionary of the "job" table fields
+            *job_data*: dictionary of the ``job`` table fields
 
-            jobitem_data: dictionary of the "jobitem" table fields
+            *jobitem_data*: dictionary of the ``jobitem`` table fields
+
+        **Returns:**
+            integer representing the new ``job_item.id``
 
         """
         job_id = self.db.insert(self.db.job.insert_sql(job_data))
@@ -690,6 +683,8 @@ class Loader(nparcel.Service):
         sql = self.db.jobitem.insert_sql(jobitem_data)
         jobitem_id = self.db.insert(sql)
         log.info('"jobitem.id" %d created' % jobitem_id)
+
+        return jobitem_id
 
     def update(self,
                job_id,
@@ -711,7 +706,12 @@ class Loader(nparcel.Service):
             skip_jobitem_chk: bypass jobitem insert check and only update
             the job record (default ``False``)
 
+        **Returns:**
+            integer representing the new ``job_item.id``
+
         """
+        job_item_id = None
+
         sql = self.db.job.update_sql(job_id, agent_id)
         self.db(sql)
 
@@ -730,131 +730,134 @@ class Loader(nparcel.Service):
                 # Set the "jobitem" table's foreign key.
                 jobitem_data['job_id'] = job_id
                 sql = self.db.jobitem.insert_sql(jobitem_data)
-                jobitem_id = self.db.insert(sql)
-                log.info('"jobitem.id" %d created' % jobitem_id)
+                job_item_id = self.db.insert(sql)
+                log.info('"jobitem.id" %d created' % job_item_id)
             else:
                 log.info('"jobitem.id" %d exists' % job_item_ids[0])
+                job_item_id = job_item_ids[0]
         else:
             log.debug('Skipping jobitems check')
 
-    def send_email(self,
-                   agent,
-                   to_addresses,
-                   item_nbr,
-                   connote,
-                   base_dir=None,
-                   err=False,
-                   dry=False):
-        """Send out email comms to the list of *to_addresses*.
+        return job_item_id
 
-        **Args:**
-            agent: dictionary of agent details similar to::
+#    def send_email(self,
+#                   agent,
+#                   to_addresses,
+#                   item_nbr,
+#                   connote,
+#                   base_dir=None,
+#                   err=False,
+#                   dry=False):
+#        """Send out email comms to the list of *to_addresses*.
+#
+#        **Args:**
+#            agent: dictionary of agent details similar to::
+#
+#                {'name': 'Vermont South Newsagency',
+#                 'address': 'Shop 13-14; 495 Burwood Highway',
+#                 'suburb': 'VERMONT',
+#                 'postcode': '3133'}
+#
+#            to_addresses: list of email recipients
+#
+#            barcode: job barcode
+#
+#        **Kwargs:**
+#            dry: only report, do not actually execute
+#
+#        **Returns:**
+#            ``True`` for processing success
+#
+#            ``False`` for processing failure
+#
+#        """
+#        status = True
+#
+#        if to_addresses is None or not len(to_addresses):
+#            log.error('No email recipients provided')
+#            status = False
+#
+#        if status and not agent.keys():
+#            status = False
+#            err = 'Email missing Agent details for id: %s' % item_nbr
+#            log.error(err)
+#
+#        if status:
+#            d = {'name': agent.get('name'),
+#                 'address': agent.get('address'),
+#                 'suburb': agent.get('suburb'),
+#                 'postcode': agent.get('postcode'),
+#                 'item_nbr': item_nbr,
+#                 'connote': connote}
+#
+#            self.emailer.set_recipients(to_addresses)
+#            subject = 'Toll Consumer Delivery parcel ref# %s' % item_nbr
+#            if err:
+#                subject = 'FAILED NOTIFICATION - ' + subject
+#            else:
+#                log.debug('Sending customer email to "%s"' %
+#                          str(to_addresses))
+#            encoded_msg = self.emailer.create_comms(subject=subject,
+#                                                    data=d,
+#                                                    base_dir=base_dir,
+#                                                    err=err)
+#            status = self.emailer.send(data=encoded_msg, dry=dry)
+#
+#        return status
 
-                {'name': 'Vermont South Newsagency',
-                 'address': 'Shop 13-14; 495 Burwood Highway',
-                 'suburb': 'VERMONT',
-                 'postcode': '3133'}
-
-            to_addresses: list of email recipients
-
-            barcode: job barcode
-
-        **Kwargs:**
-            dry: only report, do not actual execute
-
-        **Returns:**
-            ``True`` for processing success
-
-            ``False`` for processing failure
-
-        """
-        status = True
-
-        if to_addresses is None or not len(to_addresses):
-            log.error('No email recipients provided')
-            status = False
-
-        if status and not agent.keys():
-            status = False
-            err = 'Email missing Agent details for id: %s' % item_nbr
-            log.error(err)
-
-        if status:
-            d = {'name': agent.get('name'),
-                 'address': agent.get('address'),
-                 'suburb': agent.get('suburb'),
-                 'postcode': agent.get('postcode'),
-                 'item_nbr': item_nbr,
-                 'connote': connote}
-
-            self.emailer.set_recipients(to_addresses)
-            subject = 'Toll Consumer Delivery parcel ref# %s' % item_nbr
-            if err:
-                subject = 'FAILED NOTIFICATION - ' + subject
-            else:
-                log.debug('Sending customer email to "%s"' %
-                          str(to_addresses))
-            encoded_msg = self.emailer.create_comms(subject=subject,
-                                                    data=d,
-                                                    base_dir=base_dir,
-                                                    err=err)
-            status = self.emailer.send(data=encoded_msg, dry=dry)
-
-        return status
-
-    def send_sms(self, agent, mobile, item_nbr, base_dir=None, dry=False):
-        """Send out SMS comms to the list of *mobiles*.
-
-        **Args:**
-            agent: dictionary of agent details similar to::
-
-                {'name': 'Vermont South Newsagency',
-                 'address': 'Shop 13-14; 495 Burwood Highway',
-                 'suburb': 'VERMONT',
-                 'postcode': '3133'}
-
-            mobile: mobile number of the SMS recipient
-
-            item_nbr: job_item.item_nbr
-
-        **Kwargs:**
-            base_dir: override the standard location to search for the
-            SMS XML template (default is ``~user_home/.nparceld/templates``)
-
-            dry: only report, do not actual execute
-
-        **Returns:**
-            ``True`` for processing success
-
-            ``False`` for processing failure
-
-        """
-        status = True
-
-        if mobile is None or not mobile:
-            log.error('No SMS mobile contact provided')
-            status = False
-
-        if status and not agent.keys():
-            status = False
-            err = 'SMS missing Agent details for item: %s' % item_nbr
-            log.error(err)
-
-        if status and not self.smser.validate(mobile):
-            status = False
-            log.error('SMS mobile "%s" did not validate' % mobile)
-
-        if status:
-            d = {'name': agent.get('name'),
-                 'address': agent.get('address'),
-                 'suburb': agent.get('suburb'),
-                 'postcode': agent.get('postcode'),
-                 'item_nbr': item_nbr}
-            log.debug('Sending customer SMS to "%s"' % str(mobile))
-            d['mobile'] = mobile
-
-            # OK, generate the SMS structure.
-            sms_data = self.smser.create_comms(data=d, base_dir=base_dir)
-            status = self.smser.send(data=sms_data, dry=dry)
-
-        return status
+#    def send_sms(self, agent, mobile, item_nbr, base_dir=None, dry=False):
+#        """Send out SMS comms to the list of *mobiles*.
+#
+#        **Args:**
+#            agent: dictionary of agent details similar to::
+#
+#                {'name': 'Vermont South Newsagency',
+#                 'address': 'Shop 13-14; 495 Burwood Highway',
+#                 'suburb': 'VERMONT',
+#                 'postcode': '3133'}
+#
+#            mobile: mobile number of the SMS recipient
+#
+#            item_nbr: job_item.item_nbr
+#
+#        **Kwargs:**
+#            base_dir: override the standard location to search for the
+#            SMS XML template (default is ``~user_home/.nparceld/templates``)
+#
+#            dry: only report, do not actual execute
+#
+#        **Returns:**
+#            ``True`` for processing success
+#
+#            ``False`` for processing failure
+#
+#        """
+#        status = True
+#
+#        if mobile is None or not mobile:
+#            log.error('No SMS mobile contact provided')
+#            status = False
+#
+#        if status and not agent.keys():
+#            status = False
+#            err = 'SMS missing Agent details for item: %s' % item_nbr
+#            log.error(err)
+#
+#        if status and not self.smser.validate(mobile):
+#            status = False
+#            log.error('SMS mobile "%s" did not validate' % mobile)
+#
+#        if status:
+#            d = {'name': agent.get('name'),
+#                 'address': agent.get('address'),
+#                 'suburb': agent.get('suburb'),
+#                 'postcode': agent.get('postcode'),
+#                 'item_nbr': item_nbr}
+#            log.debug('Sending customer SMS to "%s"' % str(mobile))
+#            d['mobile'] = mobile
+#
+#            # OK, generate the SMS structure.
+#            sms_data = self.smser.create_comms(data=d, base_dir=base_dir)
+#            status = self.smser.send(data=sms_data, dry=dry)
+#
+#        return status

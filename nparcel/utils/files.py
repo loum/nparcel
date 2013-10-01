@@ -3,6 +3,8 @@ __all__ = [
 ]
 import os
 
+from nparcel.utils.log import log
+
 
 def create_dir(dir):
     """Helper method to manage the creation of a directory.
@@ -26,7 +28,6 @@ def create_dir(dir):
             os.makedirs(dir)
         except OSError, err:
             status = False
-            log.error('Unable to create directory "%s": %s"' %
-                        (dir, err))
+            log.error('Unable to create directory "%s": %s"' % (dir, err))
 
     return status

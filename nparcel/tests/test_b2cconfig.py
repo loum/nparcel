@@ -48,7 +48,7 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'Comms directory not as expected'
         received = self._c.comms_dir
-        expected = '/data/www/nparcel/data/comms'
+        expected = '/data/nparcel/comms'
         self.assertEqual(received, expected, msg)
 
         msg = 'Loader loop not as expected'
