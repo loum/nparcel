@@ -42,10 +42,12 @@ class Service(object):
         if create_dir(value):
             self._comms_dir = value
 
-    def flag_comms(self, id, service, dry=False):
+    def flag_comms(self, action, id, service, dry=False):
         """Prepare the comms file for further processsing.
 
         **Args:**
+            *action*: type of communication (either ``sms`` or ``email``)
+
             *id*: the ``job_item.id`` for comms
 
             *service*: the comms service template
@@ -61,7 +63,7 @@ class Service(object):
         """
         status = True
 
-        comms_file = "%d.%s" % (id, service)
+        comms_file = "%s.%d.%s" % (action, id, service)
         abs_comms_file = os.path.join(self.comms_dir, comms_file)
         log.info('Writing comms file to "%s"' % abs_comms_file)
         try:

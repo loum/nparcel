@@ -34,15 +34,7 @@ class TestLoader(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._comms_dir = tempfile.mkdtemp()
-        #conf = nparcel.B2CConfig()
-        #conf.set_config_file('nparcel/conf/nparceld.conf')
-        #conf.parse_config()
-        #proxy = conf.proxy_string()
         cls._ldr = nparcel.Loader(comms_dir=cls._comms_dir)
-                                  #proxy=proxy,
-                                  #scheme='https',
-                                  #sms_api=conf.sms_api_kwargs,
-                                  #email_api=conf.email_api_kwargs)
         cls._job_ts = cls._ldr.db.date_now()
 
     def test_init(self):
@@ -87,8 +79,10 @@ FROM job_item"""
         self._ldr.db(sql)
         expected = []
         for row in self._ldr.db.rows():
-            expected.append(os.path.join(self._comms_dir, '%d.%s') %
-                            (row[0], 'body'))
+            expected.append(os.path.join(self._comms_dir, '%s.%d.%s') %
+                            ('email', row[0], 'body'))
+            expected.append(os.path.join(self._comms_dir, '%s.%d.%s') %
+                            ('sms', row[0], 'body'))
         msg = 'Comms directory file list error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -870,130 +864,6 @@ FROM job_item"""
 
         # Restore DB state.
         self._ldr.db.connection.rollback()
-
-#    def test_email_no_agent_id(self):
-#        """Email attempt with no agent_id.
-#        """
-#        emails = ['dummy@dummyville.com']
-#        agent = {}
-#        connote = 'xxx'
-#        item_nbr = 'yyy'
-#        received = self._ldr.send_email(agent,
-#                                        emails,
-#                                        item_nbr,
-#                                        connote,
-#                                        base_dir='nparcel',
-#                                        dry=True)
-#        msg = 'Email with no Agent Id should return False'
-#        self.assertFalse(received, msg)
-
-#    def test_email_agent_id(self):
-#        """Email attempt with agent_id.
-#        """
-#        agent = {'name': 'Mannum Newsagency',
-#                 'address': '77 Randwell Street',
-#                 'suburb': 'MANNUM',
-#                 'postcode': '5238'}
-#
-#        email = 'no-reply@consumerdelivery.tollgroup.com'
-#        old_sdr = self._ldr.emailer.set_sender(email)
-#        emails = ['loumar@tollgroup.com']
-#        agent_id = id
-#        item_nbr = 'item_nbr-xxx'
-#        connote = 'connote-xxx'
-#        received = self._ldr.send_email(agent,
-#                                        emails,
-#                                        item_nbr,
-#                                        connote,
-#                                        base_dir='nparcel',
-#                                        dry=True)
-#        msg = 'Email with valid Agent Id should return True'
-#        self.assertTrue(received, msg)
-
-#    def test_email_failure(self):
-#        """Email failure.
-#        """
-#        agent = {'name': 'Mannum Newsagency',
-#                 'address': '77 Randwell Street',
-#                 'suburb': 'MANNUM',
-#                 'postcode': '5238'}
-#
-#        email = 'no-reply@consumerdelivery.tollgroup.com'
-#        old_sdr = self._ldr.emailer.set_sender(email)
-#        emails = self._ldr.emailer.support
-#        agent_id = id
-#        item_nbr = 'item_nbr-xxx'
-#        connote = 'connote-xxx'
-#        received = self._ldr.send_email(agent,
-#                                        emails,
-#                                        item_nbr,
-#                                        connote,
-#                                        base_dir='nparcel',
-#                                        err=True,
-#                                        dry=True)
-#        msg = 'Failed Email notification should return True'
-#        self.assertTrue(received, msg)
-
-#    def test_sms_no_agent_id(self):
-#        """SMS attempt with no agent_id.
-#        """
-#        mobile = '1234567890'
-#        agent = {}
-#        barcode = 'xxx'
-#        received = self._ldr.send_sms(agent, mobile, barcode, dry=True)
-#        msg = 'SMS with no Agent Id should return False'
-#        self.assertFalse(received, msg)
-
-#    def test_sms_agent_id(self):
-#        """SMS attempt with agent_id.
-#        """
-#        agent = {'name': 'Vermont South Newsagency',
-#                 'address': 'Shop 13-14; 495 Burwood Highway',
-#                 'suburb': 'VERMONT',
-#                 'postcode': '3133'}
-#
-#        mobile = '0431602145'
-#        agent_id = id
-#        item_nbr = 'xxx'
-#        received = self._ldr.send_sms(agent,
-#                                      mobile,
-#                                      item_nbr,
-#                                      base_dir='nparcel',
-#                                      dry=True)
-#        msg = 'SMS with valid Agent Id should return True'
-#        self.assertTrue(received, msg)
-
-    def test_template_main_body_html(self):
-        """Generate the template main body -- html.
-        """
-        d = {'name': 'Auburn Newsagency',
-             'address': '119 Auburn Road',
-             'suburb': 'HAWTHORN EAST',
-             'postcode': '3123',
-             'connote': '218501217863-connote',
-             'item_nbr': '3456789012-item_nbr'}
-
-        f = open('nparcel/templates/email_body_html.t')
-        body_t = f.read()
-        f.close()
-        body_s = string.Template(body_t)
-        body = body_s.substitute(**d)
-
-        f = open('nparcel/images/toll_logo.png', 'rb')
-        toll_logo = urllib.quote(f.read().encode('base64'))
-        f.close()
-
-        f = open('nparcel/images/nparcel_logo.png', 'rb')
-        nparcel_logo = urllib.quote(f.read().encode('base64'))
-        f.close()
-
-        f = open('nparcel/templates/email_html.t')
-        main_t = f.read()
-        f.close()
-        main_s = string.Template(main_t)
-        main = main_s.substitute(body=body,
-                                 toll_logo=toll_logo,
-                                 nparcel_logo=nparcel_logo)
 
     @classmethod
     def tearDownClass(cls):

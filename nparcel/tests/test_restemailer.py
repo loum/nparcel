@@ -62,7 +62,7 @@ class TestRestEmailer(unittest2.TestCase):
              'address': '119 Auburn Road',
              'suburb': 'HAWTHORN EAST',
              'postcode': '3123',
-             'connote': '218501217863-connote',
+             'connote_nbr': '218501217863-connote',
              'item_nbr': '3456789012-item_nbr'}
         received = self._re.create_comms(subject=subject,
                                          data=d,
@@ -82,7 +82,7 @@ class TestRestEmailer(unittest2.TestCase):
              'address': '119 Auburn Road',
              'suburb': 'HAWTHORN EAST',
              'postcode': '3123',
-             'connote': '218501217863-connote',
+             'connote_nbr': '218501217863-connote',
              'item_nbr': '3456789012-item_nbr'}
         encoded_msg = self._re.create_comms(subject=subject,
                                             data=d,

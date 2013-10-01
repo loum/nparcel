@@ -43,7 +43,7 @@ class RestSmser(nparcel.Rest):
                 'suburb': 'HAWTHORN EAST',
                 'postcode': '3123',
                 'item_nbr': '3456789012-item_nbr',
-                'mobile': '0431602145'}
+                'phone_nbr': '0431602145'}
 
         **Kwargs:**
             base_dir: override the standard location to search for the
