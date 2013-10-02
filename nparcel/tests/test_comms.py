@@ -23,18 +23,18 @@ class TestComms(unittest2.TestCase):
         cls._c.set_template_base('nparcel')
         cls._now = datetime.datetime.now()
 
-        agents = [{'code': 'N031',
+        agents = [{'code': 'V031',
                    'state': 'VIC',
-                   'name': 'N031 Name',
-                   'address': 'N031 Address',
+                   'name': 'V031 Name',
+                   'address': 'V031 Address',
                    'postcode': '1234',
-                   'suburb': 'N031 Suburb'},
-                  {'code': 'BAD1',
+                   'suburb': 'V031 Suburb'},
+                  {'code': 'N100',
                    'state': 'NSW',
-                   'name': 'BAD1 Name',
-                   'address': 'BAD1 Address',
-                   'postcode': '5678',
-                   'suburb': 'BAD1 Suburb'}]
+                   'name': 'N100 Name',
+                   'address': 'N100 Address',
+                   'postcode': '2100',
+                   'suburb': 'N100 Suburb'}]
         sql = cls._c.db._agent.insert_sql(agents[0])
         agent_01 = cls._c.db.insert(sql)
         sql = cls._c.db._agent.insert_sql(agents[1])
@@ -245,13 +245,13 @@ class TestComms(unittest2.TestCase):
         # Cleanup.
         self._c.set_comms_dir(old_comms_dir)
 
-    def test_comms_file_missing_directory(self):
-        """Get files from missing comms dir.
+    def test_comms_file_read(self):
+        """Get comms files.
         """
-        comms_files = ['1.rem',
-                       '1111.pe',
-                       '2.rem',
-                       '2222.pe']
+        comms_files = ['email.1.rem',
+                       'sms.1.rem',
+                       'email.1111.pe',
+                       'sms.1111.pe']
         dodgy = ['banana',
                  'email.rem.3']
         for f in comms_files + dodgy:
@@ -267,37 +267,41 @@ class TestComms(unittest2.TestCase):
         for f in comms_files + dodgy:
             os.remove(os.path.join(self._c.comms_dir, f))
 
-    def test_process(self):
-        """Test processing.
+    def test_process_loader(self):
+        """Test processing -- loader.
         """
-        #comms_files = ['%d.rem' % self._id_000,
-        #               '%d.pe' % self._id_000]
-        comms_files = ['%d.rem' % self._id_000]
+        dry = True
+        comms_files = ['%s.%d.body' % ('email', self._id_000),
+                       '%s.%d.body' % ('sms', self._id_000)]
         dodgy = ['banana',
                  'email.rem.3']
         for f in comms_files + dodgy:
             fh = open(os.path.join(self._c.comms_dir, f), 'w')
             fh.close()
 
-        self._c.process(dry=True)
+        self._c.process(dry=dry)
 
         # Cleanup.
-        for f in comms_files + dodgy:
+        files_to_delete = dodgy
+        if dry:
+            files_to_delete += comms_files
+
+        for f in files_to_delete:
             os.remove(os.path.join(self._c.comms_dir, f))
 
     def test_get_agent_details(self):
         """Verify agent details.
         """
         received = self._c.get_agent_details(self._id_000)
-        expected = {'address': 'N031 Address',
+        expected = {'address': 'V031 Address',
                     'connote_nbr': 'con_001',
                     'created_ts': '%s' % self._now,
                     'item_nbr': 'item_nbr_001',
                     'email_addr': 'loumar@tollgroup.com',
                     'phone_nbr': '0431602145',
-                    'name': 'N031 Name',
+                    'name': 'V031 Name',
                     'postcode': '1234',
-                    'suburb': 'N031 Suburb'}
+                    'suburb': 'V031 Suburb'}
         msg = 'job_item.id based Agent details incorrect'
         self.assertDictEqual(received, expected, msg)
 
@@ -309,9 +313,34 @@ class TestComms(unittest2.TestCase):
         msg = 'Filename "" incorrect'
         self.assertTupleEqual(received, expected, msg)
 
-        received = self._c.parse_comm_filename('333.pe')
-        expected = (333, 'pe')
-        msg = 'Filename "333.pe" incorrect'
+        received = self._c.parse_comm_filename('sms.333.pe')
+        expected = ('sms', 333, 'pe')
+        msg = 'Filename "sms.333.pe" incorrect'
+        self.assertTupleEqual(received, expected, msg)
+
+        received = self._c.parse_comm_filename('sms.333.rem')
+        expected = ('sms', 333, 'rem')
+        msg = 'Filename "sms.333.rem" incorrect'
+        self.assertTupleEqual(received, expected, msg)
+
+        received = self._c.parse_comm_filename('sms.333.body')
+        expected = ('sms', 333, 'body')
+        msg = 'Filename "sms.333.body" incorrect'
+        self.assertTupleEqual(received, expected, msg)
+
+        received = self._c.parse_comm_filename('email.333.pe')
+        expected = ('email', 333, 'pe')
+        msg = 'Filename "email.333.pe" incorrect'
+        self.assertTupleEqual(received, expected, msg)
+
+        received = self._c.parse_comm_filename('email.333.rem')
+        expected = ('email', 333, 'rem')
+        msg = 'Filename "email.333.rem" incorrect'
+        self.assertTupleEqual(received, expected, msg)
+
+        received = self._c.parse_comm_filename('email.333.body')
+        expected = ('email', 333, 'body')
+        msg = 'Filename "email.333.body" incorrect'
         self.assertTupleEqual(received, expected, msg)
 
         received = self._c.parse_comm_filename('email..pe')

@@ -6,6 +6,7 @@ import re
 import time
 import datetime
 import fnmatch
+import shutil
 
 import nparcel
 from nparcel.utils.log import log
@@ -94,27 +95,34 @@ class Comms(object):
 
             try:
                 filename = os.path.basename(comm_file)
-                (id, template) = self.parse_comm_filename(filename)
+                (action, id, template) = self.parse_comm_filename(filename)
             except ValueError, err:
                 log.error('%s processing error: %s' % (comm_file, err))
+                shutil.copyfile(comm_file, comm_file + '.err')
                 continue
 
+            template_items = self.get_agent_details(id)
             if template == 'rem':
-                template_items = self.get_agent_details(id)
                 returned_date = template_items.get('created_ts')
                 template_items['date'] = self.get_return_date(returned_date)
 
-            email_status = True
-            sms_status = True
-            email_status = self.send_email(template_items,
-                                           template=template,
-                                           err=False,
-                                           dry=dry)
-            sms_status = self.send_sms(template_items,
-                                       template=template,
-                                       dry=dry)
+            comms_status = False
+            if action == 'sms':
+                comms_status = self.send_email(template_items,
+                                               template=template,
+                                               err=False,
+                                               dry=dry)
+            elif action == 'email':
+                comms_status = self.send_sms(template_items,
+                                             template=template,
+                                             dry=dry)
+            else:
+                log.error('Unknown action: "%s"' % action)
 
-            if not sms_status or not email_status:
+            if not comms_status:
+                log.info('Moving comms filename: "%s" aside to "%s"' %
+                         (comm_file, comm_file + '.err'))
+                shutil.copyfile(comm_file, comm_file + '.err')
                 for addr in self.emailer.support:
                     template_items['email_addr'] = addr
                     email_status = self.send_email(template_items,
@@ -122,6 +130,10 @@ class Comms(object):
                                                    err=True,
                                                    dry=dry)
             else:
+                log.info('Removing comms comm_file: "%s"' % comm_file)
+                if not dry:
+                    os.remove(comm_file)
+
                 if template == 'rem':
                     log.info('Setting job_item %d reminder sent flag' % id)
                     if not dry:
@@ -284,10 +296,13 @@ class Comms(object):
 
         Comms files are matched based on the following pattern::
 
-            <job_item.id>.<template>
+            <action>.<job_item.id>.<template>
 
         where:
 
+        * ``<action>`` is the communications medium (either SMS or email are
+          supported)
+          job_item table
         * ``<job_item.id>`` is the integer based primary key from the
           job_item table
         * ``<template>`` is the string template used to build the message
@@ -300,7 +315,7 @@ class Comms(object):
         """
         comms_files = []
 
-        log.debug('Comms dir: %s' % self.comms_dir)
+        log.debug('Searching for comms in dir: %s' % self.comms_dir)
 
         if self.comms_dir is not None:
             if not os.path.exists(self.comms_dir):
@@ -308,8 +323,10 @@ class Comms(object):
                           self.comms_dir)
             else:
                 for f in os.listdir(self.comms_dir):
-                    if fnmatch.fnmatch(f, '[0-9]*.[a-zA-Z]*'):
-                        comms_files.append(os.path.join(self.comms_dir, f))
+                    if fnmatch.fnmatch(f, '[a-zA-Z]*.[0-9]*.[a-zA-Z]*'):
+                        comms_file = os.path.join(self.comms_dir, f)
+                        log.info('Found comms file: "%s"' % comms_file)
+                        comms_files.append(comms_file)
         else:
             log.error('Comms dir is not defined')
 
@@ -363,7 +380,7 @@ class Comms(object):
         **Returns:**
             tuple representation of the *filename* in the form::
 
-                (<id>, "<template>")
+                (<action>, <id>, "<template>")
 
             For example::
 
@@ -372,13 +389,15 @@ class Comms(object):
         """
         comm_parse = ()
 
-        r = re.compile("(\d+)\.(pe|rem)")
+        log.debug('Parsing comms filename: "%s"' % filename)
+        r = re.compile("(email|sms)\.(\d+)\.(pe|rem|body)")
         m = r.match(filename)
         if m:
             try:
-                comm_parse = (int(m.group(1)), m.group(2))
+                comm_parse = (m.group(1), int(m.group(2)), m.group(3))
             except IndexError, err:
                 log.error('Unable to parse filename "%s": %s' %
                           (filename, err))
 
+        log.debug('Comms filename produced: "%s"' % str(comm_parse))
         return comm_parse
