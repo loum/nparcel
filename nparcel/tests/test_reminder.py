@@ -98,8 +98,10 @@ class TestReminder(unittest2.TestCase):
         # Check that the comms files were written out.
         received = [os.path.join(self._comms_dir,
                                  x) for x in os.listdir(self._comms_dir)]
-        expected = [os.path.join(self._comms_dir, '%d.%s') %
-                    (self._id_001, 'rem')]
+        expected = [os.path.join(self._comms_dir, '%s.%d.%s') %
+                    ('email', self._id_001, 'rem'),
+                    os.path.join(self._comms_dir, '%s.%d.%s') %
+                    ('sms', self._id_001, 'rem')]
         msg = 'Comms directory file list error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 

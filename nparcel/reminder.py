@@ -1,7 +1,6 @@
 __all__ = [
     "Reminder",
 ]
-import os
 import datetime
 
 import nparcel
@@ -88,21 +87,18 @@ class Reminder(nparcel.Service):
 
         **Returns:**
             list of uncollected job_items that were successfully
-            processed
+            processed.  Successful represents whether a comms flag for
+            email *and* SMS was produced.
 
         """
         processed_ids = []
 
         for id in self.get_uncollected_items():
-            comms_file = "%d.%s" % (id, 'rem')
-            abs_comms_file = os.path.join(self.comms_dir, comms_file)
-            log.info('Writing Reminder comms file to "%s"' % abs_comms_file)
-            try:
-                fh = open(abs_comms_file, 'w')
-                fh.close()
+            log.info('Preparing comms flag for job_item.id: %d' % id)
+            if (self.flag_comms('email', id, 'rem') and
+                self.flag_comms('sms', id, 'rem')):
                 processed_ids.append(id)
-            except IOError, err:
-                log.error('Unable to open comms file %s: %s' %
-                          (abs_comms_file, err))
+            else:
+                log.error('Comms flag error for job_item.id: %d' % id)
 
         return processed_ids

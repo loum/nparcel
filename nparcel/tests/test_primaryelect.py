@@ -118,8 +118,10 @@ class TestPrimaryElect(unittest2.TestCase):
         # Check that the comms files were written out.
         received = [os.path.join(self._comms_dir,
                                  x) for x in os.listdir(self._comms_dir)]
-        expected = [os.path.join(self._comms_dir, '%d.%s') %
-                    (self._id_001, 'pe')]
+        expected = [os.path.join(self._comms_dir, '%s.%d.%s') %
+                    ('email', self._id_001, 'pe'),
+                    os.path.join(self._comms_dir, '%s.%d.%s') %
+                    ('sms', self._id_001, 'pe')]
         msg = 'Comms directory file list error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 

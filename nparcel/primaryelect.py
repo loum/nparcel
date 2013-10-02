@@ -1,8 +1,6 @@
 __all__ = [
     "PrimaryElect",
 ]
-import os
-
 import nparcel
 from nparcel.utils.log import log
 
@@ -48,7 +46,8 @@ class PrimaryElect(nparcel.Service):
 
         **Returns:**
             list of primary elect job_items for whom notifications were
-            successfully processed
+            successfully processed.  Successful represents whether a comms
+            for email *and* SMS was produced.
 
         """
         processed_ids = []
@@ -59,15 +58,11 @@ class PrimaryElect(nparcel.Service):
         for connote in connotes:
             log.info('Checking primary elect connote: "%s"' % connote)
             for id in self.get_primary_elect_job_item_id(connote):
-                comms_file = "%d.%s" % (id, 'pe')
-                abs_comms_file = os.path.join(self.comms_dir, comms_file)
-                log.info('Writing Primary Elect comms file to "%s"' %
-                         abs_comms_file)
-                try:
-                    fh = open(abs_comms_file, 'w')
-                    fh.close()
+                log.info('Preparing comms flag for job_item.id: %d' % id)
+                if (self.flag_comms('email', id, 'pe') and
+                    self.flag_comms('sms', id, 'pe')):
                     processed_ids.append(id)
-                except IOError, err:
-                    log.error('Unable to open comms file %s: %s' %
-                              (abs_comms_file, err))
+                else:
+                    log.error('Comms flag error for job_item.id: %d' % id)
+
         return processed_ids
