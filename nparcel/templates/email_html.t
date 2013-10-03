@@ -53,9 +53,7 @@ p.fine-print {
                     <td>
                         <img src="https://nparcel.tollgroup.com/view/img/toll2.png" />
                     </td>
-                    <td>
-                        <img align="right" src="https://nparcel.tollgroup.com/view/img/nparcel2.png" alt="Nparcel logo" />
-                    </td>
+                    <td>&nbsp;</td>
                 </tr>
             </table>
         </div> <!-- footer -->

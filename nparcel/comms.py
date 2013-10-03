@@ -6,7 +6,6 @@ import re
 import time
 import datetime
 import fnmatch
-import shutil
 
 import nparcel
 from nparcel.utils.log import log
@@ -89,30 +88,52 @@ class Comms(object):
         Successful notifications will set the ``job_item.notify`` column
         if the corresponding ``job_item.id``.
 
-        """
-        for comm_file in self.get_comms_files():
-            log.info('Processing comms file: "%s" ...' % comm_file)
+        **Kwargs:**
+            *dry*: only report, do not execute (default ``False``)
 
+        **Returns:**
+            list of comms filenames processed
+
+        """
+        comms_processed = []
+
+        comms_files_to_process = self.get_comms_files()
+        if not len(comms_files_to_process):
+            log.info('No comms files found')
+
+        for comms_file in comms_files_to_process:
+            action = None
+            id = None
+            template = None
+            comms_file_err = comms_file + '.err'
+            log.info('Processing comms file: "%s" ...' % comms_file)
+
+            filename = os.path.basename(comms_file)
             try:
-                filename = os.path.basename(comm_file)
-                (action, id, template) = self.parse_comm_filename(filename)
+                (action, id, template) = self.parse_comms_filename(filename)
             except ValueError, err:
-                log.error('%s processing error: %s' % (comm_file, err))
-                shutil.copyfile(comm_file, comm_file + '.err')
+                log.error('%s processing error: %s' % (comms_file, err))
+                self._move_file(comms_file, comms_file_err, dry=dry)
                 continue
 
             template_items = self.get_agent_details(id)
+            if not template_items.keys():
+                log.error('%s processing error: %s' %
+                          (comms_file, 'no agent details'))
+                self._move_file(comms_file, comms_file_err, dry=dry)
+                continue
+
             if template == 'rem':
                 returned_date = template_items.get('created_ts')
                 template_items['date'] = self.get_return_date(returned_date)
 
-            comms_status = False
-            if action == 'sms':
+            comms_status = True
+            if action == 'email':
                 comms_status = self.send_email(template_items,
                                                template=template,
                                                err=False,
                                                dry=dry)
-            elif action == 'email':
+            elif action == 'sms':
                 comms_status = self.send_sms(template_items,
                                              template=template,
                                              dry=dry)
@@ -120,25 +141,32 @@ class Comms(object):
                 log.error('Unknown action: "%s"' % action)
 
             if not comms_status:
-                log.info('Moving comms filename: "%s" aside to "%s"' %
-                         (comm_file, comm_file + '.err'))
-                shutil.copyfile(comm_file, comm_file + '.err')
+                self._move_file(comms_file, comms_file_err, dry=dry)
                 for addr in self.emailer.support:
+                    template_items['error_comms'] = action.upper()
                     template_items['email_addr'] = addr
                     email_status = self.send_email(template_items,
                                                    template=template,
                                                    err=True,
                                                    dry=dry)
             else:
-                log.info('Removing comms comm_file: "%s"' % comm_file)
-                if not dry:
-                    os.remove(comm_file)
-
                 if template == 'rem':
                     log.info('Setting job_item %d reminder sent flag' % id)
-                    if not dry:
-                        self.db(self.db.jobitem.update_reminder_ts_sql(id))
-                        self.db.commit()
+                    self.db(self.db.jobitem.update_reminder_ts_sql(id))
+                else:
+                    log.info('Setting job_item %d notify sent flag' % id)
+                    self.db(self.db.jobitem.update_notify_ts_sql(id))
+
+                if not dry:
+                    self.db.commit()
+
+                log.info('Removing comms comms_file: "%s"' % comms_file)
+                if not dry:
+                    self._delete_file(comms_file, dry=dry)
+
+                comms_processed.append(filename)
+
+        return comms_processed
 
     def send_sms(self,
                  item_details,
@@ -323,7 +351,9 @@ class Comms(object):
                           self.comms_dir)
             else:
                 for f in os.listdir(self.comms_dir):
-                    if fnmatch.fnmatch(f, '[a-zA-Z]*.[0-9]*.[a-zA-Z]*'):
+                    r = re.compile("^(email|sms)\.(\d+)\.(pe|rem|body)$")
+                    m = r.match(f)
+                    if m:
                         comms_file = os.path.join(self.comms_dir, f)
                         log.info('Found comms file: "%s"' % comms_file)
                         comms_files.append(comms_file)
@@ -370,7 +400,7 @@ class Comms(object):
 
         return dict(zip(agent_details[0::2], agent_details[1::2]))
 
-    def parse_comm_filename(self, filename):
+    def parse_comms_filename(self, filename):
         """Parse the comm *filename* and extract the job_item.id
         and template.
 
@@ -400,4 +430,42 @@ class Comms(object):
                           (filename, err))
 
         log.debug('Comms filename produced: "%s"' % str(comm_parse))
+
         return comm_parse
+
+    def _move_file(self, source_file, target_file, dry=False):
+        """Simple helper method to manage file moves.
+
+        **Args:**
+            *source_file*: file to move
+
+            *target_file*: where to move file
+
+        **Kwargs:**
+            *dry*: only report, do not execute (default ``False``)
+
+        """
+        log.info('Moving file "%s" to "%s"' % (source_file, target_file))
+        try:
+            if not dry:
+                os.rename(source_file, target_file)
+        except OSError, err:
+            log.error('Could not rename file "%s" to "%s": %s' %
+                      (source_file, target_file, err))
+
+    def _delete_file(self, source_file, dry=False):
+        """Simple helper method to manage file deletions.
+
+        **Args:**
+            *source_file*: file to delete
+
+        **Kwargs:**
+            *dry*: only report, do not execute (default ``False``)
+
+        """
+        log.info('Deleting file "%s"' % source_file)
+        try:
+            if not dry:
+                os.remove(source_file)
+        except OSError, err:
+            log.error('Could not delete file "%s": %s' % (source_file, err))

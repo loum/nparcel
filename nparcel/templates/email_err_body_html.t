@@ -1,4 +1,4 @@
-<p style="color:red;font-weight:normal;font-style:italic">Following notification message failed.</p>
+<p style="color:red;font-weight:normal;font-style:italic">The following ${error_comms} notification message failed.</p>
 <p>Hello,</p>
 </table>
 <p>Toll Consumer Delivery attempted to deliver your parcel today, sorry we missed you.<br>
@@ -6,7 +6,7 @@ For convenience, your parcel is awaiting collection at <b>${name}</b>, <b>${addr
 <table width="70%">
     <tr>
         <th>Tracking ref #:</th>
-        <td>$connote</td>
+        <td>$connote_nbr</td>
     </tr>
     <tr>
         <th>Parcel ref #:</th>

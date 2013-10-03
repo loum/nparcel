@@ -1,4 +1,4 @@
-<p style="color:red;font-weight:normal;font-style:italic">Following notification message failed.</p>
+<p style="color:red;font-weight:normal;font-style:italic">The following ${error_comms} notification message failed.</p>
 <p>Hello,</p>
 <p>This is a reminder that your parcel is awaiting collection at <b>${name}</b>, <b>${address}</b>, <b>${suburb}</b>, <b>${postcode}</b>.</p>
 <table width="70%">

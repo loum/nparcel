@@ -56,6 +56,8 @@ class TestComms(unittest2.TestCase):
         sql = cls._c.db.jobitem.insert_sql(jobitems[0])
         cls._id_000 = cls._c.db.insert(sql)
 
+        cls._c.db.commit()
+
     def test_init(self):
         """Initialise a Comms object.
         """
@@ -279,12 +281,383 @@ class TestComms(unittest2.TestCase):
             fh = open(os.path.join(self._c.comms_dir, f), 'w')
             fh.close()
 
-        self._c.process(dry=dry)
+        received = self._c.process(dry=dry)
+        expected = comms_files
+        msg = 'Loader comms files processed incorrect'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        if not dry:
+            # Run again and no files should be processed.
+            received = self._c.process(dry=dry)
+            expected = []
+            msg = 'Loader comms files second pass processing incorrect'
+            self.assertListEqual(received, expected, msg)
 
         # Cleanup.
+        self._c.db.rollback()
         files_to_delete = dodgy
         if dry:
             files_to_delete += comms_files
+
+        for f in files_to_delete:
+            os.remove(os.path.join(self._c.comms_dir, f))
+
+    def test_process_loader_sms_error_comms(self):
+        """Test processing -- SMS loader error comms.
+        """
+        dry = True
+        comms_files = ['%s.%d.body' % ('email', self._id_000),
+                       '%s.%d.body' % ('sms', self._id_000)]
+        dodgy = ['banana',
+                 'email.rem.3']
+        for f in comms_files + dodgy:
+            fh = open(os.path.join(self._c.comms_dir, f), 'w')
+            fh.close()
+
+        # Provide a dodgy mobile.
+        sql = """UPDATE job_item
+SET phone_nbr = '0531602145'
+WHERE id = %d""" % self._id_000
+        self._c.db(sql)
+
+        received = self._c.process(dry=dry)
+        expected = ['%s.%d.body' % ('email', self._id_000)]
+        msg = 'Loader comms files processed incorrect'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        if not dry:
+            # Run again and no files should be processed.
+            received = self._c.process(dry=dry)
+            expected = []
+            msg = 'Loader comms files second pass processing incorrect'
+            self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        self._c.db.rollback()
+        files_to_delete = dodgy
+        if dry:
+            files_to_delete += comms_files
+        else:
+            files_to_delete.append('%s.%d.%s.err' %
+                                   ('sms', self._id_000, 'body'))
+
+        for f in files_to_delete:
+            os.remove(os.path.join(self._c.comms_dir, f))
+
+    def test_process_loader_email_error_comms(self):
+        """Test processing -- email loader error comms.
+        """
+        dry = True
+        comms_files = ['%s.%d.body' % ('email', self._id_000),
+                       '%s.%d.body' % ('sms', self._id_000)]
+        dodgy = ['banana',
+                 'email.rem.3']
+        for f in comms_files + dodgy:
+            fh = open(os.path.join(self._c.comms_dir, f), 'w')
+            fh.close()
+
+        # Provide a dodgy email.
+        sql = """UPDATE job_item
+SET email_addr = '@@@tollgroup.com'
+WHERE id = %d""" % self._id_000
+        self._c.db(sql)
+
+        received = self._c.process(dry=dry)
+        expected = ['%s.%d.body' % ('sms', self._id_000)]
+        msg = 'Loader comms files processed incorrect'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        if not dry:
+            # Run again and no files should be processed.
+            received = self._c.process(dry=dry)
+            expected = []
+            msg = 'Loader comms files second pass processing incorrect'
+            self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        self._c.db.rollback()
+        files_to_delete = dodgy
+        if dry:
+            files_to_delete += comms_files
+        else:
+            files_to_delete.append('%s.%d.%s.err' %
+                                   ('email', self._id_000, 'body'))
+
+        for f in files_to_delete:
+            os.remove(os.path.join(self._c.comms_dir, f))
+
+    def test_process_pe(self):
+        """Test processing -- primary elect.
+        """
+        dry = True
+        comms_files = ['%s.%d.pe' % ('email', self._id_000),
+                       '%s.%d.pe' % ('sms', self._id_000)]
+        dodgy = ['banana',
+                 'email.rem.3']
+        for f in comms_files + dodgy:
+            fh = open(os.path.join(self._c.comms_dir, f), 'w')
+            fh.close()
+
+        received = self._c.process(dry=dry)
+        expected = comms_files
+        msg = 'Primary elect comms files processed incorrect'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        if not dry:
+            # Run again and no files should be processed.
+            received = self._c.process(dry=dry)
+            expected = []
+            msg = 'Loader comms files second pass processing incorrect'
+            self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        self._c.db.rollback()
+        files_to_delete = dodgy
+        if dry:
+            files_to_delete += comms_files
+
+        for f in files_to_delete:
+            os.remove(os.path.join(self._c.comms_dir, f))
+
+    def test_process_pe_sms_error_comms(self):
+        """Test processing -- SMS primary elect error comms.
+        """
+        dry = True
+        comms_files = ['%s.%d.pe' % ('email', self._id_000),
+                       '%s.%d.pe' % ('sms', self._id_000)]
+        dodgy = ['banana',
+                 'email.rem.3']
+        for f in comms_files + dodgy:
+            fh = open(os.path.join(self._c.comms_dir, f), 'w')
+            fh.close()
+
+        # Provide a dodgy mobile.
+        sql = """UPDATE job_item
+SET phone_nbr = '0531602145'
+WHERE id = %d""" % self._id_000
+        self._c.db(sql)
+
+        received = self._c.process(dry=dry)
+        expected = ['%s.%d.pe' % ('email', self._id_000)]
+        msg = 'Loader comms files processed incorrect'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        if not dry:
+            # Run again and no files should be processed.
+            received = self._c.process(dry=dry)
+            expected = []
+            msg = 'Primary elect comms files second pass processing incorrect'
+            self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        self._c.db.rollback()
+        files_to_delete = dodgy
+        if dry:
+            files_to_delete += comms_files
+        else:
+            files_to_delete.append('%s.%d.%s.err' %
+                                   ('sms', self._id_000, 'pe'))
+
+        for f in files_to_delete:
+            os.remove(os.path.join(self._c.comms_dir, f))
+
+    def test_process_pe_email_error_comms(self):
+        """Test processing -- primary elect email error comms.
+        """
+        dry = True
+        comms_files = ['%s.%d.pe' % ('email', self._id_000),
+                       '%s.%d.pe' % ('sms', self._id_000)]
+        dodgy = ['banana',
+                 'email.rem.3']
+        for f in comms_files + dodgy:
+            fh = open(os.path.join(self._c.comms_dir, f), 'w')
+            fh.close()
+
+        # Provide a dodgy email.
+        sql = """UPDATE job_item
+SET email_addr = '@@@tollgroup.com'
+WHERE id = %d""" % self._id_000
+        self._c.db(sql)
+
+        received = self._c.process(dry=dry)
+        expected = ['%s.%d.pe' % ('sms', self._id_000)]
+        msg = 'Primary elect comms files processed incorrect'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        if not dry:
+            # Run again and no files should be processed.
+            received = self._c.process(dry=dry)
+            expected = []
+            msg = 'Primary elect comms files second pass processing incorrect'
+            self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        self._c.db.rollback()
+        files_to_delete = dodgy
+        if dry:
+            files_to_delete += comms_files
+        else:
+            files_to_delete.append('%s.%d.%s.err' %
+                                   ('email', self._id_000, 'pe'))
+
+        for f in files_to_delete:
+            os.remove(os.path.join(self._c.comms_dir, f))
+
+    def test_process_pe_sms_error_comms(self):
+        """Test processing -- primary elect SMS error comms.
+        """
+        dry = True
+        comms_files = ['%s.%d.rem' % ('email', self._id_000),
+                       '%s.%d.rem' % ('sms', self._id_000)]
+        dodgy = ['banana',
+                 'email.rem.3']
+        for f in comms_files + dodgy:
+            fh = open(os.path.join(self._c.comms_dir, f), 'w')
+            fh.close()
+
+        # Provide a dodgy email.
+        sql = """UPDATE job_item
+SET email_addr = '@@@tollgroup.com'
+WHERE id = %d""" % self._id_000
+        self._c.db(sql)
+
+        received = self._c.process(dry=dry)
+        expected = ['%s.%d.rem' % ('sms', self._id_000)]
+        msg = 'Primary elect comms files processed incorrect'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        if not dry:
+            # Run again and no files should be processed.
+            received = self._c.process(dry=dry)
+            expected = []
+            msg = 'Primary elect comms files second pass processing incorrect'
+            self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        self._c.db.rollback()
+        files_to_delete = dodgy
+        if dry:
+            files_to_delete += comms_files
+        else:
+            files_to_delete.append('%s.%d.%s.err' %
+                                   ('email', self._id_000, 'pe'))
+
+        for f in files_to_delete:
+            os.remove(os.path.join(self._c.comms_dir, f))
+
+    def test_process_reminder(self):
+        """Test processing -- reminder.
+        """
+        dry = True
+        comms_files = ['%s.%d.rem' % ('email', self._id_000),
+                       '%s.%d.rem' % ('sms', self._id_000)]
+        dodgy = ['banana',
+                 'email.rem.3']
+        for f in comms_files + dodgy:
+            fh = open(os.path.join(self._c.comms_dir, f), 'w')
+            fh.close()
+
+        received = self._c.process(dry=dry)
+        expected = comms_files
+        msg = 'Reminder comms files processed incorrect'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        if not dry:
+            # Run again and no files should be processed.
+            received = self._c.process(dry=dry)
+            expected = []
+            msg = 'Reminder comms files second pass processing incorrect'
+            self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        self._c.db.rollback()
+        files_to_delete = dodgy
+        if dry:
+            files_to_delete += comms_files
+
+        for f in files_to_delete:
+            os.remove(os.path.join(self._c.comms_dir, f))
+
+    def test_process_reminder_sms_error_comms(self):
+        """Test processing -- SMS reminder error comms.
+        """
+        dry = True
+        comms_files = ['%s.%d.rem' % ('email', self._id_000),
+                       '%s.%d.rem' % ('sms', self._id_000)]
+        dodgy = ['banana',
+                 'email.rem.3']
+        for f in comms_files + dodgy:
+            fh = open(os.path.join(self._c.comms_dir, f), 'w')
+            fh.close()
+
+        # Provide a dodgy mobile.
+        sql = """UPDATE job_item
+SET phone_nbr = '0531602145'
+WHERE id = %d""" % self._id_000
+        self._c.db(sql)
+
+        received = self._c.process(dry=dry)
+        expected = ['%s.%d.rem' % ('email', self._id_000)]
+        msg = 'Reminder comms files processed incorrect'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        if not dry:
+            # Run again and no files should be processed.
+            received = self._c.process(dry=dry)
+            expected = []
+            msg = 'Reminder comms files second pass processing incorrect'
+            self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        self._c.db.rollback()
+        files_to_delete = dodgy
+        if dry:
+            files_to_delete += comms_files
+        else:
+            files_to_delete.append('%s.%d.%s.err' %
+                                   ('sms', self._id_000, 'rem'))
+
+        for f in files_to_delete:
+            os.remove(os.path.join(self._c.comms_dir, f))
+
+    def test_process_reminder_email_error_comms(self):
+        """Test processing -- reminder email error comms.
+        """
+        dry = True
+        comms_files = ['%s.%d.rem' % ('email', self._id_000),
+                       '%s.%d.rem' % ('sms', self._id_000)]
+        dodgy = ['banana',
+                 'email.rem.3']
+        for f in comms_files + dodgy:
+            fh = open(os.path.join(self._c.comms_dir, f), 'w')
+            fh.close()
+
+        # Provide a dodgy email.
+        sql = """UPDATE job_item
+SET email_addr = '@@@tollgroup.com'
+WHERE id = %d""" % self._id_000
+        self._c.db(sql)
+
+        received = self._c.process(dry=dry)
+        expected = ['%s.%d.rem' % ('sms', self._id_000)]
+        msg = 'Reminder comms files processed incorrect'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        if not dry:
+            # Run again and no files should be processed.
+            received = self._c.process(dry=dry)
+            expected = []
+            msg = 'Reminder comms files second pass processing incorrect'
+            self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        self._c.db.rollback()
+        files_to_delete = dodgy
+        if dry:
+            files_to_delete += comms_files
+        else:
+            files_to_delete.append('%s.%d.%s.err' %
+                                   ('email', self._id_000, 'rem'))
 
         for f in files_to_delete:
             os.remove(os.path.join(self._c.comms_dir, f))
@@ -305,45 +678,45 @@ class TestComms(unittest2.TestCase):
         msg = 'job_item.id based Agent details incorrect'
         self.assertDictEqual(received, expected, msg)
 
-    def test_parse_comm_filename(self):
-        """Verify the parse_comm_filename.
+    def test_parse_comms_filename(self):
+        """Verify the parse_comms_filename.
         """
-        received = self._c.parse_comm_filename('')
+        received = self._c.parse_comms_filename('')
         expected = ()
         msg = 'Filename "" incorrect'
         self.assertTupleEqual(received, expected, msg)
 
-        received = self._c.parse_comm_filename('sms.333.pe')
+        received = self._c.parse_comms_filename('sms.333.pe')
         expected = ('sms', 333, 'pe')
         msg = 'Filename "sms.333.pe" incorrect'
         self.assertTupleEqual(received, expected, msg)
 
-        received = self._c.parse_comm_filename('sms.333.rem')
+        received = self._c.parse_comms_filename('sms.333.rem')
         expected = ('sms', 333, 'rem')
         msg = 'Filename "sms.333.rem" incorrect'
         self.assertTupleEqual(received, expected, msg)
 
-        received = self._c.parse_comm_filename('sms.333.body')
+        received = self._c.parse_comms_filename('sms.333.body')
         expected = ('sms', 333, 'body')
         msg = 'Filename "sms.333.body" incorrect'
         self.assertTupleEqual(received, expected, msg)
 
-        received = self._c.parse_comm_filename('email.333.pe')
+        received = self._c.parse_comms_filename('email.333.pe')
         expected = ('email', 333, 'pe')
         msg = 'Filename "email.333.pe" incorrect'
         self.assertTupleEqual(received, expected, msg)
 
-        received = self._c.parse_comm_filename('email.333.rem')
+        received = self._c.parse_comms_filename('email.333.rem')
         expected = ('email', 333, 'rem')
         msg = 'Filename "email.333.rem" incorrect'
         self.assertTupleEqual(received, expected, msg)
 
-        received = self._c.parse_comm_filename('email.333.body')
+        received = self._c.parse_comms_filename('email.333.body')
         expected = ('email', 333, 'body')
         msg = 'Filename "email.333.body" incorrect'
         self.assertTupleEqual(received, expected, msg)
 
-        received = self._c.parse_comm_filename('email..pe')
+        received = self._c.parse_comms_filename('email..pe')
         expected = ()
         msg = 'Filename "email..pe" incorrect'
         self.assertTupleEqual(received, expected, msg)
