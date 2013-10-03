@@ -281,14 +281,14 @@ class TestComms(unittest2.TestCase):
             fh = open(os.path.join(self._c.comms_dir, f), 'w')
             fh.close()
 
-        received = self._c.process(dry=dry)
-        expected = comms_files
-        msg = 'Loader comms files processed incorrect'
-        self.assertListEqual(sorted(received), sorted(expected), msg)
+        files = self._c.get_comms_files()
+        for file in files:
+            received = self._c.process(file, dry=dry)
+            msg = 'Loader comms files processed incorrect'
+            self.assertTrue(received, msg)
 
         if not dry:
-            # Run again and no files should be processed.
-            received = self._c.process(dry=dry)
+            received = self._c.get_comms_files(dry=dry)
             expected = []
             msg = 'Loader comms files second pass processing incorrect'
             self.assertListEqual(received, expected, msg)

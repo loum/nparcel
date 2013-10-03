@@ -52,6 +52,10 @@ class B2CConfig(nparcel.Config):
 
         time (seconds) between primary elect processing iterations.
 
+    .. attribute comms_loop (comms)
+
+        time (seconds) between notification iterations.
+
     .. attribute:: exporter_loop (exporter)
 
         time (seconds) between exporter processing iterations.
@@ -85,6 +89,7 @@ class B2CConfig(nparcel.Config):
     _comms = None
     _loader_loop = 30
     _pe_loop = 30
+    _comms_loop = 30
     _exporter_loop = 900
     _proxy_scheme = 'https'
     _business_units = {}
@@ -126,6 +131,10 @@ class B2CConfig(nparcel.Config):
     @property
     def pe_loop(self):
         return self._pe_loop
+
+    @property
+    def comms_loop(self):
+        return self._comms_loop
 
     @property
     def exporter_loop(self):
@@ -220,6 +229,12 @@ class B2CConfig(nparcel.Config):
             self._pe_loop = int(self.get('timeout', 'pe_loop'))
         except ConfigParser.NoOptionError, err:
             log.warn('Primary elect loop time not provided: %s' % err)
+            pass
+
+        try:
+            self._comms_loop = int(self.get('timeout', 'comms_loop'))
+        except ConfigParser.NoOptionError, err:
+            log.warn('Notifications loop time not provided: %s' % err)
             pass
 
         try:

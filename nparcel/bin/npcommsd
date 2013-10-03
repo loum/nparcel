@@ -1,0 +1,100 @@
+#!/usr/bin/python
+
+import os
+import inspect
+from optparse import OptionParser
+
+import nparcel
+from nparcel.utils.log import (log,
+                               set_console,
+                               set_log_level)
+
+
+def main():
+    """Nparcel comms daemoniser.
+    """
+    config = os.path.join(os.path.expanduser('~'),
+                          '.nparceld',
+                          'nparceld.conf')
+
+    usage = "usage: %prog [-vc] start [-df]|stop|status"
+    parser = OptionParser(usage=usage)
+    parser.set_usage
+    parser.add_option("-v", "--verbose",
+                      dest="verbose",
+                      action="count",
+                      default=0,
+                      help="raise logging verbosity")
+    parser.add_option('-f', '--file',
+                      dest='file',
+                      help='file to process inline')
+    parser.add_option('-d', '--dry',
+                      dest='dry',
+                      action='store_true',
+                      help='dry run - show what would have been done')
+    parser.add_option('-c', '--config',
+                      dest='config',
+                      default=config,
+                      help='override default config "%s"' % config)
+    (options, args) = parser.parse_args()
+
+    # We expect an argument that represents the command to execute.
+    if len(args) != 1:
+        parser.error("incorrect number of arguments")
+
+    command = args[0]
+
+    if ((command != 'start') and
+         (options.file or options.dry)):
+        parser.error("invalid option(s)")
+
+    if (command == 'status' or
+        options.dry is not None):
+        set_console()
+
+    dry = False
+    if command == 'start':
+        dry = options.dry is not None
+        log.info('Processing dry run %s' % dry)
+
+    # Enable detailed logging if required.
+    if options.verbose == 0:
+        set_log_level('INFO')
+    else:
+        log.debug('Logging verbosity set to "DEBUG" level')
+
+    # Check if a filename was provided on the command line.
+    file = None
+    if options.file:
+        file = options.file
+
+    # OK, start processing.
+    pidfile = os.path.join(os.path.expanduser('~'),
+                           '.nparceld',
+                           'npcommsd.pid')
+    cd = nparcel.CommsDaemon(pidfile=pidfile,
+                             file=file,
+                             dry=dry,
+                             config=options.config)
+
+    script_name = inspect.getfile(inspect.currentframe())
+    script_name = os.path.basename(script_name)
+    if args[0] == 'start':
+        if dry:
+            print('Starting %s inline ...' % script_name)
+            cd._start(cd.exit_event)
+        else:
+            print('Starting %s as daemon ...' % script_name)
+            cd.start()
+    elif args[0] == 'stop':
+        print('Stopping %s ...' % script_name)
+        cd.stop()
+        print('OK')
+    elif args[0] == 'status':
+        if cd.status():
+            print('%s is running with PID %d' % (script_name, cd.pid))
+        else:
+            print('%s is idle' % script_name)
+
+if __name__ == '__main__':
+    main()

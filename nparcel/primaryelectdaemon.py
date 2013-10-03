@@ -28,6 +28,17 @@ class PrimaryElectDaemon(nparcel.utils.Daemon):
         self.parser = nparcel.StopParser()
 
     def _start(self, event):
+        """Override the :method:`nparcel.utils.Daemon._start` method.
+
+        Will perform a single iteration if the :attr:`file` attribute has
+        a list of filenames to process.
+
+        **Args:**
+            *event* (:mod:`threading.Event`): Internal semaphore that
+            can be set via the :mod:`signal.signal.SIGTERM` signal event
+            to perform a function within the running proess.
+
+        """
         signal.signal(signal.SIGTERM, self._exit_handler)
 
         pe = nparcel.PrimaryElect(db=self.config.db_kwargs(),
@@ -38,8 +49,6 @@ class PrimaryElectDaemon(nparcel.utils.Daemon):
 
             if pe.db():
                 if self.file is not None:
-                    # Only makes sense to do one iteration if a single
-                    # file has been given on the command line.
                     files.append(self.file)
                     event.set()
                 # Only support command line file processing for now.

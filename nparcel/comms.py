@@ -5,7 +5,6 @@ import os
 import re
 import time
 import datetime
-import fnmatch
 
 import nparcel
 from nparcel.utils.log import log
@@ -81,64 +80,65 @@ class Comms(object):
     def set_template_base(self, value):
         self._template_base = value
 
-    def process(self, dry=False):
+    def process(self, comms_file, dry=False):
         """Slurps communication files from :attr:`comms_dir` and attempts
         to send comms via appropratie medium.
 
         Successful notifications will set the ``job_item.notify`` column
         if the corresponding ``job_item.id``.
 
+        **Args:**
+            *comms_file*: the name of the comms file to process.
+
         **Kwargs:**
             *dry*: only report, do not execute (default ``False``)
 
         **Returns:**
-            list of comms filenames processed
+            boolean ``True`` if *comms_file* is processed successfully
+
+            boolean ``False`` otherwise
 
         """
-        comms_processed = []
+        log.info('Processing comms file: "%s" ...' % comms_file)
+        action = None
+        id = None
+        template = None
+        comms_file_err = comms_file + '.err'
+        comms_status = True
+        filename = os.path.basename(comms_file)
 
-        comms_files_to_process = self.get_comms_files()
-        if not len(comms_files_to_process):
-            log.info('No comms files found')
+        try:
+            (action, id, template) = self.parse_comms_filename(filename)
+        except ValueError, err:
+            log.error('%s processing error: %s' % (comms_file, err))
+            self._move_file(comms_file, comms_file_err, dry=dry)
+            comms_status = False
 
-        for comms_file in comms_files_to_process:
-            action = None
-            id = None
-            template = None
-            comms_file_err = comms_file + '.err'
-            log.info('Processing comms file: "%s" ...' % comms_file)
-
-            filename = os.path.basename(comms_file)
-            try:
-                (action, id, template) = self.parse_comms_filename(filename)
-            except ValueError, err:
-                log.error('%s processing error: %s' % (comms_file, err))
-                self._move_file(comms_file, comms_file_err, dry=dry)
-                continue
-
+        if comms_status:
             template_items = self.get_agent_details(id)
             if not template_items.keys():
                 log.error('%s processing error: %s' %
-                          (comms_file, 'no agent details'))
+                        (comms_file, 'no agent details'))
                 self._move_file(comms_file, comms_file_err, dry=dry)
-                continue
+                comms_status = False
 
+        if comms_status:
             if template == 'rem':
                 returned_date = template_items.get('created_ts')
                 template_items['date'] = self.get_return_date(returned_date)
 
-            comms_status = True
             if action == 'email':
                 comms_status = self.send_email(template_items,
-                                               template=template,
-                                               err=False,
-                                               dry=dry)
+                                                template=template,
+                                                err=False,
+                                                dry=dry)
             elif action == 'sms':
                 comms_status = self.send_sms(template_items,
-                                             template=template,
-                                             dry=dry)
+                                                template=template,
+                                                dry=dry)
             else:
                 log.error('Unknown action: "%s"' % action)
+                comms_status = False
 
             if not comms_status:
                 self._move_file(comms_file, comms_file_err, dry=dry)
@@ -164,9 +164,7 @@ class Comms(object):
                 if not dry:
                     self._delete_file(comms_file, dry=dry)
 
-                comms_processed.append(filename)
-
-        return comms_processed
+        return comms_status
 
     def send_sms(self,
                  item_details,
