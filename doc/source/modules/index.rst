@@ -30,6 +30,8 @@ Modules
     primaryelect.rst
 
     comms.rst
+    commsdaemon.rst
+
     rest.rst
     restemailer.rst
     restsmser.rst

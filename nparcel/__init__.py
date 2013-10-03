@@ -1,6 +1,7 @@
 from nparcel.loaderdaemon import LoaderDaemon
 from nparcel.exporterdaemon import ExporterDaemon
 from nparcel.primaryelectdaemon import PrimaryElectDaemon
+from nparcel.commsdaemon import CommsDaemon
 from nparcel.parser import Parser
 from nparcel.stopparser import StopParser
 from nparcel.service import Service

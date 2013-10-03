@@ -27,6 +27,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestRestSmser \
 	 nparcel.tests:TestLoaderDaemon \
 	 nparcel.tests:TestPrimaryElectDaemon \
+	 nparcel.tests:TestCommsDaemon \
 	 nparcel.tests:TestExporter \
 	 nparcel.tests:TestExporterIpec \
 	 nparcel.tests:TestConfig \

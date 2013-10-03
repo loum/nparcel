@@ -12,7 +12,6 @@ class PrimaryElectDaemon(nparcel.utils.Daemon):
     """PrimaryElectDaemon class.
 
     """
-
     def __init__(self,
                  pidfile,
                  file=None,

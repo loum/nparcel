@@ -8,8 +8,7 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         conf_file = 'nparcel/conf/nparceld.conf'
-        cls._d = nparcel.PrimaryElectDaemon(pidfile=None,
-                                            config=conf_file)
+        cls._d = nparcel.PrimaryElectDaemon(pidfile=None, config=conf_file)
         cls._test_file = 'nparcel/tests/stop_report_short.csv'
 
     def test_init(self):
