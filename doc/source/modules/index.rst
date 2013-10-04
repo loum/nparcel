@@ -28,6 +28,7 @@ Modules
     stopparser.rst
 
     primaryelect.rst
+    primaryelectdaemon.rst
 
     comms.rst
     commsdaemon.rst

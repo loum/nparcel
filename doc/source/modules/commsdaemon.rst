@@ -3,8 +3,11 @@
 .. toctree::
     :maxdepth: 2
 
-CommsDaemon
-==============
+CommsDaemon -- Notifications Facility Daemoniser
+================================================
 
+Members (including inherited)
+-----------------------------
 .. automodule:: nparcel.commsdaemon
-    :members:
+    :show-inheritance:
+    :inherited-members:

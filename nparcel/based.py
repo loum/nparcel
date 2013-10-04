@@ -4,6 +4,8 @@ __all__ = [
 import os
 from optparse import OptionParser
 
+from nparcel.utils.log import log
+
 
 class BaseD(object):
     """Nparcel base daemoniser.
@@ -32,12 +34,22 @@ class BaseD(object):
 
         the command to execute
 
+    .. attribute:: dry
+
+        only report, do not execute flag (single iteration)
+
+    .. attribute:: batch
+
+        single iteration execution flag
+
     """
     _config = os.path.join(os.path.expanduser('~'),
                            '.nparceld',
                            'nparceld.conf')
     _usage = 'usage: %prog [options] start|stop|status'
     _parser = OptionParser(usage=_usage)
+    _dry = False
+    _batch = False
 
     def __init__(self):
         """Nparcel BaseD initialisation.
@@ -51,6 +63,10 @@ class BaseD(object):
                                 dest='dry',
                                 action='store_true',
                                 help='dry run - report only, do not execute')
+        self._parser.add_option('-b', '--batch',
+                                dest='batch',
+                                action='store_true',
+                                help='single pass batch mode')
         self._parser.add_option('-c', '--config',
                                 dest='config',
                                 default=self._config,
@@ -97,6 +113,20 @@ class BaseD(object):
     def set_command(self, value):
         self._command = value
 
+    @property
+    def dry(self):
+        return self._dry
+
+    def set_dry(self, value):
+        self._dry = value
+
+    @property
+    def batch(self):
+        return self._batch
+
+    def set_batch(self, value):
+        self._batch = value
+
     def check_args(self):
         """Verify that the daemon arguments are as expected.
 
@@ -119,6 +149,11 @@ class BaseD(object):
 
         self.set_command(self.args[0])
 
-        if self.command != 'start' and self.options.dry:
+        if (self.command != 'start' and
+            (self.options.dry or self.options.batch)):
             self.parser.error('invalid option(s) with command "%s"' %
                               self.command)
+
+        if self.command == 'start':
+            self.set_dry(self.options.dry is not None)
+            self.set_batch(self.options.batch is not None)

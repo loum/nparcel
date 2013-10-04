@@ -69,7 +69,13 @@ class Daemon(object):
 
         Internal semaphore that when set, signals that the server process
         is to be terminated.
+
+    .. attribute:: pidfile
+
+        path to the PID file
+
     """
+    _pidfile = None
 
     def __init__(self,
                  pidfile,

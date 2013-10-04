@@ -10,17 +10,30 @@ from nparcel.utils.log import log
 
 
 class ExporterDaemon(nparcel.utils.Daemon):
+    """Daemoniser facility for the :class:`nparcel.Comms` class.
+
+    """
+    _batch = False
 
     def __init__(self,
                  pidfile,
                  dry=False,
+                 batch=False,
                  config='nparcel.conf'):
         super(ExporterDaemon, self).__init__(pidfile=pidfile)
 
         self.dry = dry
+        self._batch = batch
 
         self.config = nparcel.B2CConfig(file=config)
         self.config.parse_config()
+
+    @property
+    def batch(self):
+        return self._batch
+
+    def set_batch(self, value):
+        self._batch = value
 
     def _start(self, event):
         signal.signal(signal.SIGTERM, self._exit_handler)
@@ -65,6 +78,9 @@ class ExporterDaemon(nparcel.utils.Daemon):
                 # Only makes sense to do one iteration of a dry run.
                 if self.dry:
                     log.info('Dry run iteration complete -- aborting')
+                    event.set()
+                elif self.batch:
+                    log.info('Batch run iteration complete -- aborting')
                     event.set()
                 else:
                     time.sleep(self.config.exporter_loop)

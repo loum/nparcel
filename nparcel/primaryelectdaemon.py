@@ -9,29 +9,41 @@ from nparcel.utils.log import log
 
 
 class PrimaryElectDaemon(nparcel.utils.Daemon):
-    """PrimaryElectDaemon class.
+    """Daemoniser facility for the :class:`nparcel.PrimaryElect` class.
 
     """
+    _batch = False
+
     def __init__(self,
                  pidfile,
                  file=None,
                  dry=False,
+                 batch=False,
                  config='nparcel.conf'):
         super(PrimaryElectDaemon, self).__init__(pidfile=pidfile)
 
         self.file = file
         self.dry = dry
+        self._batch = batch
 
         self.config = nparcel.B2CConfig(file=config)
         self.config.parse_config()
 
         self.parser = nparcel.StopParser()
 
+    @property
+    def batch(self):
+        return self._batch
+
+    def set_batch(self, value):
+        self._batch = value
+
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
 
         Will perform a single iteration if the :attr:`file` attribute has
-        a list of filenames to process.
+        a list of filenames to process.  Similarly, dry and batch modes
+        only cycle through a single iteration.
 
         **Args:**
             *event* (:mod:`threading.Event`): Internal semaphore that
@@ -68,9 +80,11 @@ class PrimaryElectDaemon(nparcel.utils.Daemon):
                     pe.process([con], dry=self.dry)
 
             if not event.isSet():
-                # Only makes sense to do one iteration of a dry run.
                 if self.dry:
                     log.info('Dry run iteration complete -- aborting')
+                    event.set()
+                elif self.batch:
+                    log.info('Batch run iteration complete -- aborting')
                     event.set()
                 else:
                     time.sleep(self.config.loader_loop)

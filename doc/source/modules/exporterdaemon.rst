@@ -3,8 +3,12 @@
 .. toctree::
     :maxdepth: 2
 
-ExporterDaemon
-==============
+ExporterDaemon - Exporter Facility Daemoniser
+=============================================
 
+Members (including inherited)
+-----------------------------
 .. automodule:: nparcel.exporterdaemon
+    :show-inheritance:
+    :inherited-members:
     :members:
