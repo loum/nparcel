@@ -23,6 +23,11 @@ class Reminder(nparcel.Service):
 
         date when delayed notifications start
 
+    .. attribute:: hold_period
+
+        period (in seconds) since the ``job_item.created_ts`` that the agent
+        will hold the parcel before being returned
+
     """
     def __init__(self,
                  db=None,
@@ -50,6 +55,13 @@ class Reminder(nparcel.Service):
 
     def set_start_date(self, value):
         self._start_date = value
+
+    @property
+    def hold_period(self):
+        return self._hold_period
+
+    def set_hold_period(self, value):
+        self._hold_period = value
 
     def get_uncollected_items(self):
         """Generator which returns the uncollected job_item.id's.

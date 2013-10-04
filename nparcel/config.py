@@ -45,7 +45,7 @@ class Config(ConfigParser.SafeConfigParser):
 
         if self._config_file is not None:
             if os.path.exists(self._config_file):
-                log.info('Reading config file: "%s"' % self._config_file)
+                log.debug('Reading config file: "%s"' % self._config_file)
                 self.read(self._config_file)
             else:
                 log.critical('Unable to locate config file: "%s"' %

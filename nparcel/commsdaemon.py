@@ -2,6 +2,7 @@ __all__ = [
     "CommsDaemon",
 ]
 import signal
+import time
 
 import nparcel
 from nparcel.utils.log import log
