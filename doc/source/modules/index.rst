@@ -39,4 +39,13 @@ Modules
 
     ftp.rst
 
+    daemon.rst
     based.rst
+    log.rst
+
+Indices and tables
+------------------
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

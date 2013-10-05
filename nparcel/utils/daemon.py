@@ -60,22 +60,24 @@ class Daemon(object):
     and makes the actual call to your own instance of the :meth:`_start`
     method.
 
-    .. note:;
+    .. attribute:: exit_event
 
-        All public attribute access is implemented in a Pythonic property
-        decorator style.
-
-    .. attribute:: exit_event (:class:`threading.Event`)
-
-        Internal semaphore that when set, signals that the server process
+        :class:`threading.Event` object which acts as an internal
+        semaphore that when set, signals that the server process
         is to be terminated.
 
     .. attribute:: pidfile
 
         path to the PID file
 
+    .. attribute:: inline
+
+        boolean flag to execute :meth:`nparcel.utils.daemon.Daemon._start` method without
+        daemonising
+
     """
     _pidfile = None
+    _inline = False
 
     def __init__(self,
                  pidfile,
@@ -137,6 +139,13 @@ class Daemon(object):
     def set_exit_event(self):
         self._exit_event.set()
 
+    @property
+    def inline(self):
+        return self._inline
+
+    def set_inline(self, value):
+        self._inline = value
+
     def _start(self):
         """Define this method within your class generalisation with logic
         that invokes your process to benefit from the daemonisation
@@ -194,7 +203,7 @@ class Daemon(object):
         Invokes the server in one of two ways:
 
         * As a daemon
-        * Inline using the :mod:`threading.Event` module
+        * Inline (blocking all other processing)
 
         Typically, the daemon instance will be used in a production
         environment and the inline instance for testing or via the
@@ -204,20 +213,23 @@ class Daemon(object):
 
             :mod:`unittest` barfs if the method under test exits :-(
 
-        The distinction between daemon or inline mode is made during object
-        initialisation.  If you specify a *pidfile* then it will assume
-        you want to run as a daemon.
+        The distinction between daemon or inline mode is based on the
+        :attr:`inline` attribute.  If you set :attr:`inline` to ``False``
+        it will run as a daemon -- inline otherwise.
 
         **Returns:**
-            boolean::
+            (in daemon mode) boolean::
 
                 ``True`` -- success
                 ``False`` -- failure
 
         """
-        start_status = False
+        start_status = True
 
-        start_status = self._start_daemon()
+        if self.inline:
+            self._start(self.exit_event)
+        else:
+            start_status = self._start_daemon()
 
         return start_status
 

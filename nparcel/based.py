@@ -4,8 +4,6 @@ __all__ = [
 import os
 from optparse import OptionParser
 
-from nparcel.utils.log import log
-
 
 class BaseD(object):
     """Nparcel base daemoniser.
@@ -157,3 +155,38 @@ class BaseD(object):
         if self.command == 'start':
             self.set_dry(self.options.dry is not None)
             self.set_batch(self.options.batch is not None)
+
+    def launch_command(self, obj, script_name):
+        """Run :attr:`command` based on *obj* context.
+
+        Supported command are start, stop and status.
+
+        **Args:**
+            *obj*: the :class:`nparcel.Daemon` based object instance
+            to launch the command against.
+
+        """
+        if self.command == 'start':
+            msg = 'Starting %s' % script_name
+            if self.dry:
+                msg = '%s inline' % msg
+            else:
+                msg = '%s as daemon' % msg
+            if self.batch:
+                msg = '%s (batch mode)' % msg
+
+            print('%s ...' % msg)
+            obj.set_inline(self.dry)
+            if not obj.start():
+                print('Start aborted')
+        elif self.command == 'stop':
+            print('Stopping %s ...' % script_name)
+            if obj.stop():
+                print('OK')
+            else:
+                print('Stop aborted')
+        elif self.command == 'status':
+            if obj.status():
+                print('%s is running with PID %d' % (script_name, obj.pid))
+            else:
+                print('%s is idle' % script_name)

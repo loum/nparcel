@@ -46,25 +46,7 @@ def main():
 
     script_name = inspect.getfile(inspect.currentframe())
     script_name = os.path.basename(script_name)
-    if based.command == 'start':
-        if based.dry:
-            print('Starting %s inline ...' % script_name)
-            cd._start(cd.exit_event)
-        else:
-            msg = 'Starting %s as daemon' % script_name
-            if based.batch:
-                msg = '%s in batch mode' % msg
-            print('%s ...' % msg)
-            cd.start()
-    elif based.command == 'stop':
-        print('Stopping %s ...' % script_name)
-        cd.stop()
-        print('OK')
-    elif based.command == 'status':
-        if cd.status():
-            print('%s is running with PID %d' % (script_name, cd.pid))
-        else:
-            print('%s is idle' % script_name)
+    based.launch_command(cd, script_name)
 
 if __name__ == '__main__':
     main()
