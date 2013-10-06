@@ -89,7 +89,7 @@ FROM job_item"""
         # Restore DB state and clean.
         for comms_file in received:
             os.remove(comms_file)
-        self._ldr.db.connection.rollback()
+        self._ldr.db.rollback()
 
     def test_processor_valid_record_no_comms(self):
         """Process valid raw T1250 line -- no comms.
@@ -104,7 +104,7 @@ FROM job_item"""
                                           FILE_BU.get('tolp'),
                                           COND_MAP), msg)
 
-        # With comms enabled, we should have comms flag files.
+        # With comms disabled, we should have comms flag files.
         received = [os.path.join(self._comms_dir,
                                  x) for x in os.listdir(self._comms_dir)]
         expected = []
@@ -112,7 +112,7 @@ FROM job_item"""
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
         # Restore DB state.
-        self._ldr.db.connection.rollback()
+        self._ldr.db.rollback()
 
     def test_processor_valid_record_item_number(self):
         """Process valid raw T1250 line -- item number, no exception.
@@ -128,7 +128,7 @@ FROM job_item"""
                                           COND_MAP_IPEC), msg)
 
         # Restore DB state.
-        self._ldr.db.connection.rollback()
+        self._ldr.db.rollback()
 
     def test_processor_valid_primary_elect(self):
         """Process valid raw T1250 line -- primary elect.
@@ -144,7 +144,7 @@ FROM job_item"""
                                           COND_MAP_IPEC), msg)
 
         # Restore DB state.
-        self._ldr.db.connection.rollback()
+        self._ldr.db.rollback()
 
     def test_table_column_map_for_primary_elect(self):
         """Primary elect valid raw T1250 line and map job table elements.
@@ -187,7 +187,7 @@ FROM job_item"""
                                            COND_MAP_IPEC), msg)
 
         # Restore DB state.
-        self._ldr.db.connection.rollback()
+        self._ldr.db.rollback()
 
     def test_processor_valid_record_single_quote(self):
         """Process valid raw T1250 line.
@@ -203,7 +203,7 @@ FROM job_item"""
                                           COND_MAP), msg)
 
         # Restore DB state.
-        self._ldr.db.connection.rollback()
+        self._ldr.db.rollback()
 
     def test_processor_valid_record_dodgy_postcode(self):
         """Process valid raw T1250 line -- dodgy postcode.
@@ -219,7 +219,7 @@ FROM job_item"""
                                           COND_MAP), msg)
 
         # Restore DB state.
-        self._ldr.db.connection.rollback()
+        self._ldr.db.rollback()
 
     def test_processor_valid_record_update(self):
         """Process valid raw T1250 line with a "job" item Agent Id update.
@@ -242,7 +242,7 @@ FROM job_item"""
                                           COND_MAP), msg)
 
         # Restore DB state.
-        self._ldr.db.connection.rollback()
+        self._ldr.db.rollback()
 
     def test_processor_invalid_postcode_record(self):
         """Process valid raw T1250 line -- missing Postcode.
@@ -258,7 +258,7 @@ FROM job_item"""
                                           COND_MAP), msg)
 
         # Restore DB state.
-        self._ldr.db.connection.rollback()
+        self._ldr.db.rollback()
 
     def test_processor_missing_agent_id_record(self):
         """Process valid raw T1250 line -- missing Agent Id.
@@ -299,7 +299,7 @@ FROM job_item"""
         self.assertEqual(len(received), expected, msg)
 
         # Restore DB state.
-        self._ldr.db.connection.rollback()
+        self._ldr.db.rollback()
 
     def test_processor_invalid_barcode_record(self):
         """Process valid raw T1250 line with an invalid barcode.
@@ -342,7 +342,7 @@ FROM job_item"""
                                           COND_MAP), msg)
 
         # Restore DB state.
-        self._ldr.db.connection.rollback()
+        self._ldr.db.rollback()
 
     def test_table_column_map(self):
         """Map parser fields to table columns.
@@ -739,7 +739,7 @@ FROM job_item"""
         self.assertTrue(self._ldr.barcode_exists(VALID_LINE_BARCODE), msg)
 
         # Restore DB state.
-        self._ldr.db.connection.rollback()
+        self._ldr.db.rollback()
 
     def test_agent_id_with_missing_agent_id(self):
         """Agent ID check with missing Agent ID.
@@ -761,7 +761,7 @@ FROM job_item"""
         self.assertEqual(received, expected, msg)
 
         # Restore DB state.
-        self._ldr.db.connection.rollback()
+        self._ldr.db.rollback()
 
     def test_match_connote_scenario_connote_lt_15_char(self):
         """Manufactured connote check -- connote < 15 chars.
@@ -863,7 +863,30 @@ FROM job_item"""
         self.assertEqual(received, job_id, msg)
 
         # Restore DB state.
-        self._ldr.db.connection.rollback()
+        self._ldr.db.rollback()
+
+    def test_processor_valid_record_revalidate_postcode(self):
+        """Process valid raw T1250 line -- no comms.
+        """
+        # Seed the Agent Id.
+        agent_fields = {'code': 'N031'}
+        self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
+
+        msg = 'Valid T1250 record should process OK'
+        self.assertTrue(self._ldr.process(self._job_ts,
+                                          VALID_LINE,
+                                          FILE_BU.get('tolp'),
+                                          COND_MAP), msg)
+
+        # Overwrite the state.
+        sql = """UPDATE job
+SET state = 'VIC'"""
+        self._ldr.db(sql)
+
+        self._ldr.verify_postcodes(dry=True)
+
+        # Restore DB state.
+        self._ldr.db.rollback()
 
     @classmethod
     def tearDownClass(cls):

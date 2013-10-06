@@ -47,6 +47,7 @@ class BaseD(object):
     _usage = 'usage: %prog [options] start|stop|status'
     _parser = OptionParser(usage=_usage)
     _dry = False
+    _command = None
     _batch = False
 
     def __init__(self):
@@ -128,24 +129,26 @@ class BaseD(object):
     def check_args(self):
         """Verify that the daemon arguments are as expected.
 
-        Sets the controller action (for example stop, start or status).
+        Sets the controller command to (for example stop, start or status)
+        unless :attr:`command` is predefined.
 
         Attempts to make a sane assesment of options against the given
         :attr:`command`.
 
         **Raises**:
             ``SystemExit`` (program exit) if one argument is not provided
-            on the command line
+            on the command line (unless the :attr:`command` is predefined.
 
         """
         (options, args) = self.parser.parse_args()
         self.set_options(options)
         self.set_args(args)
 
-        if len(self.args) != 1:
-            self.parser.error("incorrect number of arguments")
+        if self.command is not None:
+            if len(self.args) != 1:
+                self.parser.error("incorrect number of arguments")
 
-        self.set_command(self.args[0])
+            self.set_command(self.args[0])
 
         if (self.command != 'start' and
             (self.options.dry or self.options.batch)):
@@ -164,6 +167,8 @@ class BaseD(object):
         **Args:**
             *obj*: the :class:`nparcel.Daemon` based object instance
             to launch the command against.
+
+            *script_name*: the calling script's name
 
         """
         if self.command == 'start':

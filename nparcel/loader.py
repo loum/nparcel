@@ -702,3 +702,32 @@ class Loader(nparcel.Service):
             log.debug('Skipping jobitems check')
 
         return job_item_id
+
+    def verify_postcodes(self, dry=False):
+        """Cycle through each ``job.state`` column and enusure that the
+        ``job.postcode`` evaluates as expected.
+
+        Unless a *dry* run is specified, it will attempt to update the
+        ``job.state`` in line with the ``job.postcode`` state evaluation.
+
+        **Kwargs:**
+            *dry*: only report, do not execute
+
+        """
+        log.info('Extracting existing job.states ...')
+        sql = self.db.job.postcode_sql()
+        self.db(sql)
+
+        for row in self.db.rows():
+            # Comes through as id, postcode, state.
+            translated_state = self.translate_postcode(row[1])
+            if translated_state != row[2]:
+                log.info('job.id %d postcode "%s" has wrong state "%s"' %
+                         (row[0], row[1], row[2]))
+                log.info('Updating job.id: %d to state "%s"' %
+                         (row[0], translated_state))
+                sql = self.db.job.update_postcode_sql(row[0],
+                                                      translated_state)
+                self.db(sql)
+                if not dry:
+                    self.db.commit()

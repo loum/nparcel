@@ -38,7 +38,7 @@ def main():
     pidfile = os.path.join(os.path.expanduser('~'),
                            '.nparceld',
                            'nploaderd.pid')
-    np = nparcel.LoaderDaemon(pidfile=pidfile,
+    ld = nparcel.LoaderDaemon(pidfile=pidfile,
                               file=file,
                               dry=based.dry,
                               batch=based.batch,
@@ -46,7 +46,7 @@ def main():
 
     script_name = inspect.getfile(inspect.currentframe())
     script_name = os.path.basename(script_name)
-    based.launch_command(np, script_name)
+    based.launch_command(ld, script_name)
 
 if __name__ == '__main__':
     main()

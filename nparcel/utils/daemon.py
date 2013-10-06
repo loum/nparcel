@@ -72,8 +72,8 @@ class Daemon(object):
 
     .. attribute:: inline
 
-        boolean flag to execute :meth:`nparcel.utils.daemon.Daemon._start` method without
-        daemonising
+        boolean flag to execute :meth:`nparcel.utils.daemon.Daemon._start`
+        method without daemonising
 
     """
     _pidfile = None
@@ -166,6 +166,11 @@ class Daemon(object):
 
         """
         pass
+
+    def _exit_handler(self, signal, frame):
+        log_msg = '%s --' % type(self).__name__
+        log.info('%s SIGTERM intercepted' % log_msg)
+        self.set_exit_event()
 
     def _validate(self):
         """Validator method called during object initialisation.

@@ -97,9 +97,11 @@ def rollover():
     if logger_handler is not None:
         # OK, we have found our handler, check if a backup already exists.
         now = datetime.datetime.now()
+        backup_time = now - datetime.timedelta(days=1)
         backup_logfile = ("%s.%s" % (logger_handler.baseFilename,
-                                     now.strftime("%Y-%m-%d")))
+                                     backup_time.strftime("%Y-%m-%d")))
         # Rollover only if a backup has not already been made.
+        log.debug('Checking if backup log "%s" exists' % backup_logfile)
         if not os.path.exists(backup_logfile):
             log.info('Forcing rollover of log: "%s"' %
                      logger_handler.baseFilename)

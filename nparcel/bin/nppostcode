@@ -2,77 +2,65 @@
 
 import os
 import inspect
-from optparse import OptionParser
+import signal
 
 import nparcel
 from nparcel.utils.log import (log,
                                set_log_level,
-                               set_console)
+                               set_console,
+                               rollover)
+
+
+class PostcodeDaemon(nparcel.utils.Daemon):
+
+    def __init__(self,
+                 pidfile,
+                 dry=False,
+                 config='nparcel.conf'):
+        super(PostcodeDaemon, self).__init__(pidfile=pidfile)
+
+        self.dry = dry
+
+        self.config = nparcel.B2CConfig(file=config)
+        self.config.parse_config()
+
+    def _start(self, event):
+        signal.signal(signal.SIGTERM, self._exit_handler)
+
+        loader = nparcel.Loader(db=self.config.db_kwargs(),
+                                comms_dir=self.config.comms_dir)
+
+        loader.verify_postcodes(dry=self.dry)
 
 
 def main():
-    """Nparcel reminder notification main sequence.
-    """
-    config_file = os.path.join(os.path.expanduser('~'),
-                                '.nparceld',
-                                'nparceld.conf')
+    rollover()
 
-    usage = "usage: %prog [options]"
-    parser = OptionParser(usage=usage)
-    parser.set_usage
-    parser.add_option("-v", "--verbose",
-                      dest="verbose",
-                      action="count",
-                      default=0,
-                      help="raise logging verbosity")
-    parser.add_option('-d', '--dry',
-                      dest='dry',
-                      action='store_true',
-                      help='dry run - show what would have been done')
-    parser.add_option('-c', '--config',
-                      dest='config',
-                      default=config_file,
-                      help='override default config "%s"' % config_file)
-    (options, args) = parser.parse_args()
+    based = nparcel.BaseD()
+    based.check_args()
 
-    if options.dry is not None:
+    if based.options.dry is not None:
         set_console()
 
     # Enable detailed logging if required.
-    if options.verbose == 0:
+    if based.options.verbose == 0:
         set_log_level('INFO')
+    else:
         log.info('Logging verbosity set to "INFO" level')
 
-    # Move files?
-    dry = options.dry is not None
-    log.info('Processing dry run %s' % dry)
+    # OK, start processing.
+    pidfile = os.path.join(os.path.expanduser('~'),
+                           '.nparceld',
+                           'nppostcode.pid')
+    p = PostcodeDaemon(pidfile=pidfile,
+                       dry=based.dry,
+                       config=based.options.config)
 
-    conf = nparcel.B2CConfig(file=config_file)
-    conf.parse_config()
-    proxy = conf.proxy_string()
-
-    # Start processing.
     script_name = inspect.getfile(inspect.currentframe())
-    scrip_name = os.path.basename(script_name)
-
-    log.info('Starting %s ...' % script_name)
-    loader = nparcel.Loader(db=conf.db_kwargs())
-    sql = loader.db.job.postcode_sql()
-    loader.db(sql)
-    for row in loader.db.rows():
-        # Comes through as id, postcode, state.
-        translated_state = loader.translate_postcode(row[1])
-        if translated_state != row[2]:
-            log.info('Job id %d postcode "%s" has state "%s" -- not "%s"' %
-                     (row[0], row[1], row[2], translated_state))
-            log.info('Updating job.id: %d to state "%s"' %
-                     (row[0], translated_state))
-            sql = loader.db.job.update_postcode_sql(row[0],
-                                                    translated_state)
-            if not dry:
-                loader.db(sql)
-
-    log.info('Completed %s' % script_name)
+    script_name = os.path.basename(script_name)
+    based.set_command('start')
+    based.set_batch(True)
+    based.launch_command(p, script_name)
 
 if __name__ == '__main__':
     main()
