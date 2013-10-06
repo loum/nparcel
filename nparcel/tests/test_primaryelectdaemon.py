@@ -18,7 +18,7 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
         self.assertIsInstance(self._d, nparcel.PrimaryElectDaemon, msg)
 
     def test_start(self):
-        """Start file processing loop.
+        """Primary Elect _start processing loop.
         """
         self._d.dry = True
         self._d.file = self._test_file

@@ -16,6 +16,12 @@ class TestReminderDaemon(unittest2.TestCase):
         msg = 'Not a nparcel.ReminderDaemon object'
         self.assertIsInstance(self._rd, nparcel.ReminderDaemon, msg)
 
+    def test_start(self):
+        """Reminder _start processing loop.
+        """
+        self._rd.dry = True
+        self._rd._start(self._rd.exit_event)
+
     @classmethod
     def tearDownClass(cls):
         cls._rd = None
