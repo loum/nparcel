@@ -3,6 +3,7 @@ __all__ = [
 ]
 import time
 import signal
+import datetime
 
 import nparcel
 from nparcel.utils.log import log
@@ -59,7 +60,8 @@ class ReminderDaemon(nparcel.utils.Daemon):
 
         while not event.isSet():
             if rem.db():
-                rem.process(dry=self.dry)
+                if not self._skip_day():
+                    rem.process(dry=self.dry)
             else:
                 log.error('ODBC connection failure -- aborting')
                 event.set()
@@ -74,3 +76,24 @@ class ReminderDaemon(nparcel.utils.Daemon):
                     event.set()
                 else:
                     time.sleep(self.config.reminder_loop)
+
+    def _skip_day(self):
+        """Check whether comms is configured to skip current day of week.
+
+        **Returns**:
+            ``boolean``::
+
+                ``True`` if current day is a skip day
+                ``False`` if current day is **NOT** a skip day
+        """
+        is_skip_day = False
+
+        current_day = datetime.datetime.now().strftime('%A').lower()
+        log.debug('Current day is: %s' % current_day.title())
+
+        if current_day in [x.lower() for x in self.config.skip_days]:
+            log.info('%s is a configured comms skip day' %
+                     current_day.title())
+            is_skip_day = True
+
+        return is_skip_day

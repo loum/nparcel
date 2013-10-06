@@ -143,6 +143,11 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Reminder hold_period error'
         self.assertEqual(received, expected, msg)
 
+        received = self._c.skip_days
+        expected = ['Sunday']
+        msg = 'Reminder skip_days error'
+        self.assertListEqual(received, expected, msg)
+
     def test_condition_flag_item_excp_true(self):
         """Check item_excp flag settings -- True.
         """

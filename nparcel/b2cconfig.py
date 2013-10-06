@@ -81,6 +81,23 @@ class B2CConfig(nparcel.Config):
 
         dictionary of RESTful interfaces for SMS and email
 
+    .. attribute:: notification_period (reminder)
+
+        period (in seconds) that triggers a reminder notice
+
+    .. attribute:: start_date (reminder)
+
+        ignores records whose job_item.created_ts occurs before this date
+
+    .. attribute:: hold_period (reminder)
+
+        defines the time period (in seconds) since the job_item.created_ts
+        that the agent will hold the parcel before being returned
+
+    .. attribute:: skip_days (reminder)
+
+        list of days ('Saturday', 'Sunday') to not send messages
+
     .. attribute:: exporter_fields (exporter)
 
         dictionary of business unit exporter ordered columns
@@ -102,6 +119,10 @@ class B2CConfig(nparcel.Config):
     _cond = {}
     _support_emails = []
     _rest = {}
+    _notification_delay = 345600
+    _start_date = '2013-09-10 00:00:00'
+    _hold_period = 691200
+    _skip_days = ['Sunday']
     _exporter_fields = {}
 
     def __init__(self, file=None):
@@ -193,6 +214,17 @@ class B2CConfig(nparcel.Config):
 
     def set_hold_period(self, value):
         self._hold_period = value
+
+    @property
+    def skip_days(self):
+        return self._skip_days
+
+    def set_skip_days(self, values):
+        del self._skip_days[:]
+
+        if values is not None:
+            log.debug('Set skip days to "%s"' % str(values))
+            self._skip_days.extend(values)
 
     def parse_config(self):
         """Read config items from the configuration file.
@@ -296,7 +328,6 @@ class B2CConfig(nparcel.Config):
                       notification_delay)
         except ConfigParser.NoOptionError, err:
             log.warn('No configured reminder notification delay')
-            self.set_notification_delay(None)
 
         # Reminder start_date.
         try:
@@ -307,7 +338,6 @@ class B2CConfig(nparcel.Config):
             log.debug('Parsed reminder start date: "%s"' % start_date)
         except ConfigParser.NoOptionError, err:
             log.warn('No configured reminder start date')
-            self.set_start_date(None)
 
         # Reminder hold_period.
         try:
@@ -316,7 +346,14 @@ class B2CConfig(nparcel.Config):
             log.debug('Parsed reminder hold period: "%s"' % hold_period)
         except ConfigParser.NoOptionError, err:
             log.warn('No configured reminder hold period')
-            self.set_hold_period(None)
+
+        # Reminder skip_days.
+        try:
+            skip_days = self.get('reminder', 'skip_days').split(',')
+            self.set_skip_days(skip_days)
+            log.debug('Parsed reminder days to skip: "%s"' % skip_days)
+        except ConfigParser.NoOptionError, err:
+            log.warn('No configured reminder skip days')
 
     def condition(self, bu, flag):
         """Return the *bu* condition *flag* value.
