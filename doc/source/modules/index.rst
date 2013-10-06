@@ -25,6 +25,7 @@ Modules
     service.rst
 
     reminder.rst
+    reminderdaemon.rst
     stopparser.rst
 
     primaryelect.rst
