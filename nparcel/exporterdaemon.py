@@ -84,8 +84,3 @@ class ExporterDaemon(nparcel.utils.Daemon):
                     event.set()
                 else:
                     time.sleep(self.config.exporter_loop)
-
-    def _exit_handler(self, signal, frame):
-        log_msg = '%s --' % type(self).__name__
-        log.info('%s SIGTERM intercepted' % log_msg)
-        self.set_exit_event()

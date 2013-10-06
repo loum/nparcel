@@ -144,20 +144,20 @@ class BaseD(object):
         self.set_options(options)
         self.set_args(args)
 
-        if self.command is not None:
+        if self.command is None:
             if len(self.args) != 1:
                 self.parser.error("incorrect number of arguments")
 
             self.set_command(self.args[0])
 
-        if (self.command != 'start' and
-            (self.options.dry or self.options.batch)):
-            self.parser.error('invalid option(s) with command "%s"' %
-                              self.command)
+            if (self.command != 'start' and
+                (self.options.dry or self.options.batch)):
+                self.parser.error('invalid option(s) with command "%s"' %
+                                self.command)
 
-        if self.command == 'start':
-            self.set_dry(self.options.dry is not None)
-            self.set_batch(self.options.batch is not None)
+            if self.command == 'start':
+                self.set_dry(self.options.dry is not None)
+                self.set_batch(self.options.batch is not None)
 
     def launch_command(self, obj, script_name):
         """Run :attr:`command` based on *obj* context.
@@ -195,3 +195,5 @@ class BaseD(object):
                 print('%s is running with PID %d' % (script_name, obj.pid))
             else:
                 print('%s is idle' % script_name)
+        else:
+            print('Do not know command "%s"' % self.command)

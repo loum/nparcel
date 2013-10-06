@@ -37,6 +37,8 @@ def main():
     rollover()
 
     based = nparcel.BaseD()
+    based.set_command('start')
+    based.parser.set_usage('usage: %prog [options]')
     based.check_args()
 
     if based.options.dry is not None:
@@ -58,7 +60,6 @@ def main():
 
     script_name = inspect.getfile(inspect.currentframe())
     script_name = os.path.basename(script_name)
-    based.set_command('start')
     based.set_batch(True)
     based.launch_command(p, script_name)
 
