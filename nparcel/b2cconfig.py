@@ -226,11 +226,12 @@ class B2CConfig(nparcel.Config):
 
     def set_skip_days(self, values):
         del self._skip_days[:]
-        self._skip_days = []
 
         if values is not None:
             log.debug('Set skip days to "%s"' % str(values))
             self._skip_days.extend(values)
+        else:
+            self._skip_days = []
 
     @property
     def send_time_ranges(self):
@@ -238,11 +239,11 @@ class B2CConfig(nparcel.Config):
 
     def set_send_time_ranges(self, values):
         del self._send_time_ranges[:]
-        self._send_time_ranges = []
 
         if values is not None:
-            log.debug('Set skip days to "%s"' % str(values))
+            log.debug('Set send time ranges "%s"' % str(values))
             self._send_time_ranges.extend(values)
+        else._send_time_ranges = []
 
     def parse_config(self):
         """Read config items from the configuration file.
@@ -379,7 +380,7 @@ class B2CConfig(nparcel.Config):
         # Comms send_time_ranges.
         try:
             send_time_ranges = self.get('comms', 'send_time_ranges')
-            self.set_send_time_ranges(send_time_ranges.split('.'))
+            self.set_send_time_ranges(send_time_ranges.split(','))
             log.debug('Parsed comms send time ranges: "%s"' %
                       send_time_ranges)
         except ConfigParser.NoOptionError, err:

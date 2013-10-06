@@ -60,11 +60,12 @@ class CommsDaemon(nparcel.utils.Daemon):
 
             if comms.db():
                 if not self._skip_day():
-                    if self.file is not None:
-                        files.append(self.file)
-                        event.set()
-                    else:
-                        files.extend(comms.get_comms_files())
+                    if self._within_time_ranges():
+                        if self.file is not None:
+                            files.append(self.file)
+                            event.set()
+                        else:
+                            files.extend(comms.get_comms_files())
             else:
                 log.error('ODBC connection failure -- aborting')
                 event.set()
@@ -110,6 +111,9 @@ class CommsDaemon(nparcel.utils.Daemon):
     def _within_time_ranges(self):
         """Check whether comms is configured to send comms at current time.
 
+        Expects ranges to be of the format 'HH:MM-HH:MM' otherwise it will
+        return ``False`` as no assumptions are made.
+
         **Returns**:
             ``boolean``::
 
@@ -120,5 +124,33 @@ class CommsDaemon(nparcel.utils.Daemon):
         is_within_time_range = True
 
         current_time = datetime.datetime.now()
+
+        for range in self.config.send_time_ranges:
+            log.debug('Checking "%s" is within time range "%s"' %
+                      (current_time, range))
+
+            try:
+                (lower_str, upper_str) = range.split('-')
+            except ValueError, err:
+                log.error('Time range "%s" processing error: %s' %
+                          (range, err))
+                is_within_time_range = False
+                break
+
+            lower_str = '%s %s' % (current_time.strftime('%Y-%m-%d'),
+                                   lower_str)
+            log.debug('Lower date string: %s' % lower_str)
+            upper_str = '%s %s' % (current_time.strftime('%Y-%m-%d'),
+                                   upper_str)
+            log.debug('Upper date string: %s' % upper_str)
+
+            lower_time = time.strptime(lower_str, "%Y-%m-%d %H:%M")
+            lower_dt = datetime.datetime.fromtimestamp(time.mktime(lower_time))
+            upper_time = time.strptime(upper_str, "%Y-%m-%d %H:%M")
+            upper_dt = datetime.datetime.fromtimestamp(time.mktime(upper_time))
+
+            if current_time < lower_dt or current_time > upper_dt:
+                is_within_time_range = False
+                break
 
         return is_within_time_range
