@@ -148,6 +148,11 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Reminder skip_days error'
         self.assertListEqual(received, expected, msg)
 
+        received = self._c.send_time_ranges
+        expected = ['08:00-18:00']
+        msg = 'Reminder send_time_ranges error'
+        self.assertListEqual(received, expected, msg)
+
     def test_condition_flag_item_excp_true(self):
         """Check item_excp flag settings -- True.
         """

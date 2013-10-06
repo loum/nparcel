@@ -3,6 +3,7 @@ __all__ = [
 ]
 import signal
 import time
+import datetime
 
 import nparcel
 from nparcel.utils.log import log
@@ -58,11 +59,12 @@ class CommsDaemon(nparcel.utils.Daemon):
             files = []
 
             if comms.db():
-                if self.file is not None:
-                    files.append(self.file)
-                    event.set()
-                else:
-                    files.extend(comms.get_comms_files())
+                if not self._skip_day():
+                    if self.file is not None:
+                        files.append(self.file)
+                        event.set()
+                    else:
+                        files.extend(comms.get_comms_files())
             else:
                 log.error('ODBC connection failure -- aborting')
                 event.set()
@@ -82,3 +84,41 @@ class CommsDaemon(nparcel.utils.Daemon):
                     event.set()
                 else:
                     time.sleep(self.config.comms_loop)
+
+    def _skip_day(self):
+        """Check whether comms is configured to skip current day of week.
+
+        **Returns**:
+            ``boolean``::
+
+                ``True`` if current day is a skip day
+                ``False`` if current day is **NOT** a skip day
+
+        """
+        is_skip_day = False
+
+        current_day = datetime.datetime.now().strftime('%A').lower()
+        log.debug('Current day is: %s' % current_day.title())
+
+        if current_day in [x.lower() for x in self.config.skip_days]:
+            log.info('%s is a configured comms skip day' %
+                     current_day.title())
+            is_skip_day = True
+
+        return is_skip_day
+
+    def _within_time_ranges(self):
+        """Check whether comms is configured to send comms at current time.
+
+        **Returns**:
+            ``boolean``::
+
+                ``True`` if current time is within the ranges
+                ``False`` if current day is **NOT** within the ranges
+
+        """
+        is_within_time_range = True
+
+        current_time = datetime.datetime.now()
+
+        return is_within_time_range

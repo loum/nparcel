@@ -94,9 +94,13 @@ class B2CConfig(nparcel.Config):
         defines the time period (in seconds) since the job_item.created_ts
         that the agent will hold the parcel before being returned
 
-    .. attribute:: skip_days (reminder)
+    .. attribute:: skip_days (comms)
 
-        list of days ('Saturday', 'Sunday') to not send messages
+        list of days ['Saturday', 'Sunday'] to not send messages
+
+    .. attribute:: send_time_ranges (comms)
+
+        time ranges when comms can be sent
 
     .. attribute:: exporter_fields (exporter)
 
@@ -120,9 +124,10 @@ class B2CConfig(nparcel.Config):
     _support_emails = []
     _rest = {}
     _notification_delay = 345600
-    _start_date = '2013-09-10 00:00:00'
+    _start_date = datetime.datetime(2013, 9, 10, 0, 0, 0)
     _hold_period = 691200
     _skip_days = ['Sunday']
+    _send_time_ranges = ['08:00-18:00']
     _exporter_fields = {}
 
     def __init__(self, file=None):
@@ -221,10 +226,23 @@ class B2CConfig(nparcel.Config):
 
     def set_skip_days(self, values):
         del self._skip_days[:]
+        self._skip_days = []
 
         if values is not None:
             log.debug('Set skip days to "%s"' % str(values))
             self._skip_days.extend(values)
+
+    @property
+    def send_time_ranges(self):
+        return self._send_time_ranges
+
+    def set_send_time_ranges(self, values):
+        del self._send_time_ranges[:]
+        self._send_time_ranges = []
+
+        if values is not None:
+            log.debug('Set skip days to "%s"' % str(values))
+            self._send_time_ranges.extend(values)
 
     def parse_config(self):
         """Read config items from the configuration file.
@@ -327,7 +345,8 @@ class B2CConfig(nparcel.Config):
             log.debug('Parsed reminder notification delay: "%s"' %
                       notification_delay)
         except ConfigParser.NoOptionError, err:
-            log.warn('No configured reminder notification delay')
+            log.warn('Using default reminder notification delay: %d' %
+                     self.notification_delay)
 
         # Reminder start_date.
         try:
@@ -337,7 +356,8 @@ class B2CConfig(nparcel.Config):
             self.set_start_date(dt)
             log.debug('Parsed reminder start date: "%s"' % start_date)
         except ConfigParser.NoOptionError, err:
-            log.warn('No configured reminder start date')
+            log.warn('Using default reminder start date: %s' %
+                     self.start_date)
 
         # Reminder hold_period.
         try:
@@ -345,15 +365,26 @@ class B2CConfig(nparcel.Config):
             self.set_hold_period(int(hold_period))
             log.debug('Parsed reminder hold period: "%s"' % hold_period)
         except ConfigParser.NoOptionError, err:
-            log.warn('No configured reminder hold period')
+            log.warn('Using default reminder hold period: %d' %
+                     self.hold_period)
 
-        # Reminder skip_days.
+        # Comms skip_days.
         try:
-            skip_days = self.get('reminder', 'skip_days').split(',')
+            skip_days = self.get('comms', 'skip_days').split(',')
             self.set_skip_days(skip_days)
-            log.debug('Parsed reminder days to skip: "%s"' % skip_days)
+            log.debug('Parsed comms days to skip: "%s"' % skip_days)
         except ConfigParser.NoOptionError, err:
-            log.warn('No configured reminder skip days')
+            log.warn('Using default skip_days: %s' % str(self.skip_days))
+
+        # Comms send_time_ranges.
+        try:
+            send_time_ranges = self.get('comms', 'send_time_ranges')
+            self.set_send_time_ranges(send_time_ranges.split('.'))
+            log.debug('Parsed comms send time ranges: "%s"' %
+                      send_time_ranges)
+        except ConfigParser.NoOptionError, err:
+            log.warn('Using default send time ranges: %s' %
+                     str(self.send_time_ranges))
 
     def condition(self, bu, flag):
         """Return the *bu* condition *flag* value.
