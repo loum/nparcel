@@ -149,7 +149,7 @@ class TestB2CConfig(unittest2.TestCase):
         self.assertListEqual(received, expected, msg)
 
         received = self._c.send_time_ranges
-        expected = ['08:00-18:00']
+        expected = ['08:00-19:00']
         msg = 'Comms send_time_ranges error'
         self.assertListEqual(received, expected, msg)
 

@@ -8,6 +8,7 @@ class TestEmailer(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._e = nparcel.Emailer()
+        cls._e.set_template_base('nparcel')
 
     def test_init(self):
         """Verify initialisation of an nparcel.Emailer object.

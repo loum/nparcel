@@ -127,7 +127,7 @@ class B2CConfig(nparcel.Config):
     _start_date = datetime.datetime(2013, 9, 10, 0, 0, 0)
     _hold_period = 691200
     _skip_days = ['Sunday']
-    _send_time_ranges = ['08:00-18:00']
+    _send_time_ranges = ['08:00-19:00']
     _comms_q_warning = 100
     _comms_q_error = 1000
     _exporter_fields = {}

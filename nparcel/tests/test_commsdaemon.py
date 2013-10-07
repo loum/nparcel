@@ -10,6 +10,8 @@ class TestCommsDaemon(unittest2.TestCase):
     def setUpClass(cls):
         conf_file = 'nparcel/conf/nparceld.conf'
         cls._cd = nparcel.CommsDaemon(pidfile=None, config=conf_file)
+        cls._cd.emailer.set_template_base('nparcel')
+        cls._cd.emailer.set_template_base('nparcel')
 
     def test_init(self):
         """Initialise a CommsDaemon object.
@@ -116,6 +118,36 @@ class TestCommsDaemon(unittest2.TestCase):
         received = self._cd._message_queue_ok(1001, dry=dry)
         msg = 'Message queue above error threshold should return True'
         self.assertFalse(received, msg)
+
+    def test_message_queue_alert_email_warning(self):
+        """Message queue alert email -- warning.
+        """
+        dry = True
+        count = 101
+        subject = 'Warning - Nparcel Comms message count was at %d' % count
+        d = {'count': count,
+             'date': datetime.datetime.now().strftime('%c'),
+             'warning_threshold': self._cd.config.comms_q_warning}
+        mime = self._cd.emailer.create_comms(subject=subject,
+                                             data=d,
+                                             template='message_q_warn')
+        self._cd.emailer.set_recipients(['loumar@tollgroup.com'])
+        received = self._cd.emailer.send(mime_message=mime, dry=dry)
+
+    def test_message_queue_alert_email_error(self):
+        """Message queue alert email -- error.
+        """
+        dry = True
+        count = 1001
+        subject = 'Error - Nparcel Comms message count was at %d' % count
+        d = {'count': count,
+             'date': datetime.datetime.now().strftime('%c'),
+             'error_threshold': self._cd.config.comms_q_error}
+        mime = self._cd.emailer.create_comms(subject=subject,
+                                             data=d,
+                                             template='message_q_err')
+        self._cd.emailer.set_recipients(['loumar@tollgroup.com'])
+        received = self._cd.emailer.send(mime_message=mime, dry=dry)
 
     @classmethod
     def tearDownClass(cls):

@@ -14,6 +14,7 @@ class CommsDaemon(nparcel.utils.Daemon):
 
     """
     _batch = False
+    _emailer = nparcel.Emailer()
 
     def __init__(self,
                  pidfile,
@@ -30,12 +31,18 @@ class CommsDaemon(nparcel.utils.Daemon):
         self.config = nparcel.B2CConfig(file=config)
         self.config.parse_config()
 
+        self._emailer.set_recipients(self.config.support_emails)
+
     @property
     def batch(self):
         return self._batch
 
     def set_batch(self, value):
         self._batch = value
+
+    @property
+    def emailer(self):
+        return self._emailer
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
@@ -76,6 +83,9 @@ class CommsDaemon(nparcel.utils.Daemon):
                 for file in files:
                     log.info('Processing file: "%s" ...' % file)
                     comms.process(file, self.dry)
+            else:
+                log.info('Comms message queue threshold breached -- aborting')
+                event.set()
 
             if not event.isSet():
                 if self.dry:
@@ -178,12 +188,36 @@ class CommsDaemon(nparcel.utils.Daemon):
         """
         queue_ok = True
 
+        current_dt_str = datetime.datetime.now().strftime('%c')
         if message_count > self.config.comms_q_error:
             log.info('Message queue count %d breaches error threshold %d' %
                      (message_count, self.config.comms_q_error))
             queue_ok = False
+
+            subject = ('Error - Nparcel Comms message count was at %d' %
+                       message_count)
+            d = {'count': message_count,
+                 'date': current_dt_str,
+                 'error_threshold': self.config.comms_q_error}
+            mime = self.emailer.create_comms(subject=subject,
+                                             data=d,
+                                             template='message_q_err')
+            self.emailer.send(mime_message=mime, dry=dry)
         elif message_count > self.config.comms_q_warning:
             log.info('Message queue count %d breaches warning threshold %d' %
                      (message_count, self.config.comms_q_warning))
 
+            subject = ('Warning - Nparcel Comms message count was at %d' %
+                       message_count)
+            d = {'count': message_count,
+                 'date': current_dt_str,
+                 'warning_threshold': self.config.comms_q_warning}
+            mime = self.emailer.create_comms(subject=subject,
+                                             data=d,
+                                             template='message_q_warn')
+            self.emailer.send(mime_message=mime, dry=dry)
+
         return queue_ok
+
+    def send_email(self, msg):
+        pass
