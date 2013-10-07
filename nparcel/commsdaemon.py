@@ -72,9 +72,10 @@ class CommsDaemon(nparcel.utils.Daemon):
                 continue
 
             # Start processing files.
-            for file in files:
-                log.info('Processing file: "%s" ...' % file)
-                comms.process(file, self.dry)
+            if self._message_queue_ok(len(files), dry=self.dry):
+                for file in files:
+                    log.info('Processing file: "%s" ...' % file)
+                    comms.process(file, self.dry)
 
             if not event.isSet():
                 if self.dry:
@@ -117,8 +118,8 @@ class CommsDaemon(nparcel.utils.Daemon):
         **Returns**:
             ``boolean``::
 
-                ``True`` if current time is within the ranges
-                ``False`` if current day is **NOT** within the ranges
+            ``True`` if current time is within the ranges
+            ``False`` if current day is **NOT** within the ranges
 
         """
         is_within_time_range = True
@@ -154,3 +155,35 @@ class CommsDaemon(nparcel.utils.Daemon):
                 break
 
         return is_within_time_range
+
+    def _message_queue_ok(self, message_count, dry=False):
+        """Check if the *message_count* breaches the configured thresholds.
+
+        Will send email to support if thresholds are breached.  Furthermore,
+        if the higher threshold is breached, the comms facility will be
+        terminated pending further investigation.
+
+        **Args:**
+            *message_count*: message queue length
+
+        **Kwargs:**
+            *dry*: only report, do not execute
+
+        **Returns**:
+            ``boolean``::
+
+            ``True`` if queue lengths are within accepted thresholds
+            ``False`` if queue lengths are NOT within accepted thresholds
+
+        """
+        queue_ok = True
+
+        if message_count > self.config.comms_q_error:
+            log.info('Message queue count %d breaches error threshold %d' %
+                     (message_count, self.config.comms_q_error))
+            queue_ok = False
+        elif message_count > self.config.comms_q_warning:
+            log.info('Message queue count %d breaches warning threshold %d' %
+                     (message_count, self.config.comms_q_warning))
+
+        return queue_ok

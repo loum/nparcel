@@ -85,6 +85,38 @@ class TestCommsDaemon(unittest2.TestCase):
         # Cleanup.
         self._cd.config.set_send_time_ranges(old_ranges)
 
+    def test_message_queue_within_thresholds(self):
+        """Message queue threshold check.
+        """
+        dry = True
+        received = self._cd._message_queue_ok(0, dry=dry)
+        msg = 'Message queue within threshold should return True'
+        self.assertTrue(received, msg)
+
+    def test_message_queue_within_thresholds_warning(self):
+        """Message queue threshold check -- warning.
+        """
+        dry = True
+        received = self._cd._message_queue_ok(100, dry=dry)
+        msg = 'Message queue within threshold should return True'
+        self.assertTrue(received, msg)
+
+        received = self._cd._message_queue_ok(101, dry=dry)
+        msg = 'Message queue above warning threshold should return True'
+        self.assertTrue(received, msg)
+
+    def test_message_queue_within_thresholds_error(self):
+        """Message queue threshold check -- error.
+        """
+        dry = True
+        received = self._cd._message_queue_ok(1000, dry=dry)
+        msg = 'Message queue within warning threshold should return True'
+        self.assertTrue(received, msg)
+
+        received = self._cd._message_queue_ok(1001, dry=dry)
+        msg = 'Message queue above error threshold should return True'
+        self.assertFalse(received, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._cd = None
