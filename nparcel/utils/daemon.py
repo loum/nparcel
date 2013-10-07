@@ -23,6 +23,7 @@ import time
 import threading
 
 from nparcel.utils.log import log
+from nparcel.utils.files import create_dir
 
 MAXFD = 1024
 
@@ -110,6 +111,8 @@ class Daemon(object):
 
         """
         self._pidfile = pidfile
+        if self._pidfile is not None:
+            create_dir(os.path.dirname(self._pidfile))
         self._term_parent = term_parent
 
         self._exit_event = threading.Event()
