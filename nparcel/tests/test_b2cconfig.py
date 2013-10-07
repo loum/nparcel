@@ -140,18 +140,28 @@ class TestB2CConfig(unittest2.TestCase):
 
         received = self._c.hold_period
         expected = 691200
-        msg = 'Reminder hold_period error'
+        msg = 'Comms hold_period error'
         self.assertEqual(received, expected, msg)
 
         received = self._c.skip_days
         expected = ['Sunday']
-        msg = 'Reminder skip_days error'
+        msg = 'Comms skip_days error'
         self.assertListEqual(received, expected, msg)
 
         received = self._c.send_time_ranges
         expected = ['08:00-18:00']
-        msg = 'Reminder send_time_ranges error'
+        msg = 'Comms send_time_ranges error'
         self.assertListEqual(received, expected, msg)
+
+        received = self._c.comms_q_warning
+        expected = 100
+        msg = 'Comms message queue warning error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.comms_q_error
+        expected = 1000
+        msg = 'Comms message queue error error'
+        self.assertEqual(received, expected, msg)
 
     def test_condition_flag_item_excp_true(self):
         """Check item_excp flag settings -- True.

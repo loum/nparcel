@@ -128,6 +128,8 @@ class B2CConfig(nparcel.Config):
     _hold_period = 691200
     _skip_days = ['Sunday']
     _send_time_ranges = ['08:00-18:00']
+    _comms_q_warning = 100
+    _comms_q_error = 1000
     _exporter_fields = {}
 
     def __init__(self, file=None):
@@ -243,7 +245,22 @@ class B2CConfig(nparcel.Config):
         if values is not None:
             log.debug('Set send time ranges "%s"' % str(values))
             self._send_time_ranges.extend(values)
-        else._send_time_ranges = []
+        else:
+            self._send_time_ranges = []
+
+    @property
+    def comms_q_warning(self):
+        return self._comms_q_warning
+
+    def set_comms_q_warning(self, value):
+        self._comms_q_warning = value
+
+    @property
+    def comms_q_error(self):
+        return self._comms_q_error
+
+    def set_comms_q_error(self, value):
+        self._comms_q_error = value
 
     def parse_config(self):
         """Read config items from the configuration file.
@@ -386,6 +403,26 @@ class B2CConfig(nparcel.Config):
         except ConfigParser.NoOptionError, err:
             log.warn('Using default send time ranges: %s' %
                      str(self.send_time_ranges))
+
+        # Comms comms queue warning threshold.
+        try:
+            comms_q_warning = self.get('comms', 'comms_queue_warning')
+            self.set_comms_q_warning(int(comms_q_warning))
+            log.debug('Parsed comms queue warn threshold: "%s"' %
+                      comms_q_warning)
+        except ConfigParser.NoOptionError, err:
+            log.warn('Using default comms queue warning: %s' %
+                     self.comms_q_warning)
+
+        # Comms comms queue error threshold.
+        try:
+            comms_q_error = self.get('comms', 'comms_queue_error')
+            self.set_comms_q_error(int(comms_q_error))
+            log.debug('Parsed comms queue error threshold: "%s"' %
+                      comms_q_error)
+        except ConfigParser.NoOptionError, err:
+            log.warn('Using default comms queue error: %s' %
+                     self.comms_q_error)
 
     def condition(self, bu, flag):
         """Return the *bu* condition *flag* value.
