@@ -720,8 +720,10 @@ class Loader(nparcel.Service):
 
         for row in self.db.rows():
             # Comes through as id, postcode, state.
+            log.debug('Verifying job.id: %d ...' % row[0])
             translated_state = self.translate_postcode(row[1])
-            if translated_state != row[2]:
+            m = re.match(translated_state, row[2])
+            if m is None:
                 log.info('job.id %d postcode "%s" has wrong state "%s"' %
                          (row[0], row[1], row[2]))
                 log.info('Updating job.id: %d to state "%s"' %
@@ -731,3 +733,5 @@ class Loader(nparcel.Service):
                 self.db(sql)
                 if not dry:
                     self.db.commit()
+            else:
+                log.debug('job.id %d OK' % row[0])

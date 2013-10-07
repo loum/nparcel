@@ -40,6 +40,10 @@ class BaseD(object):
 
         single iteration execution flag
 
+    .. attribute:: pidfile
+
+        name of the PID file
+
     """
     _config = os.path.join(os.path.expanduser('~'),
                            '.nparceld',
@@ -49,6 +53,8 @@ class BaseD(object):
     _dry = False
     _command = None
     _batch = False
+    _pidfile = None
+    _script_name = None
 
     def __init__(self):
         """Nparcel BaseD initialisation.
@@ -126,6 +132,26 @@ class BaseD(object):
     def set_batch(self, value):
         self._batch = value
 
+    @property
+    def pidfile(self):
+        if self._pidfile is None and self._script_name is not None:
+            self._pidfile = os.path.join(os.path.expanduser('~'),
+                                         '.nparceld',
+                                         'pids',
+                                         '%s.pid' % self._script_name)
+
+        return self._pidfile
+
+    def set_pidfile(self, value):
+        self._pidfile = value
+
+    @property
+    def script_name(self):
+        return self._script_name
+
+    def set_script_name(self, value):
+        self._script_name = value
+
     def check_args(self):
         """Verify that the daemon arguments are as expected.
 
@@ -155,9 +181,9 @@ class BaseD(object):
                 self.parser.error('invalid option(s) with command "%s"' %
                                 self.command)
 
-            if self.command == 'start':
-                self.set_dry(self.options.dry is not None)
-                self.set_batch(self.options.batch is not None)
+        if self.command == 'start':
+            self.set_dry(self.options.dry is not None)
+            self.set_batch(self.options.batch is not None)
 
     def launch_command(self, obj, script_name):
         """Run :attr:`command` based on *obj* context.

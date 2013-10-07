@@ -34,15 +34,18 @@ class PostcodeDaemon(nparcel.utils.Daemon):
 
 
 def main():
-    rollover()
-
     based = nparcel.BaseD()
     based.set_command('start')
+    script_name = inspect.getfile(inspect.currentframe())
+    script_name = os.path.basename(script_name)
+    based.set_script_name(script_name)
     based.parser.set_usage('usage: %prog [options]')
     based.check_args()
 
     if based.options.dry is not None:
         set_console()
+    else:
+        rollover()
 
     # Enable detailed logging if required.
     if based.options.verbose == 0:
@@ -51,17 +54,12 @@ def main():
         log.info('Logging verbosity set to "INFO" level')
 
     # OK, start processing.
-    pidfile = os.path.join(os.path.expanduser('~'),
-                           '.nparceld',
-                           'nppostcode.pid')
-    p = PostcodeDaemon(pidfile=pidfile,
-                       dry=based.dry,
-                       config=based.options.config)
+    pd = PostcodeDaemon(pidfile=based.pidfile,
+                        dry=based.dry,
+                        config=based.options.config)
 
-    script_name = inspect.getfile(inspect.currentframe())
-    script_name = os.path.basename(script_name)
     based.set_batch(True)
-    based.launch_command(p, script_name)
+    based.launch_command(pd, script_name)
 
 if __name__ == '__main__':
     main()

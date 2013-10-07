@@ -391,7 +391,7 @@ class B2CConfig(nparcel.Config):
             skip_days = self.get('comms', 'skip_days').split(',')
             self.set_skip_days(skip_days)
             log.debug('Parsed comms days to skip: "%s"' % skip_days)
-        except ConfigParser.NoOptionError, err:
+        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError), err:
             log.warn('Using default skip_days: %s' % str(self.skip_days))
 
         # Comms send_time_ranges.
@@ -400,7 +400,7 @@ class B2CConfig(nparcel.Config):
             self.set_send_time_ranges(send_time_ranges.split(','))
             log.debug('Parsed comms send time ranges: "%s"' %
                       send_time_ranges)
-        except ConfigParser.NoOptionError, err:
+        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError), err:
             log.warn('Using default send time ranges: %s' %
                      str(self.send_time_ranges))
 
@@ -410,7 +410,7 @@ class B2CConfig(nparcel.Config):
             self.set_comms_q_warning(int(comms_q_warning))
             log.debug('Parsed comms queue warn threshold: "%s"' %
                       comms_q_warning)
-        except ConfigParser.NoOptionError, err:
+        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError), err:
             log.warn('Using default comms queue warning: %s' %
                      self.comms_q_warning)
 
@@ -420,7 +420,7 @@ class B2CConfig(nparcel.Config):
             self.set_comms_q_error(int(comms_q_error))
             log.debug('Parsed comms queue error threshold: "%s"' %
                       comms_q_error)
-        except ConfigParser.NoOptionError, err:
+        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError), err:
             log.warn('Using default comms queue error: %s' %
                      self.comms_q_error)
 

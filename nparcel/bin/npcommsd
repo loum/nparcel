@@ -11,6 +11,9 @@ from nparcel.utils.log import (log,
 
 def main():
     based = nparcel.BaseD()
+    script_name = inspect.getfile(inspect.currentframe())
+    script_name = os.path.basename(script_name)
+    based.set_script_name(script_name)
     based.parser.add_option('-f', '--file',
                             dest='file',
                             help='file to process inline (start only)')
@@ -35,17 +38,12 @@ def main():
         file = based.options.file
 
     # OK, start processing.
-    pidfile = os.path.join(os.path.expanduser('~'),
-                           '.nparceld',
-                           'npcommsd.pid')
-    cd = nparcel.CommsDaemon(pidfile=pidfile,
+    cd = nparcel.CommsDaemon(pidfile=based.pidfile,
                              file=file,
                              dry=based.dry,
                              batch=based.batch,
                              config=based.options.config)
 
-    script_name = inspect.getfile(inspect.currentframe())
-    script_name = os.path.basename(script_name)
     based.launch_command(cd, script_name)
 
 if __name__ == '__main__':

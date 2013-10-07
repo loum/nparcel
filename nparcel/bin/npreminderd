@@ -11,6 +11,9 @@ from nparcel.utils.log import (log,
 
 def main():
     based = nparcel.BaseD()
+    script_name = inspect.getfile(inspect.currentframe())
+    script_name = os.path.basename(script_name)
+    based.set_script_name(script_name)
     based.check_args()
 
     if based.command == 'status' or based.options.dry is not None:
@@ -23,16 +26,11 @@ def main():
         log.debug('Logging verbosity set to "DEBUG" level')
 
     # OK, start processing.
-    pidfile = os.path.join(os.path.expanduser('~'),
-                           '.nparceld',
-                           'npreminderd.pid')
-    remd = nparcel.ReminderDaemon(pidfile=pidfile,
+    remd = nparcel.ReminderDaemon(pidfile=based.pidfile,
                                   dry=based.dry,
                                   batch=based.batch,
                                   config=based.options.config)
 
-    script_name = inspect.getfile(inspect.currentframe())
-    script_name = os.path.basename(script_name)
     based.launch_command(remd, script_name)
 
 if __name__ == '__main__':
