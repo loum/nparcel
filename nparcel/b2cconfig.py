@@ -363,8 +363,8 @@ class B2CConfig(nparcel.Config):
             log.debug('Parsed reminder notification delay: "%s"' %
                       notification_delay)
         except ConfigParser.NoOptionError, err:
-            log.warn('Using default reminder notification delay: %d' %
-                     self.notification_delay)
+            log.debug('Using default reminder notification delay: %d' %
+                      self.notification_delay)
 
         # Reminder start_date.
         try:
@@ -374,8 +374,8 @@ class B2CConfig(nparcel.Config):
             self.set_start_date(dt)
             log.debug('Parsed reminder start date: "%s"' % start_date)
         except ConfigParser.NoOptionError, err:
-            log.warn('Using default reminder start date: %s' %
-                     self.start_date)
+            log.debug('Using default reminder start date: %s' %
+                      self.start_date)
 
         # Reminder hold_period.
         try:
@@ -383,8 +383,8 @@ class B2CConfig(nparcel.Config):
             self.set_hold_period(int(hold_period))
             log.debug('Parsed reminder hold period: "%s"' % hold_period)
         except ConfigParser.NoOptionError, err:
-            log.warn('Using default reminder hold period: %d' %
-                     self.hold_period)
+            log.debug('Using default reminder hold period: %d' %
+                      self.hold_period)
 
         # Comms skip_days.
         try:
@@ -392,7 +392,7 @@ class B2CConfig(nparcel.Config):
             self.set_skip_days(skip_days)
             log.debug('Parsed comms days to skip: "%s"' % skip_days)
         except (ConfigParser.NoSectionError, ConfigParser.NoOptionError), err:
-            log.warn('Using default skip_days: %s' % str(self.skip_days))
+            log.debug('Using default skip_days: %s' % str(self.skip_days))
 
         # Comms send_time_ranges.
         try:
@@ -401,8 +401,8 @@ class B2CConfig(nparcel.Config):
             log.debug('Parsed comms send time ranges: "%s"' %
                       send_time_ranges)
         except (ConfigParser.NoSectionError, ConfigParser.NoOptionError), err:
-            log.warn('Using default send time ranges: %s' %
-                     str(self.send_time_ranges))
+            log.debug('Using default send time ranges: %s' %
+                      str(self.send_time_ranges))
 
         # Comms comms queue warning threshold.
         try:
@@ -411,8 +411,8 @@ class B2CConfig(nparcel.Config):
             log.debug('Parsed comms queue warn threshold: "%s"' %
                       comms_q_warning)
         except (ConfigParser.NoSectionError, ConfigParser.NoOptionError), err:
-            log.warn('Using default comms queue warning: %s' %
-                     self.comms_q_warning)
+            log.debug('Using default comms queue warning: %s' %
+                      self.comms_q_warning)
 
         # Comms comms queue error threshold.
         try:
@@ -421,8 +421,8 @@ class B2CConfig(nparcel.Config):
             log.debug('Parsed comms queue error threshold: "%s"' %
                       comms_q_error)
         except (ConfigParser.NoSectionError, ConfigParser.NoOptionError), err:
-            log.warn('Using default comms queue error: %s' %
-                     self.comms_q_error)
+            log.debug('Using default comms queue error: %s' %
+                      self.comms_q_error)
 
     def condition(self, bu, flag):
         """Return the *bu* condition *flag* value.

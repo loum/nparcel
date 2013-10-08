@@ -7,6 +7,7 @@ from optparse import OptionParser
 
 import nparcel
 from nparcel.utils.log import log, set_log_level
+from nparcel.utils.files import create_dir
 
 
 def main():
@@ -14,7 +15,6 @@ def main():
     """
     usage = "usage: %prog [options]"
     parser = OptionParser(usage=usage)
-    parser.set_usage
     parser.add_option("-v", "--verbose",
                       dest="verbose",
                       action="count",
@@ -52,6 +52,10 @@ def main():
     init.parse_config()
 
     log.info('Preparing environment in "%s"' % init.base_dir)
+
+    log_dir = os.path.join(init.base_dir, 'logs')
+    log.info('Creating logging directory: "%s"' % log_dir)
+    create_dir(log_dir)
 
     # Copy over the config files.
     log.debug('Unconditionals: "%s"' % str(init.unconditionals))

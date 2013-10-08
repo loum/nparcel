@@ -76,6 +76,12 @@ def set_console():
         log.removeHandler(hdlr)
     log.propagate = True
 
+    ch = logging.StreamHandler()
+    formatter = logging.Formatter("%(asctime)s %(levelname)s:: %(message)s")
+    ch.setFormatter(formatter)
+    log.addHandler(ch)
+    log.level = logging.NOTSET
+
 
 def rollover():
     """Specific to a TimedRotatingFileHandler, will force a rollover of the

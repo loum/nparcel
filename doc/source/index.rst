@@ -23,6 +23,7 @@ Contents
 .. toctree::
     :maxdepth: 2
 
+    init.rst
     interfaces/index.rst
     source_code.rst
     modules/index.rst
