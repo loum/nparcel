@@ -97,6 +97,15 @@ class TestRestEmailer(unittest2.TestCase):
         self._re.set_recipients(None)
         self._re.set_proxy_scheme('http')
 
+    def test_get_subject_line(self):
+        """Build the subject line from a template -- base scenario.
+        """
+        d = {'connote_nbr': 'subject_connote'}
+        received = self._re.get_subject_line(d, base_dir='nparcel')
+        expected = 'Toll Consumer Delivery tracking # subject_connote\n'
+        msg = 'Base body subject line not as expected'
+        self.assertEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._re = None

@@ -202,7 +202,7 @@ class RestEmailer(nparcel.Rest):
             MIME multipart-formatted serialised string
 
         """
-        dir = None
+        template_dir = None
         if base_dir is None:
             template_dir = os.path.join(os.path.expanduser('~'),
                                         '.nparceld',
@@ -334,3 +334,41 @@ class RestEmailer(nparcel.Rest):
             log.error(err)
 
         return status
+
+    def get_subject_line(self,
+                         data,
+                         base_dir=None,
+                         template='body'):
+        """Construct email subject line from a template.
+
+        **Args**:
+            *data*: dictionary structure that features the tokens that feed
+            into the template
+
+            *template*: template file that contains the subject line
+            construct
+
+        **Returns**:
+            string representation of the subject
+
+        """
+        if base_dir is None:
+            template_dir = os.path.join(os.path.expanduser('~'),
+                                        '.nparceld',
+                                        'templates')
+        else:
+            template_dir = os.path.join(base_dir, 'templates')
+
+        subject_html = 'subject_%s_html.t' % template
+
+        subject_template = os.path.join(template_dir, subject_html)
+        log.debug('Email subject template: "%s"' % subject_template)
+        f = open(subject_template)
+        subject_t = f.read()
+        f.close()
+        subject_s = string.Template(subject_t)
+        subject_string = subject_s.substitute(**data)
+
+        log.debug('Email comms subject string: "%s"' % subject_string)
+
+        return subject_string

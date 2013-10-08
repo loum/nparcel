@@ -3,7 +3,7 @@
   <accountreference>EX0111642</accountreference>
   <message>
     <to>${phone_nbr}</to>
-    <body>REMINDER TEST -- Your parcel ref# $item_nbr is awaiting collection at ${name}, ${address}, ${suburb}, ${postcode}.
+    <body>Your tracking # $connote_nbr is awaiting collection at ${name}, ${address}, ${suburb}, ${postcode}.
 
 Please bring your photo-ID for collection.
 

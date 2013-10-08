@@ -129,13 +129,13 @@ class Comms(object):
 
             if action == 'email':
                 comms_status = self.send_email(template_items,
-                                                template=template,
-                                                err=False,
-                                                dry=dry)
+                                               template=template,
+                                               err=False,
+                                               dry=dry)
             elif action == 'sms':
                 comms_status = self.send_sms(template_items,
-                                                template=template,
-                                                dry=dry)
+                                             template=template,
+                                             dry=dry)
             else:
                 log.error('Unknown action: "%s"' % action)
                 comms_status = False
@@ -294,9 +294,13 @@ class Comms(object):
             status = False
 
         item_nbr = item_details.get('item_nbr')
-        subject = 'TEST COMMS'
-        if status and item_nbr is not None:
-            subject = 'Toll Consumer Delivery parcel ref# %s' % item_nbr
+        subject = ''
+        base_dir = self.template_base
+        if status and item_details.keys() > 1:
+            subject = self.emailer.get_subject_line(item_details,
+                                                    base_dir=base_dir,
+                                                    template=template)
+            subject = subject.rstrip('\n')
 
         if status:
             self.emailer.set_recipients(to_address.split(','))
@@ -307,7 +311,6 @@ class Comms(object):
             else:
                 log.info('Sending customer email to "%s"' %
                          str(self.emailer.recipients))
-            base_dir = self.template_base
             encoded_msg = self.emailer.create_comms(subject=subject,
                                                     data=item_details,
                                                     base_dir=base_dir,

@@ -36,6 +36,7 @@ class TestRestSmser(unittest2.TestCase):
              'address': '119 Auburn Road',
              'suburb': 'HAWTHORN EAST',
              'postcode': '3123',
+             'connote_nbr': '1234567890_connote',
              'item_nbr': '1234567890_item_nbr',
              'phone_nbr': '0431602145'}
         sms = self._rsms.create_comms(data=d, base_dir='nparcel')
@@ -116,6 +117,7 @@ class TestRestSmser(unittest2.TestCase):
              'address': '119 Auburn Road',
              'suburb': 'HAWTHORN EAST',
              'postcode': '3123',
+             'connote_nbr': '1234567890_connote',
              'item_nbr': '1234567890_item_nbr',
              'phone_nbr': '0431602145'}
         received = self._rsms.create_comms(data=d, base_dir='nparcel')

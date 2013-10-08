@@ -67,62 +67,73 @@ class TestComms(unittest2.TestCase):
     def test_send_sms_test(self):
         """Send test SMS.
         """
+        dry = True
+
         date = self._c.get_return_date(self._now)
         details = {'phone_nbr': '0431602145'}
 
         received = self._c.send_sms(details,
                                     template='test',
-                                    dry=True)
+                                    dry=dry)
         msg = 'Test SMS send should return True'
         self.assertTrue(received)
 
     def test_send_sms_reminder(self):
         """Send reminder SMS.
         """
+        dry = True
+
         date = self._c.get_return_date(self._now)
         details = {'name': 'Mannum Newsagency',
                    'address': '77 Randwell Street',
                    'suburb': 'MANNUM',
                    'postcode': '5238',
-                   'item_nbr': 'item_nbr_1234',
+                   'connote_nbr': 'connote_rem',
+                   'item_nbr': 'item_nbr_rem',
                    'phone_nbr': '0431602145',
                    'date': '%s' % date}
 
         received = self._c.send_sms(details,
                                     template='rem',
-                                    dry=True)
+                                    dry=dry)
         msg = 'Reminder SMS send should return True'
         self.assertTrue(received)
 
     def test_send_sms_primary_elect(self):
         """Send primary elect SMS.
         """
+        dry = True
+
         details = {'name': 'Primary Elect Newsagency',
                    'address': '77 Primary Street',
                    'suburb': 'ELECT',
                    'postcode': '5238',
+                   'connote_nbr': 'connote_nbr_pe',
                    'item_nbr': 'item_nbr_pe',
                    'phone_nbr': '0431602145'}
 
         received = self._c.send_sms(details,
                                     template='pe',
-                                    dry=True)
+                                    dry=dry)
         msg = 'Primary Elect SMS send should return True'
         self.assertTrue(received)
 
     def test_send_sms_loader(self):
         """Send loader SMS.
         """
+        dry = True
+
         details = {'name': 'Loader Newsagency',
                    'address': '10 Loader Street',
                    'suburb': 'Loaderville',
                    'postcode': '3019',
+                   'connote_nbr': 'connote_loader',
                    'item_nbr': 'item_nbr_loader',
                    'phone_nbr': '0431602145'}
 
         received = self._c.send_sms(details,
                                     template='body',
-                                    dry=True)
+                                    dry=dry)
         msg = 'Loader SMS send should return True'
         self.assertTrue(received)
 
@@ -155,18 +166,22 @@ class TestComms(unittest2.TestCase):
     def test_send_email_test(self):
         """Send test email.
         """
+        dry = True
+
         date = self._c.get_return_date(self._now)
         details = {'email_addr': 'loumar@tollgroup.com'}
 
         received = self._c.send_email(details,
                                       template='test',
-                                      dry=True)
+                                      dry=dry)
         msg = 'Reminder email send should return True'
         self.assertTrue(received)
 
     def test_send_email_reminder(self):
         """Send reminder email comms.
         """
+        dry = True
+
         date = self._c.get_return_date(self._now)
         details = {'name': 'Mannum Newsagency',
                    'address': '77 Randwell Street',
@@ -179,13 +194,15 @@ class TestComms(unittest2.TestCase):
 
         received = self._c.send_email(details,
                                       template='rem',
-                                      dry=True)
+                                      dry=dry)
         msg = 'Reminder email send should return True'
         self.assertTrue(received)
 
     def test_send_email_primary_elect(self):
         """Send primary elect email comms.
         """
+        dry = True
+
         details = {'name': 'PE Newsagency',
                    'address': '77 Primary Elect Street',
                    'suburb': 'Primaryville',
@@ -196,13 +213,15 @@ class TestComms(unittest2.TestCase):
 
         received = self._c.send_email(details,
                                       template='pe',
-                                      dry=True)
+                                      dry=dry)
         msg = 'Primary elect email send should return True'
         self.assertTrue(received)
 
     def test_send_email_loader(self):
         """Send loader email comms.
         """
+        dry = True
+
         details = {'name': 'Loader Newsagency',
                    'address': '77 Loader Street',
                    'suburb': 'Loadertown',
@@ -213,7 +232,7 @@ class TestComms(unittest2.TestCase):
 
         received = self._c.send_email(details,
                                       template='body',
-                                      dry=True)
+                                      dry=dry)
         msg = 'Loader email send should return True'
         self.assertTrue(received)
 
@@ -273,6 +292,7 @@ class TestComms(unittest2.TestCase):
         """Test processing -- loader.
         """
         dry = True
+
         comms_files = ['%s.%d.body' % ('email', self._id_000),
                        '%s.%d.body' % ('sms', self._id_000)]
         dodgy = ['banana',
@@ -306,6 +326,7 @@ class TestComms(unittest2.TestCase):
         """Test processing -- loader SMS error comms.
         """
         dry = True
+
         comms_files = ['%s.%d.body' % ('email', self._id_000),
                        '%s.%d.body' % ('sms', self._id_000)]
         dodgy = ['banana',
@@ -353,6 +374,7 @@ WHERE id = %d""" % self._id_000
         """Test processing -- loader email error comms.
         """
         dry = True
+
         comms_files = ['%s.%d.body' % ('email', self._id_000),
                        '%s.%d.body' % ('sms', self._id_000)]
         dodgy = ['banana',
@@ -400,6 +422,7 @@ WHERE id = %d""" % self._id_000
         """Test processing -- primary elect.
         """
         dry = True
+
         comms_files = ['%s.%d.pe' % ('email', self._id_000),
                        '%s.%d.pe' % ('sms', self._id_000)]
         dodgy = ['banana',
@@ -433,6 +456,7 @@ WHERE id = %d""" % self._id_000
         """Test processing -- primary elect SMS error comms.
         """
         dry = True
+
         comms_files = ['%s.%d.pe' % ('email', self._id_000),
                        '%s.%d.pe' % ('sms', self._id_000)]
         dodgy = ['banana',
@@ -480,6 +504,7 @@ WHERE id = %d""" % self._id_000
         """Test processing -- primary elect email error comms.
         """
         dry = True
+
         comms_files = ['%s.%d.pe' % ('email', self._id_000),
                        '%s.%d.pe' % ('sms', self._id_000)]
         dodgy = ['banana',
@@ -527,6 +552,7 @@ WHERE id = %d""" % self._id_000
         """Test processing -- reminder.
         """
         dry = True
+
         comms_files = ['%s.%d.rem' % ('email', self._id_000),
                        '%s.%d.rem' % ('sms', self._id_000)]
         dodgy = ['banana',
@@ -560,6 +586,7 @@ WHERE id = %d""" % self._id_000
         """Test processing -- SMS reminder error comms.
         """
         dry = True
+
         comms_files = ['%s.%d.rem' % ('email', self._id_000),
                        '%s.%d.rem' % ('sms', self._id_000)]
         dodgy = ['banana',
@@ -606,7 +633,8 @@ WHERE id = %d""" % self._id_000
     def test_process_reminder_email_error_comms(self):
         """Test processing -- reminder email error comms.
         """
-        dry = True
+        dry = False
+
         comms_files = ['%s.%d.rem' % ('email', self._id_000),
                        '%s.%d.rem' % ('sms', self._id_000)]
         dodgy = ['banana',
