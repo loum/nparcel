@@ -8,6 +8,7 @@ import operator
 
 import nparcel
 from nparcel.utils.log import log
+from nparcel.utils.files import create_dir
 
 STATES = ['NSW', 'VIC', 'QLD', 'SA', 'WA', 'ACT']
 
@@ -17,8 +18,8 @@ class Exporter(object):
 
     .. attribute:: archive_dir
 
-            where to archive signature files (if not being transfered).
-            Default of ``None`` will not archive files.
+        where to archive signature files (if not being transfered).
+        Default of ``None`` will not archive files.
 
     """
 
@@ -36,9 +37,9 @@ class Exporter(object):
 
         self._signature_dir = signature_dir
         self._staging_dir = staging_dir
-        self._create_dir(self._staging_dir)
+        create_dir(self._staging_dir)
         self._archive_dir = archive_dir
-        self._create_dir(self._archive_dir)
+        create_dir(self._archive_dir)
 
         self._out_dir = None
 
@@ -59,7 +60,7 @@ class Exporter(object):
     def set_staging_dir(self, value):
         self._staging_dir = value
 
-        self._create_dir(dir=self._staging_dir)
+        create_dir(dir=self._staging_dir)
 
     @property
     def out_dir(self):
@@ -90,7 +91,7 @@ class Exporter(object):
                 self._out_dir = os.path.join(self.staging_dir,
                                              business_unit.lower(),
                                              'out')
-                self._create_dir(self._out_dir)
+                create_dir(self._out_dir)
             except AttributeError, err:
                 log.error('Output directory error: "%s"' % err)
                 self._out_dir = None
@@ -103,7 +104,7 @@ class Exporter(object):
         self._archive_dir = value
 
         if self._archive_dir is not None:
-            if not self._create_dir(self._archive_dir):
+            if not create_dir(self._archive_dir):
                 self._archive_dir = None
 
     @property
@@ -213,15 +214,15 @@ class Exporter(object):
         the record id of the "job_item" table record.
 
         **Args:**
-            id: file name identifier of the file to move
+            *id*: file name identifier of the file to move
 
-            out_dir: target directory
+            *out_dir*: target directory
 
-            extension: the extension of the filename to move
+            *extension*: the extension of the filename to move
             (default '.ps')
 
         **Kwargs:**
-            dry: only report what would happen (do not move file)
+            *dry*: only report what would happen (do not move file)
 
         **Returns:**
             boolean ``True`` if the signature file is located successfully
@@ -459,7 +460,7 @@ class Exporter(object):
         status = True
         fh = None
 
-        self._create_dir(dir)
+        create_dir(dir)
 
         if status:
             # Create the output file.
@@ -475,33 +476,6 @@ class Exporter(object):
                 log.error('Could not open out file "%s": %s')
 
         return fh
-
-    def _create_dir(self, dir):
-        """Helper method to manage the creation of a directory.
-
-        **Args:**
-            dir: the name of the directory structure to create.
-
-        **Returns:**
-            boolean ``True`` if directory exists.
-
-            boolean ``False`` if the directory does not exist and the
-            attempt to create it fails.
-
-        """
-        status = True
-
-        # Attempt to create the directory if it does not exist.
-        if dir is not None and not os.path.exists(dir):
-            try:
-                log.info('Creating directory "%s"' % dir)
-                os.makedirs(dir)
-            except OSError, err:
-                status = False
-                log.error('Unable to create directory "%s": %s"' %
-                          (dir, err))
-
-        return status
 
     def _update_status(self, id):
         """Set the job_item.extract_ts column of record *id* to the

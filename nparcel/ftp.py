@@ -8,12 +8,21 @@ import fnmatch
 import socket
 
 import nparcel
+import ConfigParser
 from nparcel.utils.log import log
+from nparcel.utils.files import create_dir
 
 
 class Ftp(ftplib.FTP):
     """Nparcel FTP client.
+
+    .. attribute:: archive_dir
+
+        where to archive signature files (if not being transfered).
+        Default of ``None`` will not archive files.
+
     """
+    _archive_dir = None
 
     def __init__(self, config_file='npftp.conf'):
         """Nparcel Ftp initialisation.
@@ -34,6 +43,17 @@ class Ftp(ftplib.FTP):
     def xfers(self):
         return self._xfers
 
+    @property
+    def archive_dir(self):
+        return self._archive_dir
+
+    def set_archive_dir(self, value):
+        self._archive_dir = value
+
+        if self._archive_dir is not None:
+            if not create_dir(self._archive_dir):
+                self._archive_dir = None
+
     def _parse_config(self):
         """Read config items from the configuration file.
 
@@ -41,12 +61,19 @@ class Ftp(ftplib.FTP):
         connection to process.
 
         """
-        self._config.parse_config()
+        self.config.parse_config()
 
         # Parse each section.
-        for section in self._config.sections():
+        for section in self.config.sections():
             if section[:4] == 'ftp_':
                 self._xfers.append(section)
+
+        try:
+            self.set_archive_dir(self.config.get('dirs', 'archive'))
+            log.debug('FTP archive directory: %s' % self.archive_dir)
+        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError), err:
+            log.warn('%s -- %s' % ('FTP archive directory not configured',
+                                   'archiving disabled'))
 
     def get_report_file(self, dir):
         """Identifies report files in directory *dir*.
@@ -126,6 +153,8 @@ class Ftp(ftplib.FTP):
     def xfer_files(self, xfer, files, dry=False):
         """Transfer files defined by *files* list.
 
+        Archives the transfered file upon success.
+
         **Args:**
             *xfer*: the config section of the current FTP context.
 
@@ -166,9 +195,47 @@ class Ftp(ftplib.FTP):
                 log.info('Transfer "%s" OK' % file)
                 f.close()
 
-                log.info('Removing "%s"' % file)
-                if not dry:
-                    os.remove(file)
+                self.archive_file(file, dry=dry)
 
         log.info('Closing FTP session to "%s"' % host)
         self.quit()
+
+    def archive_file(self, file, dry=False):
+        """Move the Nparcel signature file and report to the archive
+        directory.
+
+        .. note::
+
+            Move will only occur if archive directory is defined and exists.
+
+        **Args:**
+            *file*: full path of file to archive
+
+        **Kwargs:**
+            *dry*: only report what would happen (do not move file)
+
+        **Returns:**
+            ``boolean``::
+
+                boolean ``True`` if file is archived successfully
+                boolean ``False`` otherwise
+
+        """
+        status = True
+
+        if self.archive_dir is None:
+            log.info('Archive directory is not defined')
+            status = False
+
+        if status:
+            target = os.path.join(self.archive_dir, os.path.basename(file))
+
+            log.info('Archiving "%s" to "%s"' % (file, target))
+            try:
+                if not dry:
+                    os.rename(file, target)
+            except OSError, err:
+                log.error('Signature file move failed: "%s"' % err)
+                status = False
+
+        return status

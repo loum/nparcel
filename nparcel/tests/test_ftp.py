@@ -13,6 +13,8 @@ class TestFtp(unittest2.TestCase):
 
         # Create a temporary directory structure.
         cls._dir = tempfile.mkdtemp()
+        cls._archive_dir = tempfile.mkdtemp()
+        cls._ftp.set_archive_dir(cls._archive_dir)
 
     def test_init(self):
         """Initialise an FTP object.
@@ -30,6 +32,12 @@ class TestFtp(unittest2.TestCase):
         received = self._ftp.xfers
         expected = ['ftp_priority', 'ftp_other']
         self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Archive directory.
+        msg = 'Archive directory not as expected'
+        received = self._ftp.archive_dir
+        expected = '/data/nparcel/archive/ftp'
+        self.assertEqual(received, expected, msg)
 
     def test_get_report_file_no_files(self):
         """Check directory for report files -- no files defined.
@@ -76,8 +84,36 @@ class TestFtp(unittest2.TestCase):
         # Cleanup.
         os.remove(report)
 
+    def test_archive_file(self):
+        """Archive file.
+        """
+        #temp_file = tempfile.NamedTemporaryFile()
+        #temp_file_name = temp_file.name
+        test_file = os.path.join(self._dir, 'tester')
+        fh = open(test_file, 'w')
+        fh.close()
+
+        received = self._ftp.archive_file(test_file, dry=False)
+        msg = 'File archive should return True'
+        self.assertTrue(received, msg)
+
+        # Check the archive directory.
+        files = os.listdir(self._ftp.archive_dir)
+        received = [os.path.join(self._ftp.archive_dir, x) for x in files]
+        expected = [os.path.join(self._ftp.archive_dir,
+                                 os.path.basename(test_file))]
+        msg = 'Archive directory contents not as expected'
+        self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        for file in received:
+            os.remove(file)
+
     @classmethod
     def tearDownClass(cls):
         cls._ftp = None
+        del cls._ftp
         os.removedirs(cls._dir)
-        cls._dir = None
+        del cls._dir
+        os.removedirs(cls._archive_dir)
+        del cls._archive_dir

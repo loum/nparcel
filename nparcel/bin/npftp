@@ -55,7 +55,7 @@ def main():
     scrip_name = os.path.basename(script_name)
     log.info('Starting %s ...' % script_name)
     rollover()
-    ftp.process(dry=options.dry)
+    ftp.process(dry=dry)
     log.info('Completed %s' % script_name)
 
 if __name__ == '__main__':

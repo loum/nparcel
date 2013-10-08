@@ -9,4 +9,5 @@ the inbound and outbound processing.
     :maxdepth: 2
 
     vsftpd.rst
+    outboundftp.rst
     npremind.rst
