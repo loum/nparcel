@@ -633,7 +633,7 @@ WHERE id = %d""" % self._id_000
     def test_process_reminder_email_error_comms(self):
         """Test processing -- reminder email error comms.
         """
-        dry = False
+        dry = True
 
         comms_files = ['%s.%d.rem' % ('email', self._id_000),
                        '%s.%d.rem' % ('sms', self._id_000)]
