@@ -10,4 +10,5 @@ the inbound and outbound processing.
 
     vsftpd.rst
     outboundftp.rst
+    loader.rst
     npremind.rst

@@ -74,7 +74,7 @@ def set_console():
     """
     for hdlr in log.handlers:
         log.removeHandler(hdlr)
-    log.propagate = True
+    log.propagate = False
 
     ch = logging.StreamHandler()
     formatter = logging.Formatter("%(asctime)s %(levelname)s:: %(message)s")
