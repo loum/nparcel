@@ -91,6 +91,9 @@ def rollover():
     # Check if we can identify a handler log file from the logger_name.
     logger_handler = None
     for handler in log.handlers:
+        if isinstance(handler, logging.StreamHandler):
+            continue
+
         # Try to match the logger_name with the log filename.
         log_file = os.path.basename(handler.baseFilename)
         logger_from_file = os.path.splitext(log_file)[0]
