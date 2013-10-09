@@ -63,7 +63,7 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'Reminder loop not as expected'
         received = self._c.reminder_loop
-        expected = 30
+        expected = 3600
         self.assertEqual(received, expected, msg)
 
         msg = 'Notifications loop not as expected'

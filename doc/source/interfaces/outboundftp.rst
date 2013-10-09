@@ -30,7 +30,7 @@ Business Unit Interfaces
 The configuration file for the outbound FTP facility is ``npftp.conf``.  The
 default location for the file is::
 
-    ~.nparceld/conf/npftp.conf
+    ~/.nparceld/conf/npftp.conf
 
 A typical entry for Priority is shown below::
 

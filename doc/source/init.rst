@@ -102,6 +102,15 @@ From here we should get some sane information::
     $ nploaderd status
     nploaderd is idle
 
+Set the Outbound FTP Configuration
+++++++++++++++++++++++++++++++++++
+The outbound FTP service has its own configuration file, ``npftp.conf``.
+``npinit`` will provide a package version-based default but this needs to
+be linked to the appropriate lcoation::
+
+    $ cd ~/.nparceld
+    $ ln -s conf/npftp.conf.0.12 npftp.conf
+
 Provide Database Connection Details
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 For the Nparcel B2C tools to be useful, you will need to add the database
@@ -165,7 +174,6 @@ Log handlers manage the log files and need to be confgured::
 
     $ cd ~/.nparceld
     $ ln -s conf/log.conf.0.12 log.conf
-
 
 Upgrade
 -------

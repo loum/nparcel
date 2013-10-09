@@ -33,7 +33,7 @@ class Reminder(nparcel.Service):
                  db=None,
                  comms_dir=None,
                  notification_delay=345600,
-                 start_date=datetime.datetime(2013, 9, 10, 0, 0, 0)):
+                 start_date=datetime.datetime(2013, 10, 9, 0, 0, 0)):
         """Nparcel Reminder initialisation.
 
         """

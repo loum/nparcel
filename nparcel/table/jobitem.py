@@ -145,7 +145,7 @@ WHERE item_nbr = '%s'""" % (self.name, item_nbr)
         uncollected after *uncollected_period* has elapsed.
 
         **Args:**
-            uncollected_period: job_item.created_ts value that defines
+            uncollected_period: job_item.notify_ts value that defines
             an uncollected parcel
 
         **Returns:**
@@ -154,7 +154,7 @@ WHERE item_nbr = '%s'""" % (self.name, item_nbr)
         """
         sql = """SELECT id
 FROM job_item
-WHERE (created_ts > '%s' AND created_ts < '%s')
+WHERE (created_ts > '%s' AND notify_ts < '%s')
 AND pickup_ts IS NULL
 AND (email_addr != '' OR phone_nbr != '')
 AND reminder_ts IS NULL""" % (start_date, uncollected_period)

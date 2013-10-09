@@ -72,6 +72,8 @@ class TestJobItem(unittest2.TestCase):
                      'job_id': priority_job_id,
                      'created_ts': '%s' %
                       (cls._now - datetime.timedelta(seconds=864000)),
+                     'notify_ts': '%s' %
+                      (cls._now - datetime.timedelta(seconds=864000)),
                      'pod_name': 'pod_name 218501217old',
                      'identity_type_id': id_type_id,
                      'identity_type_data': 'identity 218501217old',

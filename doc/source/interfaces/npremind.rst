@@ -28,10 +28,10 @@ configuration.
 
   * ``notification_delay`` is the period (in seconds) that triggers a
     reminder notice (default 345600 seconds -- 4 days)
-  * ``start_date`` ignores records whose created_ts occurs before this date
-    (default 2013-09-10 00:00:00)
-  * ``hold_period`` defines the time period (in seconds) since the 
-    job item was created and the agent will hold the parcel before being
+  * ``start_date`` ignores records whose ``job_item.created_ts`` occurs
+    before this date (default 2013-10-09 00:00:00)
+  * ``hold_period`` defines the time period (in seconds) since notifications
+    were first sent and the agent will hold the parcel before being
     returned (default 691200 seconds -- 8 days)
 
 ``npremind`` shared
@@ -49,7 +49,7 @@ the following criteria:
 
 * ``job_item.created_ts`` column date occurs after the ``start_date``
   configuration item
-* ``job_item.created_ts`` plus ``notification_delay`` period has elapsed
+* ``job_item.notify_ts`` plus ``notification_delay`` period has elapsed
 * parcel has not been picked up
 * an email and/or mobile phone number exists
 * a reminder has not already been sent
@@ -81,4 +81,3 @@ executed via cron with the following entry::
 
 .. note::
     the above crontab entry will send notifications every day at 8AM
-
