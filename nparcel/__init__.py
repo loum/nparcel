@@ -22,6 +22,7 @@ from nparcel.primaryelect import PrimaryElect
 from nparcel.init import Init
 from nparcel.comms import Comms
 from nparcel.based import BaseD
+from nparcel.mapper import Mapper
 from table import Table
 from table.job import Job
 from table.jobitem import JobItem
