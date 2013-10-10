@@ -44,6 +44,8 @@ Modules
     based.rst
     log.rst
 
+    mapper.rst
+
 Indices and tables
 ------------------
 
