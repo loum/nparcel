@@ -63,50 +63,61 @@ class Mapper(object):
         """
         pass
 
-    def translate(self, raw):
-        """Translate source record into Nparcel T1250 format.
+    def process(self, raw):
+        """Accepts an unformatted T1250 record *raw* and processes the
+        translation to Nparcel T1250 format.
 
         **Args:**
             *raw*: the source record to translate
 
         **Returns:**
-            ``None`` if the translation process fails
-
             string representation of a Nparcel T1250 record (1248 character
             length)
 
         """
-        translated_line = None
         parsed_dict = self.parser.parse_line(raw)
 
         if (parsed_dict.get('ADP Type') is not None and
             parsed_dict.get('ADP Type') == 'PE'):
             log.info('Found PE flag')
+            translated_line = self.translate(parsed_dict)
 
-            parsed_dict['Service Code'] = '3'
+        return translated_line
 
-            translated_list = [' '] * 1248
+    def translate(self, data):
+        """Translate source record into Nparcel T1250 format.
 
-            log.debug('length of initialised list: %d' % len(translated_list))
+        Special characteristic here is that it will fudge a *Service Code*
+        of "3" to denote a Primary Elect job.
 
-            for k, v in MAP.iteritems():
-                log.info('Mapping field "%s" ...' % k)
+        **Args:**
+            *data*: dictionary structure representation of the raw record
 
-                key_offset = v.get('offset')
-                if key_offset is None:
-                    log.warn('Mapping offset for key %s not defined' % k)
-                    continue
+        **Returns:**
+            string representation of a Nparcel T1250 record (1248 character
+            length)
 
-                log.debug('Mapping offset for key %s: %s' % (k, key_offset))
-                log.debug('Raw value is "%s"' % parsed_dict.get(k))
+        """
+        translated_list = [' '] * 1248
 
-                index = 0
-                for i in list(parsed_dict.get(k)):
-                    translated_list[key_offset + index] = i
-                    index += 1
+        for k, v in MAP.iteritems():
+            log.info('Mapping field "%s" ...' % k)
 
-            log.debug('length of xlated list: %d' % len(translated_list))
-            translated_line = ''.join(translated_list)
+            key_offset = v.get('offset')
+            if key_offset is None:
+                log.warn('Mapping offset for key %s not defined' % k)
+                continue
+
+            log.debug('Mapping offset for key %s: %s' % (k, key_offset))
+            log.debug('Raw value is "%s"' % data.get(k))
+
+            index = 0
+            data['Service Code'] = '3'
+            for i in list(data.get(k)):
+                translated_list[key_offset + index] = i
+                index += 1
+
+        translated_line = ''.join(translated_list)
 
         return translated_line
 

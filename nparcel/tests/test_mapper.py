@@ -47,10 +47,21 @@ class TestMapper(unittest2.TestCase):
         """Translate a valid, raw line.
         """
         line = self._c.get('test_lines', 'RAW01_PRIORITY_PE').strip('"')
-        received = self._m.translate(line)
+        data_dict = self._m.parser.parse_line(line)
+        received = self._m.translate(data_dict)
         expected = self._c.get('test_lines',
                                'RAW01_PRIORITY_PE_TRANSLATED').strip('"')
         msg = 'Translated line error'
+        self.assertEqual(received, expected, msg)
+
+    def test_process_valid_record(self):
+        """Process valid record.
+        """
+        line = self._c.get('test_lines', 'RAW01_PRIORITY_PE').strip('"')
+        received = self._m.process(line)
+        expected = self._c.get('test_lines',
+                               'RAW01_PRIORITY_PE_TRANSLATED').strip('"')
+        msg = 'Valid record processing error'
         self.assertEqual(received, expected, msg)
 
     @classmethod
