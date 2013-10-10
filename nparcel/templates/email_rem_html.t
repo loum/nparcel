@@ -1,12 +1,12 @@
 <p>Hello,</p>
 <p>This is a reminder that your parcel is awaiting collection at <b>${name}</b>, <b>${address}</b>, <b>${suburb}</b>, <b>${postcode}</b>.</p>
-<table width="70%">
-    <tr>
-        <th>Tracking #:</th>
+<table style="width:45%;background-color:#f4f4f4">
+    <tr style="border:1px solid white">
+        <th style="white-space:nowrap;text-align:right;width:30%">Tracking #:</th>
         <td>$connote_nbr</td>
     </tr>
-    <tr>
-        <th>Parcel #:</th>
+    <tr style="border:1px solid white">
+        <th style="white-space:nowrap;text-align:right;width:30%">Parcel #:</th>
         <td>$item_nbr</td>
     </tr>
 </table>
