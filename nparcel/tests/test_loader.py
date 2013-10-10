@@ -1,7 +1,5 @@
 import unittest2
 import datetime
-import string
-import urllib
 import tempfile
 import os
 
@@ -16,23 +14,14 @@ COND_MAP_COMMS = {'item_number_excp': False,
 COND_MAP_IPEC = {'item_number_excp': True}
 VALID_LINE_BARCODE = '4156536111'
 VALID_LINE_CONNOTE = '218501217863'
-VALID_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111     N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
-VALID_LINE_AGENT_UPD = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111     N014                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N014                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
-INVALID_BARCODE_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                                              N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
-INVALID_AGENTID_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111                                                                                                                                            00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
-INVALID_POSTCODE_LINE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other                                                                                                                                    Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111     N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
-MANUFACTURED_BC_LINE = """3142357006912345      YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other                                                                                                                                    Diane Donohoe                             Bally                         Hong Kong Other                                                               000931423570069N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
-MANUFACTURED_BC_UPD_LINE = """3142357006912345      YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other                                                                                                                                    Diane Donohoe                             Bally                         Hong Kong Other                                                               000931423570069N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N032                                                                                                       HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
-SINGLE_QUOTE_LINE = """080102033141          YMLML11TOLP130815  MISS S D'ARCY                           13 FITZGERALD RD              ESSENDON                      MELBOURNE                     3040                                                                                                                 MISS S D'ARCY                             NEXT RETAIL LTD               LEICESTER                                                                     4159214753     V098                                                                                                                                   00001000001                                                                      Parcels Overnight                   DESFORD ROAD                  ENDERBY                                                                                                              FVAN000098                                                                                                 GB                            AUSTRALIA                                                                                                                                                                                                         VI                                               """
-DODGY_POSTCODE = """574000244915          YMLML11TOLP130715  AMAL DOUKARI                            41 BLAMEY ST 1501 KELVIN GROVEQUEEN SLAND 4059              ;                             ;                                                                                                                    AMAL DOUKARI                              GUANGZHOU YASHUNDA LTD                                      362000                                          4159054556     Q067                                                                                                                                   00001000001                                                                      Parcels Overnight                   NO.83 MEIGUI YUAN QU E 3 BAIYUGUANGZHOU GUANGDONG                                                                                                  Q067                                                                                                       CHINA                         AUSTRALIA                                                                                                                                                                                                      GU ;                                                """
-VALID_ITEM_NUMBER = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111     N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                                      N031                               1234567890                                                              HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
-PE = """218501217863          YMLML11TOLP130413  Diane Donohoe                           31 Bridge st,                 Lane Cove,                    Australia Other               2066                                                                                                                 Diane Donohoe                             Bally                         Hong Kong Other                                                               4156536111     N031                                                                                                                                   00001000001                                                                      Parcels Overnight                   Rm 603, Yeekuk Industrial,, 55Li chi kok, HK.                                                                                            3         N031                               1234567890                                                              HONG KONG                     AUSTRALIA                                                                                                                                                                                                      1  NS                                               """
 
 
 class TestLoader(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        test_conf = 'nparcel/tests/test_loader.conf'
+        cls._c = nparcel.Config(config_file=test_conf)
         cls._comms_dir = tempfile.mkdtemp()
         cls._ldr = nparcel.Loader(comms_dir=cls._comms_dir)
         cls._job_ts = cls._ldr.db.date_now()
@@ -52,7 +41,8 @@ class TestLoader(unittest2.TestCase):
     def test_valid_barcode_extract(self):
         """Extract valid barcode.
         """
-        result = self._ldr.parser.parse_line(VALID_LINE)
+        line = self._c.get('test_lines', 'VALID_LINE')
+        result = self._ldr.parser.parse_line(line)
         received = result.get('Bar code')
         expected = VALID_LINE_BARCODE
         msg = 'Loader Bar code parse should return "%s"' % expected
@@ -66,8 +56,9 @@ class TestLoader(unittest2.TestCase):
         self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
         msg = 'Valid T1250 record should process OK'
+        line = self._c.get('test_lines', 'VALID_LINE')
         self.assertTrue(self._ldr.process(self._job_ts,
-                                          VALID_LINE,
+                                          line,
                                           FILE_BU.get('tolp'),
                                           COND_MAP_COMMS), msg)
 
@@ -98,9 +89,10 @@ FROM job_item"""
         agent_fields = {'code': 'N031'}
         self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
+        line = self._c.get('test_lines', 'VALID_LINE')
         msg = 'Valid T1250 record should process OK'
         self.assertTrue(self._ldr.process(self._job_ts,
-                                          VALID_LINE,
+                                          line,
                                           FILE_BU.get('tolp'),
                                           COND_MAP), msg)
 
@@ -121,9 +113,10 @@ FROM job_item"""
         agent_fields = {'code': 'N031'}
         self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
+        line = self._c.get('test_lines', 'VALID_ITEM_NUMBER')
         msg = 'Valid T1250 record should process OK'
         self.assertTrue(self._ldr.process(self._job_ts,
-                                          VALID_ITEM_NUMBER,
+                                          line,
                                           FILE_BU.get('toli'),
                                           COND_MAP_IPEC), msg)
 
@@ -137,9 +130,10 @@ FROM job_item"""
         agent_fields = {'code': 'N031'}
         self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
+        line = self._c.get('test_lines', 'PE')
         msg = 'Valid T1250 record should process OK'
         self.assertTrue(self._ldr.process(self._job_ts,
-                                          PE,
+                                          line,
                                           FILE_BU.get('toli'),
                                           COND_MAP_IPEC), msg)
 
@@ -153,7 +147,8 @@ FROM job_item"""
         agent_fields = {'code': 'N031'}
         self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
-        fields = self._ldr.parser.parse_line(PE)
+        line = self._c.get('test_lines', 'PE')
+        fields = self._ldr.parser.parse_line(line)
         fields['job_ts'] = self._job_ts
         fields['bu_id'] = int(FILE_BU.get('tolp'))
         received = self._ldr.table_column_map(fields,
@@ -180,9 +175,10 @@ FROM job_item"""
         agent_fields = {'code': 'N031'}
         self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
+        line = self._c.get('test_lines', 'VALID_LINE')
         msg = 'T1250 record with missing Item Number should return False'
         self.assertFalse(self._ldr.process(self._job_ts,
-                                           VALID_LINE,
+                                           line,
                                            FILE_BU.get('toli'),
                                            COND_MAP_IPEC), msg)
 
@@ -196,9 +192,10 @@ FROM job_item"""
         agent_fields = {'code': 'V098'}
         self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
+        line = self._c.get('test_lines', 'SINGLE_QUOTE_LINE')
         msg = 'Valid T1250 record should process OK -- single quote'
         self.assertTrue(self._ldr.process(self._job_ts,
-                                          SINGLE_QUOTE_LINE,
+                                          line,
                                           FILE_BU.get('tolp'),
                                           COND_MAP), msg)
 
@@ -212,9 +209,10 @@ FROM job_item"""
         agent_fields = {'code': 'Q067'}
         self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
+        line = self._c.get('test_lines', 'DODGY_POSTCODE')
         msg = 'Valid T1250 record should process OK -- bad postcode'
         self.assertTrue(self._ldr.process(self._job_ts,
-                                          DODGY_POSTCODE,
+                                          line,
                                           FILE_BU.get('tolp'),
                                           COND_MAP), msg)
 
@@ -230,14 +228,16 @@ FROM job_item"""
         agent_fields = {'code': 'N014'}
         self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
+        line = self._c.get('test_lines', 'VALID_LINE')
         msg = 'Valid T1250 record should process successfully'
         self.assertTrue(self._ldr.process(self._job_ts,
-                                          VALID_LINE,
+                                          line,
                                           FILE_BU.get('tolp'),
                                           COND_MAP), msg)
+        line = self._c.get('test_lines', 'VALID_LINE_AGENT_UPD')
         msg = 'Valid T1250 record update should process successfully'
         self.assertTrue(self._ldr.process(self._job_ts,
-                                          VALID_LINE_AGENT_UPD,
+                                          line,
                                           FILE_BU.get('tolp'),
                                           COND_MAP), msg)
 
@@ -251,9 +251,10 @@ FROM job_item"""
         agent_fields = {'code': 'N031'}
         self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
+        line = self._c.get('test_lines', 'INVALID_POSTCODE_LINE')
         msg = 'T1250 record should process successfully -- missing postcode'
         self.assertTrue(self._ldr.process(self._job_ts,
-                                          INVALID_POSTCODE_LINE,
+                                          line,
                                           FILE_BU.get('tolp'),
                                           COND_MAP), msg)
 
@@ -263,9 +264,10 @@ FROM job_item"""
     def test_processor_missing_agent_id_record(self):
         """Process valid raw T1250 line -- missing Agent Id.
         """
+        line = self._c.get('test_lines', 'VALID_LINE')
         msg = 'Missing Agent Id should fail processing'
         self.assertFalse(self._ldr.process(self._job_ts,
-                                           VALID_LINE,
+                                           line,
                                            FILE_BU.get('tolp'),
                                            COND_MAP), msg)
 
@@ -278,14 +280,15 @@ FROM job_item"""
 
         # First, create a record and attempt to reload as a duplicate.
         # Should update the Agent Id but not create a new job_item record.
+        line = self._c.get('test_lines', 'VALID_LINE')
         msg = 'New T1250 record should process successfully'
         self.assertTrue(self._ldr.process(self._job_ts,
-                                          VALID_LINE,
+                                          line,
                                           FILE_BU.get('tolp'),
                                           COND_MAP), msg)
         msg = 'Duplicate T1250 record should process successfully'
         self.assertTrue(self._ldr.process(self._job_ts,
-                                          VALID_LINE,
+                                          line,
                                           FILE_BU.get('tolp'),
                                           COND_MAP), msg)
 
@@ -304,9 +307,10 @@ FROM job_item"""
     def test_processor_invalid_barcode_record(self):
         """Process valid raw T1250 line with an invalid barcode.
         """
+        line = self._c.get('test_lines', 'INVALID_BARCODE_LINE')
         msg = 'Invalid barcode processing should return False'
         self.assertFalse(self._ldr.process(self._job_ts,
-                                           INVALID_BARCODE_LINE,
+                                           line,
                                            FILE_BU.get('tolp'),
                                            COND_MAP), msg)
 
@@ -314,8 +318,9 @@ FROM job_item"""
         """Process valid raw T1250 line with an invalid barcode.
         """
         msg = 'Invalid Agent Id processing should return False'
+        line = self._c.get('test_lines', 'INVALID_AGENTID_LINE')
         self.assertFalse(self._ldr.process(self._job_ts,
-                                           INVALID_AGENTID_LINE,
+                                           line,
                                            FILE_BU.get('tolp'),
                                            COND_MAP), msg)
 
@@ -329,15 +334,17 @@ FROM job_item"""
             self._ldr.db(self._ldr.db._agent.insert_sql(agent_field))
 
         # First, create a manufactured barcode value.
+        line = self._c.get('test_lines', 'MANUFACTURED_BC_LINE')
         msg = 'Manufactured barcode creation failed -- no barcode'
         self.assertTrue(self._ldr.process(self._job_ts,
-                                          MANUFACTURED_BC_LINE,
+                                          line,
                                           FILE_BU.get('tolp'),
                                           COND_MAP), msg)
         # Now the manufactured barcode value update.
         msg = 'Manufactured barcode creation failed -- existing barcode'
+        line = self._c.get('test_lines', 'MANUFACTURED_BC_UPD_LINE')
         self.assertTrue(self._ldr.process(self._job_ts,
-                                          MANUFACTURED_BC_UPD_LINE,
+                                          line,
                                           FILE_BU.get('tolp'),
                                           COND_MAP), msg)
 
@@ -578,7 +585,8 @@ FROM job_item"""
         agent_fields = {'code': 'N031'}
         self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
-        fields = self._ldr.parser.parse_line(VALID_LINE)
+        line = self._c.get('test_lines', 'VALID_LINE')
+        fields = self._ldr.parser.parse_line(line)
         fields['job_ts'] = self._job_ts
         fields['bu_id'] = int(FILE_BU.get('tolp'))
         received = self._ldr.table_column_map(fields,
@@ -704,7 +712,8 @@ FROM job_item"""
     def test_jobitem_table_column_map_for_a_valid_raw_record(self):
         """Process valid raw T1250 line and map "jobitem" table elements.
         """
-        fields = self._ldr.parser.parse_line(VALID_LINE)
+        line = self._c.get('test_lines', 'VALID_LINE')
+        fields = self._ldr.parser.parse_line(line)
         received = self._ldr.table_column_map(fields,
                                               nparcel.loader.JOB_ITEM_MAP,
                                               COND_MAP)
@@ -872,9 +881,10 @@ FROM job_item"""
         agent_fields = {'code': 'N031'}
         self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
+        line = self._c.get('test_lines', 'VALID_LINE')
         msg = 'Valid T1250 record should process OK'
         self.assertTrue(self._ldr.process(self._job_ts,
-                                          VALID_LINE,
+                                          line,
                                           FILE_BU.get('tolp'),
                                           COND_MAP), msg)
 
@@ -890,6 +900,8 @@ SET state = 'VIC'"""
 
     @classmethod
     def tearDownClass(cls):
+        cls._c = None
+        del cls._c
         cls._ldr = None
         del cls._ldr
         del cls._job_ts
