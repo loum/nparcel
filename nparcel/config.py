@@ -53,10 +53,7 @@ class Config(ConfigParser.SafeConfigParser):
                 sys.exit(1)
 
     def parse_config(self):
-        """Read config items from the configuration file.
-
-        Each section that starts with ``ftp_`` are interpreted as an FTP
-        connection to process.
+        """Simple file checker for the base module.
 
         """
         if self.config_file is None:
