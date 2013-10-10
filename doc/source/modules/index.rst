@@ -45,6 +45,7 @@ Modules
     log.rst
 
     mapper.rst
+    mapperdaemon.rst
 
 Indices and tables
 ------------------

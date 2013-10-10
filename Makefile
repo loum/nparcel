@@ -29,6 +29,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestPrimaryElectDaemon \
 	 nparcel.tests:TestCommsDaemon \
 	 nparcel.tests:TestReminderDaemon \
+	 nparcel.tests:TestMapperDaemon \
 	 nparcel.tests:TestExporter \
 	 nparcel.tests:TestExporterIpec \
 	 nparcel.tests:TestConfig \

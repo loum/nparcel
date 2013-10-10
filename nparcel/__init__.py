@@ -10,6 +10,7 @@ from nparcel.exporterdaemon import ExporterDaemon
 from nparcel.primaryelectdaemon import PrimaryElectDaemon
 from nparcel.commsdaemon import CommsDaemon
 from nparcel.reminderdaemon import ReminderDaemon
+from nparcel.mapperdaemon import MapperDaemon
 from nparcel.rest import Rest
 from nparcel.restemailer import RestEmailer
 from nparcel.restsmser import RestSmser
