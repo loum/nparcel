@@ -75,12 +75,16 @@ class Mapper(object):
             length)
 
         """
+        translated_line = tuple()
         parsed_dict = self.parser.parse_line(raw)
+        connote_nbr = parsed_dict.get('Conn Note')
+        log.info('Processing connote: "%s" ...' % connote_nbr)
 
         if (parsed_dict.get('ADP Type') is not None and
             parsed_dict.get('ADP Type') == 'PE'):
-            log.info('Found PE flag')
-            translated_line = self.translate(parsed_dict)
+            log.info('Connote "%s" has a PE flag' % connote_nbr)
+            bu = parsed_dict.get('System Identifier')
+            translated_line = (bu, self.translate(parsed_dict))
 
         return translated_line
 

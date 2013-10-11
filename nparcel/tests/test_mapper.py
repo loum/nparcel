@@ -59,10 +59,20 @@ class TestMapper(unittest2.TestCase):
         """
         line = self._c.get('test_lines', 'RAW01_PRIORITY_PE').strip('"')
         received = self._m.process(line)
-        expected = self._c.get('test_lines',
-                               'RAW01_PRIORITY_PE_TRANSLATED').strip('"')
+        expected = ('TOLP',
+                    self._c.get('test_lines',
+                               'RAW01_PRIORITY_PE_TRANSLATED').strip('"'))
         msg = 'Valid record processing error'
-        self.assertEqual(received, expected, msg)
+        self.assertTupleEqual(received, expected, msg)
+
+    def test_process_non_pe_valid_record(self):
+        """Process non-PE valid record.
+        """
+        line = self._c.get('test_lines', 'RAW01_PRIORITY_NO_PE').strip('"')
+        received = self._m.process(line)
+        expected = ()
+        msg = 'Non-PE valid record processing error'
+        self.assertTupleEqual(received, expected, msg)
 
     @classmethod
     def tearDownClass(cls):
