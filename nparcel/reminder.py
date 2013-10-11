@@ -107,8 +107,8 @@ class Reminder(nparcel.Service):
 
         for id in self.get_uncollected_items():
             log.info('Preparing comms flag for job_item.id: %d' % id)
-            if (self.flag_comms('email', id, 'rem') and
-                self.flag_comms('sms', id, 'rem')):
+            if (self.flag_comms('email', id, 'rem', dry=dry) and
+                self.flag_comms('sms', id, 'rem', dry=dry)):
                 processed_ids.append(id)
             else:
                 log.error('Comms flag error for job_item.id: %d' % id)

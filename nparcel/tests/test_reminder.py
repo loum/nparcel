@@ -93,7 +93,7 @@ class TestReminder(unittest2.TestCase):
     def test_process(self):
         """Check processing.
         """
-        dry = True
+        dry = False
         received = self._r.process(dry=dry)
         expected = [self._id_001]
         msg = 'List of processed uncollected items incorrect'

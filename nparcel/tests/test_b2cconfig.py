@@ -365,7 +365,7 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'Proxy kwargs should produce a populated dictionary'
         received = self._c.proxy_kwargs()
-        expected = {'host': 'auproxy-farm.toll.com.au',
+        expected = {'host': 'itproxy-farm.toll.com.au',
                     'password': '',
                     'port': 8080,
                     'protocol': 'https',
@@ -381,13 +381,13 @@ class TestB2CConfig(unittest2.TestCase):
     def test_proxy_string(self):
         """Produce a proxy string.
         """
-        kwargs = {'host': 'auproxy-farm.toll.com.au',
+        kwargs = {'host': 'itproxy-farm.toll.com.au',
                   'user': 'loumar',
                   'password': 'pw',
                   'port': '8080'}
         msg = 'Proxy string generation incorrect'
         received = self._c.proxy_string(kwargs)
-        expected = 'loumar:pw@auproxy-farm.toll.com.au:8080'
+        expected = 'loumar:pw@itproxy-farm.toll.com.au:8080'
         self.assertEqual(received, expected, msg)
 
     def test_sms_api_kwargs(self):

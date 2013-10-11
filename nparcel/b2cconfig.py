@@ -637,7 +637,7 @@ class B2CConfig(nparcel.Config):
         section in the configuration file.  A typical example is::
 
             [proxy]
-            host = auproxy-farm.toll.com.au
+            host = itproxy-farm.toll.com.au
             user = <username>
             password = <passwd>
             port = 8080
@@ -687,7 +687,7 @@ class B2CConfig(nparcel.Config):
             string that could be fed directly into a HTTP/S header
             to handle proxy authentication in the request.  Example::
 
-                http://loumar:<passwd>@auproxy-farm.toll.com.aus:8080
+                http://loumar:<passwd>@itproxy-farm.toll.com.aus:8080
 
         """
         values = None
