@@ -108,6 +108,7 @@ class B2CConfig(nparcel.Config):
 
     """
     _dirs_to_check = []
+    _pe_dirs_to_check = []
     _archive = None
     _staging_base = None
     _signature = None
@@ -131,6 +132,7 @@ class B2CConfig(nparcel.Config):
     _comms_q_warning = 100
     _comms_q_error = 1000
     _exporter_fields = {}
+    _pe_in_file_format = """T1250_TOLI_\d{14}\.dat"""
 
     def __init__(self, file=None):
         """Nparcel Config initialisation.
@@ -140,6 +142,10 @@ class B2CConfig(nparcel.Config):
     @property
     def in_dirs(self):
         return self._dirs_to_check
+
+    @property
+    def pe_in_dirs(self):
+        return self._pe_dirs_to_check
 
     @property
     def archive_dir(self):
@@ -200,6 +206,10 @@ class B2CConfig(nparcel.Config):
     @property
     def exporter_fields(self):
         return self._exporter_fields
+
+    @property
+    def pe_in_file_format(self):
+        return self._pe_in_file_format
 
     @property
     def notification_delay(self):
@@ -270,8 +280,7 @@ class B2CConfig(nparcel.Config):
 
         try:
             self._dirs_to_check = self.get('dirs', 'in').split(',')
-            log.debug('Loader directories to check %s' %
-                      str(self._dirs_to_check))
+            log.debug('Loader directories to check %s' % str(self.in_dirs))
 
             self._archive = self.get('dirs', 'archive')
             log.debug('Loader archive directory %s' % self._archive)
@@ -295,42 +304,49 @@ class B2CConfig(nparcel.Config):
             log.critical('Missing required config: %s' % err)
             sys.exit(1)
 
+        # Primary elect work is only a temporary solution.
+        try:
+            self._pe_dirs_to_check = self.get('dirs', 'pe_in').split(',')
+            log.debug('Primary Elect directories to check %s' %
+                      str(self.pe_in_dirs))
+        except ConfigParser.NoOptionError:
+            log.warn('No Primary Elect inbound directories in config')
+
         # Optional items (defaults provided).
         try:
             self.loader_loop = int(self.get('timeout', 'loader_loop'))
         except ConfigParser.NoOptionError, err:
-            log.warn('Loader loop time not provided: %s' % err)
-            pass
+            log.debug('Using default Loader loop: %d (sec)' %
+                      self.loader_loop)
 
         try:
             self._pe_loop = int(self.get('timeout', 'pe_loop'))
         except ConfigParser.NoOptionError, err:
-            log.warn('Primary elect loop time not provided: %s' % err)
-            pass
+            log.debug('Using default Primary Elect loop: %d (sec)' %
+                      self.pe_loop)
 
         try:
             self._reminder_loop = int(self.get('timeout', 'reminder_loop'))
         except ConfigParser.NoOptionError, err:
-            log.warn('Reminder loop time not provided: %s' % err)
-            pass
+            log.debug('Using default Reminder loop: %d (sec)' %
+                      self.reminder_loop)
 
         try:
             self._comms_loop = int(self.get('timeout', 'comms_loop'))
         except ConfigParser.NoOptionError, err:
-            log.warn('Notifications loop time not provided: %s' % err)
-            pass
+            log.debug('Using default Notifications loop: %d (sec)' %
+                      self.comms_loop)
 
         try:
             self._exporter_loop = int(self.get('timeout', 'exporter_loop'))
         except ConfigParser.NoOptionError, err:
-            log.warn('Exporter loop time not provided: %s' % err)
-            pass
+            log.debug('Using default Exporter loop: %d (sec)' %
+                      self.exporter_loop)
 
         try:
             self._support_emails = self.get('email', 'support').split(',')
         except ConfigParser.NoOptionError, err:
             log.warn('Support emails not provided: %s' % err)
-            pass
 
         # Business unit conditons.  No probs if they are missing -- will
         # just default to '0' (False) for each flag.

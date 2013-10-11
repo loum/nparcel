@@ -31,6 +31,11 @@ class TestB2CConfig(unittest2.TestCase):
         expected = ['/var/ftp/pub/nparcel/priority/in']
         self.assertListEqual(received, expected, msg)
 
+        msg = 'Directories to check not as expected'
+        received = self._c.pe_in_dirs
+        expected = ['/var/ftp/pub/nparcel/gis/in']
+        self.assertListEqual(received, expected, msg)
+
         msg = 'Archive directory not as expected'
         received = self._c.archive_dir
         expected = '/data/nparcel/archive'
@@ -126,6 +131,11 @@ class TestB2CConfig(unittest2.TestCase):
                     'tolf': '0,1,2,3,4,5,6',
                     'toli': '0,1,2,3,4,5,6,7'}
         self.assertDictEqual(received, expected, msg)
+
+        msg = 'Primary Elect fiel format not as expected'
+        received = self._c.pe_in_file_format
+        expected = 'T1250_TOLI_\d{14}\.dat'
+        self.assertEqual(received, expected, msg)
 
         # Reminders.
         received = self._c.notification_delay
