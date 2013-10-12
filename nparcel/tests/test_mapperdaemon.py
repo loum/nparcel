@@ -16,6 +16,12 @@ class TestMapperDaemon(unittest2.TestCase):
         msg = 'Not a nparcel.MapperDaemon object'
         self.assertIsInstance(self._md, nparcel.MapperDaemon, msg)
 
+    def test_start(self):
+        """MapperDaemon _start processing loop.
+        """
+        self._md.set_dry()
+        self._md._start(self._md.exit_event)
+
     @classmethod
     def tearDownClass(cls):
         cls._md = None
