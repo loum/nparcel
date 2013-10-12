@@ -5,6 +5,7 @@ from nparcel.loader import Loader
 from nparcel.dbsession import DbSession
 from nparcel.reporter import Reporter
 from nparcel.emailer import Emailer
+from nparcel.daemonservice import DaemonService
 from nparcel.loaderdaemon import LoaderDaemon
 from nparcel.exporterdaemon import ExporterDaemon
 from nparcel.primaryelectdaemon import PrimaryElectDaemon

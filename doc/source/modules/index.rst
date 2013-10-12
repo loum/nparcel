@@ -43,6 +43,7 @@ Modules
     daemon.rst
     based.rst
     log.rst
+    daemonservice.rst
 
     mapper.rst
     mapperdaemon.rst

@@ -8,46 +8,23 @@ import nparcel
 from nparcel.utils.log import log
 
 
-class MapperDaemon(nparcel.utils.Daemon):
+class MapperDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.Loader` class.
-
     """
-    _file_to_process = None
-    _dry = False
-    _batch = False
 
     def __init__(self,
                  pidfile,
-                 file_to_process=None,
+                 file=None,
                  dry=False,
                  batch=False,
                  config='nparcel.conf'):
-        super(MapperDaemon, self).__init__(pidfile=pidfile)
-
-        self._file = file
-        self._dry = dry
-        self._batch = batch
+        super(MapperDaemon, self).__init__(pidfile=pidfile,
+                                           file=file,
+                                           dry=dry,
+                                           batch=batch)
 
         self.config = nparcel.B2CConfig(file=config)
         self.config.parse_config()
-
-    @property
-    def file_to_process(self):
-        return self._file_to_process
-
-    @property
-    def dry(self):
-        return self._dry
-
-    def set_dry(self, value=True):
-        self._dry = value
-
-    @property
-    def batch(self):
-        return self._batch
-
-    def set_batch(self, value):
-        self._batch = value
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.

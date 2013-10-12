@@ -8,6 +8,7 @@ from test_emailer import TestEmailer
 from test_rest import TestRest
 from test_restemailer import TestRestEmailer
 from test_restsmser import TestRestSmser
+from test_daemonservice import TestDaemonService
 from test_loaderdaemon import TestLoaderDaemon
 from test_exporterdaemon import TestExporterDaemon
 from test_primaryelectdaemon import TestPrimaryElectDaemon

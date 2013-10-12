@@ -25,6 +25,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestRest \
 	 nparcel.tests:TestRestEmailer \
 	 nparcel.tests:TestRestSmser \
+	 nparcel.tests:TestDaemonService \
 	 nparcel.tests:TestLoaderDaemon \
 	 nparcel.tests:TestPrimaryElectDaemon \
 	 nparcel.tests:TestCommsDaemon \
