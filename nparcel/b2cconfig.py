@@ -132,7 +132,7 @@ class B2CConfig(nparcel.Config):
     _comms_q_warning = 100
     _comms_q_error = 1000
     _exporter_fields = {}
-    _pe_in_file_format = """T1250_TOLI_\d{14}\.dat"""
+    _pe_in_file_format = """T1250_TOL[PIF]_\d{14}\.dat"""
 
     def __init__(self, file=None):
         """Nparcel Config initialisation.

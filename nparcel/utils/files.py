@@ -1,5 +1,6 @@
 __all__ = [
     "create_dir",
+    "get_directory_files",
 ]
 import os
 
@@ -31,3 +32,25 @@ def create_dir(dir):
             log.error('Unable to create directory "%s": %s"' % (dir, err))
 
     return status
+
+
+def get_directory_files(path):
+    """Generator that returns the files in the directory given by *path*.
+
+    Does not include the special entries '.' and '..' even if they are
+    present in the directory.
+
+    **Args:**
+        *path*: absolute path name to the directory
+
+    **Returns:**
+        each file in the directory as a generator
+
+    """
+    try:
+        for file in os.listdir(path):
+            file = os.path.join(path, file)
+            if os.path.isfile(file):
+                yield file
+    except OSError, err:
+        log.error(err)

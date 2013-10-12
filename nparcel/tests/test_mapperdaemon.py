@@ -1,4 +1,6 @@
 import unittest2
+import os
+import tempfile
 
 import nparcel
 
@@ -21,6 +23,31 @@ class TestMapperDaemon(unittest2.TestCase):
         """
         self._md.set_dry()
         self._md._start(self._md.exit_event)
+
+    def test_get_files(self):
+        """Get GIS files.
+        """
+        dir = tempfile.mkdtemp()
+
+        # Create some files.
+        ok_files = ['T1250_TOLP_20131011115618.dat',
+                    'T1250_TOLF_20131011115618.dat',
+                    'T1250_TOLI_20131011115618.dat']
+        dodge_files = ['dodgy']
+        for file in ok_files + dodge_files:
+            fh = open(os.path.join(dir, file), 'w')
+            fh.close()
+
+        received = self._md.get_files(dir=dir)
+        expected = [os.path.join(dir, x) for x in ok_files]
+        msg = 'GIS files to process not as expected'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Clean up.
+        for file in ok_files + dodge_files:
+            os.remove(os.path.join(dir, file))
+
+        os.removedirs(dir)
 
     @classmethod
     def tearDownClass(cls):

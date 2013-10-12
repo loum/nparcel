@@ -3,9 +3,12 @@ __all__ = [
 ]
 import signal
 import time
+import re
+import os
 
 import nparcel
 from nparcel.utils.log import log
+from nparcel.utils.files import get_directory_files
 
 
 class MapperDaemon(nparcel.DaemonService):
@@ -51,3 +54,37 @@ class MapperDaemon(nparcel.DaemonService):
                     event.set()
                 else:
                     time.sleep(self.config.loader_loop)
+
+    def get_files(self, dir=None):
+        """Identifies GIS-special WebMethod files that are to be processed.
+
+        **Args:**
+            *dir*: directory to search
+
+        **Returns:**
+            date sorted list of WebMethods files to process
+
+        """
+        files_to_process = []
+
+        dirs_to_check = []
+        if dir is not None:
+            dirs_to_check.append(dir)
+        else:
+            dirs_to_check = self.config.pe_in_dirs
+
+        log.debug('file format: %s' % self.config.pe_in_file_format)
+        r = re.compile(self.config.pe_in_file_format)
+        for dir_to_check in dirs_to_check:
+            log.info('Looking for files at: %s ...' % dir_to_check)
+            for file in get_directory_files(dir_to_check):
+                log.debug('Checking format of file: %s' % file)
+                m = r.match(os.path.basename(file))
+                if m:
+                    log.info('Found file: %s' % file)
+                    files_to_process.append(file)
+
+        files_to_process.sort()
+        log.debug('Files set to be processed: "%s"' % str(files_to_process))
+
+        return files_to_process

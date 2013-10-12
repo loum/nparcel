@@ -134,7 +134,7 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'Primary Elect fiel format not as expected'
         received = self._c.pe_in_file_format
-        expected = 'T1250_TOLI_\d{14}\.dat'
+        expected = 'T1250_TOL[PIF]_\d{14}\.dat'
         self.assertEqual(received, expected, msg)
 
         # Reminders.

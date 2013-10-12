@@ -10,6 +10,7 @@ import signal
 
 import nparcel
 from nparcel.utils.log import log
+from nparcel.utils.files import get_directory_files
 
 
 class LoaderDaemon(nparcel.utils.Daemon):
@@ -163,7 +164,7 @@ class LoaderDaemon(nparcel.utils.Daemon):
 
         for dir in self.config.in_dirs:
             log.info('Looking for files at: %s ...' % dir)
-            for file in self.files(dir):
+            for file in get_directory_files(dir):
                 if self.check_filename(file) and self.check_eof_flag(file):
                     log.info('Found file: "%s" ' % file)
 
@@ -179,15 +180,6 @@ class LoaderDaemon(nparcel.utils.Daemon):
         log.debug('Files set to be processed: "%s"' % str(files_to_process))
 
         return files_to_process
-
-    def files(self, path):
-        try:
-            for file in os.listdir(path):
-                file = os.path.join(path, file)
-                if os.path.isfile(file):
-                    yield file
-        except OSError, err:
-            log.error(err)
 
     def check_filename(self, file):
         """Parse filename string supplied by *file* and check that it
