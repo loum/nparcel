@@ -106,6 +106,21 @@ class B2CConfig(nparcel.Config):
 
         dictionary of business unit exporter ordered columns
 
+    .. attribute:: _pe_in_file_format
+
+        filename structure to parse for Primary Elect inbound
+        (default 'T1250_TOL[PIF]_\d{14}\.dat')
+
+    .. attribute:: pe_in_file_archive_string
+
+        regular expression grouping structure for Primary Elect inbound
+        filenames that represent the YYYYMMDD date sequence (default
+        T1250_TOL[PIF]_(\d{8})\d{6}\.dat)
+
+    .. attribute:: _pe_customer
+
+        upstream provider of the T1250 files (default "gis")
+
     """
     _dirs_to_check = []
     _pe_dirs_to_check = []
@@ -132,7 +147,9 @@ class B2CConfig(nparcel.Config):
     _comms_q_warning = 100
     _comms_q_error = 1000
     _exporter_fields = {}
-    _pe_in_file_format = """T1250_TOL[PIF]_\d{14}\.dat"""
+    _pe_in_file_format = 'T1250_TOL[PIF]_\d{14}\.dat'
+    _pe_in_file_archive_string = 'T1250_TOL[PIF]_(\d{8})\d{6}\.dat'
+    _pe_customer = 'gis'
 
     def __init__(self, file=None):
         """Nparcel Config initialisation.
@@ -159,6 +176,10 @@ class B2CConfig(nparcel.Config):
     @property
     def archive_dir(self):
         return self._archive
+
+    def set_archive_dir(self, value):
+        self._archive = value
+        log.debug('Set archive directory to "%s"' % self._archive)
 
     @property
     def staging_base(self):
@@ -219,6 +240,14 @@ class B2CConfig(nparcel.Config):
     @property
     def pe_in_file_format(self):
         return self._pe_in_file_format
+
+    @property
+    def pe_in_file_archive_string(self):
+        return self._pe_in_file_archive_string
+
+    @property
+    def pe_customer(self):
+        return self._pe_customer
 
     @property
     def notification_delay(self):
@@ -320,6 +349,22 @@ class B2CConfig(nparcel.Config):
                       str(self.pe_in_dirs))
         except ConfigParser.NoOptionError:
             log.warn('No Primary Elect inbound directories in config')
+
+        try:
+            self._pe_in_file_format = self.get('primary_elect',
+                                               'file_format')
+        except ConfigParser.NoOptionError, err:
+            log.debug('Using default Primary Elect file format: %s' %
+                      self._pe_in_file_format)
+
+        try:
+            archive_string = self.get('primary_elect',
+                                      'file_archive_string')
+
+            self._pe_in_file_archive_string = archive_string
+        except ConfigParser.NoOptionError, err:
+            log.debug('Using default Primary Elect archiving string: %s' %
+                      self._pe_in_file_archive_string)
 
         # Optional items (defaults provided).
         try:

@@ -127,14 +127,24 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'Exporter columns expected'
         received = self._c.exporter_fields
-        expected = {'tolp': '0,1,2,3,4,5',
+        expected = {'tolp': '0,1,2,3,4,5,6',
                     'tolf': '0,1,2,3,4,5,6',
                     'toli': '0,1,2,3,4,5,6,7'}
         self.assertDictEqual(received, expected, msg)
 
-        msg = 'Primary Elect fiel format not as expected'
+        msg = 'Primary Elect file format not as expected'
         received = self._c.pe_in_file_format
         expected = 'T1250_TOL[PIF]_\d{14}\.dat'
+        self.assertEqual(received, expected, msg)
+
+        msg = 'Primary Elect archive string not as expected'
+        received = self._c.pe_in_file_archive_string
+        expected = 'T1250_TOL[PIF]_(\d{8})\d{6}\.dat'
+        self.assertEqual(received, expected, msg)
+
+        msg = 'Primary Elect customer not as expected'
+        received = self._c.pe_customer
+        expected = 'gis'
         self.assertEqual(received, expected, msg)
 
         # Reminders.

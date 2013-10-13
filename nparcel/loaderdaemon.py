@@ -278,7 +278,6 @@ class LoaderDaemon(nparcel.utils.Daemon):
             log.error('Rename: %s to %s failed -- %s' % (file,
                                                          archive_path,
                                                          err))
-            pass
 
     def get_customer_archive(self, file):
         customer = self.get_customer(file)

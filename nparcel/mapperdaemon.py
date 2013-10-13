@@ -93,9 +93,45 @@ class MapperDaemon(nparcel.DaemonService):
                 m = r.match(os.path.basename(file))
                 if m:
                     log.info('Found file: %s' % file)
-                    files_to_process.append(file)
+
+                    # Check that it's not in the archive already.
+                    archive_path = self.get_customer_archive(file)
+                    if (archive_path is not None and
+                        os.path.exists(archive_path)):
+                        log.error('File %s is already archived -- skipped' %
+                                  file)
+                    else:
+                        files_to_process.append(file)
 
         files_to_process.sort()
         log.debug('Files set to be processed: "%s"' % str(files_to_process))
 
         return files_to_process
+
+    def get_customer_archive(self, file):
+        """Returns the archive target path based on GIS T1250 filename
+        *file*.  For example, if the source file is
+        ``<ftp_base>/nparcel/in/T1250_TOLI_20131011115618.dat`` then the
+        archive target would be similar to
+        ``<archive_base>/gis/20131011/T1250_TOLI_20131011115618.dat``
+
+        **Args:**
+            file: the inbound GIS WebMethods T1250 file.
+
+        **Returns:**
+            string representation of the absolute path to the *file*'s
+            archive target
+
+        """
+        customer = self.config.pe_customer
+        filename = os.path.basename(file)
+        archive_dir = None
+        m = re.search(self.config.pe_in_file_archive_string, filename)
+        if m is not None:
+            file_timestamp = m.group(1)
+            dir = os.path.join(self.config.archive_dir,
+                               customer,
+                               file_timestamp)
+            archive_dir = os.path.join(dir, filename)
+
+        return archive_dir
