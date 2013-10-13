@@ -8,7 +8,8 @@ import os
 
 import nparcel
 from nparcel.utils.log import log
-from nparcel.utils.files import get_directory_files
+from nparcel.utils.files import (get_directory_files,
+                                 check_eof_flag)
 
 
 class MapperDaemon(nparcel.DaemonService):
@@ -44,6 +45,8 @@ class MapperDaemon(nparcel.DaemonService):
         """
         signal.signal(signal.SIGTERM, self._exit_handler)
 
+        mapper = nparcel.Mapper()
+
         files = []
         if self.file is not None:
             files.append(self.file)
@@ -54,6 +57,16 @@ class MapperDaemon(nparcel.DaemonService):
         # Start processing files.
         for file in files:
             log.info('Processing file: "%s" ...' % file)
+            try:
+                f = open(file, 'r')
+                for line in f:
+                    translated_line = mapper.process(line)
+                    log.debug('xlated line: %s' % str(translated_line))
+                f.close()
+            except IOError, e:
+                log.error('File error "%s": %s' % (file, str(e)))
+                continue
+
 
         while not event.isSet():
             if not event.isSet():
@@ -68,6 +81,12 @@ class MapperDaemon(nparcel.DaemonService):
 
     def get_files(self, dir=None):
         """Identifies GIS-special WebMethod files that are to be processed.
+
+        Check performed are:
+
+        * T1250 has a trailing '%%EOF\r\n' token (completed transfer)
+        * Filename conforms to the WebMethods format
+        * File is not in the archive (already been processed) 
 
         **Args:**
             *dir*: directory to search
@@ -84,24 +103,29 @@ class MapperDaemon(nparcel.DaemonService):
         else:
             dirs_to_check = self.config.pe_in_dirs
 
-        log.debug('file format: %s' % self.config.pe_in_file_format)
         r = re.compile(self.config.pe_in_file_format)
         for dir_to_check in dirs_to_check:
             log.info('Looking for files at: %s ...' % dir_to_check)
             for file in get_directory_files(dir_to_check):
+                if not check_eof_flag(file):
+                    continue
+
                 log.debug('Checking format of file: %s' % file)
                 m = r.match(os.path.basename(file))
-                if m:
-                    log.info('Found file: %s' % file)
+                if not m:
+                    log.info('File %s did not match format %s' %
+                                (file, self.config.pe_in_file_format))
+                    continue
 
-                    # Check that it's not in the archive already.
-                    archive_path = self.get_customer_archive(file)
-                    if (archive_path is not None and
-                        os.path.exists(archive_path)):
-                        log.error('File %s is already archived -- skipped' %
-                                  file)
-                    else:
-                        files_to_process.append(file)
+                # Check that it's not in the archive already.
+                log.info('Found file: %s' % file)
+
+                archive_path = self.get_customer_archive(file)
+                if (archive_path is not None and
+                    os.path.exists(archive_path)):
+                    log.error('File %s is already archived' % file)
+                else:
+                    files_to_process.append(file)
 
         files_to_process.sort()
         log.debug('Files set to be processed: "%s"' % str(files_to_process))

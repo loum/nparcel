@@ -11,6 +11,8 @@ class TestMapperDaemon(unittest2.TestCase):
     def setUpClass(cls):
         cls._md = nparcel.MapperDaemon(pidfile=None,
                                        config='nparcel/conf/nparceld.conf')
+        dir = 'nparcel/tests/files'
+        cls._md.config.set_pe_in_dirs([dir])
 
     def test_init(self):
         """Intialise a MapperDaemon object.
@@ -39,15 +41,8 @@ class TestMapperDaemon(unittest2.TestCase):
     def test_start_provide_directory(self):
         """Drive the _start() method with a directory.
         """
-        old_dirs = self._md.config.pe_in_dirs
-        dir = 'nparcel/tests/files'
-        self._md.config.set_pe_in_dirs([dir])
-
         self._md.set_dry()
         self._md._start(self._md.exit_event)
-
-        # Clean up.
-        self._md.config.set_pe_in_dirs(old_dirs)
 
     def test_get_customer_archive(self):
         """Extract GIS T1250 timestamp.
@@ -82,6 +77,7 @@ class TestMapperDaemon(unittest2.TestCase):
         dodge_files = ['dodgy']
         for file in ok_files + dodge_files:
             fh = open(os.path.join(dir, file), 'w')
+            fh.write('%%EOF\r\n')
             fh.close()
 
         received = self._md.get_files(dir=dir)
@@ -96,7 +92,7 @@ class TestMapperDaemon(unittest2.TestCase):
         os.removedirs(dir)
 
     def test_get_files_with_archive(self):
-        """Get GIS files.
+        """Get GIS files with an archived file.
         """
         dir = tempfile.mkdtemp()
         old_archive_dir = self._md.config.archive_dir
@@ -113,11 +109,13 @@ class TestMapperDaemon(unittest2.TestCase):
 
         for file in ok_files + dodge_files:
             fh = open(os.path.join(dir, file), 'w')
+            fh.write('%%EOF\r\n')
             fh.close()
 
         archived_files = ['T1250_TOLI_20131011115619.dat']
         for file in archived_files:
             fh = open(os.path.join(archive_dir, file), 'w')
+            fh.write('%%EOF\r\n')
             fh.close()
 
         received = self._md.get_files(dir=dir)

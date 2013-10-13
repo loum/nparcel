@@ -10,7 +10,8 @@ import signal
 
 import nparcel
 from nparcel.utils.log import log
-from nparcel.utils.files import get_directory_files
+from nparcel.utils.files import (get_directory_files,
+                                 check_eof_flag)
 
 
 class LoaderDaemon(nparcel.utils.Daemon):
@@ -165,7 +166,7 @@ class LoaderDaemon(nparcel.utils.Daemon):
         for dir in self.config.in_dirs:
             log.info('Looking for files at: %s ...' % dir)
             for file in get_directory_files(dir):
-                if self.check_filename(file) and self.check_eof_flag(file):
+                if self.check_filename(file) and check_eof_flag(file):
                     log.info('Found file: "%s" ' % file)
 
                     # Check that it's not in the archive already.
@@ -208,25 +209,6 @@ class LoaderDaemon(nparcel.utils.Daemon):
             status = True
         else:
             log.error('Filename "%s" did not match filtering rules' % file)
-
-        return status
-
-    def check_eof_flag(self, file):
-        """
-        """
-        status = False
-
-        fh = open(file, 'r')
-        fh.seek(-7, 2)
-        eof_search = fh.readline()
-        fh.close()
-
-        eof_search = eof_search.rstrip('\r\n')
-        if eof_search == '%%EOF':
-            log.debug('File "%s" EOF found' % file)
-            status = True
-        else:
-            log.debug('File "%s" EOF NOT found' % file)
 
         return status
 

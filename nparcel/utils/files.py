@@ -1,6 +1,7 @@
 __all__ = [
     "create_dir",
     "get_directory_files",
+    "check_eof_flag",
 ]
 import os
 
@@ -54,3 +55,42 @@ def get_directory_files(path):
                 yield file
     except OSError, err:
         log.error(err)
+
+
+def check_eof_flag(file):
+    """Checks if *file* is a standard T1250 file by verifying if the last
+    line contains the string ``%%EOF``
+
+    **Args:**
+        *file*: the absolute path to the T1250 file to verify.
+
+    **Returns:**
+        boolean ``True`` if *file* has an ``%%EOF`` delimiter
+
+        boolean ``False`` otherwise
+
+    """
+    status = False
+
+    log.debug('Checking file "%s" for T1250 EOF' % file)
+    try:
+        fh = open(file, 'r')
+    except IOError, e:
+        log.error('File open error "%s": %s' % (file, str(e)))
+    else:
+        try:
+            fh.seek(-7, 2)
+            eof_search = fh.readline()
+        except IOError, e:
+            log.info('File "%s" seek error: %s' % (file, str(e)))
+            eof_search = str()
+
+        fh.close()
+        eof_search = eof_search.rstrip('\r\n')
+        if eof_search == '%%EOF':
+            log.debug('File "%s" EOF found' % file)
+            status = True
+        else:
+            log.debug('File "%s" EOF NOT found' % file)
+
+    return status
