@@ -135,6 +135,51 @@ class TestMapperDaemon(unittest2.TestCase):
 
         self._md.config.set_archive_dir(old_archive_dir)
 
+    def test_write_new_file_handle(self):
+        """Write out T1250 file to new file handle.
+        """
+        dir = tempfile.mkdtemp()
+
+        dry = False
+        data = ('TOLP', 'data string')
+        fhs = {}
+        received = self._md.write(data, fhs, dir=dir, dry=dry)
+        msg = 'T1250 write-out to new file handle should return True'
+        self.assertTrue(received, msg)
+
+        # Close file handles.
+        files = []
+        for fh in fhs.values():
+            files.append(fh.name)
+            fh.close()
+
+        received = len(files)
+        expected = 1
+        msg = 'T1250 write-out should only produce 1 file'
+        self.assertEqual(received, expected, msg)
+
+        fh = open(files[0])
+        received = fh.read().rstrip()
+        expected = 'data string'
+        msg = 'T1250 file content incorrect'
+        self.assertEqual(received, expected, msg)
+
+        # Clean up.
+        for k in fhs.keys():
+            os.remove(fhs[k].name)
+
+        os.removedirs(dir)
+
+    def test_write_no_data(self):
+        """Write out T1250 file no data.
+        """
+        dry = True
+        data = ()
+        fhs = {}
+        received = self._md.write(data, fhs, dry=dry)
+        msg = 'T1250 write-out with no data should return False'
+        self.assertFalse(received, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._md = None

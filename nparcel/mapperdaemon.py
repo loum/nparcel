@@ -5,6 +5,7 @@ import signal
 import time
 import re
 import os
+import datetime
 
 import nparcel
 from nparcel.utils.log import log
@@ -14,7 +15,18 @@ from nparcel.utils.files import (get_directory_files,
 
 class MapperDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.Loader` class.
+
+    .. attribute:: file_ts_format
+
+        Date/time string format to use to build into the T1250 outbound file
+
+    .. attribute:: processing_ts
+
+        Current timestamp
+
     """
+    _file_ts_format = '%Y%m%d%H%M%S'
+    _processing_ts = datetime.datetime.now()
 
     def __init__(self,
                  pidfile,
@@ -29,6 +41,23 @@ class MapperDaemon(nparcel.DaemonService):
 
         self.config = nparcel.B2CConfig(file=config)
         self.config.parse_config()
+
+    @property
+    def file_ts_format(self):
+        return self._file_ts_format
+
+    def set_file_ts_format(self, value):
+        self._file_ts_format = value
+
+    @property
+    def processing_ts(self):
+        return self._processing_ts
+
+    def set_processing_ts(self, value=None):
+        if value is None:
+            self._processing_ts = datetime.datetime.now()
+        else:
+            self._processing_ts = value
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
@@ -59,6 +88,7 @@ class MapperDaemon(nparcel.DaemonService):
         for file in files:
             log.info('Processing file: "%s" ...' % file)
             status = False
+            self.set_processing_ts()
 
             try:
                 f = open(file, 'r')
@@ -186,3 +216,50 @@ class MapperDaemon(nparcel.DaemonService):
             archive_dir = os.path.join(dir, filename)
 
         return archive_dir
+
+    def write(self, data, fhs, dir=None, dry=False):
+        """Writes out the Business Unit-specific record string contained
+        within *data* to a T1250 file.
+
+        **Args:**
+            *data*: a tuple structure in the form
+            ``(<business_unit>, <translated_T1250_data>)``
+
+            *fhs*: dictionary structure capturing open file handle objects
+
+            *dir*: base directory to write file to
+
+            *dry*: only report, do not execute
+
+        **Returns:**
+            boolean ``True`` if write was successful
+
+            boolean ``False`` if write failed
+
+        """
+        status = True
+
+        if dir is None:
+            dir = os.curdir
+
+        if not data:
+            log.error('Trying to write out invalid data: "%s"' % str(data))
+            status = False
+        else:
+            (bu, record) = data
+
+            fh = fhs.get(bu)
+            if fh is None:
+                file_ts = self.processing_ts.strftime(self.file_ts_format)
+                file = 'T1250_%s_%s.txt.tmp' % (bu.upper(), file_ts)
+                filepath = os.path.join(dir, file)
+                log.info('Creating file %s for Business Unit "%s"' %
+                         (bu, filepath))
+                if not dry:
+                    fhs[bu] = open(filepath, 'w')
+                    fh = fhs[bu]
+
+            if not dry:
+                fh.write(record)
+
+        return status
