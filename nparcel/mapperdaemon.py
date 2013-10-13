@@ -46,6 +46,7 @@ class MapperDaemon(nparcel.DaemonService):
         signal.signal(signal.SIGTERM, self._exit_handler)
 
         mapper = nparcel.Mapper()
+        reporter = nparcel.Reporter()
 
         files = []
         if self.file is not None:
@@ -57,16 +58,42 @@ class MapperDaemon(nparcel.DaemonService):
         # Start processing files.
         for file in files:
             log.info('Processing file: "%s" ...' % file)
+            status = False
+
             try:
                 f = open(file, 'r')
-                for line in f:
-                    translated_line = mapper.process(line)
-                    log.debug('xlated line: %s' % str(translated_line))
-                f.close()
             except IOError, e:
-                log.error('File error "%s": %s' % (file, str(e)))
+                log.error('File open error "%s": %s' % (file, str(e)))
                 continue
 
+            reporter.reset(identifier=file)
+            eof_found = False
+            for line in f:
+                record = line.rstrip('\r\n')
+                if record == '%%EOF':
+                    log.info('EOF found')
+                    status = True
+                    eof_found = True
+                    break
+                else:
+                    translated_line = mapper.process(line)
+                    reporter(translated_line)
+                    if translated_line:
+                        log.debug('xlated line: %s' % str(translated_line))
+
+            f.close()
+
+            if not status and not eof_found:
+                log.error("%s - %s" % ('File closed before EOF found',
+                                       'all line items ignored'))
+
+            if status:
+                log.info('%s processing OK.' % file)
+                reporter.end()
+                stats = reporter.report()
+                log.info(stats)
+            else:
+                log.error('%s processing failed.' % file)
 
         while not event.isSet():
             if not event.isSet():
@@ -86,7 +113,7 @@ class MapperDaemon(nparcel.DaemonService):
 
         * T1250 has a trailing '%%EOF\r\n' token (completed transfer)
         * Filename conforms to the WebMethods format
-        * File is not in the archive (already been processed) 
+        * File is not in the archive (already been processed)
 
         **Args:**
             *dir*: directory to search
