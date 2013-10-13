@@ -27,7 +27,7 @@ class DaemonService(nparcel.utils.Daemon):
     def file(self):
         return self._file
 
-    def set_file(self, value):
+    def set_file(self, value=None):
         self._file = value
 
     @property

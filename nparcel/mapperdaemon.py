@@ -44,6 +44,17 @@ class MapperDaemon(nparcel.DaemonService):
         """
         signal.signal(signal.SIGTERM, self._exit_handler)
 
+        files = []
+        if self.file is not None:
+            files.append(self.file)
+            event.set()
+        else:
+            files.extend(self.get_files())
+
+        # Start processing files.
+        for file in files:
+            log.info('Processing file: "%s" ...' % file)
+
         while not event.isSet():
             if not event.isSet():
                 if self.dry:

@@ -147,6 +147,15 @@ class B2CConfig(nparcel.Config):
     def pe_in_dirs(self):
         return self._pe_dirs_to_check
 
+    def set_pe_in_dirs(self, values):
+        del self._pe_dirs_to_check[:]
+
+        if values is not None:
+            log.debug('Set PE in directory "%s"' % str(values))
+            self._pe_dirs_to_check.extend(values)
+        else:
+            self._send_time_ranges = []
+
     @property
     def archive_dir(self):
         return self._archive

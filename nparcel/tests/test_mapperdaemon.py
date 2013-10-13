@@ -24,6 +24,31 @@ class TestMapperDaemon(unittest2.TestCase):
         self._md.set_dry()
         self._md._start(self._md.exit_event)
 
+    def test_start_provide_file(self):
+        """Drive the _start() method with a file.
+        """
+        f = 'nparcel/tests/files/T1250_TOLI_20131011115618.dat'
+        self._md.set_file(f)
+
+        self._md.set_dry()
+        self._md._start(self._md.exit_event)
+
+        # Clean up.
+        self._md.set_file()
+
+    def test_start_provide_directory(self):
+        """Drive the _start() method with a directory.
+        """
+        old_dirs = self._md.config.pe_in_dirs
+        dir = 'nparcel/tests/files'
+        self._md.config.set_pe_in_dirs([dir])
+
+        self._md.set_dry()
+        self._md._start(self._md.exit_event)
+
+        # Clean up.
+        self._md.config.set_pe_in_dirs(old_dirs)
+
     def test_get_files(self):
         """Get GIS files.
         """
