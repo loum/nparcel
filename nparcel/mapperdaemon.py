@@ -88,6 +88,8 @@ class MapperDaemon(nparcel.DaemonService):
         for file in files:
             log.info('Processing file: "%s" ...' % file)
             status = False
+            fhs = {}
+            dir = os.path.dirname(file)
             self.set_processing_ts()
 
             try:
@@ -109,8 +111,10 @@ class MapperDaemon(nparcel.DaemonService):
                     translated_line = mapper.process(line)
                     reporter(translated_line)
                     if translated_line:
-                        log.debug('xlated line: %s' % str(translated_line))
+                        self.write(translated_line, fhs, dir, dry=self.dry)
 
+            closed_files = self.close(fhs)
+            log.info('T1250 files produced: "%s"' % closed_files)
             f.close()
 
             if not status and not eof_found:
@@ -260,7 +264,7 @@ class MapperDaemon(nparcel.DaemonService):
                     fh = fhs[bu]
 
             if not dry:
-                fh.write(record)
+                fh.write('%s\n' % record)
 
         return status
 

@@ -84,6 +84,12 @@ class Mapper(object):
             parsed_dict.get('ADP Type') == 'PE'):
             log.info('Connote "%s" has a PE flag' % connote_nbr)
             bu = parsed_dict.get('System Identifier')
+
+            # Need to fudge the Identifier field constant, 'YMLML11'.
+            identifier_str = parsed_dict.get('Identifier')
+            if identifier_str is not None:
+                parsed_dict['Identifier'] = ('%s%s' % ('YMLML11',
+                                                       identifier_str[7:]))
             translated_line = (bu, self.translate(parsed_dict))
 
         return translated_line
