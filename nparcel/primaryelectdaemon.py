@@ -8,11 +8,9 @@ import nparcel
 from nparcel.utils.log import log
 
 
-class PrimaryElectDaemon(nparcel.utils.Daemon):
+class PrimaryElectDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.PrimaryElect` class.
-
     """
-    _batch = False
 
     def __init__(self,
                  pidfile,
@@ -20,23 +18,15 @@ class PrimaryElectDaemon(nparcel.utils.Daemon):
                  dry=False,
                  batch=False,
                  config='nparcel.conf'):
-        super(PrimaryElectDaemon, self).__init__(pidfile=pidfile)
-
-        self.file = file
-        self.dry = dry
-        self._batch = batch
+        super(PrimaryElectDaemon, self).__init__(pidfile=pidfile,
+                                                 file=file,
+                                                 dry=dry,
+                                                 batch=batch)
 
         self.config = nparcel.B2CConfig(file=config)
         self.config.parse_config()
 
         self.parser = nparcel.StopParser()
-
-    @property
-    def batch(self):
-        return self._batch
-
-    def set_batch(self, value):
-        self._batch = value
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.

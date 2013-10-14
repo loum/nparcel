@@ -9,12 +9,9 @@ import nparcel
 from nparcel.utils.log import log
 
 
-class CommsDaemon(nparcel.utils.Daemon):
+class CommsDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.Comms` class.
-
     """
-    _batch = False
-    _emailer = nparcel.Emailer()
 
     def __init__(self,
                  pidfile,
@@ -22,27 +19,15 @@ class CommsDaemon(nparcel.utils.Daemon):
                  dry=False,
                  batch=False,
                  config='nparcel.conf'):
-        super(CommsDaemon, self).__init__(pidfile=pidfile)
-
-        self.file = file
-        self.dry = dry
-        self._batch = batch
+        super(CommsDaemon, self).__init__(pidfile=pidfile,
+                                          file=file,
+                                          dry=dry,
+                                          batch=batch)
 
         self.config = nparcel.B2CConfig(file=config)
         self.config.parse_config()
 
-        self._emailer.set_recipients(self.config.support_emails)
-
-    @property
-    def batch(self):
-        return self._batch
-
-    def set_batch(self, value):
-        self._batch = value
-
-    @property
-    def emailer(self):
-        return self._emailer
+        self.emailer.set_recipients(self.config.support_emails)
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.

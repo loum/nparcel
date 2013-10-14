@@ -11,6 +11,7 @@ class DaemonService(nparcel.utils.Daemon):
     _file = None
     _dry = False
     _batch = False
+    _emailer = nparcel.Emailer()
 
     def __init__(self,
                  pidfile,
@@ -43,3 +44,7 @@ class DaemonService(nparcel.utils.Daemon):
 
     def set_batch(self, value=True):
         self._batch = value
+
+    @property
+    def emailer(self):
+        return self._emailer

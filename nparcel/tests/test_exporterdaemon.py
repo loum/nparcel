@@ -7,8 +7,9 @@ class TestExporterDaemon(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        config = 'nparcel/conf/nparceld.conf'
         cls._ed = nparcel.ExporterDaemon(pidfile=None,
-                                         config='nparcel/conf/nparceld.conf')
+                                         config=config)
 
     def test_init(self):
         """Intialise a ExporterDaemon object.
@@ -17,8 +18,8 @@ class TestExporterDaemon(unittest2.TestCase):
         self.assertIsInstance(self._ed, nparcel.ExporterDaemon, msg)
 
     def test_start(self):
-        self._ed.dry = True
-        self._ed._start(self._ed.exit_event, )
+        self._ed.set_dry()
+        self._ed._start(self._ed.exit_event)
 
     @classmethod
     def tearDownClass(cls):

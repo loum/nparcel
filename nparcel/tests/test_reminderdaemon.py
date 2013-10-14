@@ -19,7 +19,7 @@ class TestReminderDaemon(unittest2.TestCase):
     def test_start(self):
         """Reminder _start processing loop.
         """
-        self._rd.dry = True
+        self._rd.set_dry ()
         self._rd._start(self._rd.exit_event)
 
     @classmethod

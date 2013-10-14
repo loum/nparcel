@@ -20,8 +20,8 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
     def test_start(self):
         """Primary Elect _start processing loop.
         """
-        self._d.dry = True
-        self._d.file = self._test_file
+        self._d.set_dry()
+        self._d.set_file(self._test_file)
         self._d._start(self._d.exit_event)
 
     @classmethod
