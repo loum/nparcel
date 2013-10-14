@@ -263,3 +263,48 @@ class MapperDaemon(nparcel.DaemonService):
                 fh.write(record)
 
         return status
+
+    def close(self, fhs):
+        """Closes out open T1250-specific file handles.
+
+        Prepends the special end of file delimiter string '%%EOF'
+
+        Renames the temporary writable file to T1250 format that can
+        be consumed by the loader.
+
+        **Args:**
+            *fhs*: dictionary structure capturing open file handle objects
+
+        **Returns:**
+            list of files successfully closed
+
+        """
+        files_closed = []
+
+        temp_format = 'T1250_TOL[PIF]_\d{14}\.txt\.tmp'
+        r = re.compile(temp_format)
+        for fh in fhs.values():
+            filename = fh.name
+            file = os.path.basename(filename)
+            log.debug('Checking format of temp file: %s' % file)
+            m = r.match(os.path.basename(file))
+            if not m:
+                log.info('File %s did not match format %s' %
+                         (file, temp_format))
+                continue
+
+            fh.write('%%EOF\r\n')
+            fh.close()
+
+            # ... and finally convert to T1250-proper.
+            source = filename
+            target = re.sub('\.tmp$', '', source)
+            log.info('Renaming "%s" to "%s"' % (source, target))
+            try:
+                os.rename(source, target)
+                files_closed.append(target)
+            except OSError, err:
+                log.error('Could not rename "%s" to "%s": %s' %
+                          (source, target, err))
+
+        return files_closed

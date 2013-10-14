@@ -1,8 +1,10 @@
 import unittest2
 import os
+import re
 import tempfile
 
 import nparcel
+from nparcel.utils.files import check_eof_flag
 
 
 class TestMapperDaemon(unittest2.TestCase):
@@ -179,6 +181,39 @@ class TestMapperDaemon(unittest2.TestCase):
         received = self._md.write(data, fhs, dry=dry)
         msg = 'T1250 write-out with no data should return False'
         self.assertFalse(received, msg)
+
+    def test_close(self):
+        """Close out T1250 file.
+        """
+        dir = tempfile.mkdtemp()
+        file = 'T1250_TOLP_20131014110400.txt.tmp'
+        filepath = os.path.join(dir, file)
+
+        fhs = {}
+        fhs['TOLP'] = open(filepath, 'w')
+        received = self._md.close(fhs)
+        expected = [re.sub('\.tmp$', '', filepath)]
+        msg = 'List of closed T1250 incorrect'
+        self.assertListEqual(received, expected, msg)
+
+        # Check that they are valid T1250 files.
+        msg = 'Closed file is not a valid T1250'
+        for file in expected:
+            self.assertTrue(check_eof_flag(file), msg)
+
+        # Clean up.
+        for file in expected:
+            os.remove(file)
+        os.removedirs(dir)
+
+    def test_close_no_open_file_handles(self):
+        """Attempt to close out file when no file handles are presented.
+        """
+        fhs = {}
+        received = self._md.close(fhs)
+        expected = []
+        msg = 'Closed file list against empty file handle list incorrect'
+        self.assertListEqual(received, expected, msg)
 
     @classmethod
     def tearDownClass(cls):
