@@ -77,41 +77,53 @@ class MapperDaemon(nparcel.DaemonService):
         mapper = nparcel.Mapper()
         reporter = nparcel.Reporter()
 
-        files = []
-        if self.file is not None:
-            files.append(self.file)
-            event.set()
-        else:
-            files.extend(self.get_files())
-
-        # Start processing files.
-        for file in files:
-            log.info('Processing file: "%s" ...' % file)
-            status = False
+        while not event.isSet():
             fhs = {}
-            dir = os.path.dirname(file)
-            self.set_processing_ts()
+            files = []
+            if self.file is not None:
+                files.append(self.file)
+                event.set()
+            else:
+                files.extend(self.get_files())
 
-            try:
-                f = open(file, 'r')
-            except IOError, e:
-                log.error('File open error "%s": %s' % (file, str(e)))
-                continue
+            # Start processing files.
+            for file in files:
+                log.info('Processing file: "%s" ...' % file)
+                status = False
+                dir = os.path.dirname(file)
+                self.set_processing_ts()
 
-            reporter.reset(identifier=file)
-            eof_found = False
-            for line in f:
-                record = line.rstrip('\r\n')
-                if record == '%%EOF':
-                    log.info('EOF found')
-                    status = True
-                    eof_found = True
-                    break
+                try:
+                    f = open(file, 'r')
+                except IOError, e:
+                    log.error('File open error "%s": %s' % (file, str(e)))
+                    continue
+
+                reporter.reset(identifier=file)
+                eof_found = False
+                for line in f:
+                    record = line.rstrip('\r\n')
+                    if record == '%%EOF':
+                        log.info('EOF found')
+                        status = True
+                        eof_found = True
+                        break
+                    else:
+                        translated_line = mapper.process(line)
+                        reporter(translated_line)
+                        if translated_line:
+                            self.write(translated_line,
+                                       fhs,
+                                       dir,
+                                       dry=self.dry)
+
+                if status:
+                    log.info('%s processing OK.' % file)
+                    reporter.end()
+                    stats = reporter.report()
+                    log.info(stats)
                 else:
-                    translated_line = mapper.process(line)
-                    reporter(translated_line)
-                    if translated_line:
-                        self.write(translated_line, fhs, dir, dry=self.dry)
+                    log.error('%s processing failed.' % file)
 
             closed_files = self.close(fhs)
             log.info('T1250 files produced: "%s"' % closed_files)
@@ -119,26 +131,18 @@ class MapperDaemon(nparcel.DaemonService):
 
             if not status and not eof_found:
                 log.error("%s - %s" % ('File closed before EOF found',
-                                       'all line items ignored'))
+                                        'all line items ignored'))
 
-            if status:
-                log.info('%s processing OK.' % file)
-                reporter.end()
-                stats = reporter.report()
-                log.info(stats)
-            else:
-                log.error('%s processing failed.' % file)
-
-        while not event.isSet():
             if not event.isSet():
-                if self.dry:
-                    log.info('Dry run iteration complete -- aborting')
-                    event.set()
-                elif self.batch:
-                    log.info('Batch run iteration complete -- aborting')
-                    event.set()
-                else:
-                    time.sleep(self.config.loader_loop)
+                if not event.isSet():
+                    if self.dry:
+                        log.info('Dry run iteration complete -- aborting')
+                        event.set()
+                    elif self.batch:
+                        log.info('Batch run iteration complete -- aborting')
+                        event.set()
+                    else:
+                        time.sleep(self.config.loader_loop)
 
     def get_files(self, dir=None):
         """Identifies GIS-special WebMethod files that are to be processed.

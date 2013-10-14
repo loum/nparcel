@@ -4,6 +4,8 @@ __all__ = [
 import nparcel
 from nparcel.utils.log import log
 
+# Primary Elect does not support the concept of a Barcode.  To satisfy
+# the system, we copy over the first 15 characters of the Conn Note.
 FIELDS = {'Conn Note': {'offset': 0,
                         'length': 20},
           'Identifier': {'offset': 22,
@@ -22,7 +24,7 @@ FIELDS = {'Conn Note': {'offset': 0,
                      'length': 30},
           'Post code': {'offset': 171,
                         'length': 6},
-          'Bar code': {'offset': 438,
+          'Bar code': {'offset': 0,
                        'length': 15},
           'Pieces': {'offset': 588,
                      'length': 5},

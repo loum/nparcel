@@ -27,7 +27,7 @@ class TestMapper(unittest2.TestCase):
         received = self._m.parser.parse_line(line)
         expected = {'ADP Type': 'PE',
                     'Agent Id or Location Id': 'N031',
-                    'Bar code': '4156536111',
+                    'Bar code': '218501217863',
                     'Conn Note': '218501217863',
                     'Consumer Address 1': '31 Bridge st,',
                     'Consumer Address 2': 'Lane Cove,',
