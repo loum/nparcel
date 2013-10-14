@@ -78,19 +78,24 @@ def check_eof_flag(file):
     except IOError, e:
         log.error('File open error "%s": %s' % (file, str(e)))
     else:
-        try:
-            fh.seek(-7, 2)
-            eof_search = fh.readline()
-        except IOError, e:
-            log.info('File "%s" seek error: %s' % (file, str(e)))
-            eof_search = str()
+        for line_length in [-7, -5]:
+            try:
+                fh.seek(line_length, 2)
+                eof_search = fh.readline()
+            except IOError, e:
+                log.info('File "%s" seek error: %s' % (file, str(e)))
+                eof_search = str()
+
+            eof_search = eof_search.rstrip('\r\n')
+            if eof_search == '%%EOF':
+                log.debug('File "%s" last line length %d EOF found' %
+                          (file, abs(line_length)))
+                status = True
+                break
+            else:
+                log.debug('File "%s" last line length %d EOF NOT found' %
+                          (file, abs(line_length)))
 
         fh.close()
-        eof_search = eof_search.rstrip('\r\n')
-        if eof_search == '%%EOF':
-            log.debug('File "%s" EOF found' % file)
-            status = True
-        else:
-            log.debug('File "%s" EOF NOT found' % file)
 
     return status

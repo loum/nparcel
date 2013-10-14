@@ -353,7 +353,7 @@ class B2CConfig(nparcel.Config):
         try:
             self._pe_in_file_format = self.get('primary_elect',
                                                'file_format')
-        except ConfigParser.NoOptionError, err:
+        except (ConfigParser.NoOptionError, ConfigParser.NoSectionError), err:
             log.debug('Using default Primary Elect file format: %s' %
                       self._pe_in_file_format)
 
@@ -362,9 +362,15 @@ class B2CConfig(nparcel.Config):
                                       'file_archive_string')
 
             self._pe_in_file_archive_string = archive_string
-        except ConfigParser.NoOptionError, err:
+        except (ConfigParser.NoOptionError, ConfigParser.NoSectionError), err:
             log.debug('Using default Primary Elect archiving string: %s' %
                       self._pe_in_file_archive_string)
+
+        try:
+            self._pe_customer = self.get('primary_elect', 'customer')
+        except (ConfigParser.NoOptionError, ConfigParser.NoSectionError), err:
+            log.debug('Using default Primary Elect customer: %s' %
+                      self._pe_customer)
 
         # Optional items (defaults provided).
         try:
