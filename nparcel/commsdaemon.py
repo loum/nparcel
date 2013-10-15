@@ -93,7 +93,6 @@ class CommsDaemon(nparcel.utils.Daemon):
             # Start processing files.
             if self._message_queue_ok(len(files), dry=self.dry):
                 for file in files:
-                    log.info('Processing file: "%s" ...' % file)
                     comms.process(file, self.dry)
             else:
                 log.info('Comms message queue threshold breached -- aborting')

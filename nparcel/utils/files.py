@@ -99,3 +99,44 @@ def check_eof_flag(file):
         fh.close()
 
     return status
+
+
+def move_file(source, target, err=False):
+    """Attempts to move *source* to *target*.
+
+    Checks if the *target* directory exists.  If not, will attempt to
+    create before attempting the file move.
+
+    **Args:**
+        *source*: name of file to move
+
+        *target*: filename of where to move *source* to
+
+        *err*: boolean flag which will attempt to move *source* aside if
+        the move fails.  Target fail name is *source*.err
+
+    **Returns:**
+        boolean ``True`` if move was successful
+
+        boolean ``False`` if move failed
+
+    """
+    log.info('Moving "%s" to "%s"' % (file, target))
+    status = False
+
+    if create_dir(os.path.dirname(target)):
+        try:
+            os.rename(source, target)
+            target_file = os.path.join(source, target)
+        except OSError, err:
+            status = False
+            log.error('%s move to %s failed -- %s' % (source, target, err))
+
+    if not status:
+        try:
+            target = '%s.err' % source
+            os.rename(source, target)
+        except OSError, err:
+            log.error('%s move to %s failed -- %s' % (source, target, err))
+
+    return status

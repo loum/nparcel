@@ -11,7 +11,8 @@ import signal
 import nparcel
 from nparcel.utils.log import log
 from nparcel.utils.files import (get_directory_files,
-                                 check_eof_flag)
+                                 check_eof_flag,
+                                 create_dir)
 
 
 class LoaderDaemon(nparcel.utils.Daemon):
@@ -248,18 +249,17 @@ class LoaderDaemon(nparcel.utils.Daemon):
         archive_base = os.path.dirname(archive_path)
 
         log.info('Archiving "%s" to "%s"' % (file, archive_path))
+        if create_dir(archive_base):
+            try:
+                os.rename(file, archive_path)
+            except OSError, err:
+                log.error('Rename: %s to %s failed -- %s' % (file,
+                                                             archive_path,
+                                                             err))
+        else:
+            archive_base = None
 
-        if not os.path.exists(archive_base):
-            log.info('Creating archive directory: %s' % archive_base)
-            os.makedirs(archive_base)
-
-        log.info('Rename: %s to %s' % (file, archive_path))
-        try:
-            os.rename(file, archive_path)
-        except OSError, err:
-            log.error('Rename: %s to %s failed -- %s' % (file,
-                                                         archive_path,
-                                                         err))
+        return archive_base
 
     def get_customer_archive(self, file):
         customer = self.get_customer(file)

@@ -10,7 +10,9 @@ import datetime
 import nparcel
 from nparcel.utils.log import log
 from nparcel.utils.files import (get_directory_files,
-                                 check_eof_flag)
+                                 check_eof_flag,
+                                 create_dir,
+                                 move_file)
 
 
 class MapperDaemon(nparcel.DaemonService):
@@ -87,6 +89,7 @@ class MapperDaemon(nparcel.DaemonService):
                 files.extend(self.get_files())
 
             # Start processing files.
+            batch_ok = True
             for file in files:
                 log.info('Processing file: "%s" ...' % file)
                 status = False
@@ -117,21 +120,34 @@ class MapperDaemon(nparcel.DaemonService):
                                        dir,
                                        dry=self.dry)
 
+                f.close()
+
                 if status:
                     log.info('%s processing OK.' % file)
                     reporter.end()
                     stats = reporter.report()
                     log.info(stats)
                 else:
+                    batch_ok = False
                     log.error('%s processing failed.' % file)
+                    if not eof_found:
+                        log.error("%s - %s" % ('File closed before EOF',
+                                               'all line items ignored'))
 
-            closed_files = self.close(fhs)
-            log.info('T1250 files produced: "%s"' % closed_files)
-            f.close()
+            if batch_ok:
+                closed_files = self.close(fhs)
+                log.info('Inbound T1250 files produced: "%s"' %
+                         closed_files)
 
-            if not status and not eof_found:
-                log.error("%s - %s" % ('File closed before EOF found',
-                                        'all line items ignored'))
+                # Archive files.
+                for file in files:
+                    archive_path = self.get_customer_archive(file)
+                    move_file(file, archive_path, err=True)
+
+            else:
+                # Just close the files as they are.
+                for fh in fhs.values():
+                    fh.close()
 
             if not event.isSet():
                 if not event.isSet():
@@ -215,15 +231,17 @@ class MapperDaemon(nparcel.DaemonService):
         customer = self.config.pe_customer
         filename = os.path.basename(file)
         archive_dir = None
+        archive_path = None
+
         m = re.search(self.config.pe_in_file_archive_string, filename)
         if m is not None:
             file_timestamp = m.group(1)
             dir = os.path.join(self.config.archive_dir,
                                customer,
                                file_timestamp)
-            archive_dir = os.path.join(dir, filename)
+            archive_path = os.path.join(dir, filename)
 
-        return archive_dir
+        return archive_path
 
     def write(self, data, fhs, dir=None, dry=False):
         """Writes out the Business Unit-specific record string contained
