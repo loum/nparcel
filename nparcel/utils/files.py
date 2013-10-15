@@ -121,7 +121,7 @@ def move_file(source, target, err=False):
         boolean ``False`` if move failed
 
     """
-    log.info('Moving "%s" to "%s"' % (file, target))
+    log.info('Moving "%s" to "%s"' % (source, target))
     status = False
 
     if create_dir(os.path.dirname(target)):

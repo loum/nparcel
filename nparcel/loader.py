@@ -229,16 +229,26 @@ class Loader(nparcel.Service):
                 log.info('Creating Nparcel barcode "%s"' % barcode)
                 job_item_id = self.create(job_data, job_item_data)
 
-            send_email = cond_map.get('send_email')
-            send_sms = cond_map.get('send_sms')
-            if job_item_id is not None:
-                if send_email:
-                    self.flag_comms('email', job_item_id, 'body', dry=dry)
-                if send_sms:
-                    self.flag_comms('sms', job_item_id, 'body', dry=dry)
+            sc = job_data.get('service_code')
+            if sc == 3:
+                log.info('Not setting comms for Primary Elect')
             else:
-                log.info('Not setting comms flag for job_item_id %s' %
-                         str(job_item_id))
+                send_email = cond_map.get('send_email')
+                send_sms = cond_map.get('send_sms')
+                if job_item_id is not None:
+                    if send_email:
+                        self.flag_comms('email',
+                                        job_item_id,
+                                        'body',
+                                        dry=dry)
+                    if send_sms:
+                        self.flag_comms('sms',
+                                        job_item_id,
+                                        'body',
+                                        dry=dry)
+                else:
+                    log.info('Not setting comms for job_item_id %s' %
+                             str(job_item_id))
 
         log.info('Conn Note: "%s" parse complete' % connote_literal)
 

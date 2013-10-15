@@ -82,6 +82,30 @@ FROM job_item"""
             os.remove(comms_file)
         self._ldr.db.rollback()
 
+    def test_processor_valid_record_with_comms_pe_record(self):
+        """Process valid raw T1250 line -- with comms for primary elect.
+        """
+        # Seed the Agent Id.
+        agent_fields = {'code': 'N031'}
+        self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
+
+        msg = 'Valid T1250 record should process OK'
+        line = self._c.get('test_lines', 'VALID_LINE_PE')
+        self.assertTrue(self._ldr.process(self._job_ts,
+                                          line,
+                                          FILE_BU.get('tolp'),
+                                          COND_MAP_COMMS), msg)
+
+        # With comms enabled and PE, we should NOT have comms flag files.
+        received = [os.path.join(self._comms_dir,
+                                 x) for x in os.listdir(self._comms_dir)]
+        expected = []
+        msg = 'Comms directory for PE record file list error'
+        self.assertListEqual(received, expected, msg)
+
+        # Restore DB state and clean.
+        self._ldr.db.rollback()
+
     def test_processor_valid_record_no_comms(self):
         """Process valid raw T1250 line -- no comms.
         """

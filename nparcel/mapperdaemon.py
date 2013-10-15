@@ -137,12 +137,13 @@ class MapperDaemon(nparcel.DaemonService):
             if batch_ok:
                 closed_files = self.close(fhs)
                 log.info('Inbound T1250 files produced: "%s"' %
-                         closed_files)
+                         str(closed_files))
 
                 # Archive files.
                 for file in files:
                     archive_path = self.get_customer_archive(file)
-                    move_file(file, archive_path, err=True)
+                    if not self.dry:
+                        move_file(file, archive_path, err=True)
 
             else:
                 # Just close the files as they are.
@@ -165,7 +166,8 @@ class MapperDaemon(nparcel.DaemonService):
 
         Check performed are:
 
-        * T1250 has a trailing '%%EOF\r\n' token (completed transfer)
+        * T1250 has a trailing ``%%EOF\\r\\n`` token (completed transfer)
+
         * Filename conforms to the WebMethods format
         * File is not in the archive (already been processed)
 
