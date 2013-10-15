@@ -9,31 +9,21 @@ import nparcel
 from nparcel.utils.log import log
 
 
-class ExporterDaemon(nparcel.utils.Daemon):
+class ExporterDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.Comms` class.
-
     """
-    _batch = False
 
     def __init__(self,
                  pidfile,
                  dry=False,
                  batch=False,
                  config='nparcel.conf'):
-        super(ExporterDaemon, self).__init__(pidfile=pidfile)
-
-        self.dry = dry
-        self._batch = batch
+        super(ExporterDaemon, self).__init__(pidfile=pidfile,
+                                             dry=dry,
+                                             batch=batch)
 
         self.config = nparcel.B2CConfig(file=config)
         self.config.parse_config()
-
-    @property
-    def batch(self):
-        return self._batch
-
-    def set_batch(self, value):
-        self._batch = value
 
     def _start(self, event):
         signal.signal(signal.SIGTERM, self._exit_handler)

@@ -15,11 +15,10 @@ from nparcel.utils.files import (get_directory_files,
                                  create_dir)
 
 
-class LoaderDaemon(nparcel.utils.Daemon):
+class LoaderDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.Loader` class.
 
     """
-    _batch = False
 
     def __init__(self,
                  pidfile,
@@ -27,21 +26,13 @@ class LoaderDaemon(nparcel.utils.Daemon):
                  dry=False,
                  batch=False,
                  config='nparcel.conf'):
-        super(LoaderDaemon, self).__init__(pidfile=pidfile)
-
-        self.file = file
-        self.dry = dry
-        self._batch = batch
+        super(LoaderDaemon, self).__init__(pidfile=pidfile,
+                                           file=file,
+                                           dry=dry,
+                                           batch=batch)
 
         self.config = nparcel.B2CConfig(file=config)
         self.config.parse_config()
-
-    @property
-    def batch(self):
-        return self._batch
-
-    def set_batch(self, value):
-        self._batch = value
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.

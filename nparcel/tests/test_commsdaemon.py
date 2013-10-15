@@ -22,7 +22,7 @@ class TestCommsDaemon(unittest2.TestCase):
     def test_start(self):
         """Start file processing loop.
         """
-        self._cd.dry = True
+        self._cd.set_dry()
         self._cd._start(self._cd.exit_event)
 
     def test_skip_day_is_a_skip_day(self):
