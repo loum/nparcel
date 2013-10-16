@@ -1,5 +1,4 @@
 import unittest2
-import string
 
 import nparcel
 

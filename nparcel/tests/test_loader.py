@@ -48,15 +48,15 @@ class TestLoader(unittest2.TestCase):
         msg = 'Loader Bar code parse should return "%s"' % expected
         self.assertEqual(received, expected, msg)
 
-    def test_processor_valid_record_with_comms(self):
-        """Process valid raw T1250 line -- with comms.
+    def test_processor_valid_record_with_comms_with_recipients(self):
+        """Process valid raw T1250 line -- with comms and recipients.
         """
         # Seed the Agent Id.
         agent_fields = {'code': 'N031'}
         self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
         msg = 'Valid T1250 record should process OK'
-        line = self._c.get('test_lines', 'VALID_LINE')
+        line = self._c.get('test_lines', 'VALID_LINE_WITH_RECIPIENTS')
         self.assertTrue(self._ldr.process(self._job_ts,
                                           line,
                                           FILE_BU.get('tolp'),
@@ -101,6 +101,31 @@ FROM job_item"""
                                  x) for x in os.listdir(self._comms_dir)]
         expected = []
         msg = 'Comms directory for PE record file list error'
+        self.assertListEqual(received, expected, msg)
+
+        # Restore DB state and clean.
+        self._ldr.db.rollback()
+
+    def test_processor_valid_record_with_comms_no_recipients(self):
+        """Process valid raw T1250 line -- with comms no recipients.
+        """
+        # Seed the Agent Id.
+        agent_fields = {'code': 'N031'}
+        self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
+
+        msg = 'Valid T1250 record should process OK'
+        line = self._c.get('test_lines', 'VALID_LINE')
+        self.assertTrue(self._ldr.process(self._job_ts,
+                                          line,
+                                          FILE_BU.get('tolp'),
+                                          COND_MAP_COMMS), msg)
+
+        # With comms enabled and no recipients, we should NOT have comms
+        # flag files.
+        received = [os.path.join(self._comms_dir,
+                                 x) for x in os.listdir(self._comms_dir)]
+        expected = []
+        msg = 'Comms directory -- no recipients record file list error'
         self.assertListEqual(received, expected, msg)
 
         # Restore DB state and clean.

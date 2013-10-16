@@ -237,15 +237,19 @@ class Loader(nparcel.Service):
                 send_sms = cond_map.get('send_sms')
                 if job_item_id is not None:
                     if send_email:
-                        self.flag_comms('email',
-                                        job_item_id,
-                                        'body',
-                                        dry=dry)
+                        email_addr = job_item_data.get('email_addr')
+                        if email_addr is not None and email_addr:
+                            self.flag_comms('email',
+                                            job_item_id,
+                                            'body',
+                                            dry=dry)
                     if send_sms:
-                        self.flag_comms('sms',
-                                        job_item_id,
-                                        'body',
-                                        dry=dry)
+                        phone_nbr = job_item_data.get('phone_nbr')
+                        if phone_nbr is not None and phone_nbr:
+                            self.flag_comms('sms',
+                                            job_item_id,
+                                            'body',
+                                            dry=dry)
                 else:
                     log.info('Not setting comms for job_item_id %s' %
                              str(job_item_id))
