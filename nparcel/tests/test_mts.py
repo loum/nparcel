@@ -18,7 +18,7 @@ class TestMts(unittest2.TestCase):
     def test_db_kwargs(self):
         """Verify the DB kwargs.
         """
-        received = self._mts._db_kwargs()
+        received = self._mts.db_kwargs()
         expected = {'host': 'host',
                     'user': 'user',
                     'password': 'password',

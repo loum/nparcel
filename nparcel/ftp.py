@@ -21,8 +21,13 @@ class Ftp(ftplib.FTP):
         where to archive signature files (if not being transfered).
         Default of ``None`` will not archive files.
 
+    .. attribute:: config
+
+        :mod:`nparcel.Config` object
+
     """
     _archive_dir = None
+    _config = nparcel.Config()
 
     def __init__(self, config_file='npftp.conf'):
         """Nparcel Ftp initialisation.
@@ -30,7 +35,6 @@ class Ftp(ftplib.FTP):
         """
         ftplib.FTP.__init__(self)
 
-        self._config = nparcel.Config()
         self._config.set_config_file(config_file)
 
         self._xfers = []

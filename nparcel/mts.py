@@ -2,25 +2,34 @@ __all__ = [
      "Mts",
 ]
 import ConfigParser
+import cx_Oracle
 
 import nparcel
 from nparcel.utils.log import log
 
 
-class Mts(nparcel.Service):
+class Mts(object):
     """Nparcel Mts class.
+
+    .. attribute:: config
+
+        :mod:`nparcel.Config` object
+
+    .. attribute:: db
+
+        database object
+
     """
+    _config = nparcel.Config()
+    _db = {}
+    _conn = None
+    _cursor = None
 
     def __init__(self,
                  config='npmts.conf'):
         """Nparcel Mts initialisation.
         """
-        self._config = nparcel.Config()
         self._config.set_config_file(config)
-
-        db = None
-
-        super(nparcel.Mts, self).__init__(db=db)
 
     @property
     def config(self):
@@ -28,7 +37,7 @@ class Mts(nparcel.Service):
 
     @property
     def conn_string(self):
-        db_kwargs = self._db_kwargs()
+        db_kwargs = self.db_kwargs()
 
         host = db_kwargs.get('host')
         user = db_kwargs.get('user')
@@ -38,7 +47,7 @@ class Mts(nparcel.Service):
 
         return '%s/%s@%s:%d/%s' % (user, password, host, port, sid)
 
-    def _db_kwargs(self):
+    def db_kwargs(self):
         """Extract database connectivity information from the configuration.
 
         Database connectivity information is taken from the ``[db]``
@@ -82,3 +91,29 @@ class Mts(nparcel.Service):
             log.info('Missing DB key via config: %s' % err)
 
         return db_kwargs
+
+    def set_db_kwargs(self, **kwargs):
+        self._db_kwargs = kwargs
+
+    def connect(self):
+        """Make a connection to the database.
+
+        """
+        self._conn = cx_Oracle.connect(self.conn_string)
+        self._cursor = self._conn.cursor()
+
+    def disconnect(self):
+        """Disconnect from the database.
+
+        """
+        self._conn.close()
+
+        self._cursor = None
+        self._conn = None
+
+    @property
+    def db_version(self):
+        self._cursor.execute('SELECT version FROM V$INSTANCE')
+
+        for row in self._cursor:
+            print('Oracle DB Version: %s' % row)
