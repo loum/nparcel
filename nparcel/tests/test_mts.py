@@ -35,15 +35,6 @@ class TestMts(unittest2.TestCase):
         msg = 'DB connection string error'
         self.assertEqual(received, expected, msg)
 
-    def test_mts_sql_query_template(self):
-        """MTS query template.
-        """
-        received = self._mts.get_sql(template='mts_sql.t',
-                                     base_dir='nparcel')
-        expected = 'SELECT ds.'
-        msg = 'MTS query error'
-        self.assertEqual(received[:10], expected, msg)
-
     @classmethod
     def tearUpClass(cls):
         cls._mts = None

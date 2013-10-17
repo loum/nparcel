@@ -2,8 +2,10 @@ __all__ = [
     "create_dir",
     "get_directory_files",
     "check_eof_flag",
+    "load_template",
 ]
 import os
+import string
 
 from nparcel.utils.log import log
 
@@ -140,3 +142,38 @@ def move_file(source, target, err=False):
             log.error('%s move to %s failed -- %s' % (source, target, err))
 
     return status
+
+
+def load_template(template, base_dir=None, **kwargs):
+    """Load file *template* and substitute with *kwargs*.
+
+    **Args:**
+        *template*: file to load
+
+    **Kwargs:**
+        *base_dir*: directory where *template*
+
+        *kwargs*: varargs expected by the template
+
+    """
+    dir = os.path.curdir
+    if base_dir is not None:
+        dir = base_dir
+
+    query = None
+    query_file = os.path.join(dir, template)
+    log.debug('Extracting SQL from template: "%s"' % query_file)
+    f = None
+    try:
+        f = open(query_file)
+    except IOError, err:
+        log.error('Unable to open SQL template "%s": %s' %
+                    (query_file, err))
+
+    if f is not None:
+        query_t = f.read()
+        f.close()
+        query_s = string.Template(query_t)
+        query = query_s.substitute(**kwargs)
+
+        return query

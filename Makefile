@@ -47,7 +47,8 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.table.tests:TestJob \
 	 nparcel.table.tests:TestJobItem \
 	 nparcel.table.tests:TestTable \
-	 nparcel.table.tests:TestIdentityType
+	 nparcel.table.tests:TestIdentityType \
+	 nparcel.utils.tests:TestFiles
 
 sdist:
 	$(PY) setup.py sdist
