@@ -8,6 +8,7 @@ import datetime
 
 import nparcel
 from nparcel.utils.log import log
+from nparcel.utils.files import load_template
 
 
 class Mts(object):
@@ -23,7 +24,13 @@ class Mts(object):
 
     .. attribute:: report_range
 
-        number of days that the report should cover (default 7 days)
+        number (float) of days that the report should cover (default 7
+        days).  Supports precision values such as 2.5 (which evaluates
+        to two and one half days)
+
+    .. attribute:: display_headers
+
+        boolean control whether the column names are added to the CSV
 
     """
     _config = nparcel.Config()
@@ -34,6 +41,7 @@ class Mts(object):
                                  '.nparceld',
                                  'templates')
     _report_range = 7
+    _display_headers = True
 
     def __init__(self, config='npmts.conf'):
         """Nparcel Mts initialisation.
@@ -57,6 +65,13 @@ class Mts(object):
 
     def set_report_range(self, value):
         self._report_range = float(value)
+
+    @property
+    def display_headers(self):
+        return self._display_headers
+
+    def set_display_headers(self, value):
+        self._display_headers = (value.lower == 'yes')
 
     @property
     def conn_string(self):
@@ -84,6 +99,16 @@ class Mts(object):
             self.set_report_range(self.config.get('settings',
                                                   'report_range'))
             log.debug('Report range: %s' % self.report_range)
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
+            log.info('Using default report range %s (days)' %
+                     self.report_range)
+
+        # Display headers.
+        try:
+            self.set_display_headers(self.config.get('settings',
+                                                     'display_headers'))
+            log.debug('Display headers: %s' % self.display_headers)
         except (ConfigParser.NoSectionError,
                 ConfigParser.NoOptionError), err:
             log.info('Using default report range %s (days)' %
@@ -179,10 +204,10 @@ class Mts(object):
 
         sql = None
 
-        sql = self.load_template('mts_sql.t',
-                                 base_dir=base_dir,
-                                 to_date=to_date,
-                                 from_date=from_date)
+        sql = load_template('mts_sql.t',
+                            base_dir=base_dir,
+                            to_date=to_date,
+                            from_date=from_date)
 
         log.debug('SQL: %s' % sql)
 

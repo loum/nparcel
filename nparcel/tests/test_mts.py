@@ -46,6 +46,11 @@ class TestMts(unittest2.TestCase):
         expected = 7
         self.assertEqual(received, expected, msg)
 
+        # Display headers
+        msg = 'Display headers error'
+        received = self._mts.display_headers
+        self.assertTrue(received, msg)
+
     @classmethod
     def tearUpClass(cls):
         cls._mts = None
