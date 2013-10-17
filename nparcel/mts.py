@@ -4,11 +4,13 @@ __all__ = [
 import ConfigParser
 import cx_Oracle
 import os
+import csv
 import datetime
 
 import nparcel
 from nparcel.utils.log import log
-from nparcel.utils.files import load_template
+from nparcel.utils.files import (load_template,
+                                 create_dir)
 
 
 class Mts(object):
@@ -193,6 +195,7 @@ class Mts(object):
         """Disconnect from the database.
 
         """
+        self._cursor.close()
         self._conn.close()
 
         self._cursor = None
@@ -215,6 +218,10 @@ class Mts(object):
             the delivery report SQL string
 
         """
+        dir = base_dir
+        if dir is None:
+            dir = self.template_dir
+
         to_dt = datetime.datetime.now()
         seconds = self.report_range * 86400
         from_dt = to_dt - datetime.timedelta(seconds=int(seconds))
@@ -223,12 +230,86 @@ class Mts(object):
         from_date = from_dt.strftime('%d/%m/%Y')
 
         sql = None
-
         sql = load_template('mts_sql.t',
-                            base_dir=base_dir,
+                            base_dir=dir,
                             to_date=to_date,
                             from_date=from_date)
-
         log.debug('SQL: %s' % sql)
 
         return sql
+
+    def report(self, dry=False):
+        """Generates the MTS delivery report to the nominated
+        :attr:`out_dir` directory.
+
+        In *dry* mode, will not actually execute the report query.
+
+        **Returns:**
+            the absolute path to the filename on success.  ``None``
+            otherwise
+
+        """
+        log.info('Starting MTS delivery report ...')
+        out_file = self.report_file
+
+        if not dry and self._conn is None:
+            out_file = None
+            log.error('No database connection detected')
+        else:
+            if not dry:
+                sql = self.get_delivery_report_sql()
+                self._cursor.execute(sql)
+                self.write_report(out_file, self._cursor)
+
+        if out_file is not None:
+            log.info('MTS delivery report generated: "%s"' % out_file)
+
+        return out_file
+
+    @property
+    def report_file(self):
+        """Generates the delivery report path name.
+
+        Output filename format will be
+        ``mts_delivery_report_YYYYMMDDHHMMSS.csv``.
+
+        """
+        log.debug('Generating MTS report file path ...')
+        now_dt = datetime.datetime.now()
+        report_name = '%s_%s.csv' % ('mts_delivery_report',
+                                     now_dt.strftime('%Y%m%d%H%M%S'))
+        report_path = os.path.join(self.out_dir, report_name)
+
+        create_dir(os.path.dirname(report_path))
+
+        log.debug('Report output filename to use: "%s"' % report_path)
+
+        return report_path
+
+    def write_report(self, out_file, cursor):
+        """Writes out *cursor* to *out_file*
+
+        **Args:**
+            *out_file*: the absolute path to the output filename
+
+            *cursor*: the :mod:`cx_Oracle` cursor object
+
+        """
+        f = None
+        try:
+            f = open(out_file, 'w')
+        except IOError, err:
+            log.error('Unable to open report file "%s": %s' % (out_file,
+                                                               err))
+
+        if f is not None:
+            log.info('Writing out cursor to "%s"' % out_file)
+            output = csv.writer(f, dialect='excel')
+            if self.display_headers:
+                header = [x[0] for x in cursor.description]
+                output.writerow(header)
+
+            for row in cursor:
+                output.writerow(row)
+
+            f.close()

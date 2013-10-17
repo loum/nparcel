@@ -8,6 +8,7 @@ class TestMts(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._mts = nparcel.Mts(config='nparcel/conf/npmts.conf')
+        cls._mts.set_template_dir('nparcel/templates')
 
     def test_init(self):
         """Initialise a MTS object.
@@ -56,6 +57,30 @@ class TestMts(unittest2.TestCase):
         received = self._mts.out_dir
         expected = '/data/nparcel/mts'
         self.assertEqual(received, expected, msg)
+
+    def test_report_no_db_connection(self):
+        """Generate a delivery report with no DB connection.
+        """
+        dry = False
+        received = self._mts.report(dry=dry)
+        msg = 'Report run with no DB connection should return None'
+        self.assertIsNone(received, msg)
+
+    def test_report(self):
+        """Generate a delivery report.
+        """
+        dry = True
+        if not dry:
+            self._mts.set_report_range(1)
+            self._mts.connect()
+
+        received = self._mts.report(dry=dry)
+
+        if not dry:
+            self._mts.disconnect()
+
+        msg = 'Report run should return a non-None filename string'
+        self.assertIsNotNone(received, msg)
 
     @classmethod
     def tearUpClass(cls):
