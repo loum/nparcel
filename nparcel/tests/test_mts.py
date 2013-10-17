@@ -51,6 +51,12 @@ class TestMts(unittest2.TestCase):
         received = self._mts.display_headers
         self.assertTrue(received, msg)
 
+        # Output directory
+        msg = 'Report output directry error'
+        received = self._mts.out_dir
+        expected = '/data/nparcel/mts'
+        self.assertEqual(received, expected, msg)
+
     @classmethod
     def tearUpClass(cls):
         cls._mts = None

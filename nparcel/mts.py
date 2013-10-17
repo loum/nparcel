@@ -32,6 +32,10 @@ class Mts(object):
 
         boolean control whether the column names are added to the CSV
 
+    .. attribute:: out_dir
+
+        location to where the CSV report files are written
+
     """
     _config = nparcel.Config()
     _db = {}
@@ -42,6 +46,7 @@ class Mts(object):
                                  'templates')
     _report_range = 7
     _display_headers = True
+    _out_dir = '/data/nparcel/mts'
 
     def __init__(self, config='npmts.conf'):
         """Nparcel Mts initialisation.
@@ -72,6 +77,13 @@ class Mts(object):
 
     def set_display_headers(self, value):
         self._display_headers = (value.lower == 'yes')
+
+    @property
+    def out_dir(self):
+        return self._out_dir
+
+    def set_out_dir(self, value):
+        self._out_dir = value
 
     @property
     def conn_string(self):
@@ -113,6 +125,14 @@ class Mts(object):
                 ConfigParser.NoOptionError), err:
             log.info('Using default report range %s (days)' %
                      self.report_range)
+
+        # Output directory.
+        try:
+            self.set_out_dir(self.config.get('settings', 'out_dir'))
+            log.debug('Report output director: %s' % self.out_dir)
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
+            log.info('Using default output directory %s' % self.out_dir)
 
     def db_kwargs(self):
         """Extract database connectivity information from the configuration.
