@@ -21,6 +21,10 @@ class Mts(object):
 
         database object
 
+    .. attribute:: report_range
+
+        number of days that the report should cover (default 7 days)
+
     """
     _config = nparcel.Config()
     _db = {}
@@ -29,9 +33,9 @@ class Mts(object):
     _template_dir = os.path.join(os.path.expanduser('~'),
                                  '.nparceld',
                                  'templates')
+    _report_range = 7
 
-    def __init__(self,
-                 config='npmts.conf'):
+    def __init__(self, config='npmts.conf'):
         """Nparcel Mts initialisation.
         """
         self._config.set_config_file(config)
@@ -48,6 +52,13 @@ class Mts(object):
         self._template_dir = value
 
     @property
+    def report_range(self):
+        return self._report_range
+
+    def set_report_range(self, value):
+        self._report_range = float(value)
+
+    @property
     def conn_string(self):
         db_kwargs = self.db_kwargs()
 
@@ -58,6 +69,25 @@ class Mts(object):
         sid = db_kwargs.get('sid')
 
         return '%s/%s@%s:%d/%s' % (user, password, host, port, sid)
+
+    def _parse_config(self):
+        """Read config items from the configuration file.
+
+        Each section that starts with ``ftp_`` are interpreted as an FTP
+        connection to process.
+
+        """
+        self.config.parse_config()
+
+        # Report range.
+        try:
+            self.set_report_range(self.config.get('settings',
+                                                  'report_range'))
+            log.debug('Report range: %s' % self.report_range)
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
+            log.info('Using default report range %s (days)' %
+                     self.report_range)
 
     def db_kwargs(self):
         """Extract database connectivity information from the configuration.
@@ -131,14 +161,18 @@ class Mts(object):
             print('Oracle DB Version: %s' % row)
 
     def get_delivery_report_sql(self, base_dir=None):
-        """
+        """Get the SQL query string that generates the delivery report.
 
         **Kwargs:**
             base_dir: override the standard location to search for the
 
+        **Returns:**
+            the delivery report SQL string
+
         """
         to_dt = datetime.datetime.now()
-        from_dt = to_dt - datetime.timedelta(seconds=86400)
+        seconds = self.report_range * 86400
+        from_dt = to_dt - datetime.timedelta(seconds=int(seconds))
 
         to_date = to_dt.strftime('%d/%m/%Y')
         from_date = from_dt.strftime('%d/%m/%Y')

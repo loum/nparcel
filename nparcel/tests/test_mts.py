@@ -35,6 +35,17 @@ class TestMts(unittest2.TestCase):
         msg = 'DB connection string error'
         self.assertEqual(received, expected, msg)
 
+    def test_parse_config_items(self):
+        """Verify required configuration items.
+        """
+        self._mts._parse_config()
+
+        # Report range
+        msg = 'Report range error'
+        received = self._mts.report_range
+        expected = 7
+        self.assertEqual(received, expected, msg)
+
     @classmethod
     def tearUpClass(cls):
         cls._mts = None

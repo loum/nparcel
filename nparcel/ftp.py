@@ -75,7 +75,8 @@ class Ftp(ftplib.FTP):
         try:
             self.set_archive_dir(self.config.get('dirs', 'archive'))
             log.debug('FTP archive directory: %s' % self.archive_dir)
-        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError), err:
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
             log.warn('%s -- %s' % ('FTP archive directory not configured',
                                    'archiving disabled'))
 
