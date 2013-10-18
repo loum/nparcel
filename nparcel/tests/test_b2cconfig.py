@@ -147,6 +147,11 @@ class TestB2CConfig(unittest2.TestCase):
         expected = 'gis'
         self.assertEqual(received, expected, msg)
 
+        msg = 'Primary Elect MTS inbound directory not as expected'
+        received = self._c.pe_inbound_mts
+        expected = '/data/nparcel/mts'
+        self.assertEqual(received, expected, msg)
+
         # Reminders.
         received = self._c.notification_delay
         expected = 345600

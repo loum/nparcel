@@ -121,6 +121,10 @@ class B2CConfig(nparcel.Config):
 
         upstream provider of the T1250 files (default "gis")
 
+    .. attribute:: _pe_inbound_mts
+
+        MTS Delivery Report inbound directory
+
     """
     _dirs_to_check = []
     _pe_dirs_to_check = []
@@ -150,6 +154,7 @@ class B2CConfig(nparcel.Config):
     _pe_in_file_format = 'T1250_TOL[PIF]_\d{14}\.dat'
     _pe_in_file_archive_string = 'T1250_TOL[PIF]_(\d{8})\d{6}\.dat'
     _pe_customer = 'gis'
+    _pe_inbound_mts = '/data/nparcel/mts'
 
     def __init__(self, file=None):
         """Nparcel Config initialisation.
@@ -248,6 +253,10 @@ class B2CConfig(nparcel.Config):
     @property
     def pe_customer(self):
         return self._pe_customer
+
+    @property
+    def pe_inbound_mts(self):
+        return self._pe_inbound_mts
 
     @property
     def notification_delay(self):
@@ -353,7 +362,8 @@ class B2CConfig(nparcel.Config):
         try:
             self._pe_in_file_format = self.get('primary_elect',
                                                'file_format')
-        except (ConfigParser.NoOptionError, ConfigParser.NoSectionError), err:
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
             log.debug('Using default Primary Elect file format: %s' %
                       self._pe_in_file_format)
 
@@ -362,15 +372,24 @@ class B2CConfig(nparcel.Config):
                                       'file_archive_string')
 
             self._pe_in_file_archive_string = archive_string
-        except (ConfigParser.NoOptionError, ConfigParser.NoSectionError), err:
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
             log.debug('Using default Primary Elect archiving string: %s' %
                       self._pe_in_file_archive_string)
 
         try:
             self._pe_customer = self.get('primary_elect', 'customer')
-        except (ConfigParser.NoOptionError, ConfigParser.NoSectionError), err:
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
             log.debug('Using default Primary Elect customer: %s' %
                       self._pe_customer)
+
+        try:
+            self._pe_inbound_mts = self.get('primary_elect', 'inbound_mts')
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default Primary Elect MTS directory: %s' %
+                      self._pe_inbound_mts)
 
         # Optional items (defaults provided).
         try:

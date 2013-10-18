@@ -30,17 +30,10 @@ class PrimaryElect(nparcel.Service):
         return ids
 
     def process(self, connotes=None, dry=False):
-        """Identifies primary elects jobs based on job_item connote value.
-
-        For each uncollected parcel (``job_item.id``), details such as
-        Agent information, contact mobile and email and created timestamp
-        are extracted from the database.
-
-        Should the primary elect job_item feature an email and/or mobile
-        number then notifications will be sent.
+        """Checks whether a Primary Elect job item has had comms sent.
 
         **Kwargs:**
-            *connotes*: list of connotes to process
+            *connotes*: list of connotes from the MTS data store
 
             *dry*: only report, do not execute
 
