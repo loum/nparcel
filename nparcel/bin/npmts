@@ -33,6 +33,7 @@ class MtsDaemon(nparcel.utils.Daemon):
 
         mts = nparcel.Mts(config=self._config_file,
                           template_dir=self._template_dir)
+        mts.purge_files(dry=self.dry)
         mts.connect()
         if not self.dry:
             mts.report(dry=self.dry)

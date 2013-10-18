@@ -4,6 +4,7 @@ __all__ = [
 import ConfigParser
 import cx_Oracle
 import os
+import re
 import csv
 import datetime
 
@@ -38,6 +39,11 @@ class Mts(object):
 
         location to where the CSV report files are written
 
+    .. attribute:: file_cache
+
+        number of report files to maintain before purging from the file
+        system
+
     """
     _config = nparcel.Config()
     _db = {}
@@ -49,6 +55,7 @@ class Mts(object):
     _report_range = 7
     _display_headers = True
     _out_dir = '/data/nparcel/mts'
+    _file_cache = 10
 
     def __init__(self, config='npmts.conf', template_dir=None):
         """Nparcel Mts initialisation.
@@ -91,6 +98,14 @@ class Mts(object):
         self._out_dir = value
 
     @property
+    def file_cache(self):
+        return self._file_cache
+
+    def set_file_cache(self, value):
+        self._file_cache = int(value)
+        log.info('Set file cache size to %d' % self.file_cache)
+
+    @property
     def conn_string(self):
         db_kwargs = self.db_kwargs()
 
@@ -128,7 +143,7 @@ class Mts(object):
             log.debug('Display headers: %s' % self.display_headers)
         except (ConfigParser.NoSectionError,
                 ConfigParser.NoOptionError), err:
-            log.info('Using default report range %s (days)' %
+            log.info('Using default header write setting %s (days)' %
                      self.report_range)
 
         # Output directory.
@@ -138,6 +153,14 @@ class Mts(object):
         except (ConfigParser.NoSectionError,
                 ConfigParser.NoOptionError), err:
             log.info('Using default output directory %s' % self.out_dir)
+
+        # File cache.
+        try:
+            self.set_file_cache(self.config.get('settings', 'file_cache'))
+            log.debug('File cache size: %s' % self.file_cache)
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
+            log.info('Using default file cache size %s' % self.file_cache)
 
     def db_kwargs(self):
         """Extract database connectivity information from the configuration.
@@ -192,19 +215,24 @@ class Mts(object):
 
         """
         log.info('Making DB connection ...')
-        self._conn = cx_Oracle.connect(self.conn_string)
-        self._cursor = self._conn.cursor()
+        try:
+            self._conn = cx_Oracle.connect(self.conn_string)
+            self._cursor = self._conn.cursor()
+        except cx_Oracle.DatabaseError, err:
+            log.error('DB connection failed: %s' % str(err).rstrip())
 
     def disconnect(self):
         """Disconnect from the database.
 
         """
         log.info('Disconnecting from DB ...')
-        self._cursor.close()
-        self._conn.close()
-
-        self._cursor = None
-        self._conn = None
+        if self._conn is not None:
+            self._cursor.close()
+            self._conn.close()
+            self._cursor = None
+            self._conn = None
+        else:
+            log.warn('No DB connection detected')
 
     @property
     def db_version(self):
@@ -318,3 +346,47 @@ class Mts(object):
                 output.writerow(row)
 
             f.close()
+
+    def purge_files(self, dry=False):
+        """Checks the :attr:`out_dir` report file count and attempts to
+        attempts to purge the oldest instance if :attr:`file_cache` is
+        exceeded.
+
+        **Kwargs:**
+            *dry:* do not execute, just report
+
+        **Returns:**
+            list of files purged from the file system
+
+        """
+        log.debug('Checking for existing report files ...')
+
+        files_purged = []
+        if self.out_dir is not None and os.path.exists(self.out_dir):
+            matched_files = []
+            r = re.compile('mts_delivery_report_\d{14}\.csv')
+            dir_files = os.listdir(self.out_dir)
+            file_list = [os.path.join(self.out_dir, x) for x in dir_files]
+            for file in file_list:
+                m = r.match(os.path.basename(file))
+                if m:
+                    matched_files.append(file)
+
+            matched_files.sort()
+            log.debug('Found files: %s' % str(matched_files))
+            if len(matched_files) > self.file_cache:
+                files_to_delete = matched_files[:-self.file_cache]
+                log.debug('Files to delete: %s' % str(files_to_delete))
+
+                for file_to_delete in files_to_delete:
+                    try:
+                        if not dry:
+                            os.remove(file_to_delete)
+                        files_purged.append(file_to_delete)
+                    except OSError, err:
+                        log.error('Unable to remove file: "%s"' %
+                                  file_to_delete)
+        else:
+            log.info('Report directory "%s" does not exist' % self.out_dir)
+
+        return files_purged

@@ -1,4 +1,6 @@
 import unittest2
+import os
+import tempfile
 
 import nparcel
 
@@ -9,7 +11,6 @@ class TestMts(unittest2.TestCase):
     def setUpClass(cls):
         cls._mts = nparcel.Mts(config='nparcel/conf/npmts.conf')
         cls._mts.set_template_dir('nparcel/templates')
-        cls._mts._parse_config()
 
     def test_init(self):
         """Initialise a MTS object.
@@ -40,21 +41,27 @@ class TestMts(unittest2.TestCase):
     def test_parse_config_items(self):
         """Verify required configuration items.
         """
-        # Report range
+        # Report range.
         msg = 'Report range error'
         received = self._mts.report_range
         expected = 7
         self.assertEqual(received, expected, msg)
 
-        # Display headers
+        # Display headers.
         msg = 'Display headers error'
         received = self._mts.display_headers
         self.assertTrue(received, msg)
 
-        # Output directory
+        # Output directory.
         msg = 'Report output directry error'
         received = self._mts.out_dir
         expected = '/data/nparcel/mts'
+        self.assertEqual(received, expected, msg)
+
+        # File cache.
+        msg = 'File cache size error'
+        received = self._mts.file_cache
+        expected = 10
         self.assertEqual(received, expected, msg)
 
     def test_report_no_db_connection(self):
@@ -80,6 +87,68 @@ class TestMts(unittest2.TestCase):
 
         msg = 'Report run should return a non-None filename string'
         self.assertIsNotNone(received, msg)
+
+    def test_file_purge_no_files_exist(self):
+        """File purge attempt with no files.
+        """
+        dir = tempfile.mkdtemp()
+        old_out_dir = self._mts.out_dir
+        self._mts.set_out_dir(dir)
+
+        received = self._mts.purge_files()
+        expected = []
+        msg = 'File purge with no report files should return empty list'
+        self.assertListEqual(received, expected, msg)
+
+        # Clean up.
+        self._mts.set_out_dir(old_out_dir)
+        os.removedirs(dir)
+
+    def test_file_purge_no_directory_exist(self):
+        """File purge attempt directory does not exist.
+        """
+        dir = tempfile.mkdtemp()
+        old_out_dir = self._mts.out_dir
+        self._mts.set_out_dir(dir)
+        os.removedirs(dir)
+
+        received = self._mts.purge_files()
+        expected = []
+        msg = 'File purge with no directory should return empty list'
+        self.assertListEqual(received, expected, msg)
+
+        # Clean up.
+        self._mts.set_out_dir(old_out_dir)
+
+    def test_file_purge(self):
+        """File purge attempt.
+        """
+        dir = tempfile.mkdtemp()
+        old_out_dir = self._mts.out_dir
+        self._mts.set_out_dir(dir)
+
+        old_file_cache = self._mts.file_cache
+        self._mts.set_file_cache(2)
+
+        created_files = []
+        for i in range(5):
+            file = '%s%d.csv' % ('mts_delivery_report_2013101712000', i)
+            f = open(os.path.join(dir, file), 'w')
+            created_files.append(f.name)
+            f.close()
+
+        received = self._mts.purge_files(dry=False)
+        expected = []
+        msg = 'File purge with no report files should return empty list'
+        #self.assertListEqual(received, expected, msg)
+
+        # Clean up.
+        for file in [x for x in created_files if x not in received]:
+            os.remove(os.path.join(dir, file))
+
+        self._mts.set_out_dir(old_out_dir)
+        os.removedirs(dir)
+        self._mts.set_file_cache(old_file_cache)
 
     @classmethod
     def tearUpClass(cls):
