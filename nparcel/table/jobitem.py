@@ -241,3 +241,23 @@ AND (ji.email_addr != '' OR ji.phone_nbr != '')
 AND j.service_code = 3""" % (self.name, connote)
 
         return sql
+
+    def uncollected_primary_elect_jobitems_sql(self):
+        """SQL wrapper to extract uncollected primary elect jobs.
+
+        Primary elect jobs are identified by a integer value 3 in the
+        ``job.service_code`` column.
+
+        **Returns:**
+            the SQL string
+
+        """
+        sql = """SELECT ji.id, ji.connote_nbr
+FROM job as j, %s as ji
+WHERE ji.job_id = j.id
+AND ji.pickup_ts is NULL
+AND ji.notify_ts is NULL
+AND (ji.email_addr != '' OR ji.phone_nbr != '')
+AND j.service_code = 3""" % self.name
+
+        return sql

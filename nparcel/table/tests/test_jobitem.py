@@ -341,6 +341,19 @@ AND notify_ts IS NOT NULL""" % job_item_id
         msg = 'connote_base_primary_elect_job return list incorrect'
         self.assertListEqual(received, expected, msg)
 
+    def test_uncollected_primary_elect_jobitems_sql(self):
+        """Verify uncollected_primary_elect_jobitems SQL string.
+        """
+        sql = self._db.jobitem.uncollected_primary_elect_jobitems_sql()
+        self._db(sql)
+
+        received = []
+        for row in self._db.rows():
+            received.append(row)
+        expected = [(self._valid_job_item_id_03, 'pe_connote')]
+        msg = 'uncollected_primary_elect_jobitems_sql return list incorrect'
+        self.assertListEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._db.close()
