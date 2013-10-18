@@ -56,9 +56,12 @@ class BaseD(object):
     _pidfile = None
     _script_name = None
 
-    def __init__(self):
+    def __init__(self, config=None):
         """Nparcel BaseD initialisation.
         """
+        if config is not None:
+            self._config = config
+
         self._parser.add_option("-v", "--verbose",
                                 dest="verbose",
                                 action="count",

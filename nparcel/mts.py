@@ -50,10 +50,13 @@ class Mts(object):
     _display_headers = True
     _out_dir = '/data/nparcel/mts'
 
-    def __init__(self, config='npmts.conf'):
+    def __init__(self, config='npmts.conf', template_dir=None):
         """Nparcel Mts initialisation.
         """
         self._config.set_config_file(config)
+        if template_dir is not None:
+            self._template_dir = template_dir
+        self._parse_config()
 
     @property
     def config(self):
@@ -188,6 +191,7 @@ class Mts(object):
         """Make a connection to the database.
 
         """
+        log.info('Making DB connection ...')
         self._conn = cx_Oracle.connect(self.conn_string)
         self._cursor = self._conn.cursor()
 
@@ -195,6 +199,7 @@ class Mts(object):
         """Disconnect from the database.
 
         """
+        log.info('Disconnecting from DB ...')
         self._cursor.close()
         self._conn.close()
 
@@ -256,8 +261,8 @@ class Mts(object):
             out_file = None
             log.error('No database connection detected')
         else:
+            sql = self.get_delivery_report_sql()
             if not dry:
-                sql = self.get_delivery_report_sql()
                 self._cursor.execute(sql)
                 self.write_report(out_file, self._cursor)
 

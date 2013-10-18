@@ -9,6 +9,7 @@ class TestMts(unittest2.TestCase):
     def setUpClass(cls):
         cls._mts = nparcel.Mts(config='nparcel/conf/npmts.conf')
         cls._mts.set_template_dir('nparcel/templates')
+        cls._mts._parse_config()
 
     def test_init(self):
         """Initialise a MTS object.
@@ -39,8 +40,6 @@ class TestMts(unittest2.TestCase):
     def test_parse_config_items(self):
         """Verify required configuration items.
         """
-        self._mts._parse_config()
-
         # Report range
         msg = 'Report range error'
         received = self._mts.report_range
