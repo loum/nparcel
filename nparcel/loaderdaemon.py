@@ -211,7 +211,7 @@ class LoaderDaemon(nparcel.DaemonService):
         **Kwargs:**
             filename: the filename string to parse
 
-        *Returns:**
+        **Returns:**
             tuple stucture as (<business_unit>, <timestamp>)
 
         """

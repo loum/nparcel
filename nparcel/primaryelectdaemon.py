@@ -3,6 +3,8 @@ __all__ = [
 ]
 import time
 import signal
+import re
+import os
 
 import nparcel
 from nparcel.utils.log import log
@@ -78,3 +80,32 @@ class PrimaryElectDaemon(nparcel.DaemonService):
                     event.set()
                 else:
                     time.sleep(self.config.loader_loop)
+
+    def validate_file(self, file):
+        """Parse the MTS-format filename string confirm that it validates
+        as per the accepted file name convention.
+
+        Filename comparison is based on the ``pe_mts_filename_format``
+        config option.
+
+        **Kwargs:**
+            filename: the filename string to parse
+
+        **Returns:**
+            boolean ``True`` if the filename conforms th MTS report format
+            boolean ``False`` otherwise
+
+        """
+        log.info('Validating filename "%s" against "%s"' %
+                 (file, self.config.pe_mts_filename_format))
+        status = False
+
+        filename = os.path.basename(file)
+        r = re.compile(self.config.pe_mts_filename_format)
+        m = r.match(filename)
+        if m:
+            status = True
+
+        log.info('"%s" filename validation: %s' % (file, status))
+
+        return status

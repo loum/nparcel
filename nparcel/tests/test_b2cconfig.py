@@ -152,6 +152,11 @@ class TestB2CConfig(unittest2.TestCase):
         expected = '/data/nparcel/mts'
         self.assertEqual(received, expected, msg)
 
+        msg = 'Primary Elect MTS filename error'
+        received = self._c.pe_mts_filename_format
+        expected = 'mts_delivery_report_\d{14}\.csv'
+        self.assertEqual(received, expected, msg)
+
         # Reminders.
         received = self._c.notification_delay
         expected = 345600
