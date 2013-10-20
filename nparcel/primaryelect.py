@@ -39,6 +39,22 @@ class PrimaryElect(nparcel.Service):
 
         return ids
 
+    def get_uncollected_primary_elect_job_items(self):
+        """Generator that returns the ``jobitem.id`` and
+        ``jobitem.connote_nbr`` of uncollected Primary Elect job items.
+
+        **Returns:**
+            generator object which represents an uncollected job item
+            in the form of a tuple data structure::
+
+                (<jobitem.id>, <jobitem.connote_nbr>)
+
+        """
+        sql = self.db.jobitem.uncollected_primary_elect_jobitems_sql()
+        self.db(sql)
+        for row in self.db.rows():
+            yield row
+
     def process(self, mts_file, connotes=None, dry=False):
         """Checks whether a Primary Elect job item has had comms sent.
 
@@ -60,6 +76,18 @@ class PrimaryElect(nparcel.Service):
 
         self.parser.set_in_file(mts_file)
         self.parser.read()
+
+        for (id, connote) in self.get_uncollected_primary_elect_job_items():
+            log.info('Checking uncollected PE id/connote: "%s/%s"' %
+                     (id, connote))
+            if self.parser.connote_lookup(connote):
+                log.info('Preparing comms flag for job_item.id: %d' % id)
+                if (self.flag_comms('email', id, 'pe') and
+                    self.flag_comms('sms', id, 'pe')):
+                    processed_ids.append(id)
+                else:
+                    log.error('Comms flag error for job_item.id: %d' % id)
+
         self.parser.purge()
 
         return processed_ids

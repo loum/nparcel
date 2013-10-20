@@ -64,7 +64,7 @@ class PrimaryElectDaemon(nparcel.DaemonService):
             # Start processing files.
             for file in files:
                 log.info('Processing file: "%s" ...' % file)
-                if self.validate_file(file)
+                if self.validate_file(file):
                     pe.process(file, dry=self.dry)
 
             if not event.isSet():

@@ -13,6 +13,9 @@ class TestPrimaryElect(unittest2.TestCase):
     def setUpClass(cls):
         cls._comms_dir = tempfile.mkdtemp()
         cls._pe = nparcel.PrimaryElect(comms_dir=cls._comms_dir)
+        test_dir = 'nparcel/tests/files'
+        test_file = 'mts_delivery_report_20131018100758.csv'
+        cls._test_file = os.path.join(test_dir, test_file)
 
         agents = [{'code': 'N031',
                    'state': 'VIC',
@@ -56,7 +59,7 @@ class TestPrimaryElect(unittest2.TestCase):
                      'phone_nbr': '0431602145',
                      'job_id': job_01,
                      'created_ts': '%s' % cls._now},
-                    {'connote_nbr': 'con_002',
+                    {'connote_nbr': 'GOLW010997',
                      'item_nbr': 'item_nbr_002',
                      'email_addr': 'loumar@tollgroup.com',
                      'phone_nbr': '0431602145',
@@ -110,24 +113,23 @@ class TestPrimaryElect(unittest2.TestCase):
         """Check processing.
         """
         dry = True
-        #connotes = ['con_001', 'con_002', 'con_003']
-        #received = self._pe.process(connotes, dry=dry)
-        #expected = [self._id_001]
-        #msg = 'List of processed primary elect items incorrect'
-        #self.assertListEqual(received, expected, msg)
+        received = self._pe.process(self._test_file, dry=dry)
+        expected = [self._id_001]
+        msg = 'List of processed primary elect items incorrect'
+        self.assertListEqual(received, expected, msg)
 
         # Check that the comms files were written out.
-        #received = [os.path.join(self._comms_dir,
-        #                         x) for x in os.listdir(self._comms_dir)]
-        #expected = [os.path.join(self._comms_dir, '%s.%d.%s') %
-        #            ('email', self._id_001, 'pe'),
-        #            os.path.join(self._comms_dir, '%s.%d.%s') %
-        #            ('sms', self._id_001, 'pe')]
-        #msg = 'Comms directory file list error'
-        #self.assertListEqual(sorted(received), sorted(expected), msg)
+        received = [os.path.join(self._comms_dir,
+                                 x) for x in os.listdir(self._comms_dir)]
+        expected = [os.path.join(self._comms_dir, '%s.%d.%s') %
+                    ('email', self._id_001, 'pe'),
+                    os.path.join(self._comms_dir, '%s.%d.%s') %
+                    ('sms', self._id_001, 'pe')]
+        msg = 'Comms directory file list error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
 
         # Cleanup.
-        #remove_files(received)
+        remove_files(received)
 
     @classmethod
     def tearDownClass(cls):
@@ -135,3 +137,4 @@ class TestPrimaryElect(unittest2.TestCase):
         del cls._pe
         os.removedirs(cls._comms_dir)
         del cls._comms_dir
+        del cls._test_file
