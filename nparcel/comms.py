@@ -8,6 +8,7 @@ import datetime
 
 import nparcel
 from nparcel.utils.log import log
+from nparcel.utils.files import remove_files
 
 
 class Comms(object):
@@ -162,7 +163,7 @@ class Comms(object):
 
                 log.info('Removing comms comms_file: "%s"' % comms_file)
                 if not dry:
-                    self._delete_file(comms_file, dry=dry)
+                    remove_files(comms_file)
 
         return comms_status
 
@@ -453,20 +454,3 @@ class Comms(object):
         except OSError, err:
             log.error('Could not rename file "%s" to "%s": %s' %
                       (source_file, target_file, err))
-
-    def _delete_file(self, source_file, dry=False):
-        """Simple helper method to manage file deletions.
-
-        **Args:**
-            *source_file*: file to delete
-
-        **Kwargs:**
-            *dry*: only report, do not execute (default ``False``)
-
-        """
-        log.info('Deleting file "%s"' % source_file)
-        try:
-            if not dry:
-                os.remove(source_file)
-        except OSError, err:
-            log.error('Could not delete file "%s": %s' % (source_file, err))

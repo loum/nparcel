@@ -4,6 +4,7 @@ import tempfile
 import os
 
 import nparcel
+from nparcel.utils.files import remove_files
 
 
 class TestReminder(unittest2.TestCase):
@@ -109,9 +110,8 @@ class TestReminder(unittest2.TestCase):
         msg = 'Comms directory file list error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
-        # Cleanup.
-        for comms_file in received:
-            os.remove(comms_file)
+        # Clean up.
+        remove_files(received)
 
     def test_process_no_recipients(self):
         """Check processing -- no recipients.

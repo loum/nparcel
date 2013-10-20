@@ -4,7 +4,8 @@ import re
 import tempfile
 
 import nparcel
-from nparcel.utils.files import check_eof_flag
+from nparcel.utils.files import (check_eof_flag,
+                                 remove_files)
 
 
 class TestMapperDaemon(unittest2.TestCase):
@@ -88,9 +89,7 @@ class TestMapperDaemon(unittest2.TestCase):
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
         # Clean up.
-        for file in ok_files + dodge_files:
-            os.remove(os.path.join(dir, file))
-
+        remove_files([os.path.join(dir, x) for x in ok_files + dodge_files])
         os.removedirs(dir)
 
     def test_get_files_with_archive(self):
@@ -127,10 +126,9 @@ class TestMapperDaemon(unittest2.TestCase):
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
         # Clean up.
-        for file in ok_files + dodge_files:
-            os.remove(os.path.join(dir, file))
-        for file in archived_files:
-            os.remove(os.path.join(archive_dir, file))
+        files = ok_files + dodge_files
+        remove_files([os.path.join(dir, x) for x in files])
+        remove_files([os.path.join(archive_dir, x) for x in archived_files])
 
         os.removedirs(dir)
         os.removedirs(archive_dir)
@@ -167,9 +165,7 @@ class TestMapperDaemon(unittest2.TestCase):
         self.assertEqual(received, expected, msg)
 
         # Clean up.
-        for k in fhs.keys():
-            os.remove(fhs[k].name)
-
+        remove_files([fhs[x].name for x in fhs.keys()])
         os.removedirs(dir)
 
     def test_write_no_data(self):
@@ -202,8 +198,7 @@ class TestMapperDaemon(unittest2.TestCase):
             self.assertTrue(check_eof_flag(file), msg)
 
         # Clean up.
-        for file in expected:
-            os.remove(file)
+        remove_files(expected)
         os.removedirs(dir)
 
     def test_close_no_open_file_handles(self):

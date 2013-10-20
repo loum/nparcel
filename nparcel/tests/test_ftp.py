@@ -3,6 +3,7 @@ import os
 import tempfile
 
 import nparcel
+from nparcel.utils.files import remove_files
 
 
 class TestFtp(unittest2.TestCase):
@@ -64,7 +65,7 @@ class TestFtp(unittest2.TestCase):
         self.assertListEqual(received, expected, msg)
 
         # Cleanup.
-        os.remove(report)
+        remove_files(report)
 
     def test_get_report_file(self):
         """Check directory for report files -- valid file defined.
@@ -82,7 +83,7 @@ class TestFtp(unittest2.TestCase):
         self.assertListEqual(received, expected, msg)
 
         # Cleanup.
-        os.remove(report)
+        remove_files(report)
 
     def test_archive_file(self):
         """Archive file.
@@ -106,8 +107,7 @@ class TestFtp(unittest2.TestCase):
         self.assertListEqual(received, expected, msg)
 
         # Cleanup.
-        for file in received:
-            os.remove(file)
+        remove_files(received)
 
     @classmethod
     def tearDownClass(cls):

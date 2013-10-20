@@ -1,10 +1,13 @@
 __all__ = [
     "create_dir",
     "get_directory_files",
+    "get_directory_files_list",
     "check_eof_flag",
     "load_template",
+    "remove_files",
 ]
 import os
+import re
 import string
 
 from nparcel.utils.log import log
@@ -37,14 +40,21 @@ def create_dir(dir):
     return status
 
 
-def get_directory_files(path):
+def get_directory_files(path, filter=None):
     """Generator that returns the files in the directory given by *path*.
 
     Does not include the special entries '.' and '..' even if they are
     present in the directory.
 
+    If *filter* is provided, will perform a regular expression match
+    against the files within *path*.
+
     **Args:**
         *path*: absolute path name to the directory
+
+    **Kwargs:**
+        *filter*: :mod:`re` type pattern that can be input directly into
+        the :func:`re.search` function
 
     **Returns:**
         each file in the directory as a generator
@@ -54,9 +64,15 @@ def get_directory_files(path):
         for file in os.listdir(path):
             file = os.path.join(path, file)
             if os.path.isfile(file):
-                yield file
-    except OSError, err:
-        log.error(err)
+                if filter is None:
+                    yield file
+                else:
+                    r = re.compile(filter)
+                    m = r.match(os.path.basename(file))
+                    if m:
+                        yield file
+    except (TypeError, OSError), err:
+        log.error('Directory listing error for %s: %s' % (path, err))
 
 
 def check_eof_flag(file):
@@ -177,3 +193,33 @@ def load_template(template, base_dir=None, **kwargs):
         query = query_s.substitute(**kwargs)
 
         return query
+
+
+def get_directory_files_list(path, filter=None):
+    return list(get_directory_files(path, filter))
+
+
+def remove_files(files):
+    """Attempts to remove *files*
+
+    **Args:**
+        *files*: either a list of file to remove or a single filename
+        string
+
+    **Returns:**
+        list of files successfully removed from filesystem
+
+    """
+    if not isinstance(files, list):
+        files = [files]
+
+    files_removed = []
+    for file_to_remove in files:
+        try:
+            log.info('Removing file "%s" ...' % file_to_remove)
+            os.remove(file_to_remove)
+            files_removed.append(file_to_remove)
+        except OSError, err:
+            log.error('"%s" remove failed: %s' % (file_to_remove, err))
+
+    return files_removed

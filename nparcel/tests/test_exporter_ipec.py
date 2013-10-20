@@ -4,6 +4,8 @@ import tempfile
 import os
 
 import nparcel
+from nparcel.utils.files import (get_directory_files_list,
+                                 remove_files)
 
 # Current business_unit map:
 BU = {'ipec': 3}
@@ -96,9 +98,6 @@ class TestExporterIpec(unittest2.TestCase):
     def test_report_line_entry(self):
         """Ipec export file line entry generation.
         """
-        sql = self._e.db.jobitem.collected_sql(business_unit=BU.get('ipec'))
-        self._e.db(sql)
-
         # Extract report items from the DB.
         self._e.get_collected_items(business_unit_id=BU.get('ipec'))
         received = []
@@ -116,6 +115,7 @@ class TestExporterIpec(unittest2.TestCase):
                      'OK01')])
         msg = 'Ipec Exporter report line items not as expected'
         self.assertListEqual(received, expected, msg)
+        self._e.db.rollback()
 
     def test_process_archive_ps_files(self):
         """End to end collected items -- archive ps files.
@@ -149,7 +149,9 @@ class TestExporterIpec(unittest2.TestCase):
                                       file_control=file_control)
         sequence = '0, 1, 2, 3, 4, 5, 6, 7'
         # Returns a list, but should only get one file in this instance.
-        report_files = self._e.report(valid_items, sequence=sequence)
+        report_files = self._e.report(valid_items,
+                                      sequence=sequence,
+                                      dry=True)
 
         # Check the contents of the report file.
         fh = open(report_files[0])
@@ -175,48 +177,40 @@ class TestExporterIpec(unittest2.TestCase):
         msg = 'Contents of Priority-based POD report file not as expected'
         self.assertEqual(received, expected, msg)
 
-        # Check that the ps files are archived.
+        # Check the POD files.
+        pod_files = []
+        bu_staging_dir = os.path.join(self._e._staging_dir, 'ipec', 'out')
+        for item in items:
+            pod_file = os.path.join(bu_staging_dir,
+                                    '%s.png' % str(item[1]))
+            pod_files.append(pod_file)
+
+        received = get_directory_files_list(bu_staging_dir, '.*\.png')
+        expected = pod_files
+        msg = 'POD file list not as expected'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Check that the '.ps' files are archived.
         archived_files = []
         for ps_file in ps_files:
             archived_files.append(os.path.join(self._archive_dir,
                                                os.path.basename(ps_file)))
 
-        archive_dir_files = []
-        for file in os.listdir(self._archive_dir):
-            if file.endswith('.ps'):
-                ps_file = os.path.join(self._archive_dir, file)
-                archive_dir_files.append(ps_file)
-
+        received = get_directory_files_list(self._archive_dir, '.*\.ps')
+        expected = archived_files
         msg = 'Archived file list not as expected'
-        self.assertListEqual(archived_files, archive_dir_files, msg)
+        self.assertListEqual(sorted(received), sorted(expected), msg)
 
         # Clean.
         self._e.reset()
-        for report_file in report_files:
-            os.remove(report_file)
-
-        for item in items:
-            # Remove the signature files.
-            sig_file = os.path.join(self._e._staging_dir,
-                                    'ipec',
-                                    'out',
-                                    '%s.png' % str(item[1]))
-            os.remove(sig_file)
-
-            for ps_file in ps_files:
-                os.remove(os.path.join(self._archive_dir,
-                                       os.path.basename(ps_file)))
-
-            # Clear the extract_id timestamp.
-            sql = """UPDATE job_item
-SET extract_ts = null
-WHERE id = %d""" % item[1]
-            self._e.db(sql)
-
+        remove_files(report_files)
+        remove_files(archived_files)
+        remove_files(pod_files)
         os.rmdir(os.path.join(self._e.staging_dir, 'ipec', 'out'))
         os.rmdir(os.path.join(self._e.staging_dir, 'ipec'))
         self._e.set_staging_dir(value=None)
         self._e.set_signature_dir(value=None)
+        self._e.db.rollback()
 
     @classmethod
     def tearDownClass(cls):

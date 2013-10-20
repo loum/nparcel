@@ -23,7 +23,8 @@ import time
 import threading
 
 from nparcel.utils.log import log
-from nparcel.utils.files import create_dir
+from nparcel.utils.files import (create_dir,
+                                 remove_files)
 
 MAXFD = 1024
 
@@ -401,8 +402,7 @@ class Daemon(object):
                     # For a daemon process, remove the PID file.
                     if self.pidfile is not None:
                         log.warn('Removing PID file "%s"' % self.pidfile)
-                        if os.path.exists(self.pidfile):
-                            os.remove(self.pidfile)
+                        remove_files(self.pidfile)
             else:
                 stop_status = True
                 self.pid = None

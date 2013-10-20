@@ -33,6 +33,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestMapperDaemon \
 	 nparcel.tests:TestExporter \
 	 nparcel.tests:TestExporterIpec \
+	 nparcel.tests:TestExporterFast \
 	 nparcel.tests:TestConfig \
 	 nparcel.tests:TestB2CConfig \
 	 nparcel.tests:TestFtp \

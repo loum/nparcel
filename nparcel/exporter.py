@@ -150,10 +150,8 @@ class Exporter(object):
             business_unit_id: the Business Unit id as per "business_unit.id"
             column
 
-            signature files will be deposited to.
-
         **Kwargs:**
-            file_control: dictionary structure which controls whether the
+            *file_control*: dictionary structure which controls whether the
             file extension type is moved or archived.  For example, the
             following structure sets '.ps' file extensions to be moved to
             the :attr:`out_dir` whilst ``*.png`` are moved to the
@@ -165,7 +163,7 @@ class Exporter(object):
             Defaults to ``None`` in which case only ``*.ps`` files are moved
             to the :attr:`out_dir`.
 
-            dry: only report what would happen (do not move file)
+            *dry*: only report what would happen (do not move file)
 
         """
         valid_items = []
@@ -303,7 +301,8 @@ class Exporter(object):
                items,
                sequence=None,
                identifier='P',
-               state_reporting=False):
+               state_reporting=False,
+               dry=False):
         """Cycle through the newly identified collected items and produce
         a report.
 
@@ -349,7 +348,8 @@ class Exporter(object):
                     log.debug('Reporting on state: %s' % state)
                     rows = [r for r in sorted_items if r[state_col] == state]
 
-                    # Typical Fast fugliness, certain states tack onto others.
+                    # Typical Fast fugliness, certain states tack onto
+                    # others.
                     if state == 'VIC':
                         rows += tas_rows
                     if state == 'SA':
@@ -366,9 +366,10 @@ class Exporter(object):
             for state, v in rpts.iteritems():
                 if v.get('items') is not None and len(v.get('items')):
                     out_file = self.dump_report_output(v.get('items'),
-                                                    sequence,
-                                                    identifier,
-                                                    state)
+                                                       sequence,
+                                                       identifier,
+                                                       state,
+                                                       dry=dry)
                     if out_file is not None:
                         target_files.append(out_file)
 
@@ -378,7 +379,8 @@ class Exporter(object):
                            sorted_items,
                            sequence,
                            identifier,
-                           state='VIC'):
+                           state='VIC',
+                           dry=False):
         """
         """
         target_file = None
@@ -395,7 +397,7 @@ class Exporter(object):
             for item in sorted_items:
                 fh.write('%s\n' % self.get_report_line(item, sequence))
                 job_item_id = item[1]
-                self._update_status(job_item_id)
+                self._update_status(job_item_id, dry=dry)
             fh.close()
 
             # Rename the output file so that it's ready for delivery.
@@ -477,7 +479,7 @@ class Exporter(object):
 
         return fh
 
-    def _update_status(self, id):
+    def _update_status(self, id, dry=False):
         """Set the job_item.extract_ts column of record *id* to the
         current date/time.
 
@@ -490,7 +492,8 @@ class Exporter(object):
         log.info('Updating extracted timestamp for job_item.id')
         sql = self.db.jobitem.upd_collected_sql(id, time)
         self.db(sql)
-        self.db.commit()
+        if not dry:
+            self.db.commit()
 
     def get_header_column(self, column_name):
         """Bit of a hard-wired fudge which just returns the list index

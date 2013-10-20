@@ -4,6 +4,7 @@ import os
 import datetime
 
 import nparcel
+from nparcel.utils.files import remove_files
 
 
 class TestComms(unittest2.TestCase):
@@ -285,8 +286,9 @@ class TestComms(unittest2.TestCase):
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
         # Cleanup.
-        for f in comms_files + dodgy:
-            os.remove(os.path.join(self._c.comms_dir, f))
+        files_to_delete = comms_files + dodgy
+        fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
+        remove_files(fs)
 
     def test_process_loader(self):
         """Test processing -- loader.
@@ -319,8 +321,8 @@ class TestComms(unittest2.TestCase):
         if dry:
             files_to_delete += comms_files
 
-        for f in files_to_delete:
-            os.remove(os.path.join(self._c.comms_dir, f))
+        fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
+        remove_files(fs)
 
     def test_process_loader_sms_error_comms(self):
         """Test processing -- loader SMS error comms.
@@ -367,8 +369,8 @@ WHERE id = %d""" % self._id_000
             files_to_delete.append('%s.%d.%s.err' %
                                    ('sms', self._id_000, 'body'))
 
-        for f in files_to_delete:
-            os.remove(os.path.join(self._c.comms_dir, f))
+        fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
+        remove_files(fs)
 
     def test_process_loader_email_error_comms(self):
         """Test processing -- loader email error comms.
@@ -415,8 +417,8 @@ WHERE id = %d""" % self._id_000
             files_to_delete.append('%s.%d.%s.err' %
                                    ('email', self._id_000, 'body'))
 
-        for f in files_to_delete:
-            os.remove(os.path.join(self._c.comms_dir, f))
+        fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
+        remove_files(fs)
 
     def test_process_pe(self):
         """Test processing -- primary elect.
@@ -449,8 +451,8 @@ WHERE id = %d""" % self._id_000
         if dry:
             files_to_delete += comms_files
 
-        for f in files_to_delete:
-            os.remove(os.path.join(self._c.comms_dir, f))
+        fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
+        remove_files(fs)
 
     def test_process_pe_sms_error_comms(self):
         """Test processing -- primary elect SMS error comms.
@@ -497,8 +499,8 @@ WHERE id = %d""" % self._id_000
             files_to_delete.append('%s.%d.%s.err' %
                                    ('sms', self._id_000, 'pe'))
 
-        for f in files_to_delete:
-            os.remove(os.path.join(self._c.comms_dir, f))
+        fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
+        remove_files(fs)
 
     def test_process_pe_email_error_comms(self):
         """Test processing -- primary elect email error comms.
@@ -545,8 +547,8 @@ WHERE id = %d""" % self._id_000
             files_to_delete.append('%s.%d.%s.err' %
                                    ('email', self._id_000, 'pe'))
 
-        for f in files_to_delete:
-            os.remove(os.path.join(self._c.comms_dir, f))
+        fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
+        remove_files(fs)
 
     def test_process_reminder(self):
         """Test processing -- reminder.
@@ -579,8 +581,8 @@ WHERE id = %d""" % self._id_000
         if dry:
             files_to_delete += comms_files
 
-        for f in files_to_delete:
-            os.remove(os.path.join(self._c.comms_dir, f))
+        fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
+        remove_files(fs)
 
     def test_process_reminder_sms_error_comms(self):
         """Test processing -- SMS reminder error comms.
@@ -627,8 +629,8 @@ WHERE id = %d""" % self._id_000
             files_to_delete.append('%s.%d.%s.err' %
                                    ('sms', self._id_000, 'rem'))
 
-        for f in files_to_delete:
-            os.remove(os.path.join(self._c.comms_dir, f))
+        fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
+        remove_files(fs)
 
     def test_process_reminder_email_error_comms(self):
         """Test processing -- reminder email error comms.
@@ -675,8 +677,8 @@ WHERE id = %d""" % self._id_000
             files_to_delete.append('%s.%d.%s.err' %
                                    ('email', self._id_000, 'rem'))
 
-        for f in files_to_delete:
-            os.remove(os.path.join(self._c.comms_dir, f))
+        fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
+        remove_files(fs)
 
     def test_get_agent_details(self):
         """Verify agent details.

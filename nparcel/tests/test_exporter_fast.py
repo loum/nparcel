@@ -4,6 +4,8 @@ import tempfile
 import os
 
 import nparcel
+from nparcel.utils.files import (get_directory_files_list,
+                                 remove_files)
 
 # Current business_unit map:
 BU = {'fast': 2}
@@ -13,6 +15,7 @@ class TestExporterFast(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls.maxDiff = None
         cls._seq = '0, 1, 2, 3, 4, 5, 6'
 
         cls._e = nparcel.Exporter()
@@ -137,7 +140,6 @@ class TestExporterFast(unittest2.TestCase):
         cls._dir = tempfile.mkdtemp()
         cls._staging_dir = tempfile.mkdtemp()
         cls._archive_dir = tempfile.mkdtemp()
-
         cls._e.set_archive_dir(cls._archive_dir)
 
     def test_header(self):
@@ -164,9 +166,6 @@ class TestExporterFast(unittest2.TestCase):
     def test_report_line_entry(self):
         """Fast export file line entry generation.
         """
-        sql = self._e.db.jobitem.collected_sql(business_unit=BU.get('fast'))
-        self._e.db(sql)
-
         # Extract report items from the DB.
         self._e.get_collected_items(business_unit_id=BU.get('fast'))
         received = []
@@ -196,7 +195,23 @@ class TestExporterFast(unittest2.TestCase):
                       'pod_name fast 04',
                       'License',
                       'fast identity 04',
-                      'fast_item_nbr_04')])
+                      'fast_item_nbr_04'),
+                     '%s|%s|%s|%s|%s|%s|%s' %
+                     ('fast_connote_nbr_05',
+                      '5',
+                      self._now.isoformat(' ')[:-7],
+                      'pod_name fast 05',
+                      'License',
+                      'fast identity 05',
+                      'fast_item_nbr_05'),
+                     '%s|%s|%s|%s|%s|%s|%s' %
+                     ('fast_connote_nbr_06',
+                      '6',
+                      self._now.isoformat(' ')[:-7],
+                      'pod_name fast 06',
+                      'License',
+                      'fast identity 06',
+                      'fast_item_nbr_06')])
         msg = 'Fast Exporter report line items not as expected'
         self.assertListEqual(received, expected, msg)
 
@@ -235,7 +250,8 @@ class TestExporterFast(unittest2.TestCase):
         report_files = self._e.report(valid_items,
                                       sequence=sequence,
                                       identifier='I',
-                                      state_reporting=state_reporting)
+                                      state_reporting=state_reporting,
+                                      dry=True)
 
         # Check the contents of the report file.
         # Hardwiring states here which is crap.
@@ -333,48 +349,39 @@ class TestExporterFast(unittest2.TestCase):
                      'fast_item_nbr_05'))
         self.assertEqual(received, expected, msg)
 
-        # Check that the png files are archived.
+        # Check the POD files.
+        pod_files = []
+        bu_staging_dir = os.path.join(self._e._staging_dir, 'fast', 'out')
+        for item in items:
+           pod_file = os.path.join(bu_staging_dir,
+                                   '%s.ps' % str(item[1]))
+           pod_files.append(pod_file)
+
+        received = get_directory_files_list(bu_staging_dir, '.*\.ps')
+        expected = pod_files
+        msg = 'POD file list not as expected'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Check that the '.png' files are archived.
         archived_files = []
         for png_file in png_files:
             archived_files.append(os.path.join(self._archive_dir,
                                                os.path.basename(png_file)))
-
-        archive_dir_files = []
-        for file in os.listdir(self._archive_dir):
-            if file.endswith('.png'):
-                png_file = os.path.join(self._archive_dir, file)
-                archive_dir_files.append(png_file)
-
+        received = get_directory_files_list(self._archive_dir, '.*\.png')
+        expected = archived_files
         msg = 'Archived file list not as expected'
-        self.assertListEqual(sorted(archived_files), sorted(archive_dir_files), msg)
+        self.assertListEqual(sorted(received), sorted(expected), msg)
 
-        # Clean.
+        # Clean up.
         self._e.reset()
-        for report_file in report_files:
-            os.remove(report_file)
-
-        # Remove the archived png files.
-        for png_file in png_files:
-            os.remove(os.path.join(self._archive_dir,
-                                    os.path.basename(png_file)))
-        for item in items:
-            # Remove the signature files.
-            sig_file = os.path.join(self._e._staging_dir,
-                                    'fast',
-                                    'out',
-                                    '%s.ps' % str(item[1]))
-            os.remove(sig_file)
-
-            # Clear the extract_id timestamp.
-            sql = """UPDATE job_item
-SET extract_ts = null
-WHERE id = %d""" % item[1]
-            self._e.db(sql)
-
+        remove_files(report_files)
+        remove_files(archived_files)
+        remove_files(pod_files)
         os.rmdir(os.path.join(self._e.staging_dir, 'fast', 'out'))
         os.rmdir(os.path.join(self._e.staging_dir, 'fast'))
         self._e.set_staging_dir(value=None)
         self._e.set_signature_dir(value=None)
+        self._e.db.rollback()
 
     @classmethod
     def tearDownClass(cls):

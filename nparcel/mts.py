@@ -4,14 +4,15 @@ __all__ = [
 import ConfigParser
 import cx_Oracle
 import os
-import re
 import csv
 import datetime
 
 import nparcel
 from nparcel.utils.log import log
 from nparcel.utils.files import (load_template,
-                                 create_dir)
+                                 create_dir,
+                                 get_directory_files_list,
+                                 remove_files)
 
 
 class Mts(object):
@@ -362,31 +363,15 @@ class Mts(object):
         log.debug('Checking for existing report files ...')
 
         files_purged = []
-        if self.out_dir is not None and os.path.exists(self.out_dir):
-            matched_files = []
-            r = re.compile('mts_delivery_report_\d{14}\.csv')
-            dir_files = os.listdir(self.out_dir)
-            file_list = [os.path.join(self.out_dir, x) for x in dir_files]
-            for file in file_list:
-                m = r.match(os.path.basename(file))
-                if m:
-                    matched_files.append(file)
+        matched_files = []
+        filter = 'mts_delivery_report_\d{14}\.csv'
+        matched_files = get_directory_files_list(self.out_dir, filter)
+        matched_files.sort()
+        log.debug('Found files: %s' % str(matched_files))
 
-            matched_files.sort()
-            log.debug('Found files: %s' % str(matched_files))
-            if len(matched_files) > self.file_cache:
-                files_to_delete = matched_files[:-self.file_cache]
-                log.debug('Files to delete: %s' % str(files_to_delete))
-
-                for file_to_delete in files_to_delete:
-                    try:
-                        if not dry:
-                            os.remove(file_to_delete)
-                        files_purged.append(file_to_delete)
-                    except OSError, err:
-                        log.error('Unable to remove file: "%s"' %
-                                  file_to_delete)
-        else:
-            log.info('Report directory "%s" does not exist' % self.out_dir)
+        if len(matched_files) > self.file_cache:
+            files_to_delete = matched_files[:-self.file_cache]
+            log.debug('Files to delete: %s' % str(files_to_delete))
+            files_purged = remove_files(files_to_delete)
 
         return files_purged

@@ -4,6 +4,7 @@ import tempfile
 import os
 
 import nparcel
+from nparcel.utils.files import remove_files
 
 
 class TestPrimaryElect(unittest2.TestCase):
@@ -126,8 +127,7 @@ class TestPrimaryElect(unittest2.TestCase):
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
         # Cleanup.
-        for comms_file in received:
-            os.remove(comms_file)
+        remove_files(received)
 
     @classmethod
     def tearDownClass(cls):

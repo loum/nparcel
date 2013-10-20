@@ -3,6 +3,7 @@ import tempfile
 import os
 
 import nparcel
+from nparcel.utils.files import remove_files
 
 
 class TestInit(unittest2.TestCase):
@@ -71,10 +72,8 @@ class TestInit(unittest2.TestCase):
         msg = 'Conditional secondary file copy should return False'
         self.assertFalse(received, msg)
 
-        # Cleanup.
-        copied_file = os.path.join(dir, os.path.basename(source_file_name))
-        for file in os.listdir(dir):
-            os.remove(os.path.join(dir, file))
+        # Clean up.
+        remove_files([os.path.join(dir, x) for x in os.listdir(dir)])
         self._i.set_base_dir(old_base_dir)
         os.removedirs(dir)
 

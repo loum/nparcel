@@ -6,6 +6,7 @@ import sys
 import StringIO
 
 import nparcel
+from nparcel.utils.files import remove_files
 
 # Current business_unit map:
 BU = {'priority': 1,
@@ -190,7 +191,7 @@ class TestExporter(unittest2.TestCase):
 
         # Cleanup.
         self._e.reset()
-        os.remove(outfile)
+        remove_files(outfile)
         os.rmdir(staging)
 
     def test_staging_file_move(self):
@@ -217,7 +218,7 @@ class TestExporter(unittest2.TestCase):
         # Cleanup
         self._e.reset()
         self._e.set_signature_dir(value=None)
-        os.remove(staging_sig_file)
+        remove_files(staging_sig_file)
 
     def test_update_status(self):
         """Update the collected item extract_ts.
@@ -302,31 +303,22 @@ WHERE id = 1"""
 
         # Clean.
         self._e.reset()
-        for report_file in report_files:
-            os.remove(report_file)
+        remove_files(report_files)
 
         # Remove signature files.
         for item in items:
-            # Remove the signature files.
             sig_file = os.path.join(self._e._staging_dir,
                                     'priority',
                                     'out',
                                     '%s.ps' % str(item[1]))
-            os.remove(sig_file)
+            remove_files(sig_file)
 
-        for png_file in png_files:
-            os.remove(png_file)
-
-            # Clear the extract_id timestamp.
-            sql = """UPDATE job_item
-SET extract_ts = null
-WHERE id = %d""" % item[1]
-            self._e.db(sql)
-
+        remove_files(png_files)
         os.rmdir(os.path.join(self._e.staging_dir, 'priority', 'out'))
         os.rmdir(os.path.join(self._e.staging_dir, 'priority'))
         self._e.set_staging_dir(value=None)
         self._e.set_signature_dir(value=None)
+        self._e.db.rollback()
 
     def test_process_no_items(self):
         """No report file created if no collected items.

@@ -4,6 +4,7 @@ import tempfile
 import os
 
 import nparcel
+from nparcel.utils.files import remove_files
 
 
 FILE_BU = {'tolp': '1', 'tolf': '2', 'toli': '3'}
@@ -78,8 +79,7 @@ FROM job_item"""
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
         # Restore DB state and clean.
-        for comms_file in received:
-            os.remove(comms_file)
+        remove_files(received)
         self._ldr.db.rollback()
 
     def test_processor_valid_record_with_comms_pe_record(self):
