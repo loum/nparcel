@@ -49,10 +49,9 @@ class TestPrimaryElect(unittest2.TestCase):
 
         # Rules as follows:
         # id_000 - not primary elect
-        # id_001 - primary elect with valid recipients
+        # id_001 - primary elect with valid recipients/delivered
         # id_002 - primary elect no recipients
-        start = cls._now - datetime.timedelta(seconds=(86400 * 2))
-        aged = cls._now - datetime.timedelta(seconds=(86400 * 5))
+        # id_003 - primary elect/not delivered
         jobitems = [{'connote_nbr': 'con_001',
                      'item_nbr': 'item_nbr_001',
                      'email_addr': 'loumar@tollgroup.com',
@@ -64,20 +63,28 @@ class TestPrimaryElect(unittest2.TestCase):
                      'email_addr': 'loumar@tollgroup.com',
                      'phone_nbr': '0431602145',
                      'job_id': job_02,
-                     'created_ts': '%s' % aged},
+                     'created_ts': '%s' % cls._now},
                     {'connote_nbr': 'con_003',
                      'item_nbr': 'item_nbr_003',
                      'email_addr': '',
                      'phone_nbr': '',
                      'job_id': job_02,
-                     'created_ts': '%s' % aged,
-                     'pickup_ts': '%s' % cls._now}]
+                     'created_ts': '%s' % cls._now,
+                     'pickup_ts': '%s' % cls._now},
+                    {'connote_nbr': 'GOLW013730',
+                     'item_nbr': 'item_nbr_004',
+                     'email_addr': 'loumar@tollgroup.com',
+                     'phone_nbr': '0431602145',
+                     'job_id': job_02,
+                     'created_ts': '%s' % cls._now}]
         sql = cls._pe.db.jobitem.insert_sql(jobitems[0])
         cls._id_000 = cls._pe.db.insert(sql)
         sql = cls._pe.db.jobitem.insert_sql(jobitems[1])
         cls._id_001 = cls._pe.db.insert(sql)
         sql = cls._pe.db.jobitem.insert_sql(jobitems[2])
         cls._id_002 = cls._pe.db.insert(sql)
+        sql = cls._pe.db.jobitem.insert_sql(jobitems[3])
+        cls._id_003 = cls._pe.db.insert(sql)
 
     def test_init(self):
         """Initialise a PrimaryElect object.

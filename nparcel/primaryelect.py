@@ -80,7 +80,7 @@ class PrimaryElect(nparcel.Service):
         for (id, connote) in self.get_uncollected_primary_elect_job_items():
             log.info('Checking uncollected PE id/connote: "%s/%s"' %
                      (id, connote))
-            if self.parser.connote_lookup(connote):
+            if self.parser.connote_delivered(connote):
                 log.info('Preparing comms flag for job_item.id: %d' % id)
                 if (self.flag_comms('email', id, 'pe') and
                     self.flag_comms('sms', id, 'pe')):

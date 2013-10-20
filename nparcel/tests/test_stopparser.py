@@ -37,6 +37,16 @@ class TestStopParser(unittest2.TestCase):
         msg = 'Unknown connote should return None'
         self.assertIsNone(received)
 
+        # Check delivered.
+        received = self._sp.connote_delivered('GOLW013730')
+        msg = 'Undelivered connote should return False'
+        self.assertFalse(received)
+
+        # Check delivered.
+        received = self._sp.connote_delivered('GOLW012959')
+        msg = 'Delivered connote should return True'
+        self.assertTrue(received)
+
         # ... and purge.
         self._sp.purge()
 
