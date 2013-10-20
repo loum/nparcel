@@ -8,6 +8,7 @@ import os
 
 import nparcel
 from nparcel.utils.log import log
+from nparcel.utils.files import get_directory_files_list
 
 
 class PrimaryElectDaemon(nparcel.DaemonService):
@@ -53,9 +54,8 @@ class PrimaryElectDaemon(nparcel.DaemonService):
                 if self.file is not None:
                     files.append(self.file)
                     event.set()
-                # Only support command line file processing for now.
-                #else:
-                #    files.extend(self.get_files())
+                else:
+                    files.extend(self.get_files())
             else:
                 log.error('ODBC connection failure -- aborting')
                 event.set()
@@ -105,3 +105,23 @@ class PrimaryElectDaemon(nparcel.DaemonService):
         log.info('"%s" filename validation: %s' % (file, status))
 
         return status
+
+    def get_files(self):
+        """Searches the ``inbound_mts`` configuration item as the source
+        directory for MTS report files.
+
+        There may be more than one MTS file available for processing
+        but only the most recent instance will be returned.
+
+        **Returns:**
+            list if MTS delivery reports.  At this time, list will contain
+            at most one MTS report file (or zero) if not matches are found.
+
+        """
+        log.info('Searching %s for MTS files' % self.config.pe_inbound_mts)
+        mts_filename_format = self.config.pe_mts_filename_format
+        files = get_directory_files_list(self.config.pe_inbound_mts,
+                                         filter=mts_filename_format)
+        files.sort()
+
+        return [files[-1]]

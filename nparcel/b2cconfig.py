@@ -266,6 +266,9 @@ class B2CConfig(nparcel.Config):
     def pe_inbound_mts(self):
         return self._pe_inbound_mts
 
+    def set_pe_inbound_mts(self, value):
+        self._pe_inbound_mts = value
+
     @property
     def pe_mts_filename_format(self):
         return self._pe_mts_filename_format
