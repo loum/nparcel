@@ -28,8 +28,6 @@ class PrimaryElectDaemon(nparcel.DaemonService):
         self.config = nparcel.B2CConfig(file=config)
         self.config.parse_config()
 
-        self.parser = nparcel.StopParser()
-
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
 
@@ -66,10 +64,8 @@ class PrimaryElectDaemon(nparcel.DaemonService):
             # Start processing files.
             for file in files:
                 log.info('Processing file: "%s" ...' % file)
-                self.parser.set_in_file(file)
-                for con in self.parser.read('Con Note'):
-                    log.info('Checking connote: "%s"' % con)
-                    pe.process([con], dry=self.dry)
+                if self.validate_file(file)
+                    pe.process(file, dry=self.dry)
 
             if not event.isSet():
                 if self.dry:

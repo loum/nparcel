@@ -12,7 +12,9 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
     def setUpClass(cls):
         conf_file = 'nparcel/conf/nparceld.conf'
         cls._d = nparcel.PrimaryElectDaemon(pidfile=None, config=conf_file)
-        cls._test_file = 'nparcel/tests/stop_report_short.csv'
+        test_dir = 'nparcel/tests/files'
+        test_file = 'mts_delivery_report_20131018100758.csv'
+        cls._test_file = os.path.join(test_dir, test_file)
 
     def test_init(self):
         """Intialise a PrimaryElectDaemon object.

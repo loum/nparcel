@@ -19,25 +19,15 @@ class StopParser(object):
         csv file to parse
 
     """
-    _fields = {}
     _in_file = None
+    _connote_header = 'Con Note'
+    _connotes = {}
 
-    def __init__(self, fields=None):
+    def __init__(self, file=None):
         """StopParser initialisation.
         """
-        if fields is not None:
-            self._fields = fields
-
-    @property
-    def fields(self):
-        return self._fields
-
-    def set_fields(self, value):
-        if isinstance(value, dict):
-            for k, v in value.iteritems():
-                self._fields[k] = v
-        else:
-            raise TypeError('Token assignment expected dictionary')
+        if file is not None:
+            self._in_file = file
 
     @property
     def in_file(self):
@@ -46,20 +36,43 @@ class StopParser(object):
     def set_in_file(self, value):
         self._in_file = value
 
-    def read(self, column=None):
-        """Parses the csv file denoted by :attr:`in_file`.
+    @property
+    def connote_header(self):
+        return self._connote_header
 
-        **Args:**
-            *column*: the CSV header to extract.  For example, "Con Note".
+    def set_connote_header(self, value):
+        self._connote_header = value
+
+    @property
+    def connotes(self):
+        return self._connotes
+
+    def set_connotes(self, dict):
+        self._connotes[dict[self.connote_header]] = dict
+
+    def connote_lookup(self, connote):
+        log.info('Connote lookup: "%s"' % connote)
+        return self.connotes.get(connote)
+
+    def read(self):
+        """Parses the csv file denoted by :attr:`in_file`.
 
         """
         if self.in_file is not None:
             try:
                 fh = open(self.in_file, 'rb')
                 reader = csv.DictReader(fh)
+                log.info('Parsing connotes in "%s"' % fh.name)
                 for rowdict in reader:
-                    yield rowdict.pop(column)
+                    self.set_connotes(rowdict)
+
             except IOError, err:
                 log.error('Unable to open file "%s"' % self.in_file)
         else:
             log.warn('No csv file has been provided')
+
+    def purge(self):
+        """Release :attr:`connotes` memory resources
+
+        """
+        self._connotes.clear()

@@ -8,7 +8,17 @@ from nparcel.utils.log import log
 class PrimaryElect(nparcel.Service):
     """Nparcel PrimaryElect class.
 
+    .. attribute:: parser
+
+        :mod:`nparcel.StopParser` parser object
+
     """
+    _parser = nparcel.StopParser()
+
+    @property
+    def parser(self):
+        return self._parser
+
     def __init__(self, db=None, comms_dir=None):
         """Nparcel PrimaryElect initialisation.
 
@@ -29,8 +39,11 @@ class PrimaryElect(nparcel.Service):
 
         return ids
 
-    def process(self, connotes=None, dry=False):
+    def process(self, mts_file, connotes=None, dry=False):
         """Checks whether a Primary Elect job item has had comms sent.
+
+        **Args:**
+            *mts_file*: path to the MTS delivery report file
 
         **Kwargs:**
             *connotes*: list of connotes from the MTS data store
@@ -45,17 +58,8 @@ class PrimaryElect(nparcel.Service):
         """
         processed_ids = []
 
-        if connotes is None:
-            connotes = []
-
-        for connote in connotes:
-            log.info('Checking primary elect connote: "%s"' % connote)
-            for id in self.get_primary_elect_job_item_id(connote):
-                log.info('Preparing comms flag for job_item.id: %d' % id)
-                if (self.flag_comms('email', id, 'pe') and
-                    self.flag_comms('sms', id, 'pe')):
-                    processed_ids.append(id)
-                else:
-                    log.error('Comms flag error for job_item.id: %d' % id)
+        self.parser.set_in_file(mts_file)
+        self.parser.read()
+        self.parser.purge()
 
         return processed_ids

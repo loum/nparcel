@@ -1,4 +1,5 @@
 import unittest2
+import os
 
 import nparcel
 
@@ -8,7 +9,9 @@ class TestStopParser(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._sp = nparcel.StopParser()
-        cls._test_file = 'nparcel/tests/stop_report.csv'
+        test_dir = 'nparcel/tests/files'
+        test_file = 'mts_delivery_report_20131018100758.csv'
+        cls._test_file = os.path.join(test_dir, test_file)
 
     def test_init(self):
         """Initialise a StopParser object.
@@ -20,29 +23,30 @@ class TestStopParser(unittest2.TestCase):
     def test_read(self):
         """Read in the sample csv.
         """
+        old_in_file = self._sp.in_file
         self._sp.set_in_file(self._test_file)
+        self._sp.read()
 
-        received = []
-        for con in self._sp.read('Con Note'):
-            received.append(con)
-            if len(received) > 10:
-                break
-        expected = ['GOLD0000000024',
-                    'GOLW000007',
-                    'GOLW000680',
-                    'GOLW000015',
-                    'GOLW000625',
-                    'GOLD0000005050',
-                    'GOLW000524',
-                    'GOLW001883',
-                    'GOLW000120',
-                    'GOLW001352',
-                    'GOLW001000']
-        msg = 'Parsed connote list incorrect'
-        self.assertListEqual(received, expected, msg)
+        # Return known connote.
+        received = self._sp.connote_lookup('ARTZ023438')
+        msg = 'Known connote should not return None'
+        self.assertIsNotNone(received)
+
+        # Return unknown connote.
+        received = self._sp.connote_lookup('banana')
+        msg = 'Unknown connote should return None'
+        self.assertIsNone(received)
+
+        # ... and purge.
+        self._sp.purge()
+
+        # Return previously-known connote.
+        received = self._sp.connote_lookup('ARTZ023438')
+        msg = 'Known connote should now return None'
+        self.assertIsNone(received)
 
         # Cleanup.
-        self._sp.set_in_file(None)
+        self._sp.set_in_file(old_in_file)
 
     @classmethod
     def tearDownClass(cls):
