@@ -96,7 +96,7 @@ class TestPrimaryElect(unittest2.TestCase):
     def test_get_primary_elect_job_item_id_valid_pe(self):
         """jobitem.id's of connote that is a primary elect job.
         """
-        received = self._pe.get_primary_elect_job_item_id('con_002')
+        received = self._pe.get_primary_elect_job_item_id('GOLW010997')
         expected = [self._id_001]
         msg = 'Primary elect job should produce ids'
         self.assertListEqual(received, expected, msg)
