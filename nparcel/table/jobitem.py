@@ -35,12 +35,16 @@ class JobItem(nparcel.Table):
                 "reminder_ts TIMESTAMP",
                 "notify_ts TIMESTAMP"]
 
-    def collected_sql(self, business_unit):
+    def collected_sql(self, business_unit, ignore_pe=False):
         """SQL wrapper to extract the collected items from the "jobitems"
         table.
 
         **Args:**
-            business_unit: the id relating to the job.bu_id value.
+            *business_unit*: the id relating to the job.bu_id value.
+
+        **Kwargs:**
+            *ignore_pe*: ``boolean`` flag to ignore job items whose
+            parent job is Primary Elect (default ``False``)
 
         **Returns:**
             the SQL string
@@ -61,6 +65,10 @@ AND extract_ts IS null
 AND ji.identity_type_id = it.id
 AND j.agent_id = ag.id
 AND (ji.job_id = j.id AND j.bu_id = %d)""" % business_unit
+
+        if ignore_pe:
+            sql += """
+AND (j.service_code != 3 OR j.service_code IS NULL)"""
 
         return sql
 

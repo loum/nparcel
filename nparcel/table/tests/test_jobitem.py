@@ -13,6 +13,7 @@ class TestJobItem(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls.maxDiff = None
         cls._job_item = nparcel.JobItem()
         cls._db = nparcel.DbSession()
         cls._db.connect()
@@ -89,7 +90,17 @@ class TestJobItem(unittest2.TestCase):
                      'job_id': pe_job_id,
                      'created_ts': '%s' % cls._now,
                      'email_addr': '',
-                     'phone_nbr': ''}]
+                     'phone_nbr': ''},
+                    {'connote_nbr': 'pe_collected_connote',
+                     'item_nbr': 'pe_collected_connote',
+                     'job_id': pe_job_id,
+                     'created_ts': '%s' % cls._now,
+                     'pickup_ts': '%s' % cls._now,
+                     'pod_name': 'pod_name pe_collected',
+                     'identity_type_id': id_type_id,
+                     'identity_type_data': 'identity pe_collected',
+                     'email_addr': 'loumar@tollgroup.com',
+                     'phone_nbr': '0431602145'}]
         sql = cls._db.jobitem.insert_sql(jobitems[0])
         cls._valid_job_item_id_01 = cls._db.insert(sql=sql)
         sql = cls._db.jobitem.insert_sql(jobitems[1])
@@ -98,6 +109,8 @@ class TestJobItem(unittest2.TestCase):
         cls._valid_job_item_id_03 = cls._db.insert(sql=sql)
         sql = cls._db.jobitem.insert_sql(jobitems[3])
         cls._valid_job_item_id_04 = cls._db.insert(sql=sql)
+        sql = cls._db.jobitem.insert_sql(jobitems[4])
+        cls._valid_job_item_id_05 = cls._db.insert(sql=sql)
 
         cls._db.commit()
 
@@ -216,8 +229,39 @@ class TestJobItem(unittest2.TestCase):
                      'identity 218501217863',
                      'priority_item_nbr_001',
                      'N031',
+                     'VIC'),
+                    ('pe_collected_connote',
+                     5,
+                     '%s' % self._now,
+                     'pod_name pe_collected',
+                     'identity_type description',
+                     'identity pe_collected',
+                     'pe_collected_connote',
+                     'N031',
                      'VIC')]
         msg = 'collected_sql SQL query did not return expected result'
+        self.assertListEqual(received, expected)
+
+    def test_ignore_pe_collected_sql(self):
+        """Verify the collected_sql SQL string.
+        """
+        sql = self._db.jobitem.collected_sql(business_unit=1,
+                                             ignore_pe=True)
+        self._db(sql)
+
+        received = []
+        for row in self._db.rows():
+            received.append(row)
+        expected = [('218501217863',
+                     1,
+                     '%s' % self._now,
+                     'pod_name 218501217863',
+                     'identity_type description',
+                     'identity 218501217863',
+                     'priority_item_nbr_001',
+                     'N031',
+                     'VIC')]
+        msg = 'ignore_pe_collected_sql SQL query string error'
         self.assertListEqual(received, expected)
 
     def test_reminder_sql(self):

@@ -106,9 +106,9 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'Conditions map not as expected'
         received = self._c.cond
-        expected = {'tolp': '000100',
-                    'tolf': '000101',
-                    'toli': '100010'}
+        expected = {'tolp': '0001000',
+                    'tolf': '0001011',
+                    'toli': '1000100'}
         self.assertDictEqual(received, expected, msg)
 
         msg = 'RESTful API not as expected'
