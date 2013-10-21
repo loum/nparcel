@@ -297,7 +297,8 @@ class TestJobItem(unittest2.TestCase):
                      'priority_item_nbr_001',
                      self._now.isoformat(' '),
                      'loumar@tollgroup.com',
-                     '0431602145')]
+                     '0431602145',
+                     self._now.isoformat(' '))]
         msg = 'Agent details based on job_item.id not as expected'
         self.assertListEqual(received, expected, msg)
 

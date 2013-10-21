@@ -61,13 +61,18 @@ class TestFiles(unittest2.TestCase):
     def test_get_directory_files(self):
         """Get directory files.
         """
-        file_obj = tempfile.NamedTemporaryFile()
+        dir = tempfile.mkdtemp()
+        file_obj = tempfile.NamedTemporaryFile(dir=dir)
         file = file_obj.name
 
-        received = get_directory_files_list(os.path.dirname(file))
+        received = get_directory_files_list(dir)
         expected = [file]
         msg = 'Directory listing error'
         self.assertListEqual(received, expected, msg)
+
+        # Clean up.
+        file_obj.close()
+        os.removedirs(dir)
 
     def test_get_directory_files_filtered(self):
         """Get directory files.

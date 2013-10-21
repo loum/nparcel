@@ -5,6 +5,7 @@ __all__ = [
     "check_eof_flag",
     "load_template",
     "remove_files",
+    "move_file",
 ]
 import os
 import re

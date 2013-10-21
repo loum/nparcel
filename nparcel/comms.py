@@ -8,7 +8,8 @@ import datetime
 
 import nparcel
 from nparcel.utils.log import log
-from nparcel.utils.files import remove_files
+from nparcel.utils.files import (remove_files,
+                                 move_file)
 
 
 class Comms(object):
@@ -112,7 +113,8 @@ class Comms(object):
             (action, id, template) = self.parse_comms_filename(filename)
         except ValueError, err:
             log.error('%s processing error: %s' % (comms_file, err))
-            self._move_file(comms_file, comms_file_err, dry=dry)
+            if not dry:
+                move_file(comms_file, comms_file_err)
             comms_status = False
 
         if comms_status:
@@ -120,7 +122,14 @@ class Comms(object):
             if not template_items.keys():
                 log.error('%s processing error: %s' %
                         (comms_file, 'no agent details'))
-                self._move_file(comms_file, comms_file_err, dry=dry)
+                if not dry:
+                    move_file(comms_file, comms_file_err)
+                comms_status = False
+            elif template_items.get('pickup_ts'):
+                log.warn('%s pickup_ts has been set -- not sending comms' %
+                         comms_file)
+                if not dry:
+                    move_file(comms_file, comms_file_err)
                 comms_status = False
 
         if comms_status:
@@ -142,7 +151,8 @@ class Comms(object):
                 comms_status = False
 
             if not comms_status:
-                self._move_file(comms_file, comms_file_err, dry=dry)
+                if not dry:
+                    move_file(comms_file, comms_file_err)
                 for addr in self.emailer.support:
                     template_items['error_comms'] = action.upper()
                     template_items['email_addr'] = addr
@@ -379,6 +389,7 @@ class Comms(object):
                  'postcode': '3133',
                  'connote': 'abcd',
                  'item_nbr': '12345678',
+                 'pickup_ts': '',
                  'created_ts': '2013-09-15 00:00:00'}
 
         """
@@ -434,23 +445,3 @@ class Comms(object):
         log.debug('Comms filename produced: "%s"' % str(comm_parse))
 
         return comm_parse
-
-    def _move_file(self, source_file, target_file, dry=False):
-        """Simple helper method to manage file moves.
-
-        **Args:**
-            *source_file*: file to move
-
-            *target_file*: where to move file
-
-        **Kwargs:**
-            *dry*: only report, do not execute (default ``False``)
-
-        """
-        log.info('Moving file "%s" to "%s"' % (source_file, target_file))
-        try:
-            if not dry:
-                os.rename(source_file, target_file)
-        except OSError, err:
-            log.error('Could not rename file "%s" to "%s": %s' %
-                      (source_file, target_file, err))

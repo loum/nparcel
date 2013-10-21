@@ -53,9 +53,18 @@ class TestComms(unittest2.TestCase):
                      'email_addr': 'loumar@tollgroup.com',
                      'phone_nbr': '0431602145',
                      'job_id': job_01,
-                     'created_ts': '%s' % cls._now}]
+                     'created_ts': '%s' % cls._now},
+                    {'connote_nbr': 'con_002',
+                     'item_nbr': 'item_nbr_002',
+                     'email_addr': 'loumar@tollgroup.com',
+                     'phone_nbr': '0431602145',
+                     'job_id': job_01,
+                     'created_ts': '%s' % cls._now,
+                     'pickup_ts': '%s' % cls._now}]
         sql = cls._c.db.jobitem.insert_sql(jobitems[0])
         cls._id_000 = cls._c.db.insert(sql)
+        sql = cls._c.db.jobitem.insert_sql(jobitems[1])
+        cls._id_001 = cls._c.db.insert(sql)
 
         cls._c.db.commit()
 
@@ -296,7 +305,9 @@ class TestComms(unittest2.TestCase):
         dry = True
 
         comms_files = ['%s.%d.body' % ('email', self._id_000),
-                       '%s.%d.body' % ('sms', self._id_000)]
+                       '%s.%d.body' % ('sms', self._id_000),
+                       '%s.%d.body' % ('email', self._id_001),
+                       '%s.%d.body' % ('sms', self._id_001)]
         dodgy = ['banana',
                  'email.rem.3']
         for f in comms_files + dodgy:
@@ -307,7 +318,12 @@ class TestComms(unittest2.TestCase):
         for file in files:
             received = self._c.process(file, dry=dry)
             msg = 'Loader comms files processed incorrect'
-            self.assertTrue(received, msg)
+            filename = os.path.basename(file)
+            if (filename == ('%s.%d.body' % ('email', self._id_000)) or
+                filename == ('%s.%d.body' % ('sms', self._id_000))):
+                self.assertTrue(received, msg)
+            else:
+                self.assertFalse(received, msg)
 
         if not dry:
             received = self._c.get_comms_files()
@@ -320,6 +336,9 @@ class TestComms(unittest2.TestCase):
         files_to_delete = dodgy
         if dry:
             files_to_delete += comms_files
+        else:
+            files_to_delete.append('email.2.body.err')
+            files_to_delete.append('sms.2.body.err')
 
         fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
         remove_files(fs)
@@ -692,7 +711,8 @@ WHERE id = %d""" % self._id_000
                     'phone_nbr': '0431602145',
                     'name': 'V031 Name',
                     'postcode': '1234',
-                    'suburb': 'V031 Suburb'}
+                    'suburb': 'V031 Suburb',
+                    'pickup_ts': None}
         msg = 'job_item.id based Agent details incorrect'
         self.assertDictEqual(received, expected, msg)
 
