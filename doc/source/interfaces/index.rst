@@ -11,3 +11,4 @@ the inbound and outbound processing.
     vsftpd.rst
     outboundftp.rst
     npremind.rst
+    primaryelect.rst
