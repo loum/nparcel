@@ -18,6 +18,7 @@ class TestExporter(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls.maxDiff = None
         cls._e = nparcel.Exporter()
 
         # Prepare some sample data.
@@ -42,13 +43,20 @@ class TestExporter(unittest2.TestCase):
                 {'card_ref_nbr': 'ipec ref',
                  'agent_id': agent_ok,
                  'job_ts': '%s' % cls._now,
-                 'bu_id': BU['ipec']}]
+                 'bu_id': BU['ipec']},
+                {'card_ref_nbr': 'pe ref',
+                 'agent_id': agent_ok,
+                 'job_ts': '%s' % cls._now,
+                 'service_code': 3,
+                 'bu_id': BU['fast']}]
         sql = cls._e.db.job.insert_sql(jobs[0])
         priority_job_id = cls._e.db.insert(sql=sql)
         sql = cls._e.db.job.insert_sql(jobs[1])
         fast_job_id = cls._e.db.insert(sql=sql)
         sql = cls._e.db.job.insert_sql(jobs[2])
         ipec_job_id = cls._e.db.insert(sql=sql)
+        sql = cls._e.db.job.insert_sql(jobs[3])
+        pe_job_id = cls._e.db.insert(sql=sql)
 
         # "identity_type" table.
         identity_types = [{'description': 'identity_type description'}]
@@ -88,7 +96,14 @@ class TestExporter(unittest2.TestCase):
                      'pod_name': 'pod_name 218501217865',
                      'identity_type_id': id_type_id,
                      'identity_type_data': 'identity 218501217865',
-                     'extract_ts': '%s' % cls._now}]
+                     'extract_ts': '%s' % cls._now},
+                    {'connote_nbr': 'pe_connote',
+                     'item_nbr': 'fast_pe_connote_item_nbr',
+                     'job_id': pe_job_id,
+                     'pickup_ts': '%s' % cls._now,
+                     'pod_name': 'pod_name primary_elect',
+                     'identity_type_id': id_type_id,
+                     'identity_type_data': 'identity pe'}]
         for jobitem in jobitems:
             sql = cls._e.db.jobitem.insert_sql(jobitem)
             jobitem_id = cls._e.db.insert(sql=sql)
@@ -129,11 +144,44 @@ class TestExporter(unittest2.TestCase):
     def test_collected_sql_bu_fast(self):
         """Query table for collected items -- BU: fast.
         """
-        msg = 'Default collection check should return results.'
         sql = self._e.db.jobitem.collected_sql(business_unit=BU['fast'])
         self._e.db(sql)
 
         received = []
+        for row in self._e.db.rows():
+            received.append(row)
+        expected = [('21850121786x',
+                     2,
+                     '%s' % self._now,
+                     'pod_name 21850121786x',
+                     'identity_type description',
+                     'identity 21850121786x',
+                     'fast_item_nbr_001',
+                     'N031',
+                     'VIC'),
+                    ('pe_connote',
+                     5,
+                     '%s' % self._now,
+                     'pod_name primary_elect',
+                     'identity_type description',
+                     'identity pe',
+                     'fast_pe_connote_item_nbr',
+                     'N031',
+                     'VIC')]
+
+        msg = 'Fast sepcific exporter NOT ignoring PE error'
+        self.assertListEqual(received, expected, msg)
+
+    def test_collected_sql_bu_fast_ignore_pe(self):
+        """Query table for collected items -- BU: fast.
+        """
+        sql = self._e.db.jobitem.collected_sql(business_unit=BU['fast'],
+                                               ignore_pe=True)
+        self._e.db(sql)
+
+        received = []
+        for row in self._e.db.rows():
+            received.append(row)
         expected = [('21850121786x',
                      2,
                      '%s' % self._now,
@@ -143,11 +191,8 @@ class TestExporter(unittest2.TestCase):
                      'fast_item_nbr_001',
                      'N031',
                      'VIC')]
-        for row in self._e.db.rows():
-            received.append(row)
 
-        # We should have at least one seeded result so we shouldn't
-        # receive an empty list.
+        msg = 'Fast sepcific exporter ignoring PE error'
         self.assertEqual(received, expected, msg)
 
     def test_cleansed_valid_date_sqlite(self):

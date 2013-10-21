@@ -117,7 +117,7 @@ class Exporter(object):
         if values is not None:
             self._header = values
 
-    def get_collected_items(self, business_unit_id):
+    def get_collected_items(self, business_unit_id, ignore_pe=False):
         """Query DB for recently collected items.
 
         **Args:**
@@ -140,6 +140,7 @@ class Exporter(object):
     def process(self,
                 business_unit_id,
                 file_control={'ps': True},
+                ignore_pe=False,
                 dry=False):
         """
         Identifies picked up items and prepares reporting.
@@ -168,7 +169,7 @@ class Exporter(object):
         """
         valid_items = []
 
-        self.get_collected_items(business_unit_id)
+        self.get_collected_items(business_unit_id, ignore_pe)
 
         for row in self._collected_items:
             job_item_id = row[1]

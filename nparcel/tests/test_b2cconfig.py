@@ -262,7 +262,8 @@ class TestB2CConfig(unittest2.TestCase):
                     'send_email': False,
                     'send_ps_file': False,
                     'send_png_file': False,
-                    'state_reporting': False}
+                    'state_reporting': False,
+                    'pe_pods': False}
         msg = 'Dodgy Business Unit condition map should be empty dict'
         self.assertDictEqual(received, expected, msg)
 
@@ -278,7 +279,8 @@ class TestB2CConfig(unittest2.TestCase):
                     'send_email': False,
                     'send_ps_file': False,
                     'send_png_file': True,
-                    'state_reporting': False}
+                    'state_reporting': False,
+                    'pe_pods': False}
         msg = 'Valid Business Unit condition map should produce dict values'
         self.assertDictEqual(received, expected, msg)
 
@@ -294,7 +296,8 @@ class TestB2CConfig(unittest2.TestCase):
                     'send_email': False,
                     'send_ps_file': True,
                     'send_png_file': False,
-                    'state_reporting': True}
+                    'state_reporting': True,
+                    'pe_pods': True}
         msg = 'Fast condition map should produce dict values'
         self.assertDictEqual(received, expected, msg)
 

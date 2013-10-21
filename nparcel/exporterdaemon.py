@@ -46,8 +46,10 @@ class ExporterDaemon(nparcel.DaemonService):
                     exporter.set_out_dir(business_unit=bu)
                     bu_file_code = self.config.bu_to_file(bu)
                     file_control = self.config.get_file_control(bu_file_code)
+                    ignore_pe = self.config.condition(bu, 'pe_pods')
                     items = exporter.process(int(id),
                                              file_control,
+                                             ignore_pe,
                                              dry=self.dry)
                     if self.dry:
                         exporter.set_out_dir(None)
