@@ -12,3 +12,4 @@ the inbound and outbound processing.
     outboundftp.rst
     npremind.rst
     primaryelect.rst
+    comms.rst
