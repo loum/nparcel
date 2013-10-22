@@ -81,7 +81,7 @@ class StopParser(object):
         """
         delivered = False
 
-        log.info('Checking connote "%s" delivery status')
+        log.info('Checking connote "%s" delivery status' % connote)
         item = self.connote_lookup(connote)
         if item is not None:
             if item[self.arrival_header]:

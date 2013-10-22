@@ -282,7 +282,7 @@ class MapperDaemon(nparcel.DaemonService):
                 file = 'T1250_%s_%s.txt.tmp' % (bu.upper(), file_ts)
                 filepath = os.path.join(dir, file)
                 log.info('Creating file %s for Business Unit "%s"' %
-                         (bu, filepath))
+                         (filepath, bu))
                 if not dry:
                     fhs[bu] = open(filepath, 'w')
                     fh = fhs[bu]

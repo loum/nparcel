@@ -256,6 +256,7 @@ WHERE id = %d
 FROM job as j, %s as ji
 WHERE ji.job_id = j.id
 AND ji.connote_nbr = '%s'
+AND ji.notify_ts IS NULL
 AND (ji.email_addr != '' OR ji.phone_nbr != '')
 AND j.service_code = 3""" % (self.name, connote)
 

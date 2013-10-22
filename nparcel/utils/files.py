@@ -147,8 +147,8 @@ def move_file(source, target, err=False):
         try:
             os.rename(source, target)
             target_file = os.path.join(source, target)
+            status = True
         except OSError, err:
-            status = False
             log.error('%s move to %s failed -- %s' % (source, target, err))
 
     if not status:

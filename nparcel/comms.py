@@ -133,19 +133,32 @@ class Comms(object):
                 comms_status = False
 
         if comms_status:
+            recipient = None
             if template == 'rem':
                 returned_date = template_items.get('created_ts')
                 template_items['date'] = self.get_return_date(returned_date)
 
             if action == 'email':
-                comms_status = self.send_email(template_items,
-                                               template=template,
-                                               err=False,
-                                               dry=dry)
+                recipient = template_items.get('email_addr')
+                if recipient is not None:
+                    recipient = recipient.strip()
+                if recipient is not None and recipient:
+                    comms_status = self.send_email(template_items,
+                                                   template=template,
+                                                   err=False,
+                                                   dry=dry)
+                else:
+                    log.info('Email recipients list is empty')
             elif action == 'sms':
-                comms_status = self.send_sms(template_items,
-                                             template=template,
-                                             dry=dry)
+                recipient = template_items.get('phone_nbr')
+                if recipient is not None:
+                    recipient = recipient.strip()
+                if recipient is not None and recipient:
+                    comms_status = self.send_sms(template_items,
+                                                 template=template,
+                                                 dry=dry)
+                else:
+                    log.info('SMS is empty')
             else:
                 log.error('Unknown action: "%s"' % action)
                 comms_status = False
@@ -161,17 +174,18 @@ class Comms(object):
                                                    err=True,
                                                    dry=dry)
             else:
-                if template == 'rem':
-                    log.info('Setting job_item %d reminder sent flag' % id)
-                    self.db(self.db.jobitem.update_reminder_ts_sql(id))
-                else:
-                    log.info('Setting job_item %d notify sent flag' % id)
-                    self.db(self.db.jobitem.update_notify_ts_sql(id))
+                if recipient is not None and recipient:
+                    if template == 'rem':
+                        log.info('Setting job_item %d reminder flag' % id)
+                        self.db(self.db.jobitem.update_reminder_ts_sql(id))
+                    else:
+                        log.info('Setting job_item %d notify flag' % id)
+                        self.db(self.db.jobitem.update_notify_ts_sql(id))
 
-                if not dry:
-                    self.db.commit()
+                    if not dry:
+                        self.db.commit()
 
-                log.info('Removing comms comms_file: "%s"' % comms_file)
+                log.info('Removing comms file: "%s"' % comms_file)
                 if not dry:
                     remove_files(comms_file)
 
