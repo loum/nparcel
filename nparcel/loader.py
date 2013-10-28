@@ -308,6 +308,14 @@ class Loader(nparcel.Service):
 
     def get_agent_id(self, agent):
         """Helper method to verify if an Agent ID is defined.
+
+        **Args:**
+            *agent*: the raw agent string (for example, ``N001``)
+
+        **Returns:**
+            on success, integer value taken from ``agent.id`` representing
+            the *agent* details.  ``None`` otherwise.
+
         """
         log.info('Checking if Agent Id "%s" exists in system ...' % agent)
         self.db(self.db._agent.check_agent_id(agent_code=agent))
@@ -749,3 +757,37 @@ class Loader(nparcel.Service):
                     self.db.commit()
             else:
                 log.debug('job.id %d OK' % row[0])
+
+    def ignore_record(self, parsed_fields):
+        """Manages Business Unit rules that determine if a raw T1250
+        record should be ignored.
+
+        Current ignore rules include:
+
+        * *Agent Id* starts with a ``P`` (this indicates a ParcelPoint job)
+
+        **Args:**
+            *parsed_fields*: dictionary of parsed, raw values.  For
+            example::
+
+            {'Agent Id': 'N013',
+             ...}
+
+        **Returns:**
+            boolean ``True`` if record should be ignored
+
+            boolean ``False`` otherwise
+
+        """
+        log.info('Checking ignore rules ...')
+        ignore = False
+
+        agent_code = parsed_fields.get('Agent Id')
+        log.debug('Checking agent code "%s"' % agent_code)
+        if agent_code is not None:
+            if agent_code.startswith('P'):
+                log.info('Agent code "%s" starts with "P" -- ignoring' %
+                         agent_code)
+                ignore = True
+
+        return ignore

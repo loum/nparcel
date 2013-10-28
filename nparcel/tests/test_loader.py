@@ -947,6 +947,24 @@ SET state = 'VIC'"""
         # Restore DB state.
         self._ldr.db.rollback()
 
+    def test_ignore_record(self):
+        """Ignore T1250 record.
+        """
+        line = self._c.get('test_lines', 'PP')
+        fields = self._ldr.parser.parse_line(line)
+        received = self._ldr.ignore_record(fields)
+        msg = 'Agent code should set ignored flag'
+        self.assertTrue(received, msg)
+
+    def test_ignore_record_valid_agent_code(self):
+        """Do not ignore T1250 record.
+        """
+        line = self._c.get('test_lines', 'VALID_LINE')
+        fields = self._ldr.parser.parse_line(line)
+        received = self._ldr.ignore_record(fields)
+        msg = 'Agent code should not set ignored flag'
+        self.assertFalse(received, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._c = None
