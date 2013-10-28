@@ -89,9 +89,12 @@ def rollover():
 
     """
     # Check if we can identify a handler log file from the logger_name.
+    log.debug('Checking for a log rollover event')
     logger_handler = None
     for handler in log.handlers:
-        if isinstance(handler, logging.StreamHandler):
+        if not isinstance(handler,
+                          logging.handlers.TimedRotatingFileHandler):
+            log.debug('Not a TimedRotatingFileHandler -- skip rollover')
             continue
 
         # Try to match the logger_name with the log filename.
@@ -106,12 +109,18 @@ def rollover():
     if logger_handler is not None:
         # OK, we have found our handler, check if a backup already exists.
         now = datetime.datetime.now()
+        today_logfile = ("%s.%s" % (logger_handler.baseFilename,
+                                    now.strftime("%Y-%m-%d")))
         backup_time = now - datetime.timedelta(days=1)
         backup_logfile = ("%s.%s" % (logger_handler.baseFilename,
                                      backup_time.strftime("%Y-%m-%d")))
+
         # Rollover only if a backup has not already been made.
-        log.debug('Checking if backup log "%s" exists' % backup_logfile)
-        if not os.path.exists(backup_logfile):
+        # This includes a backup of today.
+        log.debug('Checking if backup logs "%s/%s" exist' %
+                   (backup_logfile, today_logfile))
+        if (not os.path.exists(backup_logfile) and
+            not os.path.exists(today_logfile)):
             log.info('Forcing rollover of log: "%s"' %
                      logger_handler.baseFilename)
             handler.doRollover()
