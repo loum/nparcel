@@ -106,6 +106,16 @@ FROM job_item"""
         # Restore DB state and clean.
         self._ldr.db.rollback()
 
+    def test_processor_valid_record_parcel_point_record(self):
+        """Process valid raw T1250 line -- with ParcelPoint Agent code.
+        """
+        msg = 'Valid ParcelPoint T1250 record should return None'
+        line = self._c.get('test_lines', 'PP')
+        self.assertIsNone(self._ldr.process(self._job_ts,
+                                            line,
+                                            FILE_BU.get('tolp'),
+                                            COND_MAP_COMMS), msg)
+
     def test_processor_valid_record_with_comms_no_recipients(self):
         """Process valid raw T1250 line -- with comms no recipients.
         """

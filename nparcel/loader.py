@@ -170,6 +170,8 @@ class Loader(nparcel.Service):
 
             boolean ``False`` if processing failed
 
+            ``None`` if an *other* scenario (typically a record ignore)
+
         """
         status = True
 
@@ -177,82 +179,85 @@ class Loader(nparcel.Service):
         connote_literal = raw_record[0:20].rstrip()
         log.info('Conn Note: "%s" start parse ...' % connote_literal)
         fields = self.parser.parse_line(raw_record)
-        fields['job_ts'] = time
-        fields['bu_id'] = bu_id
+        if self.ignore_record(fields):
+            status = None
+        else:
+            fields['job_ts'] = time
+            fields['bu_id'] = bu_id
 
-        barcode = fields.get('Bar code')
-        log.info('Barcode "%s" start mapping ...' % barcode)
+            barcode = fields.get('Bar code')
+            log.info('Barcode "%s" start mapping ...' % barcode)
+            try:
+                job_data = self.table_column_map(fields,
+                                                JOB_MAP,
+                                                cond_map)
+                job_item_data = self.table_column_map(fields,
+                                                    JOB_ITEM_MAP,
+                                                    cond_map)
+                log.info('Barcode "%s" mapping OK' % barcode)
+            except ValueError, e:
+                status = False
+                self.set_alert('Barcode "%s" mapping error: %s' %
+                               (barcode, e))
 
-        try:
-            job_data = self.table_column_map(fields,
-                                             JOB_MAP,
-                                             cond_map)
-            job_item_data = self.table_column_map(fields,
-                                                  JOB_ITEM_MAP,
-                                                  cond_map)
-            log.info('Barcode "%s" mapping OK' % barcode)
-        except ValueError, e:
-            status = False
-            self.set_alert('Barcode "%s" mapping error: %s' % (barcode, e))
+            # Check for a manufactured barcode.
+            if status:
+                job_id = None
+                skip_jobitem_chk = False
 
-        # Check for a manufactured barcode.
-        if status:
-            job_id = None
-            skip_jobitem_chk = False
-
-            connote = job_item_data.get('connote_nbr')
-            if self.match_connote(connote, barcode):
-                # Manufactured barcode.
-                item_nbr = fields.get('Item Number')
-                job_id = self.get_jobitem_based_job_id(connote=connote,
-                                                       item_nbr=item_nbr)
-                if job_id is not None:
-                    skip_jobitem_chk = True
-            else:
-                # Explicit barcode.
-                barcodes = self.barcode_exists(barcode=barcode)
-                if barcodes:
-                    job_id = barcodes[0]
-
-            # OK, update or create ...
-            agent_id = fields.get('Agent Id')
-            agent_id_row_id = job_data.get('agent_id')
-            job_item_id = None
-            if job_id is not None:
-                log.info('Updating Nparcel barcode "%s" agent ID "%s"' %
-                         (barcode, agent_id))
-                job_item_id = self.update(job_id,
-                                          agent_id_row_id,
-                                          job_item_data,
-                                          skip_jobitem_chk)
-            else:
-                log.info('Creating Nparcel barcode "%s"' % barcode)
-                job_item_id = self.create(job_data, job_item_data)
-
-            sc = job_data.get('service_code')
-            if sc == 3:
-                log.info('Not setting comms for Primary Elect')
-            else:
-                send_email = cond_map.get('send_email')
-                send_sms = cond_map.get('send_sms')
-                if job_item_id is not None:
-                    if send_email:
-                        email_addr = job_item_data.get('email_addr')
-                        if email_addr is not None and email_addr:
-                            self.flag_comms('email',
-                                            job_item_id,
-                                            'body',
-                                            dry=dry)
-                    if send_sms:
-                        phone_nbr = job_item_data.get('phone_nbr')
-                        if phone_nbr is not None and phone_nbr:
-                            self.flag_comms('sms',
-                                            job_item_id,
-                                            'body',
-                                            dry=dry)
+                connote = job_item_data.get('connote_nbr')
+                if self.match_connote(connote, barcode):
+                    # Manufactured barcode.
+                    item_nbr = fields.get('Item Number')
+                    job_id = self.get_jobitem_based_job_id(connote=connote,
+                                                           item_nbr=item_nbr)
+                    if job_id is not None:
+                        skip_jobitem_chk = True
                 else:
-                    log.info('Not setting comms for job_item_id %s' %
-                             str(job_item_id))
+                    # Explicit barcode.
+                    barcodes = self.barcode_exists(barcode=barcode)
+                    if barcodes:
+                        job_id = barcodes[0]
+
+                # OK, update or create ...
+                agent_id = fields.get('Agent Id')
+                agent_id_row_id = job_data.get('agent_id')
+                job_item_id = None
+                if job_id is not None:
+                    log.info('Updating Nparcel barcode "%s" agent ID "%s"' %
+                             (barcode, agent_id))
+                    job_item_id = self.update(job_id,
+                                              agent_id_row_id,
+                                              job_item_data,
+                                              skip_jobitem_chk)
+                else:
+                    log.info('Creating Nparcel barcode "%s"' % barcode)
+                    job_item_id = self.create(job_data, job_item_data)
+
+                sc = job_data.get('service_code')
+                if sc == 3:
+                    log.info('Not setting comms for Primary Elect')
+                else:
+                    send_email = cond_map.get('send_email')
+                    send_sms = cond_map.get('send_sms')
+                    if job_item_id is not None:
+                        if send_email:
+                            email_addr = job_item_data.get('email_addr')
+                            if email_addr is not None and email_addr:
+                                self.flag_comms('email',
+                                                job_item_id,
+                                                'body',
+                                                dry=dry)
+                        if send_sms:
+                            phone_nbr = job_item_data.get('phone_nbr')
+                            if phone_nbr is not None and phone_nbr:
+                                self.flag_comms('sms',
+                                                job_item_id,
+                                                'body',
+                                                dry=dry)
+                    else:
+                        log.info('Not setting comms for job_item_id %s' %
+                                 str(job_item_id))
 
         log.info('Conn Note: "%s" parse complete' % connote_literal)
 
