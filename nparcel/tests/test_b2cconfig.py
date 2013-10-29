@@ -56,6 +56,11 @@ class TestB2CConfig(unittest2.TestCase):
         expected = '/data/nparcel/comms'
         self.assertEqual(received, expected, msg)
 
+        msg = 'Aggregator directory not as expected'
+        received = self._c.aggregator_dir
+        expected = '/data/nparcel/aggregate'
+        self.assertEqual(received, expected, msg)
+
         msg = 'Loader loop not as expected'
         received = self._c.loader_loop
         expected = 30
@@ -106,9 +111,9 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'Conditions map not as expected'
         received = self._c.cond
-        expected = {'tolp': '0001000',
-                    'tolf': '0001011',
-                    'toli': '1000100'}
+        expected = {'tolp': '00010000',
+                    'tolf': '00010110',
+                    'toli': '10001000'}
         self.assertDictEqual(received, expected, msg)
 
         msg = 'RESTful API not as expected'
@@ -263,7 +268,8 @@ class TestB2CConfig(unittest2.TestCase):
                     'send_ps_file': False,
                     'send_png_file': False,
                     'state_reporting': False,
-                    'pe_pods': False}
+                    'pe_pods': False,
+                    'aggregate_files': False}
         msg = 'Dodgy Business Unit condition map should be empty dict'
         self.assertDictEqual(received, expected, msg)
 
@@ -280,7 +286,8 @@ class TestB2CConfig(unittest2.TestCase):
                     'send_ps_file': False,
                     'send_png_file': True,
                     'state_reporting': False,
-                    'pe_pods': False}
+                    'pe_pods': False,
+                    'aggregate_files': False}
         msg = 'Valid Business Unit condition map should produce dict values'
         self.assertDictEqual(received, expected, msg)
 
@@ -297,7 +304,8 @@ class TestB2CConfig(unittest2.TestCase):
                     'send_ps_file': True,
                     'send_png_file': False,
                     'state_reporting': True,
-                    'pe_pods': True}
+                    'pe_pods': True,
+                    'aggregate_files': False}
         msg = 'Fast condition map should produce dict values'
         self.assertDictEqual(received, expected, msg)
 
@@ -388,7 +396,7 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'Proxy kwargs should produce a populated dictionary'
         received = self._c.proxy_kwargs()
-        expected = {'host': 'itproxy-farm.toll.com.au',
+        expected = {'host': 'auproxy-farm.toll.com.au',
                     'password': '',
                     'port': 8080,
                     'protocol': 'https',
@@ -404,13 +412,13 @@ class TestB2CConfig(unittest2.TestCase):
     def test_proxy_string(self):
         """Produce a proxy string.
         """
-        kwargs = {'host': 'itproxy-farm.toll.com.au',
+        kwargs = {'host': 'auproxy-farm.toll.com.au',
                   'user': 'loumar',
                   'password': 'pw',
                   'port': '8080'}
         msg = 'Proxy string generation incorrect'
         received = self._c.proxy_string(kwargs)
-        expected = 'loumar:pw@itproxy-farm.toll.com.au:8080'
+        expected = 'loumar:pw@auproxy-farm.toll.com.au:8080'
         self.assertEqual(received, expected, msg)
 
     def test_sms_api_kwargs(self):

@@ -15,7 +15,8 @@ FLAG_MAP = {'item_number_excp': 0,
             'send_ps_file': 3,
             'send_png_file': 4,
             'state_reporting': 5,
-            'pe_pods': 6}
+            'pe_pods': 6,
+            'aggregate_files': 7}
 
 
 class B2CConfig(nparcel.Config):
@@ -44,6 +45,11 @@ class B2CConfig(nparcel.Config):
     .. attribute:: comms (loader, primary elect)
 
         directory where comms files are kept for further processing
+
+    .. attribute:: aggregator (ParcelPoint processing)
+
+        directory where T1250 loader files are aggregated for further
+        processing
 
     .. attribute loader_loop (loader)
 
@@ -140,6 +146,7 @@ class B2CConfig(nparcel.Config):
     _staging_base = None
     _signature = None
     _comms = None
+    _aggregator = None
     _loader_loop = 30
     _pe_loop = 30
     _reminder_loop = 30
@@ -206,6 +213,13 @@ class B2CConfig(nparcel.Config):
     @property
     def comms_dir(self):
         return self._comms
+
+    @property
+    def aggregator_dir(self):
+        return self._aggregator
+
+    def set_aggregator_dir(self, value):
+        self._aggregator = value
 
     @property
     def loader_loop(self):
@@ -356,6 +370,9 @@ class B2CConfig(nparcel.Config):
 
             self._comms = self.get('dirs', 'comms')
             log.debug('Comms file directory %s' % self._comms)
+
+            self._aggregator = self.get('dirs', 'aggregator')
+            log.debug('Aggregator directory %s' % self._aggregator)
 
             self._business_units = dict(self.items('business_units'))
             log.debug('Exporter Business Units %s' %
@@ -510,7 +527,8 @@ class B2CConfig(nparcel.Config):
             skip_days = self.get('comms', 'skip_days').split(',')
             self.set_skip_days(skip_days)
             log.debug('Parsed comms days to skip: "%s"' % skip_days)
-        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError), err:
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
             log.debug('Using default skip_days: %s' % str(self.skip_days))
 
         # Comms send_time_ranges.
@@ -519,7 +537,8 @@ class B2CConfig(nparcel.Config):
             self.set_send_time_ranges(send_time_ranges.split(','))
             log.debug('Parsed comms send time ranges: "%s"' %
                       send_time_ranges)
-        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError), err:
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
             log.debug('Using default send time ranges: %s' %
                       str(self.send_time_ranges))
 
@@ -529,7 +548,8 @@ class B2CConfig(nparcel.Config):
             self.set_comms_q_warning(int(comms_q_warning))
             log.debug('Parsed comms queue warn threshold: "%s"' %
                       comms_q_warning)
-        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError), err:
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
             log.debug('Using default comms queue warning: %s' %
                       self.comms_q_warning)
 
@@ -539,7 +559,8 @@ class B2CConfig(nparcel.Config):
             self.set_comms_q_error(int(comms_q_error))
             log.debug('Parsed comms queue error threshold: "%s"' %
                       comms_q_error)
-        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError), err:
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
             log.debug('Using default comms queue error: %s' %
                       self.comms_q_error)
 
