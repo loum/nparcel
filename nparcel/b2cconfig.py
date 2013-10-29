@@ -181,6 +181,15 @@ class B2CConfig(nparcel.Config):
     def in_dirs(self):
         return self._dirs_to_check
 
+    def set_in_dirs(self, values):
+        del self._dirs_to_check[:]
+
+        if values is not None:
+            log.debug('Set inbound directory "%s"' % str(values))
+            self._dirs_to_check.extend(values)
+        else:
+            self._dirs_to_check = []
+
     @property
     def pe_in_dirs(self):
         return self._pe_dirs_to_check
@@ -252,6 +261,15 @@ class B2CConfig(nparcel.Config):
     @property
     def support_emails(self):
         return self._support_emails
+
+    def set_support_emails(self, values):
+        del self._support_emails[:]
+
+        if values is not None:
+            log.debug('Set Support Emails "%s"' % str(values))
+            self._support_emails.extend(values)
+        else:
+            self._support_emails = []
 
     @property
     def cond(self):

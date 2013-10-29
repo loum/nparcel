@@ -5,7 +5,9 @@ import os
 
 import nparcel
 from nparcel.utils.files import (create_dir,
-                                 get_directory_files_list)
+                                 get_directory_files_list,
+                                 copy_file,
+                                 remove_files)
 
 
 class TestLoaderDaemon(unittest2.TestCase):
@@ -74,7 +76,7 @@ class TestLoaderDaemon(unittest2.TestCase):
         self.assertFalse(received, msg)
 
     def test_start(self):
-        """Start loop.
+        """Start dry loop.
         """
         # Note: were not testing behaviour here but check that we have
         # one of each, success/error/other.
@@ -88,6 +90,63 @@ class TestLoaderDaemon(unittest2.TestCase):
         # Clean up.
         self._d.set_file(old_file)
         self._d.set_dry(old_dry)
+
+    def test_start_non_dry_loop(self):
+        """Start non-dry loop.
+        """
+        dry = False
+
+        old_file = self._d.file
+        old_dry = self._d.dry
+        old_batch = self._d.batch
+        old_in_dirs = list(self._d.config.in_dirs)
+        old_archive_dir = self._d.config.archive_dir
+        old_agg_dir = self._d.config.aggregator_dir
+        old_support_emails = list(self._d.config.support_emails)
+        base_dir = tempfile.mkdtemp()
+        in_dir = os.path.join(base_dir, 'ipec', 'in')
+        archive_dir = tempfile.mkdtemp()
+        agg_dir = tempfile.mkdtemp()
+        old_cond = self._d.config.cond.get('toli')
+        new_cond = list(old_cond)
+        new_cond[7] = '1'
+        self._d.config.cond['toli'] = ''.join(new_cond)
+
+        # Copy over our test file.
+        copy_file(self._file,
+                  os.path.join(in_dir, os.path.basename(self._file)))
+
+        # Start processing.
+        self._d.set_dry(dry)
+        self._d.set_batch()
+        self._d.config.set_in_dirs([in_dir])
+        # Add valid email address here if you want to verify support comms.
+        self._d.config.set_support_emails(None)
+        self._d.config.set_archive_dir(archive_dir)
+        self._d.config.set_aggregator_dir(agg_dir)
+        self._d._start(self._exit_event)
+
+        # Clean up.
+        expected_archive_dir = os.path.join(archive_dir,
+                                            'ipec',
+                                            '20130828')
+        expected_file = os.path.join(expected_archive_dir,
+                                     os.path.basename(self._file))
+        expected_agg_file = os.path.join(agg_dir,
+                                         os.path.basename(self._file))
+        self._d.set_file(old_file)
+        self._d.set_dry(old_dry)
+        self._d.set_batch(old_batch)
+        self._d.config.set_in_dirs(old_in_dirs)
+        self._d.config.set_archive_dir(old_archive_dir)
+        self._d.config.set_support_emails(old_support_emails)
+        self._d.config.set_aggregator_dir(old_agg_dir)
+        self._d.config.cond['toli'] = old_cond
+        remove_files(expected_file)
+        remove_files(expected_agg_file)
+        os.removedirs(in_dir)
+        os.removedirs(expected_archive_dir)
+        os.removedirs(agg_dir)
 
     def test_distribute_file(self):
         """Distribute the T1250 file.

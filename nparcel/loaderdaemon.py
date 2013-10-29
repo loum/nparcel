@@ -152,7 +152,20 @@ class LoaderDaemon(nparcel.DaemonService):
                     time.sleep(self.config.loader_loop)
 
     def get_files(self):
-        """
+        """Checks inbound directories (defined by the
+        :attr:`nparcel.b2cconfig.in_dirs` config option) for valid
+        T1250 files to be processed.  In this context, valid is interpreted
+        as:
+        * T1250 files that conform to the T1250 syntax
+
+        * have not already been archived
+
+        * contain the T1250 EOF flag
+
+        **Returns:**
+            list of fully qualified and sorted (oldest first) T1250 files
+            to be processed
+
         """
         files_to_process = []
 
@@ -161,8 +174,6 @@ class LoaderDaemon(nparcel.DaemonService):
             for file in get_directory_files(dir):
                 if self.check_filename(file) and check_eof_flag(file):
                     log.info('Found file: "%s" ' % file)
-
-                    # Check that it's not in the archive already.
                     archive_path = self.get_customer_archive(file)
                     if (archive_path is not None and
                         os.path.exists(archive_path)):
