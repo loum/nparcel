@@ -109,9 +109,9 @@ class LoaderDaemon(nparcel.DaemonService):
                     else:
                         self.reporter(loader.process(file_timestamp,
                                                      record,
-                                                bu_id,
-                                                condition_map,
-                                                self.dry))
+                                                     bu_id,
+                                                     condition_map,
+                                                     self.dry))
                 f.close()
 
                 if not status and not eof_found:

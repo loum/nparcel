@@ -1,4 +1,5 @@
 import unittest2
+import threading
 
 import nparcel
 
@@ -7,6 +8,8 @@ class TestLoaderDaemon(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls._file = 'nparcel/tests/files/T1250_TOLI_20130828202901.txt'
+        cls._exit_event = threading.Event()
         cls._d = nparcel.LoaderDaemon(pidfile=None,
                                       config='nparcel/conf/nparceld.conf')
 
@@ -66,6 +69,25 @@ class TestLoaderDaemon(unittest2.TestCase):
         msg = 'Dodgy Nparcel filename should validate False'
         self.assertFalse(received, msg)
 
+    def test_start(self):
+        """Start loop.
+        """
+        # Note: were not testing behaviour here but check that we have
+        # one of each, success/error/other.
+        old_file = self._d.file
+        old_dry = self._d.dry
+
+        self._d.set_dry()
+        self._d.set_file(self._file)
+        self._d._start(self._exit_event)
+
+        # Clean up.
+        self._d.set_file(old_file)
+        self._d.set_dry(old_dry)
+
     @classmethod
     def tearDownClass(cls):
+        del cls._file
+        del cls._exit_event
         cls._d = None
+        del cls._d
