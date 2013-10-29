@@ -7,19 +7,51 @@ class TestReporter(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        pass
+        cls._identifier = 'tester'
+        cls._r = nparcel.Reporter(identifier=cls._identifier)
 
     def test_init(self):
         """Initialise a Reporter object.
         """
-        identifier = 'tester'
-        r = nparcel.Reporter(identifier=identifier)
-
         msg = 'Object is not an nparcel.Reporter'
-        self.assertIsInstance(r, nparcel.Reporter, msg)
+        self.assertIsInstance(self._r, nparcel.Reporter, msg)
 
-        r.report()
+    def test_report(self):
+        """Run the reporter.
+        """
+        old_id = self._r.identifier
+
+        self._r.reset()
+        received = self._r.report()
+        expected = 'None success:0 error:0 other:0 total:0 - duration:0'
+        msg = 'report() return message error'
+        self.assertEqual(received, expected, msg)
+
+        # Clean up.
+        self._r.set_identifier(old_id)
+
+    def test_incrementors(self):
+        """Increment the counts and report.
+        """
+        old_id = self._r.identifier
+
+        self._r.reset()
+        self._r.set_identifier('counter')
+        self._r(True)
+        self._r(False)
+        self._r(None)
+
+        received = self._r.report()
+        expected = 'counter success:1 error:1 other:1 total:3 - duration:0'
+        msg = 'report() return message error'
+        self.assertEqual(received, expected, msg)
+
+        # Clean up.
+        self._r.reset()
+        self._r.set_identifier(old_id)
 
     @classmethod
     def tearDownClass(cls):
-        pass
+        cls._r = None
+        del cls._r
+        del cls._identifier

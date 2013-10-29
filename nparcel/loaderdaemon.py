@@ -51,7 +51,6 @@ class LoaderDaemon(nparcel.DaemonService):
 
         loader = nparcel.Loader(db=self.config.db_kwargs(),
                                 comms_dir=self.config.comms_dir)
-        reporter = nparcel.Reporter()
         emailer = nparcel.Emailer()
         np_support = self.config.support_emails
 
@@ -86,7 +85,7 @@ class LoaderDaemon(nparcel.DaemonService):
                     continue
 
                 # We should have a file handle.
-                reporter.reset(identifier=file)
+                self.reporter.reset(identifier=file)
                 (bu, file_timestamp) = self.validate_file(file)
                 if bu is None or file_timestamp is None:
                     log.error('Unable to validate file "%s":' % file)
@@ -108,8 +107,8 @@ class LoaderDaemon(nparcel.DaemonService):
                         eof_found = True
                         break
                     else:
-                        reporter(loader.process(file_timestamp,
-                                                record,
+                        self.reporter(loader.process(file_timestamp,
+                                                     record,
                                                 bu_id,
                                                 condition_map,
                                                 self.dry))
@@ -128,10 +127,10 @@ class LoaderDaemon(nparcel.DaemonService):
                         self.archive_file(file)
 
                     # Report.
-                    reporter.end()
-                    stats = reporter.report()
+                    self.reporter.end
+                    stats = self.reporter.report()
                     log.info(stats)
-                    if reporter.bad_records > 0:
+                    if self.reporter.bad_records > 0:
                         msg = ("%s\n\n%s" % (stats, "\n".join(alerts)))
                         del alerts[:]
 
