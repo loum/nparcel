@@ -6,10 +6,12 @@ __all__ = [
     "load_template",
     "remove_files",
     "move_file",
+    "copy_file",
 ]
 import os
 import re
 import string
+import shutil
 
 from nparcel.utils.log import log
 
@@ -29,14 +31,16 @@ def create_dir(dir):
     """
     status = True
 
-    # Attempt to create the directory if it does not exist.
-    if dir is not None and not os.path.exists(dir):
-        try:
+    if dir is not None:
+        if not os.path.exists(dir):
             log.info('Creating directory "%s"' % dir)
-            os.makedirs(dir)
-        except OSError, err:
-            status = False
-            log.error('Unable to create directory "%s": %s"' % (dir, err))
+            try:
+                os.makedirs(dir)
+            except OSError, err:
+                status = False
+                log.error('Directory create error: %s' % err)
+    else:
+        log.error('Invalid directory name supplied "%s"' % dir)
 
     return status
 
@@ -157,6 +161,36 @@ def move_file(source, target, err=False):
             os.rename(source, target)
         except OSError, err:
             log.error('%s move to %s failed -- %s' % (source, target, err))
+
+    return status
+
+
+def copy_file(source, target):
+    """Attempts to copy *source* to *target*.
+
+    Checks if the *target* directory exists.  If not, will attempt to
+    create before attempting the file move.
+
+    **Args:**
+        *source*: name of file to move
+
+        *target*: filename of where to copy *source* to
+
+    **Returns:**
+        boolean ``True`` if move was successful
+
+        boolean ``False`` if move failed
+
+    """
+    log.info('Copying "%s" to "%s"' % (source, target))
+    status = False
+
+    if create_dir(os.path.dirname(target)):
+        try:
+            shutil.copyfile(source, target)
+            status = True
+        except OSError, err:
+            log.error('%s copy to %s failed -- %s' % (source, target, err))
 
     return status
 

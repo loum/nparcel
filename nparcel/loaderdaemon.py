@@ -12,7 +12,8 @@ import nparcel
 from nparcel.utils.log import log
 from nparcel.utils.files import (get_directory_files,
                                  check_eof_flag,
-                                 create_dir)
+                                 move_file,
+                                 copy_file)
 
 
 class LoaderDaemon(nparcel.DaemonService):
@@ -124,7 +125,8 @@ class LoaderDaemon(nparcel.DaemonService):
                     alerts = list(loader.alerts)
                     loader.reset(commit=commit)
                     if not self.dry and self.file is None:
-                        self.archive_file(file)
+                        aggregate = condition_map.get('aggregate_files')
+                        self.distribute_file(file, aggregate)
 
                     # Report.
                     self.reporter.end
@@ -233,37 +235,58 @@ class LoaderDaemon(nparcel.DaemonService):
         return (bu, dt_formatted)
 
     def archive_file(self, file):
+        """Will attempt to move *file* to the Business Unit specific
+        archive directory.
+
+        **Args:**
+            *file*: string representation of the filename to archive
+
         """
-        """
+        log.info('Archiving "%s"' % file)
         archive_path = self.get_customer_archive(file)
-        archive_base = os.path.dirname(archive_path)
+        move_file(file, archive_path)
 
-        log.info('Archiving "%s" to "%s"' % (file, archive_path))
-        if create_dir(archive_base):
-            try:
-                os.rename(file, archive_path)
-            except OSError, err:
-                log.error('Rename: %s to %s failed -- %s' % (file,
-                                                             archive_path,
-                                                             err))
-        else:
-            archive_base = None
+    def aggregate_file(self, file):
+        """Will attempt to copy *file* to the special aggregator directory
+        for further processing.
 
-        return archive_base
+        **Args:**
+            *file*: string representation of the filename to aggregate
+
+        """
+        log.info('Aggregating file "%s"' % file)
+        if self.config.aggregator_dir is not None:
+            aggregator_path = os.path.join(self.config.aggregator_dir,
+                                           os.path.basename(file))
+            copy_file(file, aggregator_path)
 
     def get_customer_archive(self, file):
+        """Will determine the archive directory path based on the
+        *file* name provided.
+
+        **Args:**
+            *file*: the T1250 file.  For example,
+            ``T1250_TOLI_20130828202901.txt``
+
+        **Returns:**
+            string representing the archive path.  For example, for *file*
+            ``T1250_TOLI_20130828202901.txt`` the resultant archive
+            file path would be
+            ``<archive_base>/ipec/20130828/T1250_TOLI_20130828202901.txt``
+
+        """
         customer = self.get_customer(file)
         filename = os.path.basename(file)
-        archive_dir = None
+        archive_filepath = None
         m = re.search('T1250_TOL.*_(\d{8})\d{6}\.txt', filename)
         if m is not None:
             file_timestamp = m.group(1)
             dir = os.path.join(self.config.archive_dir,
                                customer,
                                file_timestamp)
-            archive_dir = os.path.join(dir, filename)
+            archive_filepath = os.path.join(dir, filename)
 
-        return archive_dir
+        return archive_filepath
 
     def get_customer(self, file):
         """
@@ -272,3 +295,22 @@ class LoaderDaemon(nparcel.DaemonService):
         (head, customer) = os.path.split(os.path.dirname(dirname))
 
         return customer
+
+    def distribute_file(self, file, aggregate_file=False):
+        """Helper method that manages post-processing file distribution.
+
+        **Args:**
+            *file*: the T1250 file.  For example,
+            ``T1250_TOLI_20130828202901.txt``
+
+            *aggregate_file*: boolean flag that manages the conditional
+            copy of *file* to the aggregate directory for further
+            processing.  The aggregate directory location is determined
+            by the *aggregator* configuration option under the *dirs*
+            section.
+
+        """
+        if aggregate_file:
+            self.aggregate_file(file)
+
+        self.archive_file(file)

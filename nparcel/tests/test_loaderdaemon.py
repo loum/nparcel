@@ -1,7 +1,11 @@
 import unittest2
 import threading
+import tempfile
+import os
 
 import nparcel
+from nparcel.utils.files import (create_dir,
+                                 get_directory_files_list)
 
 
 class TestLoaderDaemon(unittest2.TestCase):
@@ -84,6 +88,87 @@ class TestLoaderDaemon(unittest2.TestCase):
         # Clean up.
         self._d.set_file(old_file)
         self._d.set_dry(old_dry)
+
+    def test_distribute_file(self):
+        """Distribute the T1250 file.
+        """
+        base_dir = tempfile.mkdtemp()
+        source_dir = os.path.join(base_dir, 'ipec', 'in')
+        create_dir(source_dir)
+        archive_dir = tempfile.mkdtemp()
+        agg_dir = tempfile.mkdtemp()
+        old_archive_dir = self._d.config.archive_dir
+        self._d.config.set_archive_dir(archive_dir)
+        old_agg_dir = self._d.config.archive_dir
+        self._d.config.set_aggregator_dir(archive_dir)
+
+        # Fudge a T1250.
+        test_file = 'T1250_TOLI_20130828202901.txt'
+        fh = open(os.path.join(source_dir, test_file), 'w')
+        fh.close()
+
+        expected_archive_dir = os.path.join(archive_dir,
+                                           'ipec',
+                                           '20130828')
+
+        # Test the archive.
+        self._d.distribute_file(os.path.join(source_dir, test_file))
+        received = get_directory_files_list(expected_archive_dir)
+        expected = [os.path.join(expected_archive_dir, test_file)]
+        msg = 'Archived file error'
+        self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        os.remove(os.path.join(expected_archive_dir, test_file))
+        os.removedirs(source_dir)
+        os.removedirs(expected_archive_dir)
+        os.removedirs(agg_dir)
+        self._d.config.set_archive_dir(old_archive_dir)
+        self._d.config.set_aggregator_dir(old_agg_dir)
+
+    def test_distribute_file_with_aggregator_set(self):
+        """Distribute the T1250 file.
+        """
+        base_dir = tempfile.mkdtemp()
+        source_dir = os.path.join(base_dir, 'ipec', 'in')
+        create_dir(source_dir)
+        archive_dir = tempfile.mkdtemp()
+        agg_dir = tempfile.mkdtemp()
+        old_archive_dir = self._d.config.archive_dir
+        self._d.config.set_archive_dir(archive_dir)
+        old_agg_dir = self._d.config.archive_dir
+        self._d.config.set_aggregator_dir(agg_dir)
+
+        # Fudge a T1250.
+        test_file = 'T1250_TOLI_20130828202901.txt'
+        fh = open(os.path.join(source_dir, test_file), 'w')
+        fh.close()
+
+        self._d.distribute_file(os.path.join(source_dir, test_file),
+                                aggregate_file=True)
+
+        # Test the archive.
+        expected_archive_dir = os.path.join(archive_dir,
+                                           'ipec',
+                                           '20130828')
+        received = get_directory_files_list(expected_archive_dir)
+        expected = [os.path.join(expected_archive_dir, test_file)]
+        msg = 'Archived file error'
+        self.assertListEqual(received, expected, msg)
+
+        # Test the aggregator directory.
+        received = get_directory_files_list(agg_dir)
+        expected = [os.path.join(agg_dir, test_file)]
+        msg = 'Aggregate file error'
+
+        # Cleanup.
+        os.remove(os.path.join(expected_archive_dir, test_file))
+        os.remove(os.path.join(agg_dir, test_file))
+        os.removedirs(source_dir)
+        os.removedirs(expected_archive_dir)
+        os.removedirs(agg_dir)
+        self._d.config.set_archive_dir(old_archive_dir)
+        self._d.config.set_aggregator_dir(old_agg_dir)
 
     @classmethod
     def tearDownClass(cls):
