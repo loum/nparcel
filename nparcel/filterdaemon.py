@@ -32,6 +32,13 @@ class FilterDaemon(nparcel.DaemonService):
         self.config = nparcel.B2CConfig(file=config)
         self.config.parse_config()
 
+        try:
+            if self.config.filter_loop is not None:
+                self.set_loop(self.config.filter_loop)
+        except AttributeError, err:
+            log.info('Daemon loop not defined in config -- default %d sec' %
+                     self.loop)
+
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
 
@@ -69,7 +76,7 @@ class FilterDaemon(nparcel.DaemonService):
                     log.info('Batch run iteration complete -- aborting')
                     event.set()
                 else:
-                    time.sleep(self.config.filter_loop)
+                    time.sleep(self.loop)
 
     def get_files(self):
         return []

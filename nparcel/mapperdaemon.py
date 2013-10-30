@@ -44,6 +44,13 @@ class MapperDaemon(nparcel.DaemonService):
         self.config = nparcel.B2CConfig(file=config)
         self.config.parse_config()
 
+        try:
+            if self.config.filter_loop is not None:
+                self.set_loop(self.config.mapper_loop)
+        except AttributeError, err:
+            log.info('Daemon loop not defined in config -- default %d sec' %
+                     self.loop)
+
     @property
     def file_ts_format(self):
         return self._file_ts_format
@@ -159,7 +166,7 @@ class MapperDaemon(nparcel.DaemonService):
                         log.info('Batch run iteration complete -- aborting')
                         event.set()
                     else:
-                        time.sleep(self.config.loader_loop)
+                        time.sleep(self.loop)
 
     def get_files(self, dir=None):
         """Identifies GIS-special WebMethod files that are to be processed.

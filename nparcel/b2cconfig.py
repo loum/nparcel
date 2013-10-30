@@ -71,6 +71,14 @@ class B2CConfig(nparcel.Config):
 
         time (seconds) between exporter processing iterations.
 
+    .. attribute:: mapper_loop (exporter)
+
+        time (seconds) between mapper processing iterations.
+
+    .. attribute:: filter_loop (exporter)
+
+        time (seconds) between filter processing iterations.
+
     .. attribute:: business_units (exporter)
 
         the list of business units to query for collected items
@@ -152,6 +160,8 @@ class B2CConfig(nparcel.Config):
     _reminder_loop = 30
     _comms_loop = 30
     _exporter_loop = 900
+    _mapper_loop = 30
+    _filter_loop = 30
     _proxy_scheme = 'https'
     _business_units = {}
     _file_bu = {}
@@ -249,6 +259,14 @@ class B2CConfig(nparcel.Config):
     @property
     def exporter_loop(self):
         return self._exporter_loop
+
+    @property
+    def mapper_loop(self):
+        return self._mapper_loop
+
+    @property
+    def filter_loop(self):
+        return self._filter_loop
 
     @property
     def business_units(self):
@@ -480,6 +498,18 @@ class B2CConfig(nparcel.Config):
         except ConfigParser.NoOptionError, err:
             log.debug('Using default Exporter loop: %d (sec)' %
                       self.exporter_loop)
+
+        try:
+            self._mapper_loop = int(self.get('timeout', 'mapper_loop'))
+        except ConfigParser.NoOptionError, err:
+            log.debug('Using default Mapper loop: %d (sec)' %
+                      self.mapper_loop)
+
+        try:
+            self._filter_loop = int(self.get('timeout', 'filter_loop'))
+        except ConfigParser.NoOptionError, err:
+            log.debug('Using default Filter loop: %d (sec)' %
+                      self.filter_loop)
 
         try:
             self._support_emails = self.get('email', 'support').split(',')

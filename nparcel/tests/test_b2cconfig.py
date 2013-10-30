@@ -86,6 +86,16 @@ class TestB2CConfig(unittest2.TestCase):
         expected = 300
         self.assertEqual(received, expected, msg)
 
+        msg = 'Mapper loop not as expected'
+        received = self._c.mapper_loop
+        expected = 30
+        self.assertEqual(received, expected, msg)
+
+        msg = 'Filter loop not as expected'
+        received = self._c.filter_loop
+        expected = 30
+        self.assertEqual(received, expected, msg)
+
         msg = 'Business units not as expected'
         received = self._c.business_units
         expected = {'priority': '1', 'fast': '2', 'ipec': '3'}

@@ -7,12 +7,38 @@ import nparcel
 class DaemonService(nparcel.utils.Daemon):
     """Common components for the Daemoniser facility.
 
+    .. attributes:: file
+
+        daemonisers can handle a single iteration if a file is provided
+
+    .. attributes:: dry
+
+        don't actually run, just report
+
+    .. attributes:: batch
+
+        single iteration
+
+    .. attribute:: emailer
+
+        :mod:`nparcel.Emailer` object
+
+    .. attribute:: reporter
+
+        :mod:`nparcel.Reporter` object
+
+    .. aatribute:: loop
+
+        integer value that represents the sleep period between
+        processing iterations (default 30 seconds)
+
     """
     _file = None
     _dry = False
     _batch = False
     _emailer = nparcel.Emailer()
     _reporter = nparcel.Reporter()
+    _loop = 30
 
     def __init__(self,
                  pidfile,
@@ -53,3 +79,10 @@ class DaemonService(nparcel.utils.Daemon):
     @property
     def reporter(self):
         return self._reporter
+
+    @property
+    def loop(self):
+        return self._loop
+
+    def set_loop(self, value):
+        self._loop = value
