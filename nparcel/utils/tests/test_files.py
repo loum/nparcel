@@ -5,7 +5,8 @@ import os
 from nparcel.utils.files import (load_template,
                                  get_directory_files,
                                  get_directory_files_list,
-                                 remove_files)
+                                 remove_files,
+                                 check_filename)
 
 
 class TestFiles(unittest2.TestCase):
@@ -94,3 +95,23 @@ class TestFiles(unittest2.TestCase):
 
         # Clean up.
         remove_files(os.path.join(dir, filter_file))
+
+    def test_check_filename(self):
+        """Check Nparcel filename format.
+        """
+        format = 'T1250_TOL*.txt'
+        # Priority.
+        received = check_filename('T1250_TOLP_20130904061851.txt', format)
+        msg = 'Priority Nparcel filename should validate True'
+        self.assertTrue(received, msg)
+
+        # Fast.
+        received = check_filename('T1250_TOLF_VIC_20130904061851.txt',
+                                  format)
+        msg = 'Fast VIC Nparcel filename should validate True'
+        self.assertTrue(received, msg)
+
+        # Dodgy.
+        received = check_filename('T1250_dodgy_20130904061851.txt', format)
+        msg = 'Dodgy filename should validate False'
+        self.assertFalse(received, msg)

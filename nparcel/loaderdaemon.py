@@ -5,7 +5,6 @@ import os
 import re
 import time
 import datetime
-import fnmatch
 import signal
 
 import nparcel
@@ -13,13 +12,19 @@ from nparcel.utils.log import log
 from nparcel.utils.files import (get_directory_files,
                                  check_eof_flag,
                                  move_file,
-                                 copy_file)
+                                 copy_file,
+                                 check_filename)
 
 
 class LoaderDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.Loader` class.
 
+    .. attribute:: file_format
+
+        the :mod:`re` format string to match loader files against
+
     """
+    _file_format = 'T1250_TOL*.txt'
 
     def __init__(self,
                  pidfile,
@@ -34,6 +39,13 @@ class LoaderDaemon(nparcel.DaemonService):
 
         self.config = nparcel.B2CConfig(file=config)
         self.config.parse_config()
+
+    @property
+    def file_format(self):
+        return self._file_format
+
+    def set_file_format(self, value):
+        self._file_format = value
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
@@ -172,7 +184,8 @@ class LoaderDaemon(nparcel.DaemonService):
         for dir in self.config.in_dirs:
             log.info('Looking for files at: %s ...' % dir)
             for file in get_directory_files(dir):
-                if self.check_filename(file) and check_eof_flag(file):
+                if (check_filename(file, self.file_format) and
+                    check_eof_flag(file)):
                     log.info('Found file: "%s" ' % file)
                     archive_path = self.get_customer_archive(file)
                     if (archive_path is not None and
@@ -185,36 +198,6 @@ class LoaderDaemon(nparcel.DaemonService):
         log.debug('Files set to be processed: "%s"' % str(files_to_process))
 
         return files_to_process
-
-    def check_filename(self, file):
-        """Parse filename string supplied by *file* and check that it
-        conforms to the Nparcel format.
-
-        Nparcel format is based T1250_TOLc_xxx_yyyymmddhhmmss.txt where:
-
-        * c is the Business Unit name ('P' for Priority etc.)
-
-        * xxx is the optional state ('VIC' for Victoria etc.)
-
-        * yyyymmddhhmmss is the time the file was generated
-
-        **Args:**
-            file: the filename string
-
-        **Returns:**
-            boolean ``True`` if filename string conforms to Nparcel format
-
-            boolean ``False`` otherwise
-
-        """
-        status = False
-
-        if fnmatch.fnmatch(os.path.basename(file), 'T1250_TOL*.txt'):
-            status = True
-        else:
-            log.error('Filename "%s" did not match filtering rules' % file)
-
-        return status
 
     def validate_file(self, filename):
         """Parse the Nparcel-format filename string and attempt to extract

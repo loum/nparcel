@@ -57,24 +57,6 @@ class TestLoaderDaemon(unittest2.TestCase):
         msg = 'Validated dodgy filename parsed values incorrect'
         self.assertTupleEqual(received, expected, msg)
 
-    def test_check_filename(self):
-        """Check Nparcel filename format.
-        """
-        # Priority.
-        received = self._d.check_filename('T1250_TOLP_20130904061851.txt')
-        msg = 'Priority Nparcel filename should validate True'
-        self.assertTrue(received, msg)
-
-        # Fast.
-        received = self._d.check_filename('T1250_TOLF_VIC_20130904061851.txt')
-        msg = 'Fast VIC Nparcel filename should validate True'
-        self.assertTrue(received, msg)
-
-        # Dodgy.
-        received = self._d.check_filename('T1250_dodgy_20130904061851.txt')
-        msg = 'Dodgy Nparcel filename should validate False'
-        self.assertFalse(received, msg)
-
     def test_start(self):
         """Start dry loop.
         """

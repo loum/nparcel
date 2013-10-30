@@ -7,11 +7,13 @@ __all__ = [
     "remove_files",
     "move_file",
     "copy_file",
+    "check_filename",
 ]
 import os
 import re
 import string
 import shutil
+import fnmatch
 
 from nparcel.utils.log import log
 
@@ -258,3 +260,29 @@ def remove_files(files):
             log.error('"%s" remove failed: %s' % (file_to_remove, err))
 
     return files_removed
+
+
+def check_filename(file, format):
+    """Parse filename string supplied by *file* and check that it
+    conforms to *format*.
+
+    **Args:**
+        *file*: the filename string
+
+        *format*: the :mod:`re` format string to match against
+
+    **Returns:**
+        boolean ``True`` if filename string conforms to *format*
+
+        boolean ``False`` otherwise
+
+    """
+    status = False
+
+    if fnmatch.fnmatch(os.path.basename(file), format):
+        status = True
+    else:
+        log.error('Filename "%s" did not match filter "%s"' %
+                  (file, format))
+
+    return status
