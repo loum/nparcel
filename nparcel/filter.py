@@ -31,9 +31,9 @@ class Filter(object):
         *Returns:**
             boolean ``True`` if record is a ParcelPoint
 
-            boolean ``False`` if record is not a ParcelPoint
+            boolean ``False`` if record does not have an Agent Id
 
-            ``None`` if an *other* scenario (typically missing Agent Id)
+            ``None`` if an *other* scenario (typically not a ParcelPoint)
 
         """
         status = None
@@ -44,13 +44,13 @@ class Filter(object):
         agent_id = fields.get('Agent Id')
         msg = 'Conn Note/Agent Id "%s/%s"' % (connote_literal, agent_id)
         if agent_id is None or not agent_id:
-            log.info('%s - missing Agent Id' % msg)
+            status = False
+            log.error('%s - missing Agent Id' % msg)
         elif agent_id.startswith('P'):
             log.info('%s - matches criteria' % msg)
             status = True
         else:
             log.info('%s - does not match criteria' % msg)
-            status = False
 
         log.info('Conn Note: "%s" parse complete' % connote_literal)
 

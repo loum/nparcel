@@ -86,6 +86,42 @@ class FilterDaemon(nparcel.DaemonService):
             else:
                 files.extend(self.get_files())
 
+            for file in files:
+                log.info('Processing file: "%s" ...' % file)
+                status = False
+
+                try:
+                    f = open(file, 'r')
+                except IOError, e:
+                    # TODO -- probably want to move file aside and send
+                    # failure comms.
+                    log.error('File open error "%s": %s' % (file, str(e)))
+                    continue
+
+                self.reporter.reset(identifier=file)
+                eof_found = False
+                for line in f:
+                    record = line.rstrip('\r\n')
+                    if record == '%%EOF':
+                        log.info('EOF found')
+                        status = True
+                        eof_found = True
+                        break
+                    else:
+                        self.reporter(filter.process(line))
+
+                f.close()
+
+                if status:
+                    log.info('%s processing OK.' % file)
+                    stats = self.reporter.report()
+                    log.info(stats)
+                else:
+                    log.error('%s processing failed.' % file)
+                    if not eof_found:
+                        log.error("%s - %s" % ('File closed before EOF',
+                                               'all line items ignored'))
+
             if not event.isSet():
                 if self.dry:
                     log.info('Dry run iteration complete -- aborting')

@@ -153,7 +153,6 @@ class MapperDaemon(nparcel.DaemonService):
 
                 if status:
                     log.info('%s processing OK.' % file)
-                    reporter.end()
                     stats = reporter.report()
                     log.info(stats)
                 else:
@@ -173,7 +172,6 @@ class MapperDaemon(nparcel.DaemonService):
                     archive_path = self.get_customer_archive(file)
                     if not self.dry:
                         move_file(file, archive_path, err=True)
-
             else:
                 # Just close the files as they are.
                 for fh in fhs.values():

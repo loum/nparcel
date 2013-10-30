@@ -30,16 +30,16 @@ class TestFilter(unittest2.TestCase):
         """
         line = self._c.get('test_lines', 'PP_MISSING_AGENT_ID')
         received = self._f.process(line)
-        msg = 'Valid ParcelPoint -- missing Agent Id should return None'
-        self.assertIsNone(received, msg)
+        msg = 'Valid ParcelPoint -- missing Agent Id should return False'
+        self.assertFalse(received, msg)
 
     def test_process_valid_record_not_parcel_point(self):
         """Process valid record - not parcel point.
         """
         line = self._c.get('test_lines', 'VALID_LINE')
         received = self._f.process(line)
-        msg = 'Valid ParcelPoint -- not ParcelPoint should return False'
-        self.assertFalse(received, msg)
+        msg = 'Valid ParcelPoint -- not ParcelPoint should return None'
+        self.assertIsNone(received, msg)
 
     @classmethod
     def tearDownClass(cls):

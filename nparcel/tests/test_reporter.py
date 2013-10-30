@@ -23,9 +23,9 @@ class TestReporter(unittest2.TestCase):
 
         self._r.reset()
         received = self._r.report()
-        expected = 'None success:0 error:0 other:0 total:0 - duration:0'
+        expected = 'None success:0 error:0 other:0 total:0 - duration:'
         msg = 'report() return message error'
-        self.assertEqual(received, expected, msg)
+        self.assertEqual(received[0:50], expected, msg)
 
         # Clean up.
         self._r.set_identifier(old_id)
@@ -42,9 +42,9 @@ class TestReporter(unittest2.TestCase):
         self._r(None)
 
         received = self._r.report()
-        expected = 'counter success:1 error:1 other:1 total:3 - duration:0'
+        expected = 'counter success:1 error:1 other:1 total:3 - duration:'
         msg = 'report() return message error'
-        self.assertEqual(received, expected, msg)
+        self.assertEqual(received[0:53], expected, msg)
 
         # Clean up.
         self._r.reset()

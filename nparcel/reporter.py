@@ -92,8 +92,11 @@ class Reporter(object):
     def end(self):
         self._end_time = datetime.datetime.now()
 
-    def report(self):
+    def report(self, set_end=True):
         """Dump of current counters.
+
+        **Args:**
+            flag to control the reporting end timer
 
         **Returns:**
             string representation of the various counts.  Similar
@@ -102,6 +105,9 @@ class Reporter(object):
                 ... success:1 error:1 other:1 total:3 - duration:0
 
         """
+        if set_end:
+            self.end
+
         return('%s success:%d error:%d other:%d total:%d - duration:%s' %
                (str(self.identifier),
                 self.good_records,
