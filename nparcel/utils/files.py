@@ -279,10 +279,11 @@ def check_filename(file, format):
     """
     status = False
 
-    if fnmatch.fnmatch(os.path.basename(file), format):
+    r = re.compile(format)
+    m = r.match(os.path.basename(file))
+    if m:
         status = True
     else:
-        log.error('Filename "%s" did not match filter "%s"' %
-                  (file, format))
+        log.error('File "%s" did not match filter "%s"' % (file, format))
 
     return status

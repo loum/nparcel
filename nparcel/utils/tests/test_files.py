@@ -99,7 +99,7 @@ class TestFiles(unittest2.TestCase):
     def test_check_filename(self):
         """Check Nparcel filename format.
         """
-        format = 'T1250_TOL*.txt'
+        format = 'T1250_TOL.*\.txt'
         # Priority.
         received = check_filename('T1250_TOLP_20130904061851.txt', format)
         msg = 'Priority Nparcel filename should validate True'

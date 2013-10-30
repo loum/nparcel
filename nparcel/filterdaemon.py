@@ -6,6 +6,9 @@ import time
 
 import nparcel
 from nparcel.utils.log import log
+from nparcel.utils.files import (check_eof_flag,
+                                 get_directory_files,
+                                 check_filename)
 
 
 class FilterDaemon(nparcel.DaemonService):
@@ -16,7 +19,7 @@ class FilterDaemon(nparcel.DaemonService):
         the :mod:`re` format string to match filter files against
 
     """
-    _file_format = 'T1250_TOL*.txt'
+    _file_format = 'T1250_TOL.*\.txt'
 
     def __init__(self,
                  pidfile,
@@ -38,6 +41,21 @@ class FilterDaemon(nparcel.DaemonService):
         except AttributeError, err:
             log.info('Daemon loop not defined in config -- default %d sec' %
                      self.loop)
+
+        try:
+            if self.config.t1250_file_format is not None:
+                self.set_file_format(self.config.t1250_file_format)
+        except AttributeError, err:
+            msg = ('Inbound file format not defined in config -- using %s' %
+                   self.file_format)
+            log.info(msg)
+
+    @property
+    def file_format(self):
+        return self._file_format
+
+    def set_file_format(self, value):
+        self._file_format = value
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
@@ -78,5 +96,42 @@ class FilterDaemon(nparcel.DaemonService):
                 else:
                     time.sleep(self.loop)
 
-    def get_files(self):
-        return []
+    def get_files(self, dir=None):
+        """Checks inbound directories (defined by the
+        :attr:`nparcel.b2cconfig.aggregator_dir` config option) for valid
+        T1250 files to be processed.  In this context, valid is interpreted
+        as:
+        * T1250 files that conform to the T1250 syntax
+
+        **Args:**
+            *dir*: directory to search (override the value defined in the
+            configuration file)
+
+        **Returns:**
+            list of fully qualified and sorted (oldest first) T1250 files
+            to be processed
+
+        """
+        files_to_process = []
+
+        dirs_to_check = []
+        if dir is not None:
+            dirs_to_check.append(dir)
+        else:
+            try:
+                dirs_to_check = [self.config.aggregator_dir]
+            except AttributeError, err:
+                log.info('Aggregator directory not defined in config')
+
+        for dir_to_check in dirs_to_check:
+            log.info('Looking for files at: %s ...' % dir_to_check)
+            for file in get_directory_files(dir_to_check):
+                if (check_filename(file, self.file_format) and
+                    check_eof_flag(file)):
+                    log.info('Found file: "%s" ' % file)
+                    files_to_process.append(file)
+
+        files_to_process.sort()
+        log.debug('Files set to be processed: "%s"' % str(files_to_process))
+
+        return files_to_process

@@ -101,6 +101,11 @@ class TestB2CConfig(unittest2.TestCase):
         expected = {'priority': '1', 'fast': '2', 'ipec': '3'}
         self.assertDictEqual(received, expected, msg)
 
+        msg = 'T1250 file name format not as expected'
+        received = self._c.t1250_file_format
+        expected = 'T1250_TOL.*\.txt'
+        self.assertEqual(received, expected, msg)
+
         msg = 'Filename Business units not as expected'
         received = self._c.file_bu
         expected = {'tolp': '1',

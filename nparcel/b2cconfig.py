@@ -83,6 +83,10 @@ class B2CConfig(nparcel.Config):
 
         the list of business units to query for collected items
 
+    .. attribute:: t1250_file_format
+
+        T1250 filename format
+
     .. attribute:: cond (loader)
 
         dictionary of Business unit special condition flags
@@ -164,6 +168,7 @@ class B2CConfig(nparcel.Config):
     _filter_loop = 30
     _proxy_scheme = 'https'
     _business_units = {}
+    _t1250_file_format = 'T1250_TOL.*\.txt'
     _file_bu = {}
     _cond = {}
     _support_emails = []
@@ -271,6 +276,10 @@ class B2CConfig(nparcel.Config):
     @property
     def business_units(self):
         return self._business_units
+
+    @property
+    def t1250_file_format(self):
+        return self._t1250_file_format
 
     @property
     def file_bu(self):
@@ -419,6 +428,15 @@ class B2CConfig(nparcel.Config):
         except ConfigParser.NoOptionError, err:
             log.critical('Missing required config: %s' % err)
             sys.exit(1)
+
+        # The standard T1250 file (which shouldn't change much)
+        try:
+            self._t1250_file_format = self.get('files', 't1250_file_format')
+            log.debug('T1250 file format %s' % self.t1250_file_format)
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default T1250 file format: %s' %
+                      self.t1250_file_format)
 
         # Primary elect work is only a temporary solution.
         try:

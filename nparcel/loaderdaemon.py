@@ -24,7 +24,7 @@ class LoaderDaemon(nparcel.DaemonService):
         the :mod:`re` format string to match loader files against
 
     """
-    _file_format = 'T1250_TOL*.txt'
+    _file_format = 'T1250_TOL.*\.txt'
 
     def __init__(self,
                  pidfile,

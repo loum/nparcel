@@ -1,7 +1,11 @@
 import unittest2
 import threading
+import tempfile
+import os
 
 import nparcel
+from nparcel.utils.files import (copy_file,
+                                 remove_files)
 
 
 class TestFilterDaemon(unittest2.TestCase):
@@ -35,6 +39,37 @@ class TestFilterDaemon(unittest2.TestCase):
         self._fd.set_file(old_file)
         self._fd.set_dry(old_dry)
         self._exit_event.clear()
+
+    def test_check_filename(self):
+        """Get list of inbound files.
+        """
+        in_dir = tempfile.mkdtemp()
+        target_files = [os.path.join(in_dir, os.path.basename(self._file)),
+                        os.path.join(in_dir,
+                                     'T1250_TOLI_20130828202902.txt'),
+                        os.path.join(in_dir,
+                                     'T1250_TOLI_20130828202903.txt')]
+        empty_files = [os.path.join(in_dir,
+                                    'T1250_TOLI_20130828202904.txt')]
+        dodgy_files = [os.path.join(in_dir, 'dodgy')]
+
+        # Create the files.
+        for f in target_files:
+            copy_file(self._file, f)
+        for f in empty_files + dodgy_files:
+            fh = open(f, 'w')
+            fh.close()
+
+        received = self._fd.get_files(in_dir)
+        expected = target_files
+        msg = 'ParcelPoint directory listing not as expected'
+        self.assertListEqual(received, expected, msg)
+
+        # Clean up.
+        remove_files(target_files)
+        remove_files(empty_files)
+        remove_files(dodgy_files)
+        os.removedirs(in_dir)
 
     @classmethod
     def tearDownClass(cls):

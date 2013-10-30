@@ -11,22 +11,29 @@ import nparcel
 from nparcel.utils.log import log
 from nparcel.utils.files import (get_directory_files,
                                  check_eof_flag,
-                                 create_dir,
+                                 check_filename,
                                  move_file)
 
 
 class MapperDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.Mapper` class.
 
+    .. attribute:: file_format
+
+        the :mod:`re` format string to match filter files against
+        (default ``T1250_TOL[PIF]_\d{14}\.dat``)
+
     .. attribute:: file_ts_format
 
         Date/time string format to use to build into the T1250 outbound file
+        (default ``%Y%m%d%H%M%S``)
 
     .. attribute:: processing_ts
 
         Current timestamp
 
     """
+    _file_format = 'T1250_TOL[PIF]_\d{14}\.dat'
     _file_ts_format = '%Y%m%d%H%M%S'
     _processing_ts = datetime.datetime.now()
 
@@ -50,6 +57,21 @@ class MapperDaemon(nparcel.DaemonService):
         except AttributeError, err:
             log.info('Daemon loop not defined in config -- default %d sec' %
                      self.loop)
+
+        try:
+            if self.config.pe_in_file_format is not None:
+                self.set_file_format(self.config.pe_in_file_format)
+        except AttributeError, err:
+            msg = ('Inbound file format not defined in config -- using %s' %
+                   self.file_format)
+            log.info(msg)
+
+    @property
+    def file_format(self):
+        return self._file_format
+
+    def set_file_format(self, value):
+        self._file_format = value
 
     @property
     def file_ts_format(self):
@@ -193,29 +215,18 @@ class MapperDaemon(nparcel.DaemonService):
         else:
             dirs_to_check = self.config.pe_in_dirs
 
-        r = re.compile(self.config.pe_in_file_format)
         for dir_to_check in dirs_to_check:
             log.info('Looking for files at: %s ...' % dir_to_check)
             for file in get_directory_files(dir_to_check):
-                if not check_eof_flag(file):
-                    continue
-
-                log.debug('Checking format of file: %s' % file)
-                m = r.match(os.path.basename(file))
-                if not m:
-                    log.info('File %s did not match format %s' %
-                                (file, self.config.pe_in_file_format))
-                    continue
-
-                # Check that it's not in the archive already.
-                log.info('Found file: %s' % file)
-
-                archive_path = self.get_customer_archive(file)
-                if (archive_path is not None and
-                    os.path.exists(archive_path)):
-                    log.error('File %s is already archived' % file)
-                else:
-                    files_to_process.append(file)
+                if (check_filename(file, self.file_format) and
+                    check_eof_flag(file)):
+                    log.info('Found file: %s' % file)
+                    archive_path = self.get_customer_archive(file)
+                    if (archive_path is not None and
+                        os.path.exists(archive_path)):
+                        log.error('File %s is already archived' % file)
+                    else:
+                        files_to_process.append(file)
 
         files_to_process.sort()
         log.debug('Files set to be processed: "%s"' % str(files_to_process))
