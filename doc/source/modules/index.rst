@@ -49,6 +49,7 @@ Modules
     mapperdaemon.rst
 
     filter.rst
+    filterdaemon.rst
 
     mts.rst
 

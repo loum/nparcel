@@ -15,6 +15,7 @@ from test_primaryelectdaemon import TestPrimaryElectDaemon
 from test_commsdaemon import TestCommsDaemon
 from test_reminderdaemon import TestReminderDaemon
 from test_mapperdaemon import TestMapperDaemon
+from test_filterdaemon import TestFilterDaemon
 from test_exporter import TestExporter
 from test_exporter_ipec import TestExporterIpec
 from test_exporter_fast import TestExporterFast

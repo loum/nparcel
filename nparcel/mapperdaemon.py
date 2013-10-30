@@ -16,7 +16,7 @@ from nparcel.utils.files import (get_directory_files,
 
 
 class MapperDaemon(nparcel.DaemonService):
-    """Daemoniser facility for the :class:`nparcel.Loader` class.
+    """Daemoniser facility for the :class:`nparcel.Mapper` class.
 
     .. attribute:: file_ts_format
 
