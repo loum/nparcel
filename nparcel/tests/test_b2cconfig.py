@@ -177,6 +177,11 @@ class TestB2CConfig(unittest2.TestCase):
         expected = 'mts_delivery_report_\d{14}\.csv'
         self.assertEqual(received, expected, msg)
 
+        msg = 'Filter customer not as expected'
+        received = self._c.filter_customer
+        expected = 'parcelpoint'
+        self.assertEqual(received, expected, msg)
+
         # Reminders.
         received = self._c.notification_delay
         expected = 345600

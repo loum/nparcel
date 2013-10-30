@@ -151,6 +151,11 @@ class B2CConfig(nparcel.Config):
         reports inbound filenames
         (default ``mts_delivery_report_\d{14}\.csv``)
 
+    .. attribute:: filter_customer
+
+        downstream recipient of filtered T1250 files
+        (default "parcelpoint")
+
     """
     _dirs_to_check = []
     _pe_dirs_to_check = []
@@ -186,6 +191,7 @@ class B2CConfig(nparcel.Config):
     _pe_customer = 'gis'
     _pe_inbound_mts = '/data/nparcel/mts'
     _pe_mts_filename_format = 'mts_delivery_report_\d{14}\.csv'
+    _filter_customer = 'parcelpoint'
 
     def __init__(self, file=None):
         """Nparcel Config initialisation.
@@ -332,6 +338,13 @@ class B2CConfig(nparcel.Config):
     @property
     def pe_mts_filename_format(self):
         return self._pe_mts_filename_format
+
+    @property
+    def filter_customer(self):
+        return self._filter_customer
+
+    def set_filter_customer(self):
+        self._filter_customer = value
 
     @property
     def notification_delay(self):
@@ -485,6 +498,14 @@ class B2CConfig(nparcel.Config):
                 ConfigParser.NoSectionError), err:
             log.debug('Using default Primary Elect MTS file format: %s' %
                       self.pe_mts_filename_format)
+
+        # Filter processing.
+        try:
+            self._filter_customer = self.get('filter', 'customer')
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default Filter customer: %s' %
+                      self.filter_customer)
 
         # Optional items (defaults provided).
         try:
