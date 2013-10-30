@@ -48,6 +48,8 @@ Modules
     mapper.rst
     mapperdaemon.rst
 
+    filter.rst
+
     mts.rst
 
 Indices and tables
