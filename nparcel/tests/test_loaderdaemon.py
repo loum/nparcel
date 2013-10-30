@@ -90,6 +90,7 @@ class TestLoaderDaemon(unittest2.TestCase):
         # Clean up.
         self._d.set_file(old_file)
         self._d.set_dry(old_dry)
+        self._exit_event.clear()
 
     def test_start_non_dry_loop(self):
         """Start non-dry loop.
@@ -126,7 +127,7 @@ class TestLoaderDaemon(unittest2.TestCase):
         self._d.config.set_aggregator_dir(agg_dir)
         self._d._start(self._exit_event)
 
-        # Clean up.
+        # ... and make sure that the aggregator and archiver worked.
         expected_archive_dir = os.path.join(archive_dir,
                                             'ipec',
                                             '20130828')
@@ -134,6 +135,17 @@ class TestLoaderDaemon(unittest2.TestCase):
                                      os.path.basename(self._file))
         expected_agg_file = os.path.join(agg_dir,
                                          os.path.basename(self._file))
+        received = get_directory_files_list(expected_archive_dir)
+        expected = [expected_file]
+        msg = 'Non-dry process flow archive directory error'
+        self.assertListEqual(received, expected, msg)
+
+        received = get_directory_files_list(agg_dir)
+        expected = [expected_agg_file]
+        msg = 'Non-dry process flow aggregate directory error'
+        self.assertListEqual(received, expected, msg)
+
+        # Clean up.
         self._d.set_file(old_file)
         self._d.set_dry(old_dry)
         self._d.set_batch(old_batch)
@@ -147,6 +159,7 @@ class TestLoaderDaemon(unittest2.TestCase):
         os.removedirs(in_dir)
         os.removedirs(expected_archive_dir)
         os.removedirs(agg_dir)
+        self._exit_event.clear()
 
     def test_distribute_file(self):
         """Distribute the T1250 file.
