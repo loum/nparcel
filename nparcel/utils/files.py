@@ -253,7 +253,7 @@ def remove_files(files):
     files_removed = []
     for file_to_remove in files:
         try:
-            log.info('Removing file "%s" ...' % file_to_remove)
+            log.info('Removing file "%s"' % file_to_remove)
             os.remove(file_to_remove)
             files_removed.append(file_to_remove)
         except OSError, err:

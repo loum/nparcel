@@ -343,12 +343,7 @@ class MapperDaemon(nparcel.DaemonService):
             # ... and finally convert to T1250-proper.
             source = filename
             target = re.sub('\.tmp$', '', source)
-            log.info('Renaming "%s" to "%s"' % (source, target))
-            try:
-                os.rename(source, target)
+            if move_file(source, target):
                 files_closed.append(target)
-            except OSError, err:
-                log.error('Could not rename "%s" to "%s": %s' %
-                          (source, target, err))
 
         return files_closed

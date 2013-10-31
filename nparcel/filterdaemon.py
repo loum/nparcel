@@ -1,16 +1,19 @@
-__all__ = [
+in_dir = [
     "FilterDaemon",
 ]
 import signal
 import time
 import os
+import re
 
 import nparcel
 from nparcel.utils.log import log
 from nparcel.utils.files import (check_eof_flag,
                                  get_directory_files,
                                  check_filename,
-                                 create_dir)
+                                 create_dir,
+                                 move_file,
+                                 remove_files)
 
 
 class FilterDaemon(nparcel.DaemonService):
@@ -32,11 +35,16 @@ class FilterDaemon(nparcel.DaemonService):
 
         context of outbound processing (default ``parcelpoint``)
 
+    .. attribute:: in_dir
+
+        inbound directory to check for files to process
+
     """
     _loop = 30
     _file_format = 'T1250_TOL.*\.txt'
     _staging_base = os.curdir
     _customer = 'parcelpoint'
+    _in_dir = []
 
     def __init__(self,
                  pidfile,
@@ -83,6 +91,14 @@ class FilterDaemon(nparcel.DaemonService):
                    self.customer)
             log.info(msg)
 
+        try:
+            if self.config.aggregator_dir is not None:
+                self.set_in_dir(self.config.aggregator_dir)
+        except AttributeError, err:
+            msg = ('Inbound directory not defined in config -- using %s' %
+                    self.in_dir)
+            log.info(msg)
+
     @property
     def loop(self):
         return self._loop
@@ -111,6 +127,13 @@ class FilterDaemon(nparcel.DaemonService):
     def set_customer(self, value):
         self._customer = value
 
+    @property
+    def in_dir(self):
+        return self._in_dir
+
+    def set_in_dir(self, value):
+        self._in_dir = value
+
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
 
@@ -133,7 +156,7 @@ class FilterDaemon(nparcel.DaemonService):
             commit = False
 
         while not event.isSet():
-            fh = {}
+            fhs = {}
             files = []
             if self.file is not None:
                 files.append(self.file)
@@ -165,13 +188,17 @@ class FilterDaemon(nparcel.DaemonService):
                     else:
                         filtered_status = filter.process(line)
                         self.reporter(filtered_status)
-
+                        if filtered_status:
+                            self.write(line, fhs, file, dry=self.dry)
                 f.close()
+                self.close(fhs)
 
-                if status:
+                if status and eof_found:
                     log.info('%s processing OK.' % file)
                     stats = self.reporter.report()
                     log.info(stats)
+                    if not self.dry:
+                        remove_files(file)
                 else:
                     log.error('%s processing failed.' % file)
                     if not eof_found:
@@ -206,16 +233,11 @@ class FilterDaemon(nparcel.DaemonService):
         """
         files_to_process = []
 
-        dirs_to_check = []
+        dir_to_check = self.in_dir
         if dir is not None:
-            dirs_to_check.append(dir)
-        else:
-            try:
-                dirs_to_check = [self.config.aggregator_dir]
-            except AttributeError, err:
-                log.info('Aggregator directory not defined in config')
+            dirs_to_check = dir
 
-        for dir_to_check in dirs_to_check:
+        if dir_to_check is not None:
             log.info('Looking for files at: %s ...' % dir_to_check)
             for file in get_directory_files(dir_to_check):
                 if (check_filename(file, self.file_format) and
@@ -297,3 +319,36 @@ class FilterDaemon(nparcel.DaemonService):
 
         if not dry:
             fh.write('%s\n' % data)
+
+    def close(self, fhs):
+        """Closes out open T1250-specific file handles.
+
+        Prepends the special end of file delimiter string '%%EOF'
+
+        Renames the temporary writable file to T1250 format that can
+        be consumed by the loader.
+
+        **Args:**
+            *fhs*: dictionary structure capturing open file handle objects
+
+        **Returns:**
+            list of files successfully closed
+
+        """
+        log.info('Closing out files ...')
+        files_closed = []
+
+        for fh in fhs.values():
+            filename = fh.name
+            file = os.path.basename(filename)
+            fh.write('%%EOF\r\n')
+            fh.close()
+
+            # ... and finally convert to T1250-proper.
+            source = filename
+            target = re.sub('\.tmp$', '', source)
+            log.info('Renaming "%s" to "%s"' % (source, target))
+            if move_file(source, target):
+                files_closed.append(target)
+
+        return files_closed

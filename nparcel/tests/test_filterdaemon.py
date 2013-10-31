@@ -40,10 +40,58 @@ class TestFilterDaemon(unittest2.TestCase):
         self._fd.set_dry(old_dry)
         self._exit_event.clear()
 
+    def test_start_non_dry_loop(self):
+        """Start non-dry loop.
+        """
+        dry = False
+
+        old_file = self._fd.file
+        old_dry = self._fd.dry
+        old_batch = self._fd.batch
+        old_in_dir = list(self._fd.in_dir)
+
+        in_dir = tempfile.mkdtemp()
+        out_dir = tempfile.mkdtemp()
+        self._fd.set_in_dir(in_dir)
+        self._fd.set_staging_base(out_dir)
+
+        # Copy over our test file.
+        copy_file(self._file,
+                  os.path.join(in_dir, os.path.basename(self._file)))
+
+        # Start processing.
+        self._fd.set_dry(dry)
+        self._fd.set_batch()
+        self._fd._start(self._exit_event)
+
+        expected_out_dir = os.path.join(out_dir, 'parcelpoint', 'out')
+        expected_out_file = os.path.join(expected_out_dir,
+                                         os.path.basename(self._file))
+        fh = open(self._file + '.filtered')
+        expected = fh.read()
+        fh.close()
+        fh = open(expected_out_file)
+        received = fh.read()
+        fh.close()
+        msg = 'Filtered content error'
+        self.assertEqual(expected, received, msg)
+
+        # Clean up.
+        remove_files(expected_out_file)
+        os.removedirs(in_dir)
+        os.removedirs(expected_out_dir)
+        self._fd.set_file(old_file)
+        self._fd.set_dry(old_dry)
+        self._fd.set_batch(old_batch)
+        self._fd.set_in_dir(old_in_dir)
+        self._exit_event.clear()
+
     def test_check_filename(self):
         """Get list of inbound files.
         """
+        old_in_dir = self._fd.in_dir
         in_dir = tempfile.mkdtemp()
+        self._fd.set_in_dir(in_dir)
         target_files = [os.path.join(in_dir, os.path.basename(self._file)),
                         os.path.join(in_dir,
                                      'T1250_TOLI_20130828202902.txt'),
@@ -66,6 +114,7 @@ class TestFilterDaemon(unittest2.TestCase):
         self.assertListEqual(received, expected, msg)
 
         # Clean up.
+        self._fd.set_in_dir(old_in_dir)
         remove_files(target_files)
         remove_files(empty_files)
         remove_files(dodgy_files)
@@ -95,14 +144,14 @@ class TestFilterDaemon(unittest2.TestCase):
         self._fd.set_staging_base(base_dir)
 
         fhs = {}
-        self._fd.write(data , fhs, self._file, dry=False)
-        fhs.get(os.path.basename(self._file)).close()
+        self._fd.write(data, fhs, self._file, dry=False)
+        files_closed = self._fd.close(fhs)
 
-        outfile = fhs.get(os.path.basename(self._file)).name
+        outfile = files_closed[0]
         fh = open(outfile)
         received = fh.read().rstrip()
         fh.close()
-        expected = data
+        expected = data + '\n%%EOF'
         msg = 'Written content error'
         self.assertEqual(received, expected, msg)
 
