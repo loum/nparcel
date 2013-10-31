@@ -3,23 +3,40 @@ __all__ = [
 ]
 import signal
 import time
+import os
 
 import nparcel
 from nparcel.utils.log import log
 from nparcel.utils.files import (check_eof_flag,
                                  get_directory_files,
-                                 check_filename)
+                                 check_filename,
+                                 create_dir)
 
 
 class FilterDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.Filter` class.
 
+    .. attribure:: loop
+
+        sleep period (in seconds) between processing iterations
+
     .. attribute:: file_format
 
-        the :mod:`re` format string to match filter files against
+        :mod:`re` format string to match filter files against
+
+    .. attribute:: staging_base
+
+        base directory for outbound processing
+
+    .. attribute:: customer
+
+        context of outbound processing (default ``parcelpoint``)
 
     """
+    _loop = 30
     _file_format = 'T1250_TOL.*\.txt'
+    _staging_base = os.curdir
+    _customer = 'parcelpoint'
 
     def __init__(self,
                  pidfile,
@@ -50,12 +67,49 @@ class FilterDaemon(nparcel.DaemonService):
                    self.file_format)
             log.info(msg)
 
+        try:
+            if self.config.staging_base is not None:
+                self.set_staging_base(self.config.staging_base)
+        except AttributeError, err:
+            msg = ('Staging base not defined in config -- using %s' %
+                   self.staging_base)
+            log.info(msg)
+
+        try:
+            if self.config.filter_customer is not None:
+                self.set_customer(self.config.filter_customer)
+        except AttributeError, err:
+            msg = ('Filter customer not defined in config -- using %s' %
+                   self.customer)
+            log.info(msg)
+
+    @property
+    def loop(self):
+        return self._loop
+
+    def set_loop(self, value):
+        self._loop = int(value)
+
     @property
     def file_format(self):
         return self._file_format
 
     def set_file_format(self, value):
         self._file_format = value
+
+    @property
+    def staging_base(self):
+        return self._staging_base
+
+    def set_staging_base(self, value):
+        self._staging_base = value
+
+    @property
+    def customer(self):
+        return self._customer
+
+    def set_customer(self, value):
+        self._customer = value
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
@@ -171,3 +225,46 @@ class FilterDaemon(nparcel.DaemonService):
         log.debug('Files set to be processed: "%s"' % str(files_to_process))
 
         return files_to_process
+
+    def get_outbound_file(self, file, dir=None):
+        """Generates the path to the outbound file resource for output
+        of *file* processing.
+
+        Generation of the outbound file is based on:
+        * :attr:`nparcel.b2cconfig.staging_base` attribute (or current
+        directory if not identified)
+
+        * :attr:`nparcel.b2cconfig.filter_customer` (or *parcelpoint*
+        if not identified)
+
+        * *file* name (with ``.tmp`` appended)
+
+        **Args:**
+            *file*: the name of the T1250 file currently under processing
+            control
+
+        **Kwargs:**
+            *dir*: override the :attr:`nparcel.b2cconfig.staging_base`
+
+        **Returns:**
+            the path and filename to the appropriate outbound file
+            resource
+
+        """
+        log.info('Generating the outbound file resource for %s' % file)
+        outbound_file_name = None
+
+        if dir is not None:
+            log.info('Setting staging base to "%s"' % dir)
+            self.set_staging_base(dir)
+
+        file_basename = os.path.basename(file)
+        outbound_dir = os.path.join(self.staging_base, self.customer, 'out')
+
+        if create_dir(outbound_dir):
+            outbound_file_name = os.path.join(outbound_dir,
+                                              file_basename + '.tmp')
+
+        log.info('Outbound file resource name "%s"' % outbound_file_name)
+
+        return outbound_file_name

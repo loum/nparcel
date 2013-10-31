@@ -71,6 +71,20 @@ class TestFilterDaemon(unittest2.TestCase):
         remove_files(dodgy_files)
         os.removedirs(in_dir)
 
+    def test_get_outbound_file(self):
+        """Generate the outbound file structure.
+        """
+        base_dir = tempfile.mkdtemp()
+
+        received = self._fd.get_outbound_file(self._file, dir=base_dir)
+        dir = os.path.join(base_dir, 'parcelpoint', 'out')
+        expected = os.path.join(dir, 'T1250_TOLI_20130828202901.txt.tmp')
+        msg = 'Outbound file resource error'
+        self.assertEqual(received, expected, msg)
+
+        # Clean up.
+        os.removedirs(dir)
+
     @classmethod
     def tearDownClass(cls):
         del cls._file
