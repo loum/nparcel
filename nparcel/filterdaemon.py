@@ -335,7 +335,7 @@ class FilterDaemon(nparcel.DaemonService):
             list of files successfully closed
 
         """
-        log.info('Closing out files ...')
+        log.info('Closing out filtered file ...')
         files_closed = []
 
         for fh in fhs.values():
@@ -347,7 +347,6 @@ class FilterDaemon(nparcel.DaemonService):
             # ... and finally convert to T1250-proper.
             source = filename
             target = re.sub('\.tmp$', '', source)
-            log.info('Renaming "%s" to "%s"' % (source, target))
             if move_file(source, target):
                 files_closed.append(target)
 
