@@ -85,6 +85,32 @@ class TestFilterDaemon(unittest2.TestCase):
         # Clean up.
         os.removedirs(dir)
 
+    def test_write(self):
+        """Test outbound file write-out.
+        """
+        data = 'xxx'
+        base_dir = tempfile.mkdtemp()
+
+        old_staging = self._fd.staging_base
+        self._fd.set_staging_base(base_dir)
+
+        fhs = {}
+        self._fd.write(data , fhs, self._file, dry=False)
+        fhs.get(os.path.basename(self._file)).close()
+
+        outfile = fhs.get(os.path.basename(self._file)).name
+        fh = open(outfile)
+        received = fh.read().rstrip()
+        fh.close()
+        expected = data
+        msg = 'Written content error'
+        self.assertEqual(received, expected, msg)
+
+        # Clean up.
+        remove_files(outfile)
+        os.removedirs(os.path.join(base_dir, 'parcelpoint', 'out'))
+        self._fd.set_staging_base(old_staging)
+
     @classmethod
     def tearDownClass(cls):
         del cls._file

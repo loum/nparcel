@@ -133,6 +133,7 @@ class FilterDaemon(nparcel.DaemonService):
             commit = False
 
         while not event.isSet():
+            fh = {}
             files = []
             if self.file is not None:
                 files.append(self.file)
@@ -162,7 +163,8 @@ class FilterDaemon(nparcel.DaemonService):
                         eof_found = True
                         break
                     else:
-                        self.reporter(filter.process(line))
+                        filtered_status = filter.process(line)
+                        self.reporter(filtered_status)
 
                 f.close()
 
@@ -263,8 +265,35 @@ class FilterDaemon(nparcel.DaemonService):
 
         if create_dir(outbound_dir):
             outbound_file_name = os.path.join(outbound_dir,
-                                              file_basename + '.tmp')
+                                            file_basename + '.tmp')
 
         log.info('Outbound file resource name "%s"' % outbound_file_name)
 
         return outbound_file_name
+
+    def write(self, data, fhs, infile, dry=False):
+        """Write out *data* to the associated *fhs* file handler.
+
+        *fhs* is based on the return value from
+        :meth:`nparcel.FilterDaemon.get_outbound_file`
+
+        **Args:**
+            *data*: the line item to write out
+
+            *fhs*: dictionary structure capturing open file handle objects
+
+        """
+        log.debug('Writing out data "%s ..."' % data[0:20])
+
+        infile_basename = os.path.basename(infile)
+        fh = fhs.get(infile_basename)
+        if fh is None:
+            log.info('Preparing file handler for infile %s' %
+                     infile_basename)
+            if not dry:
+                outfile = self.get_outbound_file(infile)
+                fhs[infile_basename] = open(outfile, 'w')
+                fh = fhs[infile_basename]
+
+        if not dry:
+            fh.write('%s\n' % data)
