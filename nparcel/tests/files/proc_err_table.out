@@ -1,0 +1,15 @@
+<tr style="border:1px solid white">
+    <td style="white-space:nowrap">
+        item 1
+    </td>
+</tr>
+<tr style="border:1px solid white">
+    <td style="white-space:nowrap">
+        item 2
+    </td>
+</tr>
+<tr style="border:1px solid white">
+    <td style="white-space:nowrap">
+        item 3
+    </td>
+</tr>

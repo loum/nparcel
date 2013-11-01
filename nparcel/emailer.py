@@ -16,11 +16,13 @@ from nparcel.utils.log import log
 class Emailer(object):
     """Nparcel emailer.
 
-    .. attribute:: comms_dir
+    .. attribute:: template_base
         directory where templates are read from
 
     """
-    _template_base = None
+    _template_base = os.path.join(os.path.expanduser('~'),
+                                  '.nparceld',
+                                  'templates')
 
     def __init__(self,
                  sender=None,
@@ -182,14 +184,6 @@ class Emailer(object):
             MIME multipart-formatted serialised string
 
         """
-        dir = None
-        if self.template_base is None:
-            template_dir = os.path.join(os.path.expanduser('~'),
-                                        '.nparceld',
-                                        'templates')
-        else:
-            template_dir = os.path.join(self.template_base, 'templates')
-
         mime_msg = MIMEMultipart('related')
         mime_msg['Subject'] = subject
         mime_msg['From'] = self.sender
@@ -202,7 +196,7 @@ class Emailer(object):
         if err:
             body_html = 'email_err_%s_html.t' % template
 
-        html_template = os.path.join(template_dir, body_html)
+        html_template = os.path.join(self.template_base, body_html)
         log.debug('Email body template: "%s"' % html_template)
         f = open(html_template)
         body_t = f.read()
@@ -210,7 +204,7 @@ class Emailer(object):
         body_s = string.Template(body_t)
         body = body_s.substitute(**data)
 
-        f = open(os.path.join(template_dir, 'email_html.t'))
+        f = open(os.path.join(self.template_base, 'email_html.t'))
         main_t = f.read()
         f.close()
         main_s = string.Template(main_t)
@@ -220,3 +214,39 @@ class Emailer(object):
         msgAlternative.attach(main_text)
 
         return mime_msg.as_string()
+
+    def get_subject_line(self,
+                         data,
+                         template='body'):
+        """Construct email subject line from a template.
+
+        **Args**:
+            *data*: dictionary structure that features the tokens that feed
+            into the template
+
+            *template*: template file that contains the subject line
+            construct
+
+        **Returns**:
+            string representation of the subject
+
+        """
+        subject_html = 'subject_%s_html.t' % template
+
+        subject_template = os.path.join(self.template_base, subject_html)
+        log.debug('Email subject template: "%s"' % subject_template)
+        subject_string = str()
+        try:
+            f = open(subject_template)
+            subject_t = f.read()
+            f.close()
+            subject_s = string.Template(subject_t)
+            subject_string = subject_s.substitute(**data)
+        except IOError, e:
+            log.error('Unable to find subject template %s: %s' %
+                      (subject_template, e))
+
+        subject_string = subject_string.rstrip()
+        log.debug('Email comms subject string: "%s"' % subject_string)
+
+        return subject_string

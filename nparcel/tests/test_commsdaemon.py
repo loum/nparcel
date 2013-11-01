@@ -10,8 +10,7 @@ class TestCommsDaemon(unittest2.TestCase):
     def setUpClass(cls):
         conf_file = 'nparcel/conf/nparceld.conf'
         cls._cd = nparcel.CommsDaemon(pidfile=None, config=conf_file)
-        cls._cd.emailer.set_template_base('nparcel')
-        cls._cd.emailer.set_template_base('nparcel')
+        cls._cd.emailer.set_template_base('nparcel/templates')
 
     def test_init(self):
         """Initialise a CommsDaemon object.

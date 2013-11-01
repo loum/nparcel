@@ -19,10 +19,6 @@ from nparcel.utils.files import (check_eof_flag,
 class FilterDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.Filter` class.
 
-    .. attribure:: loop
-
-        sleep period (in seconds) between processing iterations
-
     .. attribute:: file_format
 
         :mod:`re` format string to match filter files against
@@ -40,7 +36,6 @@ class FilterDaemon(nparcel.DaemonService):
         inbound directory to check for files to process
 
     """
-    _loop = 30
     _file_format = 'T1250_TOL.*\.txt'
     _staging_base = os.curdir
     _customer = 'parcelpoint'
@@ -98,13 +93,6 @@ class FilterDaemon(nparcel.DaemonService):
             msg = ('Inbound directory not defined in config -- using %s' %
                     self.in_dir)
             log.info(msg)
-
-    @property
-    def loop(self):
-        return self._loop
-
-    def set_loop(self, value):
-        self._loop = int(value)
 
     @property
     def file_format(self):
