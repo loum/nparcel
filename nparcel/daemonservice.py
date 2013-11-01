@@ -27,10 +27,14 @@ class DaemonService(nparcel.utils.Daemon):
 
         :mod:`nparcel.Reporter` object
 
-    .. aatribute:: loop
+    .. attribute:: loop
 
         integer value that represents the sleep period between
         processing iterations (default 30 seconds)
+
+    .. attribute:: support_emails
+
+        list of support emails address
 
     """
     _file = None
@@ -39,6 +43,7 @@ class DaemonService(nparcel.utils.Daemon):
     _emailer = nparcel.Emailer()
     _reporter = nparcel.Reporter()
     _loop = 30
+    _support_emails = []
 
     def __init__(self,
                  pidfile,
@@ -86,6 +91,17 @@ class DaemonService(nparcel.utils.Daemon):
 
     def set_loop(self, value):
         self._loop = value
+
+    @property
+    def support_emails(self):
+        return self._support_emails
+
+    def set_support_emails(self, values=None):
+        del self._support_emails[:]
+        self._support_emails = []
+
+        if values is not None and isinstance(values, list):
+            self._support_emails.extend(values)
 
     def alert(self,
               template,

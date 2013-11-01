@@ -19,8 +19,14 @@ class Service(object):
 
         directory where comms files are sent for further processing
 
+    .. attribute:: alert
+
+        list if alerts that can be captured during the processing workflow
+
     """
     _comms_dir = None
+    _alerts = []
+    _support_emails = []
 
     def __init__(self, db=None, comms_dir=None):
         """Nparcel Service initialisation.
@@ -41,6 +47,19 @@ class Service(object):
     def set_comms_dir(self, value):
         if create_dir(value):
             self._comms_dir = value
+
+    @property
+    def alerts(self):
+        return self._alerts
+
+    def set_alerts(self, value=None):
+        if value is not None:
+            log.error(value)
+            self.alerts.append(value)
+        else:
+            log.info('Resetting %s alerts' % self.__class__.__name__)
+            del self._alerts[:]
+            self._alerts = []
 
     def flag_comms(self, action, id, service, dry=False):
         """Prepare the comms file for further processsing.

@@ -61,7 +61,7 @@ class TestDaemonService(unittest2.TestCase):
         """
         # We don't really test anything here.  But, to check that
         # email alerts are sent set dry to False.
-        dry = False
+        dry = True
 
         subject = 'Override subject'
         data = {}

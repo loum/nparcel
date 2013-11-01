@@ -139,7 +139,6 @@ class Loader(nparcel.Service):
     """Nparcel Loader object.
 
     """
-
     def __init__(self, db=None, comms_dir=None):
         """Nparcel Loader initialiser.
 
@@ -147,7 +146,6 @@ class Loader(nparcel.Service):
         super(nparcel.Loader, self).__init__(db=db, comms_dir=comms_dir)
 
         self.parser = nparcel.Parser(fields=FIELDS)
-        self.alerts = []
 
     def process(self, time, raw_record, bu_id, cond_map, dry=False):
         """Extracts, validates and inserts/updates an Nparcel record.
@@ -197,8 +195,8 @@ class Loader(nparcel.Service):
                 log.info('Barcode "%s" mapping OK' % barcode)
             except ValueError, e:
                 status = False
-                self.set_alert('Barcode "%s" mapping error: %s' %
-                               (barcode, e))
+                self.set_alerts('Barcode "%s" mapping error: %s' %
+                                (barcode, e))
 
             # Check for a manufactured barcode.
             if status:
@@ -331,7 +329,7 @@ class Loader(nparcel.Service):
             log.info('Agent Id "%s" found: %s' % (agent, agent_id_row_id))
         else:
             err = 'Agent Id "%s" does not exist' % agent
-            self.set_alert(err)
+            self.set_alerts(err)
 
             # For testing only, create the record.
             # First insert will fail the test -- subsequent checks should
@@ -534,14 +532,10 @@ class Loader(nparcel.Service):
         """
         return self.db.date_now()
 
-    def set_alert(self, alert):
-        log.error(alert)
-        self.alerts.append(alert)
-
     def reset(self, commit=False):
         """Reset the alert list.
         """
-        del self.alerts[:]
+        self.set_alerts()
 
         if commit:
             log.info('Committing transaction state to the DB ...')

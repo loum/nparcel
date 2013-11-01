@@ -94,6 +94,14 @@ class FilterDaemon(nparcel.DaemonService):
                     self.in_dir)
             log.info(msg)
 
+        try:
+            if self.config.support_emails is not None:
+                self.set_support_emails(self.config.support_emails)
+        except AttributeError, err:
+            msg = ('Support emails not defined in config -- using %s' %
+                    str(self.support_emails))
+            log.info(msg)
+
     @property
     def file_format(self):
         return self._file_format
@@ -183,10 +191,23 @@ class FilterDaemon(nparcel.DaemonService):
 
                 if status and eof_found:
                     log.info('%s processing OK.' % file)
+                    alerts = list(filter.alerts)
+                    filter.set_alerts(None)
                     stats = self.reporter.report()
                     log.info(stats)
                     if not self.dry:
                         remove_files(file)
+
+                    if len(alerts):
+                        alert_table = self.create_table(alerts)
+                        del alerts[:]
+                        data = {'file': file,
+                                'facility': self.__class__.__name__,
+                                'err_table': alert_table}
+                        self.alert(template='proc_err',
+                                   data=data,
+                                   recipients=self.support_emails,
+                                   dry=self.dry)
                 else:
                     log.error('%s processing failed.' % file)
                     if not eof_found:

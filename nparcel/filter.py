@@ -9,7 +9,7 @@ FIELDS = {'Agent Id': {'offset': 453,
                        'length': 4}}
 
 
-class Filter(object):
+class Filter(nparcel.Service):
     """Nparcel Filter object.
 
     """
@@ -45,7 +45,7 @@ class Filter(object):
         msg = 'Conn Note/Agent Id "%s/%s"' % (connote_literal, agent_id)
         if agent_id is None or not agent_id:
             status = False
-            log.error('%s - missing Agent Id' % msg)
+            self.set_alerts('%s - missing Agent Id' % msg)
         elif agent_id.startswith('P'):
             log.info('%s - matches criteria' % msg)
             status = True

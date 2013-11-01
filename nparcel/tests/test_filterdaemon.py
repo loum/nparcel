@@ -16,6 +16,8 @@ class TestFilterDaemon(unittest2.TestCase):
         cls._exit_event = threading.Event()
         cls._fd = nparcel.FilterDaemon(pidfile=None,
                                        config='nparcel/conf/nparceld.conf')
+        cls._fd.emailer.set_template_base(os.path.join('nparcel',
+                                                       'templates'))
 
     def test_init(self):
         """Initialise a FilterDaemon object.
@@ -49,11 +51,13 @@ class TestFilterDaemon(unittest2.TestCase):
         old_dry = self._fd.dry
         old_batch = self._fd.batch
         old_in_dir = list(self._fd.in_dir)
+        old_support_emails = self._fd.support_emails
 
         in_dir = tempfile.mkdtemp()
         out_dir = tempfile.mkdtemp()
         self._fd.set_in_dir(in_dir)
         self._fd.set_staging_base(out_dir)
+        self._fd.set_support_emails(None)
 
         # Copy over our test file.
         copy_file(self._file,
@@ -84,6 +88,7 @@ class TestFilterDaemon(unittest2.TestCase):
         self._fd.set_dry(old_dry)
         self._fd.set_batch(old_batch)
         self._fd.set_in_dir(old_in_dir)
+        self._fd.set_support_emails(old_support_emails)
         self._exit_event.clear()
 
     def test_check_filename(self):
