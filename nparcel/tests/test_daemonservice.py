@@ -96,7 +96,6 @@ class TestDaemonService(unittest2.TestCase):
         """
         items = ['item 1', 'item 2', 'item 3']
         received = self._ds.create_table(items)
-        print(received)
         fh = open('nparcel/tests/files/proc_err_table.out')
         expected = fh.read().rstrip()
         fh.close()

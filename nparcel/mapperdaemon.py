@@ -141,6 +141,14 @@ class MapperDaemon(nparcel.DaemonService):
         log.info('Setting customer to "%s"' % value)
         self._customer = value
 
+    @property
+    def archive_string(self):
+        return self._archive_string
+
+    def set_archive_string(self, value):
+        log.info('Setting archive string to "%s"' % value)
+        self._archive_string = value
+
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
 
