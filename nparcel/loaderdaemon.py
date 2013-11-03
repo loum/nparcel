@@ -40,6 +40,14 @@ class LoaderDaemon(nparcel.DaemonService):
         self.config = nparcel.B2CConfig(file=config)
         self.config.parse_config()
 
+        try:
+            if self.config.support_emails is not None:
+                self.set_support_emails(self.config.support_emails)
+        except AttributeError, err:
+            msg = ('Support emails not defined in config -- using %s' %
+                   str(self.support_emails))
+            log.info(msg)
+
     @property
     def file_format(self):
         return self._file_format
@@ -64,8 +72,6 @@ class LoaderDaemon(nparcel.DaemonService):
 
         loader = nparcel.Loader(db=self.config.db_kwargs(),
                                 comms_dir=self.config.comms_dir)
-        emailer = nparcel.Emailer()
-        np_support = self.config.support_emails
 
         commit = True
         if self.dry:
@@ -132,7 +138,7 @@ class LoaderDaemon(nparcel.DaemonService):
                                            'all line items ignored'))
 
                 # Report the results.
-                if status:
+                if status and eof_found:
                     log.info('%s processing OK.' % file)
                     alerts = list(loader.alerts)
                     loader.reset(commit=commit)
@@ -140,16 +146,18 @@ class LoaderDaemon(nparcel.DaemonService):
                         aggregate = condition_map.get('aggregate_files')
                         self.distribute_file(file, aggregate)
 
-                    # Report.
-                    self.reporter.end
                     stats = self.reporter.report()
                     log.info(stats)
-                    if self.reporter.bad_records > 0:
-                        msg = ("%s\n\n%s" % (stats, "\n".join(alerts)))
+                    if len(alerts):
+                        alert_table = self.create_table(alerts)
                         del alerts[:]
-
-                        emailer.set_recipients(np_support)
-                        emailer.send(subject=subject, msg=msg, dry=self.dry)
+                        data = {'file': file,
+                                'facility': self.__class__.__name__,
+                                'err_table': alert_table}
+                        self.alert(template='proc_err',
+                                   data=data,
+                                   recipients=self.support_emails,
+                                   dry=self.dry)
                 else:
                     log.error('%s processing failed.' % file)
 
@@ -249,10 +257,11 @@ class LoaderDaemon(nparcel.DaemonService):
 
         """
         log.info('Aggregating file "%s"' % file)
-        if self.config.aggregator_dir is not None:
-            aggregator_path = os.path.join(self.config.aggregator_dir,
-                                           os.path.basename(file))
-            copy_file(file, aggregator_path)
+        if len(self.config.aggregator_dirs):
+            for aggregator_dir in self.config.aggregator_dirs:
+                aggregator_path = os.path.join(aggregator_dir,
+                                               os.path.basename(file))
+                copy_file(file, aggregator_path)
 
     def get_customer_archive(self, file):
         """Will determine the archive directory path based on the

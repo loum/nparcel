@@ -29,7 +29,7 @@ class B2CConfig(nparcel.Config):
 
         list of directories to look for T1250 files.
 
-    .. attribute:: archive (loader)
+    .. attribute:: archive
 
         directory to place processed T1250 files into.
 
@@ -46,7 +46,7 @@ class B2CConfig(nparcel.Config):
 
         directory where comms files are kept for further processing
 
-    .. attribute:: aggregator (ParcelPoint processing)
+    .. attribute:: aggregators (ParcelPoint processing)
 
         directory where T1250 loader files are aggregated for further
         processing
@@ -163,7 +163,7 @@ class B2CConfig(nparcel.Config):
     _staging_base = None
     _signature = None
     _comms = None
-    _aggregator = None
+    _aggregator_dirs = []
     _loader_loop = 30
     _pe_loop = 30
     _reminder_loop = 30
@@ -189,7 +189,7 @@ class B2CConfig(nparcel.Config):
     _pe_in_file_format = 'T1250_TOL[PIF]_\d{14}\.dat'
     _pe_in_file_archive_string = 'T1250_TOL[PIF]_(\d{8})\d{6}\.dat'
     _pe_customer = 'gis'
-    _pe_inbound_mts = '/data/nparcel/mts'
+    _pe_inbound_mts = ['/data/nparcel/mts']
     _pe_mts_filename_format = 'mts_delivery_report_\d{14}\.csv'
     _filter_customer = 'parcelpoint'
 
@@ -245,11 +245,18 @@ class B2CConfig(nparcel.Config):
         return self._comms
 
     @property
-    def aggregator_dir(self):
-        return self._aggregator
+    def aggregator_dirs(self):
+        return self._aggregator_dirs
 
-    def set_aggregator_dir(self, value):
-        self._aggregator = value
+    def set_aggregator_dirs(self, values):
+        del self._aggregator_dirs[:]
+
+        if values is not None:
+            log.debug('Set config aggregator in directories "%s"' %
+                      str(values))
+            self._aggregator_dirs.extend(values)
+        else:
+            self._aggregator_dirs = []
 
     @property
     def loader_loop(self):
@@ -343,7 +350,7 @@ class B2CConfig(nparcel.Config):
     def filter_customer(self):
         return self._filter_customer
 
-    def set_filter_customer(self):
+    def set_filter_customer(self, value):
         self._filter_customer = value
 
     @property
@@ -429,9 +436,6 @@ class B2CConfig(nparcel.Config):
             self._comms = self.get('dirs', 'comms')
             log.debug('Comms file directory %s' % self._comms)
 
-            self._aggregator = self.get('dirs', 'aggregator')
-            log.debug('Aggregator directory %s' % self._aggregator)
-
             self._business_units = dict(self.items('business_units'))
             log.debug('Exporter Business Units %s' %
                       self._business_units.keys())
@@ -444,7 +448,8 @@ class B2CConfig(nparcel.Config):
 
         # The standard T1250 file (which shouldn't change much)
         try:
-            self._t1250_file_format = self.get('files', 't1250_file_format')
+            self._t1250_file_format = self.get('files',
+                                               't1250_file_format')
             log.debug('T1250 file format %s' % self.t1250_file_format)
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
@@ -485,7 +490,10 @@ class B2CConfig(nparcel.Config):
                       self.pe_customer)
 
         try:
-            self._pe_inbound_mts = self.get('primary_elect', 'inbound_mts')
+            self.set_pe_inbound_mts(self.get('primary_elect',
+                                             'inbound_mts').split(','))
+            log.debug('Primary Elect directories to check %s' %
+                      str(self.pe_in_dirs))
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
             log.debug('Using default Primary Elect MTS directory: %s' %
@@ -498,6 +506,16 @@ class B2CConfig(nparcel.Config):
                 ConfigParser.NoSectionError), err:
             log.debug('Using default Primary Elect MTS file format: %s' %
                       self.pe_mts_filename_format)
+
+        # Aggregator.
+        try:
+            agg_dirs = self.get('dirs', 'aggregator').split(',')
+            self.set_aggregator_dirs(agg_dirs)
+            log.debug('Aggregator directories %s' % self.aggregator_dirs)
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default Aggregator inbound directories: %s' %
+                      self.aggregator_dirs)
 
         # Filter processing.
         try:

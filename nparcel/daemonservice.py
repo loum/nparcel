@@ -3,19 +3,25 @@ __all__ = [
 ]
 import nparcel
 
+from nparcel.utils.log import log
+
 
 class DaemonService(nparcel.utils.Daemon):
     """Common components for the Daemoniser facility.
 
-    .. attributes:: file
+    .. attribute:: file
 
         daemonisers can handle a single iteration if a file is provided
 
-    .. attributes:: dry
+    .. attribute:: in_dirs
+
+        list of directories to search for inbound files to process
+
+    .. attribute:: dry
 
         don't actually run, just report
 
-    .. attributes:: batch
+    .. attribute:: batch
 
         single iteration
 
@@ -36,14 +42,20 @@ class DaemonService(nparcel.utils.Daemon):
 
         list of support emails address
 
+    .. attribute:: archive_base
+
+        base directory where processed files are archived
+
     """
     _file = None
+    _in_dirs = []
     _dry = False
     _batch = False
     _emailer = nparcel.Emailer()
     _reporter = nparcel.Reporter()
     _loop = 30
     _support_emails = []
+    _archive_base = None
 
     def __init__(self,
                  pidfile,
@@ -62,6 +74,19 @@ class DaemonService(nparcel.utils.Daemon):
 
     def set_file(self, value=None):
         self._file = value
+
+    @property
+    def in_dirs(self):
+        return self._in_dirs
+
+    def set_in_dirs(self, values):
+        del self._in_dirs[:]
+
+        if values is not None:
+            log.debug('Set inbound directory list "%s"' % str(values))
+            self._in_dirs.extend(values)
+        else:
+            self._in_dirs = []
 
     @property
     def dry(self):
@@ -102,6 +127,14 @@ class DaemonService(nparcel.utils.Daemon):
 
         if values is not None and isinstance(values, list):
             self._support_emails.extend(values)
+
+    @property
+    def archive_base(self):
+        return self._archive_base
+
+    def set_archive_base(self, value):
+        self._archive_base = value
+        log.debug('Set archive base directory to "%s"' % self._archive_base)
 
     def alert(self,
               template,

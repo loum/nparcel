@@ -1,5 +1,4 @@
 import unittest2
-import threading
 import tempfile
 import os
 
@@ -15,9 +14,10 @@ class TestLoaderDaemon(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._file = 'nparcel/tests/files/T1250_TOLI_20130828202901.txt'
-        cls._exit_event = threading.Event()
         cls._d = nparcel.LoaderDaemon(pidfile=None,
                                       config='nparcel/conf/nparceld.conf')
+        cls._d.emailer.set_template_base(os.path.join('nparcel',
+                                                      'templates'))
 
     def test_init(self):
         """Intialise a LoaderDaemon object.
@@ -67,12 +67,12 @@ class TestLoaderDaemon(unittest2.TestCase):
 
         self._d.set_dry()
         self._d.set_file(self._file)
-        self._d._start(self._exit_event)
+        self._d._start(self._d.exit_event)
 
         # Clean up.
         self._d.set_file(old_file)
         self._d.set_dry(old_dry)
-        self._exit_event.clear()
+        self._d.exit_event.clear()
 
     def test_start_non_dry_loop(self):
         """Start non-dry loop.
@@ -84,8 +84,8 @@ class TestLoaderDaemon(unittest2.TestCase):
         old_batch = self._d.batch
         old_in_dirs = list(self._d.config.in_dirs)
         old_archive_dir = self._d.config.archive_dir
-        old_agg_dir = self._d.config.aggregator_dir
-        old_support_emails = list(self._d.config.support_emails)
+        old_agg_dir = self._d.config.aggregator_dirs
+        old_support_emails = list(self._d.support_emails)
         base_dir = tempfile.mkdtemp()
         in_dir = os.path.join(base_dir, 'ipec', 'in')
         archive_dir = tempfile.mkdtemp()
@@ -104,10 +104,10 @@ class TestLoaderDaemon(unittest2.TestCase):
         self._d.set_batch()
         self._d.config.set_in_dirs([in_dir])
         # Add valid email address here if you want to verify support comms.
-        self._d.config.set_support_emails(None)
+        self._d.set_support_emails(None)
         self._d.config.set_archive_dir(archive_dir)
-        self._d.config.set_aggregator_dir(agg_dir)
-        self._d._start(self._exit_event)
+        self._d.config.set_aggregator_dirs([agg_dir])
+        self._d._start(self._d.exit_event)
 
         # ... and make sure that the aggregator and archiver worked.
         expected_archive_dir = os.path.join(archive_dir,
@@ -133,15 +133,15 @@ class TestLoaderDaemon(unittest2.TestCase):
         self._d.set_batch(old_batch)
         self._d.config.set_in_dirs(old_in_dirs)
         self._d.config.set_archive_dir(old_archive_dir)
-        self._d.config.set_support_emails(old_support_emails)
-        self._d.config.set_aggregator_dir(old_agg_dir)
+        self._d.set_support_emails(old_support_emails)
+        self._d.config.set_aggregator_dirs(old_agg_dir)
         self._d.config.cond['toli'] = old_cond
         remove_files(expected_file)
         remove_files(expected_agg_file)
         os.removedirs(in_dir)
         os.removedirs(expected_archive_dir)
         os.removedirs(agg_dir)
-        self._exit_event.clear()
+        self._d.exit_event.clear()
 
     def test_distribute_file(self):
         """Distribute the T1250 file.
@@ -154,7 +154,7 @@ class TestLoaderDaemon(unittest2.TestCase):
         old_archive_dir = self._d.config.archive_dir
         self._d.config.set_archive_dir(archive_dir)
         old_agg_dir = self._d.config.archive_dir
-        self._d.config.set_aggregator_dir(archive_dir)
+        self._d.config.set_aggregator_dirs([archive_dir])
 
         # Fudge a T1250.
         test_file = 'T1250_TOLI_20130828202901.txt'
@@ -178,7 +178,7 @@ class TestLoaderDaemon(unittest2.TestCase):
         os.removedirs(expected_archive_dir)
         os.removedirs(agg_dir)
         self._d.config.set_archive_dir(old_archive_dir)
-        self._d.config.set_aggregator_dir(old_agg_dir)
+        self._d.config.set_aggregator_dirs(old_agg_dir)
 
     def test_distribute_file_with_aggregator_set(self):
         """Distribute the T1250 file.
@@ -191,7 +191,7 @@ class TestLoaderDaemon(unittest2.TestCase):
         old_archive_dir = self._d.config.archive_dir
         self._d.config.set_archive_dir(archive_dir)
         old_agg_dir = self._d.config.archive_dir
-        self._d.config.set_aggregator_dir(agg_dir)
+        self._d.config.set_aggregator_dirs([agg_dir])
 
         # Fudge a T1250.
         test_file = 'T1250_TOLI_20130828202901.txt'
@@ -222,11 +222,10 @@ class TestLoaderDaemon(unittest2.TestCase):
         os.removedirs(expected_archive_dir)
         os.removedirs(agg_dir)
         self._d.config.set_archive_dir(old_archive_dir)
-        self._d.config.set_aggregator_dir(old_agg_dir)
+        self._d.config.set_aggregator_dirs(old_agg_dir)
 
     @classmethod
     def tearDownClass(cls):
         del cls._file
-        del cls._exit_event
         cls._d = None
         del cls._d

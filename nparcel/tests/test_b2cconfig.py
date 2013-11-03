@@ -57,9 +57,9 @@ class TestB2CConfig(unittest2.TestCase):
         self.assertEqual(received, expected, msg)
 
         msg = 'Aggregator directory not as expected'
-        received = self._c.aggregator_dir
-        expected = '/data/nparcel/aggregate'
-        self.assertEqual(received, expected, msg)
+        received = self._c.aggregator_dirs
+        expected = ['/data/nparcel/aggregate']
+        self.assertListEqual(received, expected, msg)
 
         msg = 'Loader loop not as expected'
         received = self._c.loader_loop
@@ -169,8 +169,8 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'Primary Elect MTS inbound directory not as expected'
         received = self._c.pe_inbound_mts
-        expected = '/data/nparcel/mts'
-        self.assertEqual(received, expected, msg)
+        expected = ['/data/nparcel/mts']
+        self.assertListEqual(received, expected, msg)
 
         msg = 'Primary Elect MTS filename error'
         received = self._c.pe_mts_filename_format

@@ -17,6 +17,9 @@ from nparcel.utils.files import (get_directory_files,
 
 class MapperDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.Mapper` class.
+    .. attribute:: customer
+
+        context name of the current process iteration
 
     .. attribute:: file_format
 
@@ -33,6 +36,7 @@ class MapperDaemon(nparcel.DaemonService):
         Current timestamp
 
     """
+    _customer = 'gis'
     _file_format = 'T1250_TOL[PIF]_\d{14}\.dat'
     _file_ts_format = '%Y%m%d%H%M%S'
     _processing_ts = datetime.datetime.now()
@@ -52,6 +56,22 @@ class MapperDaemon(nparcel.DaemonService):
         self.config.parse_config()
 
         try:
+            if self.config.pe_customer is not None:
+                self.set_customer(self.config.pe_customer)
+        except AttributeError, err:
+            msg = ('Mapper customer not defined in config -- using %s' %
+                   self.customer)
+            log.info(msg)
+
+        try:
+            if len(self.config.pe_inbound_mts):
+                self.set_in_dirs(self.config.pe_inbound_mts)
+        except AttributeError, err:
+            msg = ('Inbound directory not defined in config -- using %s' %
+                   self.in_dirs)
+            log.info(msg)
+
+        try:
             if self.config.filter_loop is not None:
                 self.set_loop(self.config.mapper_loop)
         except AttributeError, err:
@@ -64,6 +84,22 @@ class MapperDaemon(nparcel.DaemonService):
         except AttributeError, err:
             msg = ('Inbound file format not defined in config -- using %s' %
                    self.file_format)
+            log.info(msg)
+
+        try:
+            if self.config.support_emails is not None:
+                self.set_support_emails(self.config.support_emails)
+        except AttributeError, err:
+            msg = ('Support emails not defined in config -- using %s' %
+                   str(self.support_emails))
+            log.info(msg)
+
+        try:
+            if self.config.archive_dir is not None:
+                self.set_archive_base(self.config.archive_dir)
+        except AttributeError, err:
+            msg = ('Archive base not defined in config -- using %s' %
+                   str(self.archive_base))
             log.info(msg)
 
     @property
@@ -89,6 +125,14 @@ class MapperDaemon(nparcel.DaemonService):
             self._processing_ts = datetime.datetime.now()
         else:
             self._processing_ts = value
+
+    @property
+    def customer(self):
+        return self._customer
+
+    def set_customer(self, value):
+        log.info('Setting customer to "%s"' % value)
+        self._customer = value
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
@@ -207,11 +251,9 @@ class MapperDaemon(nparcel.DaemonService):
         """
         files_to_process = []
 
-        dirs_to_check = []
+        dirs_to_check = self.in_dirs
         if dir is not None:
-            dirs_to_check.append(dir)
-        else:
-            dirs_to_check = self.config.pe_in_dirs
+            dirs_to_check = dir
 
         for dir_to_check in dirs_to_check:
             log.info('Looking for files at: %s ...' % dir_to_check)
@@ -246,7 +288,6 @@ class MapperDaemon(nparcel.DaemonService):
             archive target
 
         """
-        customer = self.config.pe_customer
         filename = os.path.basename(file)
         archive_dir = None
         archive_path = None
@@ -254,8 +295,8 @@ class MapperDaemon(nparcel.DaemonService):
         m = re.search(self.config.pe_in_file_archive_string, filename)
         if m is not None:
             file_timestamp = m.group(1)
-            dir = os.path.join(self.config.archive_dir,
-                               customer,
+            dir = os.path.join(self.archive_base,
+                               self.customer,
                                file_timestamp)
             archive_path = os.path.join(dir, filename)
 
