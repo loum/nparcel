@@ -15,10 +15,11 @@ class TestMapperDaemon(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._file = 'nparcel/tests/files/T1250_TOLI_20131011115618.dat'
-        cls._md = nparcel.MapperDaemon(pidfile=None,
-                                       config='nparcel/conf/nparceld.conf')
+        cls._md = nparcel.MapperDaemon(pidfile=None)
         dir = 'nparcel/tests/files'
         cls._md.set_in_dirs([dir])
+        cls._archive_base = tempfile.mkdtemp()
+        cls._md.set_archive_base(cls._archive_base)
 
     def test_init(self):
         """Intialise a MapperDaemon object.
@@ -52,15 +53,12 @@ class TestMapperDaemon(unittest2.TestCase):
         old_batch = self._md.batch
         old_support_emails = list(self._md.support_emails)
         old_in_dirs = self._md.in_dirs
-        old_archive_base = self._md.archive_base
 
         # Prepare test environment.
         self._md.set_dry(dry)
         self._md.set_batch(True)
         in_dir = tempfile.mkdtemp()
         self._md.set_in_dirs([in_dir])
-        archive_base = tempfile.mkdtemp()
-        self._md.set_archive_base(archive_base)
         copy_file(self._file, os.path.join(in_dir,
                                            os.path.basename(self._file)))
 
@@ -69,7 +67,9 @@ class TestMapperDaemon(unittest2.TestCase):
         # Add valid email address here if you want to verify support comms.
         self._md.set_support_emails(None)
 
-        expected_archive_dir = os.path.join(archive_base, 'gis', '20131011')
+        expected_archive_dir = os.path.join(self._archive_base,
+                                            'gis',
+                                            '20131011')
         expected_file = get_directory_files_list(in_dir)
 
         # Clean up.
@@ -77,7 +77,6 @@ class TestMapperDaemon(unittest2.TestCase):
         self._md.set_dry(old_dry)
         self._md.set_batch(old_batch)
         self._md.set_support_emails(old_support_emails)
-        self._md.set_archive_base(old_archive_base)
         self._md.set_in_dirs(old_in_dirs)
         remove_files(expected_file)
         remove_files(os.path.join(expected_archive_dir,
@@ -106,10 +105,6 @@ class TestMapperDaemon(unittest2.TestCase):
     def test_get_customer_archive(self):
         """Extract GIS T1250 timestamp.
         """
-        archive_base = tempfile.mkdtemp()
-        old_archive_base = self._md.archive_base
-        self._md.set_archive_base(archive_base)
-
         received = self._md.get_customer_archive(self._file)
         expected = os.path.join(self._md.archive_base,
                                 self._md.customer,
@@ -117,11 +112,6 @@ class TestMapperDaemon(unittest2.TestCase):
                                 os.path.basename(self._file))
         msg = 'GIS T1250 archive directory error'
         self.assertEqual(received, expected, msg)
-
-        # Clean up.
-        self._md.set_archive_base(archive_base)
-        os.removedirs(archive_base)
-        self._md.set_archive_base(old_archive_base)
 
     def test_get_files(self):
         """Get GIS files.
@@ -151,10 +141,9 @@ class TestMapperDaemon(unittest2.TestCase):
         """Get GIS files with an archived file.
         """
         dir = tempfile.mkdtemp()
-        old_archive_base = self._md.archive_base
-        archive_dir_base = tempfile.mkdtemp()
-        self._md.set_archive_base(archive_dir_base)
-        archive_dir = os.path.join(archive_dir_base, 'gis', '20131011')
+        archive_dir = os.path.join(self._archive_base,
+                                   'gis',
+                                   '20131011')
         os.makedirs(archive_dir)
 
         # Create some files.
@@ -187,8 +176,6 @@ class TestMapperDaemon(unittest2.TestCase):
 
         os.removedirs(dir)
         os.removedirs(archive_dir)
-
-        self._md.set_archive_base(old_archive_base)
 
     def test_write_new_file_handle(self):
         """Write out T1250 file to new file handle.
@@ -270,3 +257,8 @@ class TestMapperDaemon(unittest2.TestCase):
         del cls._file
         cls._md = None
         del cls._md
+        try:
+            os.removedirs(cls._archive_base)
+        except OSError:
+            pass
+        del cls._archive_base

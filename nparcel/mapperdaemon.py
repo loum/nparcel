@@ -42,6 +42,7 @@ class MapperDaemon(nparcel.DaemonService):
         T1250_TOL[PIF]_(\d{8})\d{6}\.dat)
 
     """
+    _config = None
     _customer = 'gis'
     _file_format = 'T1250_TOL[PIF]_\d{14}\.dat'
     _file_ts_format = '%Y%m%d%H%M%S'
@@ -53,14 +54,15 @@ class MapperDaemon(nparcel.DaemonService):
                  file=None,
                  dry=False,
                  batch=False,
-                 config='nparcel.conf'):
+                 config=None):
         super(MapperDaemon, self).__init__(pidfile=pidfile,
                                            file=file,
                                            dry=dry,
                                            batch=batch)
 
-        self.config = nparcel.B2CConfig(file=config)
-        self.config.parse_config()
+        if config is not None:
+            self.config = nparcel.B2CConfig(file=config)
+            self.config.parse_config()
 
         try:
             if self.config.pe_customer is not None:
@@ -307,7 +309,7 @@ class MapperDaemon(nparcel.DaemonService):
         archive_dir = None
         archive_path = None
 
-        m = re.search(self.config.pe_in_file_archive_string, filename)
+        m = re.search(self.archive_string, filename)
         if m is not None:
             file_timestamp = m.group(1)
             dir = os.path.join(self.archive_base,
