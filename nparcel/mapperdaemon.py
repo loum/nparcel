@@ -35,11 +35,18 @@ class MapperDaemon(nparcel.DaemonService):
 
         Current timestamp
 
+    .. attribute:: archive_string
+
+        regular expression grouping that represent the YYYYMMDD date
+        sequence of inbound filenames (default
+        T1250_TOL[PIF]_(\d{8})\d{6}\.dat)
+
     """
     _customer = 'gis'
     _file_format = 'T1250_TOL[PIF]_\d{14}\.dat'
     _file_ts_format = '%Y%m%d%H%M%S'
     _processing_ts = datetime.datetime.now()
+    _archive_string = 'T1250_TOL[PIF]_(\d{8})\d{6}\.dat'
 
     def __init__(self,
                  pidfile,

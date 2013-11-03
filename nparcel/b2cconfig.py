@@ -134,7 +134,7 @@ class B2CConfig(nparcel.Config):
 
         regular expression grouping structure for Primary Elect inbound
         filenames that represent the YYYYMMDD date sequence (default
-        T1250_TOL[PIF]_(\d{8})\d{6}\.dat)
+        T1250_TOL[PIF]_(\d{8})\d{6}\.dat
 
     .. attribute:: pe_customer
 
