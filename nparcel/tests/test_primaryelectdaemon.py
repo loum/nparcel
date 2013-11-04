@@ -10,9 +10,11 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        conf_file = 'nparcel/conf/nparceld.conf'
-        cls._ped = nparcel.PrimaryElectDaemon(pidfile=None,
-                                              config=conf_file)
+        cls._ped = nparcel.PrimaryElectDaemon(pidfile=None)
+
+        cls._report_in_dirs = tempfile.mkdtemp()
+        cls._ped.set_report_in_dirs([cls._report_in_dirs])
+
         cls._test_dir = 'nparcel/tests/files'
         cls._test_file = 'mts_delivery_report_20131018100758.csv'
         cls._test_file = os.path.join(cls._test_dir, cls._test_file)
@@ -58,34 +60,38 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
         os.removedirs(dir)
 
     def test_get_files(self):
-        """Get MTS files.
+        """Get report files.
         """
-        dir = tempfile.mkdtemp()
-        old_mts_inbound = self._ped.config.pe_inbound_mts
-        self._ped.config.set_pe_inbound_mts(dir)
-
         # Seed some files.
         old_mts_files = ['mts_delivery_report_20131018100755.csv',
                          'mts_delivery_report_20131018100756.csv',
                          'mts_delivery_report_20131018100757.csv']
         mts_file = ['mts_delivery_report_20131018100758.csv']
         for file in old_mts_files + mts_file:
-            fh = open(os.path.join(dir, file), 'w')
+            fh = open(os.path.join(self._report_in_dirs, file), 'w')
             fh.close()
 
         received = self._ped.get_files()
-        expected = [os.path.join(dir, mts_file[0])]
+        expected = [os.path.join(self._report_in_dirs, mts_file[0])]
         msg = 'MTS report files from get_files() error'
         self.assertListEqual(received, expected, msg)
 
         # Clean up.
-        all_files = old_mts_files + mts_file
-        remove_files([os.path.join(dir, x) for x in all_files])
-        os.removedirs(dir)
-        self._ped.config.set_pe_inbound_mts(old_mts_inbound)
+        files = old_mts_files + mts_file
+        remove_files([os.path.join(self._report_in_dirs, x) for x in files])
+
+    def test_get_files_empty_report_dir(self):
+        """Get report files -- empty report directory.
+        """
+        received = self._ped.get_files()
+        expected = []
+        msg = 'Report files from get_files() error'
+        self.assertListEqual(received, expected, msg)
 
     @classmethod
     def tearDownClass(cls):
         cls._ped = None
         cls._test_file = None
         del cls._test_file
+
+        os.removedirs(cls._report_in_dirs)

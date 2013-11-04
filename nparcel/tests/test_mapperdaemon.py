@@ -16,6 +16,7 @@ class TestMapperDaemon(unittest2.TestCase):
     def setUpClass(cls):
         cls._file = 'nparcel/tests/files/T1250_TOLI_20131011115618.dat'
         cls._md = nparcel.MapperDaemon(pidfile=None)
+
         dir = 'nparcel/tests/files'
         cls._md.set_in_dirs([dir])
         cls._archive_base = tempfile.mkdtemp()

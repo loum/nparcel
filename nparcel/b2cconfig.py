@@ -125,7 +125,7 @@ class B2CConfig(nparcel.Config):
 
         dictionary of business unit exporter ordered columns
 
-    .. attribute:: _pe_in_file_format
+    .. attribute:: pe_in_file_format
 
         filename structure to parse for Primary Elect inbound
         (default 'T1250_TOL[PIF]_\d{14}\.dat')
@@ -339,8 +339,12 @@ class B2CConfig(nparcel.Config):
     def pe_inbound_mts(self):
         return self._pe_inbound_mts
 
-    def set_pe_inbound_mts(self, value):
-        self._pe_inbound_mts = value
+    def set_pe_inbound_mts(self, values):
+        del self._pe_inbound_mts[:]
+        self._pe_inbound_mts = []
+
+        if values is not None:
+            self._pe_inbound_mts.extend(values)
 
     @property
     def pe_mts_filename_format(self):
