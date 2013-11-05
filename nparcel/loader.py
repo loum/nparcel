@@ -235,31 +235,30 @@ class Loader(nparcel.Service):
                 # Send comms?
                 if job_item_id is not None:
                     service_code = job_data.get('service_code')
+
+                    send_email = cond_map.get('send_email')
                     email_addr = job_item_data.get('email_addr')
+                    if self.trigger_comms(service_code, send_email):
+                        self.comms('email',
+                                   job_item_id,
+                                   email_addr,
+                                   dry=dry)
+
+                    send_sms = cond_map.get('send_sms')
                     phone_nbr = job_item_data.get('phone_nbr')
-                    self.comms(service_code,
-                               cond_map,
-                               job_item_id,
-                               email_addr,
-                               phone_nbr,
-                               dry=dry)
+                    if self.trigger_comms(service_code, send_sms):
+                        self.comms('sms',
+                                   job_item_id,
+                                   phone_nbr,
+                                   dry=dry)
 
         log.info('Conn Note: "%s" parse complete' % connote_literal)
 
         return status
 
-    def comms(self,
-              service_code,
-              cond_map,
-              job_item_id,
-              email_addr,
-              phone_nbr,
-              dry=False):
-        """Prepare comms event files.  Criteria include:
-
-        * *sevice_code* is not ``3``
-
-        * *email_addr* and *phone_nbr* have content
+    def trigger_comms(self, service_code, send_flag):
+        """Algorithm-based check to determine if this loader scenario
+        is to trigger a comms event.
 
         **Args:**
             *service_code*: integer value as per the ``job.service_code``
@@ -268,37 +267,47 @@ class Loader(nparcel.Service):
             *cond_map*: dictionary representing all of the condition flags
             for the Business Unit
 
+        **Returns:**
+            boolean ``True`` if comms should be sent
+
+            boolean ``False`` otherwise
+
+        """
+        prepare_comms = False
+
+        if send_flag:
+            if service_code != 3:
+                prepare_comms = True
+            else:
+                log.info('Not setting comms for Service Code 3')
+
+        return prepare_comms
+
+    def comms(self,
+              method,
+              job_item_id,
+              recipient,
+              dry=False):
+        """Prepare comms event files.
+
+        **Args:**
             *job_item_id*: integer as per the ``job_item.id`` column
 
-            *email_addr*: comms email recipient address
+            *recipient*: comms email recipient address
 
-            *phone_nbr*: comms SMS recipient number
+            *method*: either ``email`` or ``sms``
 
             *dry*: only report, do not execute
 
         """
-        log.info('Checking comms for id/email/SMS: %s/%s/%s' %
-                 (job_item_id, email_addr, phone_nbr))
+        log.info('Checking comms for id|recipient|method: %s|%s|%s' %
+                 (job_item_id, recipient, method))
 
-        if service_code == 3:
-            log.info('Not setting comms for Service Code 3')
-        else:
-            send_email = cond_map.get('send_email')
-            send_sms = cond_map.get('send_sms')
-
-            if send_email:
-                if email_addr is not None and email_addr:
-                    self.flag_comms('email',
-                                    job_item_id,
-                                    'body',
-                                    dry=dry)
-
-            if send_sms:
-                if phone_nbr is not None and phone_nbr:
-                    self.flag_comms('sms',
-                                    job_item_id,
-                                    'body',
-                                    dry=dry)
+        if recipient is not None and recipient:
+            self.flag_comms(method,
+                            job_item_id,
+                            'body',
+                            dry=dry)
 
     def get_agent_details(self, agent_id):
         """Get agent details.

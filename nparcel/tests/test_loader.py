@@ -975,6 +975,39 @@ SET state = 'VIC'"""
         msg = 'Agent code should not set ignored flag'
         self.assertFalse(received, msg)
 
+    def test_trigger_comms(self):
+        """Enable comms -- service code 3.
+        """
+        sc = 3
+        for send_flag in [True, False]:
+            received = self._ldr.trigger_comms(sc, send_flag)
+            msg = 'Service code 3 comms should return False'
+            self.assertFalse(received, msg)
+
+    def test_trigger_comms_service_code_none(self):
+        """Enable comms -- service code None.
+        """
+        sc = None
+        for send_flag in [True, False]:
+            received = self._ldr.trigger_comms(sc, send_flag)
+            msg = 'Service code None enable comms error'
+            if send_flag:
+                self.assertTrue(received, msg)
+            else:
+                self.assertFalse(received, msg)
+
+    def test_trigger_comms_service_code_1(self):
+        """Enable comms -- service code 1.
+        """
+        sc = 1
+        for send_flag in [True, False]:
+            received = self._ldr.trigger_comms(sc, send_flag)
+            msg = 'Service code 1 enable comms error'
+            if send_flag:
+                self.assertTrue(received, msg)
+            else:
+                self.assertFalse(received, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._c = None
