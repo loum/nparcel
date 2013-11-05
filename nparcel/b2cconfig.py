@@ -709,6 +709,32 @@ class B2CConfig(nparcel.Config):
 
         return status == '1'
 
+    def comms_map(self, bu):
+        """The comms trigger has become somewhat of a convoluted mess
+        with various use-cases.  This method returns the *bu* based comms
+        flags in a simpler dictionary lookup.
+
+        **Args:**
+            *bu*: the name of the Business Unit.  Only the first 4
+            characters are accepted.  For example, ``tolf_nsw`` will be
+            interpreted as ``tolf``.
+
+        **Returns:**
+            dictionary structure of the comms flags similar to::
+                {'send_email': False,
+                 'send_sms': True}
+
+        """
+        log.debug('Generating comms_map for Business Unit "%s"' % bu)
+
+        comms_map = {'send_email': False,
+                     'send_sms': False}
+
+        for k in comms_map.keys():
+            comms_map[k] = self.condition(bu, k)
+
+        return comms_map
+
     def condition_map(self, bu):
         """Return the *bu* condition map values.
 
@@ -787,8 +813,8 @@ class B2CConfig(nparcel.Config):
     def bu_to_file(self, bu):
         """Return the file_bu configuration option of a given *bu*.
 
-        State-based BU to file translations are not supported.  For example,
-        tolf_vic
+        State-based BU to file translations are not supported.  For
+        example, ``tolf_vic``.
 
         **Args:**
             *bu*: business unit name as defined under the business_units
@@ -813,7 +839,7 @@ class B2CConfig(nparcel.Config):
         return file_code_for_bu
 
     def db_kwargs(self):
-        """Extract database connectivity information from the configuration.
+        """Extract database connectivity information from the config.
 
         Database connectivity information is taken from the ``[db]``
         section in the configuration file.  A typical example is::

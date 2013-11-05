@@ -293,6 +293,40 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Dodgy Business Unit condition map should be empty dict'
         self.assertDictEqual(received, expected, msg)
 
+    def test_comms_map(self):
+        """Comms map.
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        received = self._c.comms_map('toli')
+        exepected = {'send_email': False,
+                     'send_sms': False}
+        msg = 'toli cond_map error'
+        self.assertDictEqual(received, exepected, msg)
+
+        old_cond_map = self._c.cond.get('toli')
+        cond_map_list = list(old_cond_map)
+
+        cond_map_list[1] = '1'
+        self._c.cond['toli'] = ''.join(cond_map_list)
+        received = self._c.comms_map('toli')
+        exepected = {'send_email': True,
+                     'send_sms': False}
+        msg = 'toli cond_map error -- send_email True'
+        self.assertDictEqual(received, exepected, msg)
+
+        cond_map_list[2] = '1'
+        self._c.cond['toli'] = ''.join(cond_map_list)
+        received = self._c.comms_map('toli')
+        exepected = {'send_email': True,
+                     'send_sms': True}
+        msg = 'toli cond_map error -- send_sms and send_email True'
+        self.assertDictEqual(received, exepected, msg)
+
+        # Clean up.
+        self._c.cond['toli'] = old_cond_map
+
     def test_condition_map_valid_bu(self):
         """Check condition map -- valid Business Unit.
         """
