@@ -1,9 +1,12 @@
 import unittest2
 import tempfile
+import datetime
 import os
 
 import nparcel
-from nparcel.utils.files import remove_files
+from nparcel.utils.files import (remove_files,
+                                 get_directory_files_list,
+                                 copy_file)
 
 
 class TestPrimaryElectDaemon(unittest2.TestCase):
@@ -15,9 +18,86 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
         cls._report_in_dirs = tempfile.mkdtemp()
         cls._ped.set_report_in_dirs([cls._report_in_dirs])
 
+        cls._comms_dir = tempfile.mkdtemp()
+        cls._ped.set_comms_dir(cls._comms_dir)
+
+        # Call up front to pre-load the DB.
+        cls._ped.set_pe()
+
         cls._test_dir = 'nparcel/tests/files'
         cls._test_file = 'mts_delivery_report_20131018100758.csv'
-        cls._test_file = os.path.join(cls._test_dir, cls._test_file)
+        cls._test_filepath = os.path.join(cls._test_dir, cls._test_file)
+
+        db = cls._ped.pe.db
+        agents = [{'code': 'N031',
+                   'state': 'VIC',
+                   'name': 'N031 Name',
+                   'address': 'N031 Address',
+                   'postcode': '1234',
+                   'suburb': 'N031 Suburb'},
+                  {'code': 'BAD1',
+                   'state': 'NSW',
+                   'name': 'BAD1 Name',
+                   'address': 'BAD1 Address',
+                   'postcode': '5678',
+                   'suburb': 'BAD1 Suburb'}]
+        sql = db._agent.insert_sql(agents[0])
+        agent_01 = db.insert(sql)
+        sql = db._agent.insert_sql(agents[1])
+        agent_02 = db.insert(sql)
+
+        cls._now = datetime.datetime.now()
+        jobs = [{'agent_id': agent_01,
+                 'job_ts': '%s' % cls._now,
+                 'bu_id': 1},
+                {'agent_id': agent_01,
+                 'job_ts': '%s' % cls._now,
+                 'service_code': 3,
+                 'bu_id': 1}]
+        sql = db.job.insert_sql(jobs[0])
+        job_01 = db.insert(sql)
+        sql = db.job.insert_sql(jobs[1])
+        job_02 = db.insert(sql)
+
+        # Rules as follows:
+        # id_000 - not primary elect
+        # id_001 - primary elect with valid recipients/delivered
+        # id_002 - primary elect no recipients
+        # id_003 - primary elect/not delivered
+        jobitems = [{'connote_nbr': 'con_001',
+                     'item_nbr': 'item_nbr_001',
+                     'email_addr': 'loumar@tollgroup.com',
+                     'phone_nbr': '0431602145',
+                     'job_id': job_01,
+                     'created_ts': '%s' % cls._now},
+                    {'connote_nbr': 'GOLW010997',
+                     'item_nbr': 'item_nbr_002',
+                     'email_addr': 'loumar@tollgroup.com',
+                     'phone_nbr': '0431602145',
+                     'job_id': job_02,
+                     'created_ts': '%s' % cls._now},
+                    {'connote_nbr': 'con_003',
+                     'item_nbr': 'item_nbr_003',
+                     'email_addr': '',
+                     'phone_nbr': '',
+                     'job_id': job_02,
+                     'created_ts': '%s' % cls._now,
+                     'pickup_ts': '%s' % cls._now},
+                    {'connote_nbr': 'GOLW013730',
+                     'item_nbr': 'item_nbr_004',
+                     'email_addr': 'loumar@tollgroup.com',
+                     'phone_nbr': '0431602145',
+                     'job_id': job_02,
+                     'created_ts': '%s' % cls._now}]
+        sql = db.jobitem.insert_sql(jobitems[0])
+        cls._id_000 = db.insert(sql)
+        sql = db.jobitem.insert_sql(jobitems[1])
+        cls._id_001 = db.insert(sql)
+        sql = db.jobitem.insert_sql(jobitems[2])
+        cls._id_002 = db.insert(sql)
+        sql = db.jobitem.insert_sql(jobitems[3])
+        cls._id_003 = db.insert(sql)
+        db.commit()
 
     def test_init(self):
         """Intialise a PrimaryElectDaemon object.
@@ -26,11 +106,48 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
         self.assertIsInstance(self._ped, nparcel.PrimaryElectDaemon, msg)
 
     def test_start(self):
-        """Primary Elect _start processing loop.
+        """Primary Elect _start dry loop.
         """
+        old_dry = self._ped.dry
+
         self._ped.set_dry()
-        self._ped.set_file(self._test_file)
         self._ped._start(self._ped.exit_event)
+
+        # Clean up.
+        self._ped.set_dry(old_dry)
+        self._ped._exit_event.clear()
+
+    def test_start_non_dry_loop(self):
+        """Start non-dry loop.
+        """
+        dry = False
+
+        old_dry = self._ped.dry
+        old_batch = self._ped.batch
+        old_support_emails = self._ped.support_emails
+        copy_file(os.path.join(self._test_dir, self._test_file),
+                  os.path.join(self._report_in_dirs, self._test_file))
+
+        # Start processing.
+        self._ped.set_dry(dry)
+        self._ped.set_batch()
+        self._ped._start(self._ped._exit_event)
+
+        # Comms files should have been created.
+        comms_files = ['email.%d.pe' % self._id_001,
+                       'sms.%d.pe' % self._id_001]
+        expected = [os.path.join(self._comms_dir, x) for x in comms_files]
+        received = get_directory_files_list(self._comms_dir)
+        msg = 'Primary Elect comms file error'
+        self.assertListEqual(sorted(expected), sorted(received), msg)
+
+        # Clean up.
+        remove_files(expected)
+        remove_files(os.path.join(self._report_in_dirs, self._test_file))
+        self._ped.set_file(old_dry)
+        self._ped.set_batch(old_batch)
+        self._ped.set_support_emails(old_support_emails)
+        self._ped._exit_event.clear()
 
     def test_validate_file_not_mts_format(self):
         """Parse non-MTS formatted file.
@@ -92,6 +209,12 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
     def tearDownClass(cls):
         cls._ped = None
         cls._test_file = None
+        cls._test_filepath = None
+        del cls._ped
         del cls._test_file
+        del cls._test_filepath
 
         os.removedirs(cls._report_in_dirs)
+        os.removedirs(cls._comms_dir)
+        del cls._report_in_dirs
+        del cls._comms_dir

@@ -13,7 +13,6 @@ class TestFilterDaemon(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._file = 'nparcel/tests/files/T1250_TOLI_20130828202901.txt'
-        cls._exit_event = threading.Event()
         cls._fd = nparcel.FilterDaemon(pidfile=None,
                                        config='nparcel/conf/nparceld.conf')
         cls._fd.emailer.set_template_base(os.path.join('nparcel',
@@ -35,12 +34,12 @@ class TestFilterDaemon(unittest2.TestCase):
 
         self._fd.set_dry()
         self._fd.set_file(self._file)
-        self._fd._start(self._exit_event)
+        self._fd._start(self._fd._exit_event)
 
         # Clean up.
         self._fd.set_file(old_file)
         self._fd.set_dry(old_dry)
-        self._exit_event.clear()
+        self._fd._exit_event.clear()
 
     def test_start_non_dry_loop(self):
         """Start non-dry loop.
@@ -66,7 +65,7 @@ class TestFilterDaemon(unittest2.TestCase):
         # Start processing.
         self._fd.set_dry(dry)
         self._fd.set_batch()
-        self._fd._start(self._exit_event)
+        self._fd._start(self._fd._exit_event)
 
         expected_out_dir = os.path.join(out_dir, 'parcelpoint', 'out')
         expected_out_file = os.path.join(expected_out_dir,
@@ -89,7 +88,7 @@ class TestFilterDaemon(unittest2.TestCase):
         self._fd.set_batch(old_batch)
         self._fd.set_in_dir(old_in_dir)
         self._fd.set_support_emails(old_support_emails)
-        self._exit_event.clear()
+        self._fd._exit_event.clear()
 
     def test_check_filename(self):
         """Get list of inbound files.
@@ -168,6 +167,5 @@ class TestFilterDaemon(unittest2.TestCase):
     @classmethod
     def tearDownClass(cls):
         del cls._file
-        del cls._exit_event
         cls._fd = None
         del cls._fd

@@ -34,6 +34,7 @@ class PrimaryElectDaemon(nparcel.DaemonService):
     _report_file_format = 'mts_delivery_report_\d{14}\.csv'
     _comms_dir = '/data/nparcel/comms'
     _db_kwargs = None
+    _pe = None
 
     def __init__(self,
                  pidfile,
@@ -51,31 +52,27 @@ class PrimaryElectDaemon(nparcel.DaemonService):
             self.config.parse_config()
 
         try:
-            if self.config.loader_loop is not None:
-                self.set_loop(self.config.loader_loop)
+            self.set_loop(self.config.loader_loop)
         except AttributeError, err:
             log.info('Daemon loop not defined in config -- default %d sec' %
                      self.loop)
 
         try:
-            if len(self.config.pe_in_dirs):
-                self.set_in_dirs(self.config.pe_in_dir)
+            self.set_in_dirs(self.config.pe_in_dir)
         except AttributeError, err:
             msg = ('Inbound directory not defined in config -- using %s' %
                    self.in_dirs)
             log.info(msg)
 
         try:
-            if len(self.config.pe_inbound_mts):
-                self.set_report_in_dirs(self.config.pe_inbound_mts)
+            self.set_report_in_dirs(self.config.pe_inbound_mts)
         except AttributeError, err:
             msg = ('Report inbound dir not defined in config -- using %s' %
-                   self.in_dirs)
+                   self.report_in_dirs)
             log.info(msg)
 
         try:
-            if self.config.pe_mts_filename_format is not None:
-                self.set_report_file_format(self.config.pe_mts_filename_format)
+            self.set_report_file_format(self.config.pe_mts_filename_format)
         except AttributeError, err:
             msg = ('Report file format not defined in config -- using %s' %
                    self.report_file_format)
@@ -132,6 +129,20 @@ class PrimaryElectDaemon(nparcel.DaemonService):
         if value is not None:
             self._db_kwargs = value
 
+    @property
+    def pe(self):
+        return self._pe
+
+    def set_pe(self, db=None, comms_dir=None):
+        if db is None:
+            db = self.db_kwargs
+
+        if comms_dir is None:
+            comms_dir = self.comms_dir
+
+        if self._pe is None:
+            self._pe = nparcel.PrimaryElect(db=db, comms_dir=comms_dir)
+
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
 
@@ -147,13 +158,12 @@ class PrimaryElectDaemon(nparcel.DaemonService):
         """
         signal.signal(signal.SIGTERM, self._exit_handler)
 
-        pe = nparcel.PrimaryElect(db=self.db_kwargs,
-                                  comms_dir=self.comms_dir)
+        self.set_pe(comms_dir=self.comms_dir)
 
         while not event.isSet():
             files = []
 
-            if pe.db():
+            if self.pe.db():
                 if self.file is not None:
                     files.append(self.file)
                     event.set()
@@ -168,7 +178,7 @@ class PrimaryElectDaemon(nparcel.DaemonService):
             for file in files:
                 log.info('Processing file: "%s" ...' % file)
                 if self.validate_file(file):
-                    pe.process(file, dry=self.dry)
+                    self.pe.process(file, dry=self.dry)
 
             if not event.isSet():
                 if self.dry:
