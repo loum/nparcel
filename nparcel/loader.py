@@ -137,8 +137,8 @@ POSTCODE_MAP = {'NSW': {
 
 class Loader(nparcel.Service):
     """Nparcel Loader object.
-
     """
+
     def __init__(self, db=None, comms_dir=None):
         """Nparcel Loader initialiser.
 
@@ -157,7 +157,7 @@ class Loader(nparcel.Service):
 
             *bu_id*: the Business Unit id as per "business_unit.id"
 
-            *conditions*: dict representing all of the condition flags for
+            *cond_map*: dict representing all of the condition flags for
             the Business Unit
 
         **Kwargs:**
@@ -232,34 +232,73 @@ class Loader(nparcel.Service):
                     log.info('Creating Nparcel barcode "%s"' % barcode)
                     job_item_id = self.create(job_data, job_item_data)
 
-                sc = job_data.get('service_code')
-                if sc == 3:
-                    log.info('Not setting comms for Primary Elect')
-                else:
-                    send_email = cond_map.get('send_email')
-                    send_sms = cond_map.get('send_sms')
-                    if job_item_id is not None:
-                        if send_email:
-                            email_addr = job_item_data.get('email_addr')
-                            if email_addr is not None and email_addr:
-                                self.flag_comms('email',
-                                                job_item_id,
-                                                'body',
-                                                dry=dry)
-                        if send_sms:
-                            phone_nbr = job_item_data.get('phone_nbr')
-                            if phone_nbr is not None and phone_nbr:
-                                self.flag_comms('sms',
-                                                job_item_id,
-                                                'body',
-                                                dry=dry)
-                    else:
-                        log.info('Not setting comms for job_item_id %s' %
-                                 str(job_item_id))
+                # Send comms?
+                if job_item_id is not None:
+                    service_code = job_data.get('service_code')
+                    email_addr = job_item_data.get('email_addr')
+                    phone_nbr = job_item_data.get('phone_nbr')
+                    self.comms(service_code,
+                               cond_map,
+                               job_item_id,
+                               email_addr,
+                               phone_nbr,
+                               dry=dry)
 
         log.info('Conn Note: "%s" parse complete' % connote_literal)
 
         return status
+
+    def comms(self,
+              service_code,
+              cond_map,
+              job_item_id,
+              email_addr,
+              phone_nbr,
+              dry=False):
+        """Prepare comms event files.  Criteria include:
+
+        * *sevice_code* is not ``3``
+
+        * *email_addr* and *phone_nbr* have content
+
+        **Args:**
+            *service_code*: integer value as per the ``job.service_code``
+            column
+
+            *cond_map*: dictionary representing all of the condition flags
+            for the Business Unit
+
+            *job_item_id*: integer as per the ``job_item.id`` column
+
+            *email_addr*: comms email recipient address
+
+            *phone_nbr*: comms SMS recipient number
+
+            *dry*: only report, do not execute
+
+        """
+        log.info('Checking comms for id/email/SMS: %s/%s/%s' %
+                 (job_item_id, email_addr, phone_nbr))
+
+        if service_code == 3:
+            log.info('Not setting comms for Service Code 3')
+        else:
+            send_email = cond_map.get('send_email')
+            send_sms = cond_map.get('send_sms')
+
+            if send_email:
+                if email_addr is not None and email_addr:
+                    self.flag_comms('email',
+                                    job_item_id,
+                                    'body',
+                                    dry=dry)
+
+            if send_sms:
+                if phone_nbr is not None and phone_nbr:
+                    self.flag_comms('sms',
+                                    job_item_id,
+                                    'body',
+                                    dry=dry)
 
     def get_agent_details(self, agent_id):
         """Get agent details.
