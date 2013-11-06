@@ -326,12 +326,15 @@ class RestEmailer(nparcel.Rest):
         """
         status = True
 
-        err = 'Email "%s" validation failed' % email
-        r = re.compile("^[a-zA-Z0-9._%-+]+@[a-zA-Z0-9._%-]+.[a-zA-Z]{2,6}$")
+        err = 'Email "%s" validation:' % email
+        ex = '^[a-zA-Z0-9._%\-+]+@[a-zA-Z0-9._%-]+\.[a-zA-Z]{2,6}$'
+        r = re.compile(ex)
         m = r.match(email)
         if m is None:
             status = False
-            log.error(err)
+            log.error('%s Failed' % err)
+        else:
+            log.info('%s OK' % err)
 
         return status
 

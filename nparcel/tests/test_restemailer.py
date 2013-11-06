@@ -106,6 +106,39 @@ class TestRestEmailer(unittest2.TestCase):
         msg = 'Base body subject line not as expected'
         self.assertEqual(received, expected, msg)
 
+    def test_validate(self):
+        """Validate email addresses.
+        """
+        # Valid address.
+        email = 'lou.markovski@tollgroup.com'
+        received = self._re.validate(email)
+        msg = 'Valid email should return True'
+        self.assertTrue(received)
+
+        # Invalid -- too many @'s.
+        email = '@@@tollgroup.com'
+        received = self._re.validate(email)
+        msg = 'Invalid email (too many @s) should return False'
+        self.assertFalse(received)
+
+        # Valid -- hyphen in local-part.
+        email = 'local-part@tollgroup.com'
+        received = self._re.validate(email)
+        msg = 'Valid email (hyphen in local-part) should return True'
+        self.assertTrue(received)
+
+        # Valid -- hyphen in domain-part.
+        email = 'localpart@domain-part.com'
+        received = self._re.validate(email)
+        msg = 'Valid email (hyphen in domain-part) should return True'
+        self.assertTrue(received)
+
+        # Valid -- multiple dots in domain part
+        email = 'localpart@domain-part.com.au'
+        received = self._re.validate(email)
+        msg = 'Valid email (multiple dots domain part) should return True'
+        self.assertTrue(received)
+
     @classmethod
     def tearDownClass(cls):
         cls._re = None
