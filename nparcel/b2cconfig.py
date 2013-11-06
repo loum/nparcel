@@ -16,7 +16,9 @@ FLAG_MAP = {'item_number_excp': 0,
             'send_png_file': 4,
             'state_reporting': 5,
             'pe_pods': 6,
-            'aggregate_files': 7}
+            'aggregate_files': 7,
+            'send_sc_1': 8,
+            'send_sc_2': 9}
 
 
 class B2CConfig(nparcel.Config):
