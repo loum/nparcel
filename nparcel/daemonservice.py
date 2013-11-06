@@ -146,19 +146,21 @@ class DaemonService(nparcel.utils.Daemon):
         notification based on *template* and *data* dictionary value.
 
         *subject_data* can be delivered in a few ways:
-        * as a string it will simply pass it through to the subject email
 
-        * as a dictionary in the form::
+            * as a string it will simply pass it through to the subject
+              email
 
-            {'data': {<key>: <value>,
-                      ...},
-             'template': <template>}
+            * as a dictionary in the form::
 
-        where the ``data`` and ``template`` keys which define the
-        template arrangment
+                {'data': {<key>: <value>,
+                          ...},
+                'template': <template>}
 
-        * nothing at all (``None``) in which case it will try to fudge
-        a subject template based on the email body template
+            where the ``data`` and ``template`` keys define the
+            template arrangment
+
+            * nothing at all (``None``) in which case it will try to fudge
+              a subject template based on the email body template
 
         **Args:**
             *template*: the email template to use to generate the HTML-based

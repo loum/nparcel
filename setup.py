@@ -4,7 +4,7 @@ import fnmatch
 import shutil
 from distutils.core import setup
 
-VERSION = '0.14'
+VERSION = '0.16'
 
 
 def opj(*args):
@@ -83,7 +83,8 @@ setup(name='python-nparcel',
                'nparcel/bin/nppostcode',
                'nparcel/bin/npprimaryelectd',
                'nparcel/bin/npcommsd',
-               'nparcel/bin/npmapperd'],
+               'nparcel/bin/npmapperd',
+               'nparcel/bin/npfilterd'],
       packages=['nparcel', 'nparcel.table', 'nparcel.utils'],
       package_dir={'nparcel': 'nparcel'},
       package_data={'nparcel': ['conf/*.conf.[0-9]*.[0-9]*',

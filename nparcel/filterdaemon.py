@@ -265,10 +265,10 @@ class FilterDaemon(nparcel.DaemonService):
 
         Generation of the outbound file is based on:
         * :attr:`nparcel.b2cconfig.staging_base` attribute (or current
-        directory if not identified)
+          directory if not identified)
 
         * :attr:`nparcel.b2cconfig.filter_customer` (or *parcelpoint*
-        if not identified)
+          if not identified)
 
         * *file* name (with ``.tmp`` appended)
 

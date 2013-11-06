@@ -858,8 +858,8 @@ class Loader(nparcel.Service):
             *parsed_fields*: dictionary of parsed, raw values.  For
             example::
 
-            {'Agent Id': 'N013',
-             ...}
+                {'Agent Id': 'N013',
+                 ...}
 
         **Returns:**
             boolean ``True`` if record should be ignored
