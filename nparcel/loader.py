@@ -238,7 +238,12 @@ class Loader(nparcel.Service):
 
                     send_email = cond_map.get('send_email')
                     email_addr = job_item_data.get('email_addr')
-                    if self.trigger_comms(service_code, send_email):
+                    send_sc_1 = cond_map.get('send_sc_1')
+                    send_sc_2 = cond_map.get('send_sc_2')
+                    if self.trigger_comms(service_code,
+                                          send_email,
+                                          send_sc_1,
+                                          send_sc_2):
                         self.comms('email',
                                    job_item_id,
                                    email_addr,
@@ -246,7 +251,10 @@ class Loader(nparcel.Service):
 
                     send_sms = cond_map.get('send_sms')
                     phone_nbr = job_item_data.get('phone_nbr')
-                    if self.trigger_comms(service_code, send_sms):
+                    if self.trigger_comms(service_code,
+                                          send_sms,
+                                          send_sc_1,
+                                          send_sc_2):
                         self.comms('sms',
                                    job_item_id,
                                    phone_nbr,
@@ -256,9 +264,27 @@ class Loader(nparcel.Service):
 
         return status
 
-    def trigger_comms(self, service_code, send_flag):
+    def trigger_comms(self,
+                      service_code,
+                      send_flag,
+                      send_sc_1=False,
+                      send_sc_2=False):
         """Algorithm-based check to determine if this loader scenario
         is to trigger a comms event.
+
+        .. note::
+
+            Comms are not triggered if the *service_code* is ``3`` or ``4``
+
+        Default scenario if comms are enabled is that the service code
+        field is NULL (or ``None``).  In this case comms are triggered
+        (return ``True``).  However, certain flags can override this
+        behaviour as follows:
+
+        * ``send_sc_1`` flag is ``True`` or ``send_sc_2`` flag is ``True``
+
+        In general, if the ``send_sc_1`` or ``send_sc_2`` flags are set
+        then the 
 
         **Args:**
             *service_code*: integer value as per the ``job.service_code``
@@ -267,19 +293,34 @@ class Loader(nparcel.Service):
             *cond_map*: dictionary representing all of the condition flags
             for the Business Unit
 
+            *send_sc_1*: flag to trigger comms if the *service_code*
+            is equal to ``1``
+
+            *send_sc_2*: flag to trigger comms if the *service_code*
+            is equal to ``2``
+
         **Returns:**
             boolean ``True`` if comms should be sent
 
             boolean ``False`` otherwise
 
         """
+        log.info('Comms trigger check SC:%s and flags SC_1|SC_2: %s|%s' %
+                 (service_code, send_sc_1, send_sc_2))
         prepare_comms = False
 
         if send_flag:
-            if service_code != 3:
-                prepare_comms = True
+            if service_code == 3 or service_code == 4:
+                log.info('Not setting comms for Service Code 3/4')
             else:
-                log.info('Not setting comms for Service Code 3')
+                if not send_sc_1 and not send_sc_2:
+                    prepare_comms = True
+                else:
+                    if ((service_code == 1 and send_sc_1) or
+                        (service_code == 2 and send_sc_2)):
+                        log.info('Setting comms for Service Code %s' %
+                                 str(service_code))
+                        prepare_comms = True
 
         return prepare_comms
 

@@ -18,6 +18,8 @@ class TestLoaderDaemon(unittest2.TestCase):
                                       config='nparcel/conf/nparceld.conf')
         cls._d.emailer.set_template_base(os.path.join('nparcel',
                                                       'templates'))
+        cls._comms_dir = tempfile.mkdtemp()
+        cls._d.config.set_comms_dir(cls._comms_dir)
 
     def test_init(self):
         """Intialise a LoaderDaemon object.
@@ -143,6 +145,275 @@ class TestLoaderDaemon(unittest2.TestCase):
         os.removedirs(agg_dir)
         self._d.exit_event.clear()
 
+    def test_start_non_dry_loop_priority(self):
+        """Start non-dry loop.
+        """
+        dry = False
+
+        old_dry = self._d.dry
+        old_batch = self._d.batch
+        old_in_dirs = list(self._d.config.in_dirs)
+        old_archive_dir = self._d.config.archive_dir
+        old_agg_dir = self._d.config.aggregator_dirs
+        old_support_emails = list(self._d.support_emails)
+        base_dir = tempfile.mkdtemp()
+        in_dir = os.path.join(base_dir, 'priority', 'in')
+        archive_dir = tempfile.mkdtemp()
+        agg_dir = tempfile.mkdtemp()
+
+        old_cond = self._d.config.cond.get('tolp')
+        new_cond = list(old_cond)
+
+        # Aggregate files.
+        new_cond[7] = '1'
+
+        # Send comms.
+        new_cond[1] = '1'
+        new_cond[2] = '1'
+
+        # Comms Service Code flags.
+        new_cond[8] = '1'
+        new_cond[9] = '1'
+
+        self._d.config.cond['tolp'] = ''.join(new_cond)
+
+        # Copy over our test file.
+        priority_file = 'nparcel/tests/files/T1250_TOLP_20130413135756.txt'
+        copy_file(priority_file,
+                  os.path.join(in_dir, os.path.basename(priority_file)))
+
+        # Start processing.
+        self._d.set_dry(dry)
+        self._d.set_batch()
+        self._d.config.set_in_dirs([in_dir])
+        # Add valid email address here if you want to verify support comms.
+        self._d.set_support_emails(None)
+        self._d.config.set_archive_dir(archive_dir)
+        self._d.config.set_aggregator_dirs([agg_dir])
+        self._d._start(self._d.exit_event)
+
+        # ... and make sure that the aggregator and archiver worked.
+        expected_archive_dir = os.path.join(archive_dir,
+                                            'priority',
+                                            '20130413')
+        expected_file = os.path.join(expected_archive_dir,
+                                     os.path.basename(priority_file))
+        expected_agg_file = os.path.join(agg_dir,
+                                         os.path.basename(priority_file))
+        received = get_directory_files_list(expected_archive_dir)
+        expected = [expected_file]
+        msg = 'Non-dry process flow archive directory error'
+        self.assertListEqual(received, expected, msg)
+
+        # Aggregator.
+        received = get_directory_files_list(agg_dir)
+        expected = [expected_agg_file]
+        msg = 'Non-dry process flow aggregate directory error'
+        self.assertListEqual(received, expected, msg)
+
+        # Comms.
+        comms = ['sms.1.body',
+                 'email.1.body',
+                 'sms.2.body',
+                 'email.2.body']
+        received = get_directory_files_list(self._comms_dir)
+        expected_comms = [os.path.join(self._comms_dir, x) for x in comms]
+        expected = expected_comms
+        msg = 'Non-dry process flow comms files error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Clean up.
+        self._d.set_dry(old_dry)
+        self._d.set_batch(old_batch)
+        self._d.config.set_in_dirs(old_in_dirs)
+        self._d.config.set_archive_dir(old_archive_dir)
+        self._d.set_support_emails(old_support_emails)
+        self._d.config.set_aggregator_dirs(old_agg_dir)
+        self._d.config.cond['tolp'] = old_cond
+        remove_files(expected_file)
+        remove_files(expected_agg_file)
+        remove_files(expected_comms)
+        os.removedirs(in_dir)
+        os.removedirs(expected_archive_dir)
+        os.removedirs(agg_dir)
+        self._d.exit_event.clear()
+
+    def test_start_non_dry_loop_priority_sc_1_no_aggregator(self):
+        """Start non-dry loop.
+        """
+        dry = False
+
+        old_dry = self._d.dry
+        old_batch = self._d.batch
+        old_in_dirs = list(self._d.config.in_dirs)
+        old_archive_dir = self._d.config.archive_dir
+        old_agg_dir = self._d.config.aggregator_dirs
+        old_support_emails = list(self._d.support_emails)
+        base_dir = tempfile.mkdtemp()
+        in_dir = os.path.join(base_dir, 'priority', 'in')
+        archive_dir = tempfile.mkdtemp()
+        agg_dir = tempfile.mkdtemp()
+
+        old_cond = self._d.config.cond.get('tolp')
+        new_cond = list(old_cond)
+
+        # Send comms.
+        new_cond[1] = '1'
+        new_cond[2] = '1'
+
+        # Comms Service Code flags.
+        new_cond[8] = '1'
+
+        self._d.config.cond['tolp'] = ''.join(new_cond)
+
+        # Copy over our test file.
+        priority_file = 'nparcel/tests/files/T1250_TOLP_20130413135756.txt'
+        copy_file(priority_file,
+                  os.path.join(in_dir, os.path.basename(priority_file)))
+
+        # Start processing.
+        self._d.set_dry(dry)
+        self._d.set_batch()
+        self._d.config.set_in_dirs([in_dir])
+        # Add valid email address here if you want to verify support comms.
+        self._d.set_support_emails(None)
+        self._d.config.set_archive_dir(archive_dir)
+        self._d.config.set_aggregator_dirs([agg_dir])
+        self._d._start(self._d.exit_event)
+
+        # ... and make sure that the aggregator and archiver worked.
+        expected_archive_dir = os.path.join(archive_dir,
+                                            'priority',
+                                            '20130413')
+        expected_file = os.path.join(expected_archive_dir,
+                                     os.path.basename(priority_file))
+        expected_agg_file = os.path.join(agg_dir,
+                                         os.path.basename(priority_file))
+        received = get_directory_files_list(expected_archive_dir)
+        expected = [expected_file]
+        msg = 'Non-dry process flow archive directory error'
+        self.assertListEqual(received, expected, msg)
+
+        # Aggregator.
+        received = get_directory_files_list(agg_dir)
+        expected = []
+        msg = 'Non-dry process flow aggregate directory error'
+        self.assertListEqual(received, expected, msg)
+
+        # Comms.
+        comms = ['sms.1.body',
+                 'email.1.body']
+        received = get_directory_files_list(self._comms_dir)
+        expected_comms = [os.path.join(self._comms_dir, x) for x in comms]
+        expected = expected_comms
+        msg = 'Non-dry process flow comms files error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Clean up.
+        self._d.set_dry(old_dry)
+        self._d.set_batch(old_batch)
+        self._d.config.set_in_dirs(old_in_dirs)
+        self._d.config.set_archive_dir(old_archive_dir)
+        self._d.set_support_emails(old_support_emails)
+        self._d.config.set_aggregator_dirs(old_agg_dir)
+        self._d.config.cond['tolp'] = old_cond
+        remove_files(expected_file)
+        remove_files(expected_comms)
+        os.removedirs(in_dir)
+        os.removedirs(expected_archive_dir)
+        os.removedirs(agg_dir)
+        self._d.exit_event.clear()
+
+    def test_start_non_dry_loop_priority_sc_2_aggregator(self):
+        """Start non-dry loop.
+        """
+        dry = False
+
+        old_dry = self._d.dry
+        old_batch = self._d.batch
+        old_in_dirs = list(self._d.config.in_dirs)
+        old_archive_dir = self._d.config.archive_dir
+        old_agg_dir = self._d.config.aggregator_dirs
+        old_support_emails = list(self._d.support_emails)
+        base_dir = tempfile.mkdtemp()
+        in_dir = os.path.join(base_dir, 'priority', 'in')
+        archive_dir = tempfile.mkdtemp()
+        agg_dir = tempfile.mkdtemp()
+
+        old_cond = self._d.config.cond.get('tolp')
+        new_cond = list(old_cond)
+
+        # Aggregate files.
+        new_cond[7] = '1'
+
+        # Send comms.
+        new_cond[1] = '1'
+        new_cond[2] = '1'
+
+        # Comms Service Code flags.
+        new_cond[9] = '1'
+
+        self._d.config.cond['tolp'] = ''.join(new_cond)
+
+        # Copy over our test file.
+        priority_file = 'nparcel/tests/files/T1250_TOLP_20130413135756.txt'
+        copy_file(priority_file,
+                  os.path.join(in_dir, os.path.basename(priority_file)))
+
+        # Start processing.
+        self._d.set_dry(dry)
+        self._d.set_batch()
+        self._d.config.set_in_dirs([in_dir])
+        # Add valid email address here if you want to verify support comms.
+        self._d.set_support_emails(None)
+        self._d.config.set_archive_dir(archive_dir)
+        self._d.config.set_aggregator_dirs([agg_dir])
+        self._d._start(self._d.exit_event)
+
+        # ... and make sure that the aggregator and archiver worked.
+        expected_archive_dir = os.path.join(archive_dir,
+                                            'priority',
+                                            '20130413')
+        expected_file = os.path.join(expected_archive_dir,
+                                     os.path.basename(priority_file))
+        expected_agg_file = os.path.join(agg_dir,
+                                         os.path.basename(priority_file))
+        received = get_directory_files_list(expected_archive_dir)
+        expected = [expected_file]
+        msg = 'Non-dry process flow archive directory error'
+        self.assertListEqual(received, expected, msg)
+
+        # Aggregator.
+        received = get_directory_files_list(agg_dir)
+        expected = [expected_agg_file]
+        msg = 'Non-dry process flow aggregate directory error'
+        self.assertListEqual(received, expected, msg)
+
+        # Comms.
+        comms = ['sms.2.body',
+                 'email.2.body']
+        received = get_directory_files_list(self._comms_dir)
+        expected_comms = [os.path.join(self._comms_dir, x) for x in comms]
+        expected = expected_comms
+        msg = 'Non-dry process flow comms files error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Clean up.
+        self._d.set_dry(old_dry)
+        self._d.set_batch(old_batch)
+        self._d.config.set_in_dirs(old_in_dirs)
+        self._d.config.set_archive_dir(old_archive_dir)
+        self._d.set_support_emails(old_support_emails)
+        self._d.config.set_aggregator_dirs(old_agg_dir)
+        self._d.config.cond['tolp'] = old_cond
+        remove_files(expected_file)
+        remove_files(expected_agg_file)
+        remove_files(expected_comms)
+        os.removedirs(in_dir)
+        os.removedirs(expected_archive_dir)
+        os.removedirs(agg_dir)
+        self._d.exit_event.clear()
+
     def test_distribute_file(self):
         """Distribute the T1250 file.
         """
@@ -229,3 +500,5 @@ class TestLoaderDaemon(unittest2.TestCase):
         del cls._file
         cls._d = None
         del cls._d
+        os.removedirs(cls._comms_dir)
+        del cls._comms_dir

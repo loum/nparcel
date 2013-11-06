@@ -246,6 +246,10 @@ class B2CConfig(nparcel.Config):
     def comms_dir(self):
         return self._comms
 
+    def set_comms_dir(self, value):
+        log.info('Set config comms directory to "%s"' % value)
+        self._comms = value
+
     @property
     def aggregator_dirs(self):
         return self._aggregator_dirs

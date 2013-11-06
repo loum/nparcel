@@ -861,7 +861,7 @@ FROM job_item"""
     def test_match_connote_scenario_connote_gt_15_char_like_start(self):
         """Manufactured connote check -- like start, connote > 15 chars.
         """
-        msg = 'Connote length > 15 chars scenario check should return False'
+        msg = 'Connote length >15 chars scenario check should return False'
         barcode = '000931423750069'
         connote = '00093142375006909983'
         received = self._ldr.match_connote(connote, barcode)
@@ -996,17 +996,56 @@ SET state = 'VIC'"""
             else:
                 self.assertFalse(received, msg)
 
-    def test_trigger_comms_service_code_1(self):
-        """Enable comms -- service code 1.
+    def test_trigger_comms_service_code_with_flag(self):
+        """Enable comms -- service code 1 or 2 with flag on and off.
         """
+        sc = 2
+        for send_sc_1 in [False, True]:
+            for send_flag in [True, False]:
+                received = self._ldr.trigger_comms(sc,
+                                                   send_flag,
+                                                   send_sc_1=send_sc_1)
+                msg = 'Service code 2 and send_sc_1 variants'
+                if send_flag and not send_sc_1:
+                    self.assertTrue(received, msg)
+                else:
+                    self.assertFalse(received, msg)
+
         sc = 1
-        for send_flag in [True, False]:
-            received = self._ldr.trigger_comms(sc, send_flag)
-            msg = 'Service code 1 enable comms error'
-            if send_flag:
-                self.assertTrue(received, msg)
-            else:
-                self.assertFalse(received, msg)
+        for send_sc_1 in [False, True]:
+            for send_flag in [True, False]:
+                received = self._ldr.trigger_comms(sc,
+                                                   send_flag,
+                                                   send_sc_1=send_sc_1)
+                msg = 'Service code 1 and send_sc_1 variants'
+                if send_flag:
+                    self.assertTrue(received, msg)
+                else:
+                    self.assertFalse(received, msg)
+
+        sc = 2
+        for send_sc_2 in [False, True]:
+            for send_flag in [True, False]:
+                received = self._ldr.trigger_comms(sc,
+                                                   send_flag,
+                                                   send_sc_2=send_sc_2)
+                msg = 'Service code 2 and send_sc_2 variants'
+                if send_flag:
+                    self.assertTrue(received, msg)
+                else:
+                    self.assertFalse(received, msg)
+
+        sc = 1
+        for send_sc_2 in [False, True]:
+            for send_flag in [True, False]:
+                received = self._ldr.trigger_comms(sc,
+                                                   send_flag,
+                                                   send_sc_2=send_sc_2)
+                msg = 'Service code 1 and send_sc_2 variants'
+                if send_flag and not send_sc_2:
+                    self.assertTrue(received, msg)
+                else:
+                    self.assertFalse(received, msg)
 
     @classmethod
     def tearDownClass(cls):
