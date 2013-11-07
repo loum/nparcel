@@ -31,7 +31,7 @@ class TestMapper(unittest2.TestCase):
                     'Conn Note': '218501217863',
                     'Consumer Address 1': '31 Bridge st,',
                     'Consumer Address 2': 'Lane Cove,',
-                    'Consumer Name': 'Diane Donohoe',
+                    'Consumer Name': 'Lou Markovski',
                     'Email Address': 'loumar@tollgroup.com',
                     'Identifier': 'YMLML11TOLP130413',
                     'Item Number': '',
@@ -61,7 +61,7 @@ class TestMapper(unittest2.TestCase):
         received = self._m.process(line)
         expected = ('TOLP',
                     self._c.get('test_lines',
-                               'RAW01_PRIORITY_PE_TRANSLATED').strip('"'))
+                                'RAW01_PRIORITY_PE_TRANSLATED').strip('"'))
         msg = 'Valid record processing error'
         self.assertTupleEqual(received, expected, msg)
 
