@@ -1,11 +1,6 @@
 __all__ = [
     "Rest",
 ]
-import re
-import urllib
-import nparcel.urllib2 as urllib2
-
-from nparcel.utils.log import log
 
 
 class Rest(object):
