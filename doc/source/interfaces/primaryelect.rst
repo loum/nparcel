@@ -56,7 +56,7 @@ workflow.
 .. note::
 
     Translated Nparcel T1250 files that are processed by ``nploaderd``
-    **will not** generate comms files
+    **will not** generate comms files (Service Code ``3`` scenario)
 
 Some notable functionality provided by the translation process:
 

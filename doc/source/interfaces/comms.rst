@@ -1,4 +1,4 @@
-.. Nparcel B2C Primary Elect
+.. Nparcel B2C Comms
 
 .. toctree::
     :maxdepth: 2

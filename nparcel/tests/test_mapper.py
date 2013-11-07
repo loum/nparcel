@@ -31,7 +31,7 @@ class TestMapper(unittest2.TestCase):
                     'Conn Note': '218501217863',
                     'Consumer Address 1': '31 Bridge st,',
                     'Consumer Address 2': 'Lane Cove,',
-                    'Consumer Name': 'Lou Markovski',
+                    'Consumer Name': ' Lou Markovski',
                     'Email Address': 'loumar@tollgroup.com',
                     'Identifier': 'YMLML11TOLP130413',
                     'Item Number': '',
