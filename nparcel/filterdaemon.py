@@ -1,4 +1,4 @@
-in_dir = [
+__all__ = [
     "FilterDaemon",
 ]
 import signal
@@ -31,15 +31,15 @@ class FilterDaemon(nparcel.DaemonService):
 
         context of outbound processing (default ``parcelpoint``)
 
-    .. attribute:: in_dir
+    .. attribute:: in_dirs
 
-        inbound directory to check for files to process
+        list of inbound directory to check for files to process
 
     """
     _file_format = 'T1250_TOL.*\.txt'
     _staging_base = os.curdir
     _customer = 'parcelpoint'
-    _in_dir = []
+    _in_dirs = ['/data/nparcel/aggregate']
 
     def __init__(self,
                  pidfile,
@@ -87,11 +87,11 @@ class FilterDaemon(nparcel.DaemonService):
             log.info(msg)
 
         try:
-            if self.config.aggregator_dir is not None:
-                self.set_in_dir(self.config.aggregator_dir)
+            if self.config.aggregator_dirs is not None:
+                self.set_in_dirs(self.config.aggregator_dirs)
         except AttributeError, err:
             msg = ('Inbound directory not defined in config -- using %s' %
-                    self.in_dir)
+                    self.in_dirs)
             log.info(msg)
 
         try:
@@ -124,11 +124,16 @@ class FilterDaemon(nparcel.DaemonService):
         self._customer = value
 
     @property
-    def in_dir(self):
-        return self._in_dir
+    def in_dirs(self):
+        return self._in_dirs
 
-    def set_in_dir(self, value):
-        self._in_dir = value
+    def set_in_dirs(self, values):
+        del self._in_dirs[:]
+        self._in_dirs = []
+
+        if values is not None and len(values):
+            self._in_dirs.extend(values)
+            log.debug('Set inbound directories "%s"' % str(self._in_dirs))
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
@@ -224,7 +229,7 @@ class FilterDaemon(nparcel.DaemonService):
                 else:
                     time.sleep(self.loop)
 
-    def get_files(self, dir=None):
+    def get_files(self, dirs=None):
         """Checks inbound directories (defined by the
         :attr:`nparcel.b2cconfig.aggregator_dir` config option) for valid
         T1250 files to be processed.  In this context, valid is interpreted
@@ -242,11 +247,13 @@ class FilterDaemon(nparcel.DaemonService):
         """
         files_to_process = []
 
-        dir_to_check = self.in_dir
-        if dir is not None:
-            dirs_to_check = dir
+        dirs_to_check = []
+        if dirs is not None:
+            dirs_to_check.extend(dirs)
+        else:
+            dirs_to_check.extend(self.in_dirs)
 
-        if dir_to_check is not None:
+        for dir_to_check in dirs_to_check:
             log.info('Looking for files at: %s ...' % dir_to_check)
             for file in get_directory_files(dir_to_check):
                 if (check_filename(file, self.file_format) and

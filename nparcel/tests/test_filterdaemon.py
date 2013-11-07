@@ -49,12 +49,12 @@ class TestFilterDaemon(unittest2.TestCase):
         old_file = self._fd.file
         old_dry = self._fd.dry
         old_batch = self._fd.batch
-        old_in_dir = list(self._fd.in_dir)
+        old_in_dirs = list(self._fd.in_dirs)
         old_support_emails = self._fd.support_emails
 
         in_dir = tempfile.mkdtemp()
         out_dir = tempfile.mkdtemp()
-        self._fd.set_in_dir(in_dir)
+        self._fd.set_in_dirs([in_dir])
         self._fd.set_staging_base(out_dir)
         self._fd.set_support_emails(None)
 
@@ -86,16 +86,14 @@ class TestFilterDaemon(unittest2.TestCase):
         self._fd.set_file(old_file)
         self._fd.set_dry(old_dry)
         self._fd.set_batch(old_batch)
-        self._fd.set_in_dir(old_in_dir)
+        self._fd.set_in_dirs(old_in_dirs)
         self._fd.set_support_emails(old_support_emails)
         self._fd._exit_event.clear()
 
     def test_check_filename(self):
         """Get list of inbound files.
         """
-        old_in_dir = self._fd.in_dir
         in_dir = tempfile.mkdtemp()
-        self._fd.set_in_dir(in_dir)
         target_files = [os.path.join(in_dir, os.path.basename(self._file)),
                         os.path.join(in_dir,
                                      'T1250_TOLI_20130828202902.txt'),
@@ -112,13 +110,12 @@ class TestFilterDaemon(unittest2.TestCase):
             fh = open(f, 'w')
             fh.close()
 
-        received = self._fd.get_files(in_dir)
+        received = self._fd.get_files([in_dir])
         expected = target_files
         msg = 'ParcelPoint directory listing not as expected'
         self.assertListEqual(received, expected, msg)
 
         # Clean up.
-        self._fd.set_in_dir(old_in_dir)
         remove_files(target_files)
         remove_files(empty_files)
         remove_files(dodgy_files)
