@@ -11,6 +11,9 @@ class TestFtp(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._ftp = nparcel.Ftp(config_file='nparcel/conf/npftp.conf')
+        cls._test_dir = 'nparcel/tests/files'
+        cls._priority_file = os.path.join(cls._test_dir,
+                                          'VIC_VANA_REP_20131108145146.txt')
 
         # Create a temporary directory structure.
         cls._dir = tempfile.mkdtemp()
@@ -52,25 +55,29 @@ class TestFtp(unittest2.TestCase):
     def test_get_report_file(self):
         """Check directory for report files -- valid file defined.
         """
-        # Fudge a report file name.
-        report = os.path.join(self._dir, 'VIC_VANA_REP_20130812140736.txt')
-        fh = open(report, 'w')
-        fh.close()
-
+        filter = 'VIC_VANA_REP_\d{14}\.txt'
         received = []
-        for file in self._ftp.get_report_file(self._dir):
+        for file in self._ftp.get_report_file(self._test_dir, filter):
             received.append(file)
-        expected = [report]
-        msg = 'Report file should be found in directory'
+        expected = [os.path.join(self._test_dir,
+                                 'VIC_VANA_REP_20131108145146.txt')]
+        msg = 'Priority report file should be found in listing'
         self.assertListEqual(received, expected, msg)
 
-        # Cleanup.
-        remove_files(report)
+        del (received[:], expected[:])
+        received = expected = []
+        filter = 'VIC_VANA_REI_\d{14}\.txt'
+        received = []
+        for file in self._ftp.get_report_file(self._test_dir, filter):
+            received.append(file)
+        expected = [os.path.join(self._test_dir,
+                                 'VIC_VANA_REI_20131108145146.txt')]
+        msg = 'Ipec report file should be found in listing'
+        self.assertListEqual(received, expected, msg)
 
-    def test_get_report_file(self):
+    def test_get_report_file_ids(self):
         """Check directory for report files -- valid file defined.
         """
-        # Fudge a report file name.
         report = os.path.join(self._dir, 'VIC_VANA_REP_20130812140736.txt')
         fh = open(report, 'w')
         fh.write('REF1|JOB_KEY|PICKUP_TIME|PICKUP_POD|IDENTITY_TYPE|IDENTITY_DATA\n')
@@ -111,6 +118,8 @@ class TestFtp(unittest2.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        del cls._test_dir
+        del cls._priority_file
         cls._ftp = None
         del cls._ftp
         os.removedirs(cls._dir)

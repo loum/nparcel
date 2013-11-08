@@ -4,13 +4,13 @@ __all__ = [
 import os
 import sys
 import ftplib
-import fnmatch
 import socket
 
 import nparcel
 import ConfigParser
 from nparcel.utils.log import log
-from nparcel.utils.files import create_dir
+from nparcel.utils.files import (create_dir,
+                                 get_directory_files)
 
 
 class Ftp(ftplib.FTP):
@@ -25,9 +25,26 @@ class Ftp(ftplib.FTP):
 
         :mod:`nparcel.Config` object
 
+    .. attribute:: xfer
+
+        list of FTP instances that define an FTP context.  For example,
+        consider this typical FTP configuration definition::
+
+            [ftp_priority]
+            host = localhost
+            port = 21
+            user = priority
+            password = prior_pw
+            source = /data/nparcel/priority/out
+            target = in
+
+        This ``ftp_priority`` section definition will be appended to the
+        :attr:`xfer` list
+
     """
     _archive_dir = None
     _config = nparcel.Config()
+    _xfers = []
 
     def __init__(self, config_file='npftp.conf'):
         """Nparcel Ftp initialisation.
@@ -36,8 +53,6 @@ class Ftp(ftplib.FTP):
         ftplib.FTP.__init__(self)
 
         self._config.set_config_file(config_file)
-
-        self._xfers = []
 
     @property
     def config(self):
@@ -70,7 +85,7 @@ class Ftp(ftplib.FTP):
         # Parse each section.
         for section in self.config.sections():
             if section[:4] == 'ftp_':
-                self._xfers.append(section)
+                self.xfers.append(section)
 
         try:
             self.set_archive_dir(self.config.get('dirs', 'archive'))
@@ -80,27 +95,24 @@ class Ftp(ftplib.FTP):
             log.warn('%s -- %s' % ('FTP archive directory not configured',
                                    'archiving disabled'))
 
-    def get_report_file(self, dir):
-        """Identifies report files in directory *dir*.
+    def get_report_file(self, dir, file_filter=None):
+        """Identifies report files in directory *dir* based on file
+        filtering rule provided by *file_filter*.
 
         **Args:**
             *dir*: the directory to search for report files.
+
+        **Kwargs:**
+            *file_filter*: regular expression format to limit file listing
+            Defaults to ``None`` which will return all files in the
+            directory
 
         **Returns:**
             list of report files
 
         """
-        if os.path.exists(dir):
-            log.info('Sourcing files from local directory: "%s"' % dir)
-            for file in os.listdir(dir):
-                file = os.path.join(dir, file)
-                if os.path.isfile(file):
-                    if fnmatch.fnmatch(os.path.basename(file),
-                                    '*_VANA_RE?_*.txt'):
-                        log.info('Found report file: "%s"' % file)
-                        yield file
-        else:
-            log.error('Source directory "%s" does not exist' % dir)
+        log.info('Sourcing files from local directory: "%s"' % dir)
+        return get_directory_files(path=dir, filter=file_filter)
 
     def get_report_file_ids(self, file):
         """Parse report file and extract a list of JOB_KEY's
@@ -129,20 +141,25 @@ class Ftp(ftplib.FTP):
     def process(self, dry=False):
         """Transfer signature files and reports.
 
+        Cycles through each transfer context and prepares a list of files
+        that will be transferred.
+
         **Kwargs:**
             *dry*: only report, do not execute
 
         """
         self._parse_config()
+
         for xfer in self.xfers:
             xfer_set = []
 
             log.info('Processing transfers for "%s"' % xfer)
             source = self.config.get(xfer, 'source')
+            filter = self.config.get(xfer, 'filter')
 
             keys = []
             for report in self.get_report_file(source):
-                keys = self.get_report_file_ids(report)
+                keys = self.get_report_file_ids(report, filter)
 
                 for key in keys:
                     for ext in ['ps', 'png']:
