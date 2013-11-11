@@ -197,6 +197,39 @@ class TestFtp(unittest2.TestCase):
             remove_files(os.path.join(self._ftp.archive_dir, f))
         os.removedirs(dir)
 
+    def test_get_xfer_files_is_not_pod(self):
+        """Get list of files to transfer - non POD.
+        """
+        source = 'nparcel/tests/files'
+        filter = 'VIC_VANA_REP_\d{14}\.txt'
+        is_pod = False
+
+        received = self._ftp.get_xfer_files(source, filter, is_pod)
+        expected = ['nparcel/tests/files/VIC_VANA_REP_20131108145146.txt']
+        msg = 'POD report file get list'
+        self.assertListEqual(received, expected, msg)
+
+    def test_get_xfer_files_is_pod(self):
+        """Get list of files to transfer - POD.
+        """
+        source = 'nparcel/tests/files'
+        filter = 'VIC_VANA_REP_\d{14}\.txt'
+        is_pod = True
+
+        files = ['VIC_VANA_REP_20131108145146.txt',
+                 '142828.ps',
+                 '145563.ps',
+                 '145601.ps',
+                 '145661.ps',
+                 '142828.png',
+                 '145563.png',
+                 '145601.png',
+                 '145661.png']
+        received = self._ftp.get_xfer_files(source, filter, is_pod)
+        expected = [os.path.join(source, x) for x in files]
+        msg = 'POD report file get list'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._ftpserver.stop()

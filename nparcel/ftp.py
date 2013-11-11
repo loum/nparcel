@@ -161,23 +161,51 @@ class Ftp(ftplib.FTP):
 
         """
         for xfer in self.xfers:
+            log.info('Processing transfers for "%s"' % xfer)
             xfer_set = []
 
-            log.info('Processing transfers for "%s"' % xfer)
             source = self.config.get(xfer, 'source')
-            filter = self.config.get(xfer, 'filter')
 
-            for report in self.get_report_file(source, filter):
+            try:
+                filter = self.config.get(xfer, 'filter')
+            except ConfigParser.NoOptionError, err:
+                filter = None
+
+            try:
+                is_pod = self.config.get(xfer, 'pod')
+            except ConfigParser.NoOptionError, err:
+                is_pod = None
+
+            xfer_set = self.get_xfer_files(source, filter)
+
+            if len(xfer_set):
+                self.xfer_files(xfer, xfer_set, dry=dry)
+
+    def get_xfer_files(self, source, filter=None, is_pod=True):
+        """For outbound file transfers, get a list of files to transfer.
+
+        **Args:**
+            *source*: directory path where outbound files can be found
+
+        **Kwargs:**
+            *filter*: regular expression string to use to filter filenames
+
+            *is_pod*: POD file require extra processing to identify
+            associated signature files.
+
+        """
+        files_to_xfer = []
+
+        for report in self.get_report_file(source, filter):
+            if is_pod:
                 for key in self.get_report_file_ids(report):
                     for ext in ['ps', 'png']:
-                        sig_file = os.path.join(source, '%s.%s' % (key, ext))
-                        xfer_set.append(sig_file)
+                        pod = os.path.join(source, '%s.%s' % (key, ext))
+                        files_to_xfer.append(pod)
 
-                # ... and append the report file.
-                xfer_set.append(report)
+            files_to_xfer.append(report)
 
-            if xfer_set:
-                self.xfer_files(xfer, xfer_set, dry=dry)
+        return files_to_xfer
 
     def xfer_files(self, xfer, files, dry=False):
         """Transfer files defined by *files* list.
