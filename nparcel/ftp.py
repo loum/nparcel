@@ -172,16 +172,16 @@ class Ftp(ftplib.FTP):
                 filter = None
 
             try:
-                is_pod = self.config.get(xfer, 'pod')
+                is_pod = (self.config.get(xfer, 'pod') == 'True')
             except ConfigParser.NoOptionError, err:
-                is_pod = None
+                is_pod = False
 
-            xfer_set = self.get_xfer_files(source, filter)
+            xfer_set = self.get_xfer_files(source, filter, is_pod)
 
             if len(xfer_set):
                 self.xfer_files(xfer, xfer_set, dry=dry)
 
-    def get_xfer_files(self, source, filter=None, is_pod=True):
+    def get_xfer_files(self, source, filter=None, is_pod=False):
         """For outbound file transfers, get a list of files to transfer.
 
         **Args:**

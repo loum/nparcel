@@ -158,10 +158,10 @@ class TestFtp(unittest2.TestCase):
         """Test the process cycle.
         """
         t_files = ['VIC_VANA_REP_20131108145146.txt',
-                      '142828.ps',
-                      '145563.ps',
-                      '145601.ps',
-                      '145661.ps']
+                   '142828.ps',
+                   '145563.ps',
+                   '145601.ps',
+                   '145661.ps']
         dir = tempfile.mkdtemp()
         for f in t_files:
             copy_file(os.path.join(self._test_dir, f), os.path.join(dir, f))
@@ -175,6 +175,7 @@ class TestFtp(unittest2.TestCase):
         self._ftp.config.set('ftp_t', 'source', dir)
         self._ftp.config.set('ftp_t', 'filter', 'VIC_VANA_REP_\d{14}\.txt')
         self._ftp.config.set('ftp_t', 'target', '')
+        self._ftp.config.set('ftp_t', 'pod', 'True')
         self._ftp._parse_config(file_based=False)
 
         self._ftp.process(dry=False)
@@ -196,6 +197,48 @@ class TestFtp(unittest2.TestCase):
             remove_files(os.path.join(self._ftp_dir, f))
             remove_files(os.path.join(self._ftp.archive_dir, f))
         os.removedirs(dir)
+        self._ftp.reset_config()
+
+    def test_process_T1250(self):
+        """Test the process cycle for T1250.
+        """
+        t_files = ['T1250_TOLP_20130413135756.txt']
+        dir = tempfile.mkdtemp()
+        for f in t_files:
+            copy_file(os.path.join(self._test_dir, f), os.path.join(dir, f))
+
+        # Prepare the config.
+        self._ftp.config.add_section('ftp_t')
+        self._ftp.config.set('ftp_t', 'host', '127.0.0.1')
+        self._ftp.config.set('ftp_t', 'port', '2121')
+        self._ftp.config.set('ftp_t', 'user', 'tester')
+        self._ftp.config.set('ftp_t', 'password', 'tester')
+        self._ftp.config.set('ftp_t', 'source', dir)
+        self._ftp.config.set('ftp_t', 'filter', 'T1250_TOLP_\d{14}\.txt')
+        self._ftp.config.set('ftp_t', 'target', '')
+        self._ftp.config.set('ftp_t', 'pod', 'False')
+        self._ftp._parse_config(file_based=False)
+
+        self._ftp.process(dry=False)
+
+        # Check archive directory.
+        received = get_directory_files_list(self._ftp.archive_dir)
+        expected = [os.path.join(self._archive_dir, x) for x in t_files]
+        msg = 'Archive directory list not as expected'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Check FTP inbound directory.
+        received = get_directory_files_list(self._ftpserver.dir)
+        expected = [os.path.join(self._ftpserver.dir, x) for x in t_files]
+        msg = 'FTP inbound directory list not as expected'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Clean up.
+        for f in t_files:
+            remove_files(os.path.join(self._ftp_dir, f))
+            remove_files(os.path.join(self._ftp.archive_dir, f))
+        os.removedirs(dir)
+        self._ftp.reset_config()
 
     def test_get_xfer_files_is_not_pod(self):
         """Get list of files to transfer - non POD.
@@ -229,6 +272,18 @@ class TestFtp(unittest2.TestCase):
         expected = [os.path.join(source, x) for x in files]
         msg = 'POD report file get list'
         self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_get_xfer_files_is_not_pod_T1250(self):
+        """Get list of files to transfer - non POD T1250.
+        """
+        source = 'nparcel/tests/files'
+        filter = 'T1250_TOLP_\d{14}\.txt'
+        is_pod = False
+
+        received = self._ftp.get_xfer_files(source, filter, is_pod)
+        expected = ['nparcel/tests/files/T1250_TOLP_20130413135756.txt']
+        msg = 'POD report file get list'
+        self.assertListEqual(received, expected, msg)
 
     @classmethod
     def tearDownClass(cls):
