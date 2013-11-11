@@ -68,6 +68,12 @@ class Ftp(ftplib.FTP):
     def archive_dir(self):
         return self._archive_dir
 
+    def reset_config(self):
+        del self._xfers[:]
+        self._xfers = []
+
+        self._config = nparcel.Config()
+
     def set_archive_dir(self, value):
         self._archive_dir = value
 
@@ -161,11 +167,8 @@ class Ftp(ftplib.FTP):
             source = self.config.get(xfer, 'source')
             filter = self.config.get(xfer, 'filter')
 
-            keys = []
-            for report in self.get_report_file(source):
-                keys = self.get_report_file_ids(report, filter)
-
-                for key in keys:
+            for report in self.get_report_file(source, filter):
+                for key in self.get_report_file_ids(report):
                     for ext in ['ps', 'png']:
                         sig_file = os.path.join(source, '%s.%s' % (key, ext))
                         xfer_set.append(sig_file)

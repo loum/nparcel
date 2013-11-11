@@ -4,7 +4,8 @@ import tempfile
 import threading
 
 import nparcel
-from nparcel.utils.files import remove_files
+from nparcel.utils.files import (copy_file,
+                                 remove_files)
 from nparcel.pyftpdlib import ftpserver
 
 
@@ -74,7 +75,7 @@ class TestFtp(unittest2.TestCase):
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
         # Clean up.
-        self._ftp._config = nparcel.Config()
+        self._ftp.reset_config()
 
     def test_get_report_file_no_files(self):
         """Check directory for report files -- no files defined.
@@ -148,6 +149,36 @@ class TestFtp(unittest2.TestCase):
 
         # Cleanup.
         remove_files(received)
+
+    def test_process(self):
+        """Test the process cycle.
+        """
+        test_files = ['VIC_VANA_REP_20131108145146.txt',
+                      '142828.ps',
+                      '145563.ps',
+                      '145601.ps',
+                      '145661.ps']
+        dir = tempfile.mkdtemp()
+        for f in test_files:
+            copy_file(os.path.join(self._test_dir, f), os.path.join(dir, f))
+
+        # Prepare the config.
+        self._ftp.config.add_section('ftp_t')
+        self._ftp.config.set('ftp_t', 'host', '127.0.0.1')
+        self._ftp.config.set('ftp_t', 'port', '2121')
+        self._ftp.config.set('ftp_t', 'user', 'tester')
+        self._ftp.config.set('ftp_t', 'password', 'tester')
+        self._ftp.config.set('ftp_t', 'source', dir)
+        self._ftp.config.set('ftp_t', 'filter', 'VIC_VANA_REP_\d{14}\.txt')
+        self._ftp.config.set('ftp_t', 'target', '')
+        self._ftp._parse_config(file_based=False)
+
+        self._ftp.process(dry=True)
+
+        # Clean up.
+        for f in test_files:
+            remove_files(os.path.join(dir, f))
+        os.removedirs(dir)
 
     @classmethod
     def tearDownClass(cls):
