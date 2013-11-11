@@ -46,13 +46,15 @@ class Ftp(ftplib.FTP):
     _config = nparcel.Config()
     _xfers = []
 
-    def __init__(self, config_file='npftp.conf'):
+    def __init__(self, config_file=None):
         """Nparcel Ftp initialisation.
 
         """
         ftplib.FTP.__init__(self)
 
-        self._config.set_config_file(config_file)
+        if config_file is not None:
+            self._config.set_config_file(config_file)
+            self._parse_config()
 
     @property
     def config(self):
@@ -148,8 +150,6 @@ class Ftp(ftplib.FTP):
             *dry*: only report, do not execute
 
         """
-        self._parse_config()
-
         for xfer in self.xfers:
             xfer_set = []
 

@@ -43,7 +43,9 @@ class TestFtp(unittest2.TestCase):
                              args=(cls._ftpserver.exit_event, ))
         t.start()
 
-        cls._ftp = nparcel.Ftp(config_file='nparcel/conf/npftp.conf')
+        #cls._ftp = nparcel.Ftp(config_file='nparcel/conf/npftp.conf')
+        cls._config_file = 'nparcel/conf/npftp.conf'
+        cls._ftp = nparcel.Ftp()
         cls._test_dir = 'nparcel/tests/files'
         cls._priority_file = os.path.join(cls._test_dir,
                                           'VIC_VANA_REP_20131108145146.txt')
@@ -62,6 +64,7 @@ class TestFtp(unittest2.TestCase):
     def test_parse_config_items(self):
         """Verify required configuration items.
         """
+        self._ftp.config.set_config_file(self._config_file)
         self._ftp._parse_config()
 
         # Check against expected config items.
@@ -75,6 +78,9 @@ class TestFtp(unittest2.TestCase):
         received = self._ftp.archive_dir
         expected = '/data/nparcel/archive/ftp'
         self.assertEqual(received, expected, msg)
+
+        # Clean up.
+        self._ftp._config = nparcel.Config()
 
     def test_get_report_file_no_files(self):
         """Check directory for report files -- no files defined.
@@ -153,6 +159,7 @@ class TestFtp(unittest2.TestCase):
     def tearDownClass(cls):
         cls._ftpserver.stop()
 
+        del cls._config_file
         del cls._test_dir
         del cls._priority_file
         cls._ftp = None
