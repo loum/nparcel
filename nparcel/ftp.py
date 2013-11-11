@@ -42,7 +42,7 @@ class Ftp(ftplib.FTP):
         :attr:`xfer` list
 
     """
-    _archive_dir = None
+    _archive_dir = '/data/nparcel/archive/ftp'
     _config = nparcel.Config()
     _xfers = []
 
@@ -75,14 +75,19 @@ class Ftp(ftplib.FTP):
             if not create_dir(self._archive_dir):
                 self._archive_dir = None
 
-    def _parse_config(self):
-        """Read config items from the configuration file.
+    def _parse_config(self, file_based=True):
+        """Read config items from the configuration source.
 
         Each section that starts with ``ftp_`` are interpreted as an FTP
         connection to process.
 
+        **Kwargs:**
+            *file_based*: boolean value that define whether the
+            configuration source is file based or not
+
         """
-        self.config.parse_config()
+        if file_based:
+            self.config.parse_config()
 
         # Parse each section.
         for section in self.config.sections():
@@ -92,10 +97,9 @@ class Ftp(ftplib.FTP):
         try:
             self.set_archive_dir(self.config.get('dirs', 'archive'))
             log.debug('FTP archive directory: %s' % self.archive_dir)
-        except (ConfigParser.NoSectionError,
-                ConfigParser.NoOptionError), err:
-            log.warn('%s -- %s' % ('FTP archive directory not configured',
-                                   'archiving disabled'))
+        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
+            log.info('Archive directory not in config - using to "%s"' %
+                     self.archive_dir)
 
     def get_report_file(self, dir, file_filter=None):
         """Identifies report files in directory *dir* based on file
