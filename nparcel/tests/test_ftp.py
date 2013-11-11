@@ -1,15 +1,48 @@
 import unittest2
 import os
 import tempfile
+import threading
 
 import nparcel
 from nparcel.utils.files import remove_files
+from nparcel.pyftpdlib import ftpserver
+
+
+class FtpServer(object):
+
+    exit_event = threading.Event()
+
+    def __init__(self, dir=dir):
+        authorizer = ftpserver.DummyAuthorizer()
+        authorizer.add_user('tester',
+                            password='tester',
+                            homedir=dir,
+                            perm='elradfmw')
+        handler = ftpserver.FTPHandler
+        handler.authorizer = authorizer
+
+        address = ('127.0.0.1', 2121)
+        self.server = ftpserver.FTPServer(address, handler)
+
+    def start(self, exit_event):
+        while not self.exit_event.isSet():
+            self.server.serve_forever(timeout=0.1, count=1)
+
+    def stop(self):
+        self.exit_event.set()
 
 
 class TestFtp(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        # Set up the FTP server.
+        cls._ftp_dir = tempfile.mkdtemp()
+        cls._ftpserver = FtpServer(cls._ftp_dir)
+        t = threading.Thread(target=cls._ftpserver.start,
+                             args=(cls._ftpserver.exit_event, ))
+        t.start()
+
         cls._ftp = nparcel.Ftp(config_file='nparcel/conf/npftp.conf')
         cls._test_dir = 'nparcel/tests/files'
         cls._priority_file = os.path.join(cls._test_dir,
@@ -118,6 +151,8 @@ class TestFtp(unittest2.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        cls._ftpserver.stop()
+
         del cls._test_dir
         del cls._priority_file
         cls._ftp = None
@@ -126,3 +161,5 @@ class TestFtp(unittest2.TestCase):
         del cls._dir
         os.removedirs(cls._archive_dir)
         del cls._archive_dir
+
+        os.removedirs(cls._ftp_dir)
