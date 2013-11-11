@@ -5,6 +5,7 @@ import threading
 
 import nparcel
 from nparcel.utils.files import (copy_file,
+                                 get_directory_files_list,
                                  remove_files)
 from nparcel.pyftpdlib import ftpserver
 
@@ -12,8 +13,11 @@ from nparcel.pyftpdlib import ftpserver
 class FtpServer(object):
 
     exit_event = threading.Event()
+    dir = None
 
     def __init__(self, dir=dir):
+        self.dir = dir
+
         authorizer = ftpserver.DummyAuthorizer()
         authorizer.add_user('tester',
                             password='tester',
@@ -153,13 +157,13 @@ class TestFtp(unittest2.TestCase):
     def test_process(self):
         """Test the process cycle.
         """
-        test_files = ['VIC_VANA_REP_20131108145146.txt',
+        t_files = ['VIC_VANA_REP_20131108145146.txt',
                       '142828.ps',
                       '145563.ps',
                       '145601.ps',
                       '145661.ps']
         dir = tempfile.mkdtemp()
-        for f in test_files:
+        for f in t_files:
             copy_file(os.path.join(self._test_dir, f), os.path.join(dir, f))
 
         # Prepare the config.
@@ -173,11 +177,24 @@ class TestFtp(unittest2.TestCase):
         self._ftp.config.set('ftp_t', 'target', '')
         self._ftp._parse_config(file_based=False)
 
-        self._ftp.process(dry=True)
+        self._ftp.process(dry=False)
+
+        # Check archive directory.
+        received = get_directory_files_list(self._ftp.archive_dir)
+        expected = [os.path.join(self._archive_dir, x) for x in t_files]
+        msg = 'Archive directory list not as expected'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Check FTP inbound directory.
+        received = get_directory_files_list(self._ftpserver.dir)
+        expected = [os.path.join(self._ftpserver.dir, x) for x in t_files]
+        msg = 'FTP inbound directory list not as expected'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
 
         # Clean up.
-        for f in test_files:
-            remove_files(os.path.join(dir, f))
+        for f in t_files:
+            remove_files(os.path.join(self._ftp_dir, f))
+            remove_files(os.path.join(self._ftp.archive_dir, f))
         os.removedirs(dir)
 
     @classmethod
