@@ -285,6 +285,38 @@ class TestFtp(unittest2.TestCase):
         msg = 'POD report file get list'
         self.assertListEqual(received, expected, msg)
 
+    def test_xfer_files_proxy(self):
+        """Placeholder test to make sure that we can connect to via proxy.
+        """
+        # Enable this test, set remote credentials.
+        remote_host = None
+        user = None
+        password = None
+        target = None
+
+        dir = tempfile.mkdtemp()
+        self._ftp.config.add_section('ftp_t')
+        self._ftp.config.set('ftp_t', 'host', str(remote_host))
+        self._ftp.config.set('ftp_t', 'port', '21')
+        self._ftp.config.set('ftp_t', 'user', str(user))
+        self._ftp.config.set('ftp_t', 'password', str(password))
+        self._ftp.config.set('ftp_t', 'source', dir)
+        self._ftp.config.set('ftp_t', 'filter', 'T1250_TOLP_\d{14}\.txt')
+        self._ftp.config.set('ftp_t', 'target', str(target))
+        self._ftp.config.set('ftp_t', 'pod', 'False')
+        self._ftp.config.set('ftp_t', 'proxy', 'proxy.toll.com.au')
+        self._ftp._parse_config(file_based=False)
+
+        files = []
+        if (remote_host is not None and
+            user is not None and
+            password is not None):
+            self._ftp.xfer_files(self._ftp.xfers[0], files, dry=True)
+
+        # Clean up.
+        os.removedirs(dir)
+        self._ftp.reset_config()
+
     @classmethod
     def tearDownClass(cls):
         cls._ftpserver.stop()

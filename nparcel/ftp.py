@@ -225,15 +225,30 @@ class Ftp(ftplib.FTP):
         target = self.config.get(xfer, 'target')
 
         try:
-            log.info('Connecting to "%s:%s"' % (host, port))
-            self.connect(host=host, port=port)
+            proxy = self.config.get(xfer, 'proxy')
+        except ConfigParser.NoOptionError:
+            proxy = None
+
+        try:
+            if proxy is None:
+                log.info('Connecting to "%s:%s"' % (host, port))
+                self.connect(host=host, port=port)
+            else:
+                log.info('Connecting to proxy "%s"' % proxy)
+                self.connect(host=proxy)
         except socket.error, err:
             log.critical('Connection failed: %s' % err)
             sys.exit(1)
 
         try:
-            log.info('Login as "%s"' % user)
-            self.login(user=user, passwd=password)
+            if proxy is None:
+                log.info('Login as user "%s"' % user)
+                self.login(user=user, passwd=password)
+            else:
+                proxy_user = '%s@%s' % (user, host)
+                log.info('Login as proxy user "%s"' % proxy_user)
+                self.login(user=proxy_user, passwd=password)
+
         except ftplib.error_perm, err:
             log.critical('Login failed: %s' % err)
             sys.exit(1)
