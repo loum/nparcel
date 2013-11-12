@@ -999,18 +999,6 @@ SET state = 'VIC'"""
     def test_trigger_comms_service_code_with_flag(self):
         """Enable comms -- service code 1 or 2 with flag on and off.
         """
-        sc = 2
-        for send_sc_1 in [False, True]:
-            for send_flag in [True, False]:
-                received = self._ldr.trigger_comms(sc,
-                                                   send_flag,
-                                                   send_sc_1=send_sc_1)
-                msg = 'Service code 2 and send_sc_1 variants'
-                if send_flag and not send_sc_1:
-                    self.assertTrue(received, msg)
-                else:
-                    self.assertFalse(received, msg)
-
         sc = 1
         for send_sc_1 in [False, True]:
             for send_flag in [True, False]:
@@ -1023,7 +1011,40 @@ SET state = 'VIC'"""
                 else:
                     self.assertFalse(received, msg)
 
+        for send_sc_2 in [False, True]:
+            for send_flag in [True, False]:
+                received = self._ldr.trigger_comms(sc,
+                                                   send_flag,
+                                                   send_sc_2=send_sc_2)
+                msg = 'Service code 1 and send_sc_2 variants'
+                if send_flag and not send_sc_2:
+                    self.assertTrue(received, msg)
+                else:
+                    self.assertFalse(received, msg)
+
+        for send_sc_4 in [False, True]:
+            for send_flag in [True, False]:
+                received = self._ldr.trigger_comms(sc,
+                                                   send_flag,
+                                                   send_sc_4=send_sc_4)
+                msg = 'Service code 1 and send_sc_4 variants'
+                if send_flag and not send_sc_4:
+                    self.assertTrue(received, msg)
+                else:
+                    self.assertFalse(received, msg)
+
         sc = 2
+        for send_sc_1 in [False, True]:
+            for send_flag in [True, False]:
+                received = self._ldr.trigger_comms(sc,
+                                                   send_flag,
+                                                   send_sc_1=send_sc_1)
+                msg = 'Service code 2 and send_sc_1 variants'
+                if send_flag and not send_sc_1:
+                    self.assertTrue(received, msg)
+                else:
+                    self.assertFalse(received, msg)
+
         for send_sc_2 in [False, True]:
             for send_flag in [True, False]:
                 received = self._ldr.trigger_comms(sc,
@@ -1035,14 +1056,47 @@ SET state = 'VIC'"""
                 else:
                     self.assertFalse(received, msg)
 
-        sc = 1
+        for send_sc_4 in [False, True]:
+            for send_flag in [True, False]:
+                received = self._ldr.trigger_comms(sc,
+                                                   send_flag,
+                                                   send_sc_4=send_sc_4)
+                msg = 'Service code 1 and send_sc_4 variants'
+                if send_flag and not send_sc_4:
+                    self.assertTrue(received, msg)
+                else:
+                    self.assertFalse(received, msg)
+
+        sc = 4
+        for send_sc_1 in [False, True]:
+            for send_flag in [True, False]:
+                received = self._ldr.trigger_comms(sc,
+                                                   send_flag,
+                                                   send_sc_1=send_sc_1)
+                msg = 'Service code 4 and send_sc_1 variants'
+                if send_flag and not send_sc_1:
+                    self.assertTrue(received, msg)
+                else:
+                    self.assertFalse(received, msg)
+
         for send_sc_2 in [False, True]:
             for send_flag in [True, False]:
                 received = self._ldr.trigger_comms(sc,
                                                    send_flag,
                                                    send_sc_2=send_sc_2)
-                msg = 'Service code 1 and send_sc_2 variants'
+                msg = 'Service code 4 and send_sc_2 variants'
                 if send_flag and not send_sc_2:
+                    self.assertTrue(received, msg)
+                else:
+                    self.assertFalse(received, msg)
+
+        for send_sc_4 in [False, True]:
+            for send_flag in [True, False]:
+                received = self._ldr.trigger_comms(sc,
+                                                   send_flag,
+                                                   send_sc_4=send_sc_4)
+                msg = 'Service code 4 and send_sc_4 variants'
+                if send_flag:
                     self.assertTrue(received, msg)
                 else:
                     self.assertFalse(received, msg)

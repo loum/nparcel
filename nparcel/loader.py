@@ -240,10 +240,14 @@ class Loader(nparcel.Service):
                     email_addr = job_item_data.get('email_addr')
                     send_sc_1 = cond_map.get('send_sc_1')
                     send_sc_2 = cond_map.get('send_sc_2')
+                    send_sc_4 = cond_map.get('send_sc_4')
+                    ignore_sc_4 = cond_map.get('ignore_sc_4')
                     if self.trigger_comms(service_code,
                                           send_email,
                                           send_sc_1,
-                                          send_sc_2):
+                                          send_sc_2,
+                                          send_sc_4,
+                                          ignore_sc_4):
                         self.comms('email',
                                    job_item_id,
                                    email_addr,
@@ -254,7 +258,9 @@ class Loader(nparcel.Service):
                     if self.trigger_comms(service_code,
                                           send_sms,
                                           send_sc_1,
-                                          send_sc_2):
+                                          send_sc_2,
+                                          send_sc_4,
+                                          ignore_sc_4):
                         self.comms('sms',
                                    job_item_id,
                                    phone_nbr,
@@ -268,13 +274,16 @@ class Loader(nparcel.Service):
                       service_code,
                       send_flag,
                       send_sc_1=False,
-                      send_sc_2=False):
+                      send_sc_2=False,
+                      send_sc_4=False,
+                      ignore_sc_4=False):
         """Algorithm-based check to determine if this loader scenario
         is to trigger a comms event.
 
         .. note::
 
-            Comms are not triggered if the *service_code* is ``3`` or ``4``
+            Comms are not triggered if the *service_code* is ``3`` or
+            the *service_code* is 4 *and* *ignore_sc_4* is ``True``.
 
         Default scenario if comms are enabled is that the service code
         field is NULL (or ``None``).  In this case comms are triggered
@@ -284,7 +293,7 @@ class Loader(nparcel.Service):
         * ``send_sc_1`` flag is ``True`` or ``send_sc_2`` flag is ``True``
 
         In general, if the ``send_sc_1`` or ``send_sc_2`` flags are set
-        then the 
+        then the default scenario is overridden.
 
         **Args:**
             *service_code*: integer value as per the ``job.service_code``
@@ -299,25 +308,31 @@ class Loader(nparcel.Service):
             *send_sc_2*: flag to trigger comms if the *service_code*
             is equal to ``2``
 
+            *ignore_sc_4*: flag to ignore records if the *service_code*
+            is equal to ``4``
+
         **Returns:**
             boolean ``True`` if comms should be sent
 
             boolean ``False`` otherwise
 
         """
-        log.info('Comms trigger check SC:%s and flags SC_1|SC_2: %s|%s' %
-                 (service_code, send_sc_1, send_sc_2))
+        log.info('Comms trigger check SC:%s - SC_1|SC_2|SC_4: %s|%s|%s' %
+                 (service_code, send_sc_1, send_sc_2, send_sc_4))
         prepare_comms = False
 
         if send_flag:
-            if service_code == 3 or service_code == 4:
-                log.info('Not setting comms for Service Code 3/4')
+            if service_code == 3:
+                log.info('Not setting comms for Service Code 3')
+            elif service_code == 4 and ignore_sc_4:
+                log.info('Not setting comms for Service Code 4')
             else:
-                if not send_sc_1 and not send_sc_2:
+                if not send_sc_1 and not send_sc_2 and not send_sc_4:
                     prepare_comms = True
                 else:
                     if ((service_code == 1 and send_sc_1) or
-                        (service_code == 2 and send_sc_2)):
+                        (service_code == 2 and send_sc_2) or
+                        (service_code == 4 and send_sc_4)):
                         log.info('Setting comms for Service Code %s' %
                                  str(service_code))
                         prepare_comms = True
@@ -328,6 +343,7 @@ class Loader(nparcel.Service):
               method,
               job_item_id,
               recipient,
+              template='body',
               dry=False):
         """Prepare comms event files.
 
@@ -347,7 +363,7 @@ class Loader(nparcel.Service):
         if recipient is not None and recipient:
             self.flag_comms(method,
                             job_item_id,
-                            'body',
+                            template,
                             dry=dry)
 
     def get_agent_details(self, agent_id):
