@@ -128,6 +128,25 @@ class TestComms(unittest2.TestCase):
         msg = 'Primary Elect SMS send should return True'
         self.assertTrue(received)
 
+    def test_send_sms_delay(self):
+        """Send delayed delivery SMS.
+        """
+        dry = True
+
+        details = {'name': 'Delay Newsagency',
+                   'address': '10 Delay Street',
+                   'suburb': 'Delayville',
+                   'postcode': '3019',
+                   'connote_nbr': 'connote_delay',
+                   'item_nbr': 'item_nbr_delay',
+                   'phone_nbr': '0431602145'}
+
+        received = self._c.send_sms(details,
+                                    template='delay',
+                                    dry=dry)
+        msg = 'Dealyed delivery SMS send should return True'
+        self.assertTrue(received)
+
     def test_send_sms_loader(self):
         """Send loader SMS.
         """
@@ -225,6 +244,25 @@ class TestComms(unittest2.TestCase):
                                       template='pe',
                                       dry=dry)
         msg = 'Primary elect email send should return True'
+        self.assertTrue(received)
+
+    def test_send_email_delay(self):
+        """Send delayed delivery email comms.
+        """
+        dry = True
+
+        details = {'name': 'Delayed Newsagency',
+                   'address': '77 Delay Street',
+                   'suburb': 'Delayville',
+                   'postcode': '5238',
+                   'connote_nbr': 'connote_delay',
+                   'item_nbr': 'item_nbr_delay',
+                   'email_addr': 'loumar@tollgroup.com'}
+
+        received = self._c.send_email(details,
+                                      template='delay',
+                                      dry=dry)
+        msg = 'Delay pickup email send should return True'
         self.assertTrue(received)
 
     def test_send_email_loader(self):
