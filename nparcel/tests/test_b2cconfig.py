@@ -126,9 +126,9 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'Conditions map not as expected'
         received = self._c.cond
-        expected = {'tolp': '00010000000000',
-                    'tolf': '00010110000000',
-                    'toli': '10001000000000'}
+        expected = {'tolp': '0001000000000',
+                    'tolf': '0001011000000',
+                    'toli': '1000100000000'}
         self.assertDictEqual(received, expected, msg)
 
         msg = 'RESTful API not as expected'
@@ -293,7 +293,6 @@ class TestB2CConfig(unittest2.TestCase):
                     'send_sc_1': False,
                     'send_sc_2': False,
                     'send_sc_4': False,
-                    'delay_template_sc_2': False,
                     'delay_template_sc_4': False,
                     'ignore_sc_4': False}
         msg = 'Dodgy Business Unit condition map should be empty dict'
@@ -351,7 +350,6 @@ class TestB2CConfig(unittest2.TestCase):
                     'send_sc_1': False,
                     'send_sc_2': False,
                     'send_sc_4': False,
-                    'delay_template_sc_2': False,
                     'delay_template_sc_4': False,
                     'ignore_sc_4': False}
         msg = 'Valid Business Unit condition map should produce dict values'
@@ -375,7 +373,6 @@ class TestB2CConfig(unittest2.TestCase):
                     'send_sc_1': False,
                     'send_sc_2': False,
                     'send_sc_4': False,
-                    'delay_template_sc_2': False,
                     'delay_template_sc_4': False,
                     'ignore_sc_4': False}
         msg = 'Fast condition map should produce dict values'
