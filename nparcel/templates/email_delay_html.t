@@ -1,6 +1,6 @@
 <p>Hello,</p>
 <p>Toll Consumer Delivery attempted to deliver your parcel today, sorry we missed you.<br>
-For convenience, your parcel can be collected <b><i>after 2PM</i></b> from <b>${name}</b>, <b>${address}</b>, <b>${suburb}</b>, <b>${postcode}</b>.</p>
+For convenience, your parcel can be collected <u><i>after 2PM</i></u> from <b>${name}</b>, <b>${address}</b>, <b>${suburb}</b>, <b>${postcode}</b>.</p>
 <table style="width:45%;background-color:#f4f4f4">
     <tr style="border:1px solid white">
         <th style="white-space:nowrap;text-align:right;width:30%">Tracking #:</th>
