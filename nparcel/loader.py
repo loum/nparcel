@@ -242,15 +242,19 @@ class Loader(nparcel.Service):
                     send_sc_2 = cond_map.get('send_sc_2')
                     send_sc_4 = cond_map.get('send_sc_4')
                     ignore_sc_4 = cond_map.get('ignore_sc_4')
+                    delay_template_sc_4 = cond_map.get('delay_template_sc_4')
                     if self.trigger_comms(service_code,
                                           send_email,
                                           send_sc_1,
                                           send_sc_2,
                                           send_sc_4,
                                           ignore_sc_4):
+                        template = self.get_template(service_code,
+                                                     delay_template_sc_4)
                         self.comms('email',
                                    job_item_id,
                                    email_addr,
+                                   template=template,
                                    dry=dry)
 
                     send_sms = cond_map.get('send_sms')
@@ -261,9 +265,12 @@ class Loader(nparcel.Service):
                                           send_sc_2,
                                           send_sc_4,
                                           ignore_sc_4):
+                        template = self.get_template(service_code,
+                                                     delay_template_sc_4)
                         self.comms('sms',
                                    job_item_id,
                                    phone_nbr,
+                                   template=template,
                                    dry=dry)
 
         log.info('Conn Note: "%s" parse complete' % connote_literal)
@@ -895,3 +902,42 @@ class Loader(nparcel.Service):
                 ignore = True
 
         return ignore
+
+    def get_template(self,
+                     service_code,
+                     delay_template_sc_4):
+        """Determine which template to use.
+
+        In addition to the standard notification template, the Loader
+        facility could trigger comms based on an alternate template
+        construct.
+
+        Current alternate templates supported include:
+
+        * **delay** - for delayed pickup notifications.  Triggered with
+          *service_code* ``4`` and *delay_template_sc_4* is ``True``
+
+        **Args:**
+            *service_code*: raw Service Code value as taken from
+            ``job.service_code`` column
+
+        **Returns:**
+            string name of the template.  Currently can be one of:
+
+            * ``body`` -- standard comms notification
+
+            * ``delay`` -- delayed pickup notifications
+
+        """
+        log.info('Getting template for service_code value: %s' %
+                 str(service_code))
+        template = 'body'
+
+        if service_code is not None:
+            if (service_code == 4 and delay_template_sc_4):
+                template = 'delay'
+
+        log.debug('Using template "%s" for SC with flag delay_sc4: %s' %
+                  (template, delay_template_sc_4))
+
+        return template

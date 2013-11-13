@@ -1101,6 +1101,20 @@ SET state = 'VIC'"""
                 else:
                     self.assertFalse(received, msg)
 
+    def test_get_template(self):
+        """Notification templates.
+        """
+        for service_code in [None, 1, 2, 4]:
+            for delay_sc_4 in [False, True]:
+                received = self._ldr.get_template(service_code,
+                                                  delay_sc_4)
+                if service_code == 4 and delay_sc_4:
+                    expected = 'delay'
+                else:
+                    expected = 'body'
+                msg = "Default template scenario expected 'body'"
+                self.assertEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._c = None
