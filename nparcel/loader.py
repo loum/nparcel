@@ -343,6 +343,8 @@ class Loader(nparcel.Service):
                         log.info('Setting comms for Service Code %s' %
                                  str(service_code))
                         prepare_comms = True
+        else:
+            log.info('Comms facility disabled')
 
         return prepare_comms
 

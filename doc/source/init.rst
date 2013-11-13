@@ -40,7 +40,7 @@ display to the terminal the files and directories that will be required::
     Processing dry run True
     Starting npinit ...
     Preparing environment in "/home/guest/.nparceld"
-    Copying "/usr/lib/python2.4/site-packages/nparcel/conf/init.conf.0.16"
+    Copying "/usr/lib/python2.4/site-packages/nparcel/conf/init.conf.0.18"
     ...
 
 ``npinit`` will create the base directory structure in the ``.nparceld``
@@ -48,22 +48,24 @@ directory off the current user's home directory.
 
 Keys Files at a Glance ...
 ++++++++++++++++++++++++++
-As of release 0.16, the required directory structure is as follows::
+As of release 0.18, the required directory structure is as follows::
 
     $ tree .nparceld
     .nparceld
     |-- conf
     |   |-- init.conf
-    |   |-- init.conf.0.16
-    |   |-- log.conf.0.16
-    |   |-- nparceld.conf.0.16
-    |   |-- npftp.conf.0.16
-    |   `-- npmts.conf.0.16
+    |   |-- init.conf.0.18
+    |   |-- log.conf.0.18
+    |   |-- nparceld.conf.0.18
+    |   |-- npftp.conf.0.18
+    |   `-- npmts.conf.0.18
     |-- pids
     |-- logs
     `-- templates
         |-- email_body_html.t
+        |-- email_delay_html.t
         |-- email_err_body_html.t
+        |-- email_err_delay_html.t
         |-- email_err_pe_html.t
         |-- email_err_rem_html.t
         |-- email_html.t
@@ -75,10 +77,12 @@ As of release 0.16, the required directory structure is as follows::
         |-- email_test_html.t
         |-- mts_sql.t
         |-- sms_body_xml.t
+        |-- sms_delay_xml.t
         |-- sms_pe_xml.t
         |-- sms_rem_xml.t
         |-- sms_test_xml.t
         |-- subject_body_html.t
+        |-- subject_delay_html.t
         |-- subject_pe_html.t
         |-- subject_proc_err_html.t
         |-- subject_rem_html.t
@@ -94,7 +98,7 @@ Enable the Logger Handlers
 Log handlers manage the log files and need to be confgured::
 
     $ cd ~/.nparceld
-    $ ln -s conf/log.conf.0.16 log.conf
+    $ ln -s conf/log.conf.0.18 log.conf
 
 Set the Default Configuration
 +++++++++++++++++++++++++++++
@@ -108,7 +112,7 @@ components look for the default config at ``~.nparceld/nparceld.conf``::
 As a start, we can use the package-provided default::
 
     $ cd ~/.nparceld
-    $ ln -s conf/nparceld.conf.0.16 nparceld.conf
+    $ ln -s conf/nparceld.conf.0.18 nparceld.conf
 
 From here we should get some sane information::
 
@@ -141,7 +145,7 @@ The default configuration mappings are provided as a generalisation of the
 Business Unit requirements during development.  These may have been modified
 during production and should be verified.
 
-The default settings for the condition map in release 0.16 are as follows::
+The default settings for the condition map in release 0.18 are as follows::
 
     [conditions]
     #      0000000001
@@ -180,7 +184,7 @@ The outbound FTP service has its own configuration file, ``npftp.conf``.
 be linked to the appropriate lcoation::
 
     $ cd ~/.nparceld
-    $ ln -s conf/npftp.conf.0.16 npftp.conf
+    $ ln -s conf/npftp.conf.0.18 npftp.conf
 
 Connect to the MTS Interface
 ++++++++++++++++++++++++++++
@@ -189,7 +193,7 @@ against the Primary Elect jobs within the Nparcel database as a trigger
 point for sending out consumer comms::
 
     $ cd ~/.nparceld
-    $ ln -s conf/npmts.conf.0.16 npmts.conf
+    $ ln -s conf/npmts.conf.0.18 npmts.conf
 
 Edit the ``npmts.conf`` file and provide the supplied MTS credentials::
 

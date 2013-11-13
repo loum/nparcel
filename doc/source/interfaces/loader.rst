@@ -22,27 +22,87 @@ following list details the required configuration options:
     The comms outbound interface where comms event files are
     deposited for further processing
 
-* ``rest``
+Enabling Comms
+^^^^^^^^^^^^^^
 
-    The credentials and connection details required to interface to the
-    Esendex SMS and email interfaces.  The config options include::
+Comms notification files can be enabled conditionally via the configuration
+``condition_map`` setting::
 
-        sms_api = https://api.esendex.com/v1.0/messagedispatcher
-        sms_user =
-        sms_pw =
-         
-        email_api = https://apps.cinder.co/tollgroup/wsemail/emailservice.svc/sendemail
-        email_user =
-        email_pw =
+    # Pos 02: 0 do not send email
+    #         1 send email
+    # Pos 03: 0 do not send SMS
+    #         1 send SMS
 
-* ``failed_email``
+As per the condition map descriptor, set the position item flags to ``1``
+for the required communication facility.  For example::
 
-    Email recipient for loader failures notification alerts
+    # TOLP condition map with comms disabled
+    #      0000000001111
+    #      1234567890123
+    TOLP = 0001000000000
 
-* ``skip_days`` (default ``Sunday``)
+    # TOLP condition map with comms enabled
+    #      0000000001111
+    #      1234567890123
+    TOLP = 0111000000000
 
-    List of days to not send messages.  To avoid confusion,
-    enter the full day name (Monday) separated by commas.
+.. note:: Restart ``nploaderd`` for the configuration updates to take effect
+
+Fine Tuning Comms via Service Code
+**********************************
+
+.. note::
+    Service Code-level comms will only work if the comms facility has
+    been enabled.
+
+The context of T1250 line items can be altered based on the Service Code
+value.  Similarly, Loader comms can be controlled at the Service Code level.
+
+.. note::
+    Primary Elect (Service Code 3) comms are never sent
+    at the Loader level.
+
+Service Code-level comms notification files can be enabled conditionally
+via the configuration::
+
+    # Pos 09: 0 do not send comms if service_code 1
+    #         1 send comms if service_code 1
+    # Pos 10: 0 do not send comms if service_code 2
+    #         1 send comms if service_code 2
+    # Pos 11: 0 do not send comms if service_code 4
+    #         1 send comms if service_code 4
+
+Selecting Templates
+*******************
+
+*New in version 0.18*
+
+The Loader facility uses a default template for comms notifications.
+However, Service Code 4-based T1250 records can use the alternate ``delay``
+template.  This scenario represents alternate notifications that suggest
+a time *after* which the parcel is available for pickup.
+
+Service Code 4 template control can be enabled conditionally
+via the configuration condition_map::
+
+    # Pos 12: 0 use default loader comms template if service_code 4
+    #         1 use delayed pickup comms template if service_code 4
+
+Ignore Service Code 4
+*********************
+
+*New in version 0.18*
+
+With future plans to trigger Service Code 4 comms *on delivery* we can
+force the loader to ignore all Service Code 4 record types via the
+configuration condition_map::
+
+    # Pos 13: 0: do not ignore service_code 4
+    #         1: ignore service_code 4
+
+.. note::
+    Once set, this setting overrides all other Service Code 4 related
+    conditon_map items
 
 ``nploaderd`` usage
 ^^^^^^^^^^^^^^^^^^^
