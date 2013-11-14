@@ -377,7 +377,7 @@ class Comms(object):
                           self.comms_dir)
             else:
                 for f in os.listdir(self.comms_dir):
-                    r = re.compile("^(email|sms)\.(\d+)\.(pe|rem|body)$")
+                    r = re.compile("^(email|sms)\.(\d+)\.(pe|rem|body|delay)$")
                     m = r.match(f)
                     if m:
                         comms_file = os.path.join(self.comms_dir, f)

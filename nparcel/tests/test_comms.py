@@ -320,7 +320,9 @@ class TestComms(unittest2.TestCase):
         comms_files = ['email.1.rem',
                        'sms.1.rem',
                        'email.1111.pe',
-                       'sms.1111.pe']
+                       'sms.1111.pe',
+                       'email.1234.delay',
+                       'sms.1234.delay']
         dodgy = ['banana',
                  'email.rem.3']
         for f in comms_files + dodgy:
