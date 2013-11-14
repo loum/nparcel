@@ -447,7 +447,7 @@ class Comms(object):
         comm_parse = ()
 
         log.debug('Parsing comms filename: "%s"' % filename)
-        r = re.compile("(email|sms)\.(\d+)\.(pe|rem|body)")
+        r = re.compile("(email|sms)\.(\d+)\.(pe|rem|body|delay)")
         m = r.match(filename)
         if m:
             try:
