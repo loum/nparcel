@@ -172,6 +172,17 @@ class Ftp(ftplib.FTP):
             if direction == 'outbound':
                 self.outbound(xfer, dry=dry)
 
+    def inbound(self, xfer):
+        """Incoming file transfer.
+
+        **Args:**
+            *xfer*: a :mod:`ConfigParser` section that represents
+            an FTP transfer instance
+
+        """
+        log.info('Preparing outbound xfer ...')
+        xfer_set = []
+
     def outbound(self, xfer, dry=False):
         """Outgoing file transfer.
 
@@ -184,24 +195,27 @@ class Ftp(ftplib.FTP):
 
         """
         log.info('Preparing outbound xfer ...')
-        xfer_set = []
 
-        source = self.config.get(xfer, 'source')
+        if self.connect_resource(xfer):
+            xfer_set = []
+            source = self.config.get(xfer, 'source')
 
-        try:
-            filter = self.config.get(xfer, 'filter')
-        except ConfigParser.NoOptionError, err:
-            filter = None
+            try:
+                filter = self.config.get(xfer, 'filter')
+            except ConfigParser.NoOptionError, err:
+                filter = None
 
-        try:
-            is_pod = (self.config.get(xfer, 'pod') == 'True')
-        except ConfigParser.NoOptionError, err:
-            is_pod = False
+            try:
+                is_pod = (self.config.get(xfer, 'pod') == 'True')
+            except ConfigParser.NoOptionError, err:
+                is_pod = False
 
-        xfer_set = self.get_xfer_files(source, filter, is_pod)
+            xfer_set = self.get_xfer_files(source, filter, is_pod)
 
-        if len(xfer_set):
-            self.xfer_files(xfer, xfer_set, dry=dry)
+            if len(xfer_set):
+                self.xfer_files(xfer, xfer_set, dry=dry)
+
+            self.disconnect_resource()
 
     def get_xfer_files(self, source, filter=None, is_pod=False):
         """For outbound file transfers, get a list of files to transfer.
@@ -240,40 +254,10 @@ class Ftp(ftplib.FTP):
             *files*: list of files to transfer
 
         """
-        host = self.config.get(xfer, 'host')
-        port = self.config.get(xfer, 'port')
-        user = self.config.get(xfer, 'user')
-        password = self.config.get(xfer, 'password')
-        target = self.config.get(xfer, 'target')
-
         try:
-            proxy = self.config.get(xfer, 'proxy')
+            target = self.config.get(xfer, 'target')
         except ConfigParser.NoOptionError:
-            proxy = None
-
-        try:
-            if proxy is None:
-                log.info('Connecting to "%s:%s"' % (host, port))
-                self.connect(host=host, port=port)
-            else:
-                log.info('Connecting to proxy "%s"' % proxy)
-                self.connect(host=proxy)
-        except socket.error, err:
-            log.critical('Connection failed: %s' % err)
-            sys.exit(1)
-
-        try:
-            if proxy is None:
-                log.info('Login as user "%s"' % user)
-                self.login(user=user, passwd=password)
-            else:
-                proxy_user = '%s@%s' % (user, host)
-                log.info('Login as proxy user "%s"' % proxy_user)
-                self.login(user=proxy_user, passwd=password)
-
-        except ftplib.error_perm, err:
-            log.critical('Login failed: %s' % err)
-            sys.exit(1)
+            target = None
 
         if target is not None:
             log.info('Setting CWD on server to "%s"' % target)
@@ -290,9 +274,6 @@ class Ftp(ftplib.FTP):
                 f.close()
 
                 self.archive_file(file, dry=dry)
-
-        log.info('Closing FTP session to "%s"' % host)
-        self.quit()
 
     def archive_file(self, file, dry=False):
         """Move the Nparcel signature file and report to the archive
@@ -333,3 +314,53 @@ class Ftp(ftplib.FTP):
                 status = False
 
         return status
+
+    def connect_resource(self, xfer):
+        """ Connect to the FTP resource.
+
+        """
+        host = self.config.get(xfer, 'host')
+        port = self.config.get(xfer, 'port')
+        user = self.config.get(xfer, 'user')
+        password = self.config.get(xfer, 'password')
+
+        try:
+            proxy = self.config.get(xfer, 'proxy')
+        except ConfigParser.NoOptionError:
+            proxy = None
+
+        status = True
+        try:
+            if proxy is None:
+                log.info('Connecting to "%s:%s"' % (host, port))
+                self.connect(host=host, port=port)
+            else:
+                log.info('Connecting to proxy "%s"' % proxy)
+                self.connect(host=proxy)
+        except socket.error, err:
+            log.error('Connection failed: %s' % err)
+            status = False
+
+        try:
+            if proxy is None:
+                log.info('Login as user "%s"' % user)
+                self.login(user=user, passwd=password)
+            else:
+                proxy_user = '%s@%s' % (user, host)
+                log.info('Login as proxy user "%s"' % proxy_user)
+                self.login(user=proxy_user, passwd=password)
+        except ftplib.error_perm, err:
+            log.error('Login failed: %s' % err)
+            status = False
+
+        return status
+
+    def disconnect_resource(self):
+        """Disconnect from FTP session.
+
+        """
+        log.info('Closing FTP session')
+        try:
+            self.quit()
+        except AttributeError, err:
+            log.error('FTP close error: %s' % err)

@@ -317,6 +317,16 @@ class TestFtp(unittest2.TestCase):
         os.removedirs(dir)
         self._ftp.reset_config()
 
+    def test_inbound(self):
+        """Inbound file transfer.
+        """
+        self._ftp.config.add_section('ftp_inbound')
+
+        self._ftp.inbound(self._ftp)
+
+        # Clean up.
+        self._ftp.reset_config()
+
     @classmethod
     def tearDownClass(cls):
         cls._ftpserver.stop()
