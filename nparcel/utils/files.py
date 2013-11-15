@@ -13,7 +13,6 @@ import os
 import re
 import string
 import shutil
-import fnmatch
 
 from nparcel.utils.log import log
 
@@ -103,7 +102,7 @@ def check_eof_flag(file):
     except IOError, e:
         log.error('File open error "%s": %s' % (file, str(e)))
     else:
-        for line_length in [-7, -5]:
+        for line_length in [-7, -6, -5]:
             try:
                 fh.seek(line_length, 2)
                 eof_search = fh.readline()
