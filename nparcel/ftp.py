@@ -25,7 +25,7 @@ class Ftp(ftplib.FTP):
 
         :mod:`nparcel.Config` object
 
-    .. attribute:: xfer
+    .. attribute:: xfers
 
         list of FTP instances that define an FTP context.  For example,
         consider this typical FTP configuration definition::
@@ -162,24 +162,46 @@ class Ftp(ftplib.FTP):
         """
         for xfer in self.xfers:
             log.info('Processing transfers for "%s"' % xfer)
-            xfer_set = []
-
-            source = self.config.get(xfer, 'source')
 
             try:
-                filter = self.config.get(xfer, 'filter')
+                direction = self.config.get(xfer, 'direction')
+                direction = direction.lower()
             except ConfigParser.NoOptionError, err:
-                filter = None
+                direction = 'outbound'
 
-            try:
-                is_pod = (self.config.get(xfer, 'pod') == 'True')
-            except ConfigParser.NoOptionError, err:
-                is_pod = False
+            if direction == 'outbound':
+                self.outbound(xfer, dry=dry)
 
-            xfer_set = self.get_xfer_files(source, filter, is_pod)
+    def outbound(self, xfer, dry=False):
+        """Outgoing file transfer.
 
-            if len(xfer_set):
-                self.xfer_files(xfer, xfer_set, dry=dry)
+        **Args:**
+            *xfer*: a :mod:`ConfigParser` section that represents
+            an FTP transfer instance
+
+        **Kwargs:**
+            *dry*: only report, do not execute
+
+        """
+        log.info('Preparing outbound xfer ...')
+        xfer_set = []
+
+        source = self.config.get(xfer, 'source')
+
+        try:
+            filter = self.config.get(xfer, 'filter')
+        except ConfigParser.NoOptionError, err:
+            filter = None
+
+        try:
+            is_pod = (self.config.get(xfer, 'pod') == 'True')
+        except ConfigParser.NoOptionError, err:
+            is_pod = False
+
+        xfer_set = self.get_xfer_files(source, filter, is_pod)
+
+        if len(xfer_set):
+            self.xfer_files(xfer, xfer_set, dry=dry)
 
     def get_xfer_files(self, source, filter=None, is_pod=False):
         """For outbound file transfers, get a list of files to transfer.

@@ -139,6 +139,12 @@ class TestRestEmailer(unittest2.TestCase):
         msg = 'Valid email (multiple dots domain part) should return True'
         self.assertTrue(received)
 
+        # Valid -- multiple dots in domain part
+        email = 'AUTO_417A82AA-1D95-425B-AA67-D590AD955308@autoidn.'
+        received = self._re.validate(email)
+        msg = 'Valid email (multiple dots domain part) should return True'
+        self.assertFalse(received)
+
     @classmethod
     def tearDownClass(cls):
         cls._re = None
