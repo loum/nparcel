@@ -2,7 +2,6 @@ __all__ = [
     "Ftp",
 ]
 import os
-import sys
 import ftplib
 import socket
 
@@ -10,6 +9,7 @@ import nparcel
 import ConfigParser
 from nparcel.utils.log import log
 from nparcel.utils.files import (create_dir,
+                                 check_filename,
                                  get_directory_files)
 
 
@@ -172,7 +172,7 @@ class Ftp(ftplib.FTP):
             if direction == 'outbound':
                 self.outbound(xfer, dry=dry)
 
-    def inbound(self, xfer):
+    def inbound(self, xfer, dry=False):
         """Incoming file transfer.
 
         **Args:**
@@ -181,7 +181,20 @@ class Ftp(ftplib.FTP):
 
         """
         log.info('Preparing outbound xfer ...')
-        xfer_set = []
+
+        if self.connect_resource(xfer):
+            xfer_set = []
+            try:
+                source = self.config.get(xfer, 'source')
+            except ConfigParser.NoOptionError:
+                source = None
+
+            if source is not None:
+                log.info('Setting CWD on server to "%s"' % source)
+                self.cwd(source)
+
+            log.debug('Getting remote listing ...')
+            remote_files = self.nlst()
 
     def outbound(self, xfer, dry=False):
         """Outgoing file transfer.
@@ -364,3 +377,23 @@ class Ftp(ftplib.FTP):
             self.quit()
         except AttributeError, err:
             log.error('FTP close error: %s' % err)
+
+    def filter_file_list(self, files, format):
+        """Filters list of *files* based on the *filter* regular expression
+        string.
+
+        *Args*:
+            *files*: list of filenames to check.  *format* will only
+            be made against the files basename component
+
+            *format*: the :mod:`re` format string to match against
+
+        """
+        log.info('Filtering remote file list against "%s"' % format)
+
+        filtered_files = []
+        for f in files:
+            if check_filename(f, format):
+                filtered_files.append(f)
+
+        return filtered_files

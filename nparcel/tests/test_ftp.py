@@ -116,11 +116,11 @@ class TestFtp(unittest2.TestCase):
     def test_get_report_file_ids(self):
         """Check directory for report files -- valid file defined.
         """
-        report = os.path.join(self._dir, 'VIC_VANA_REP_20130812140736.txt')
-        fh = open(report, 'w')
-        fh.write('REF1|JOB_KEY|PICKUP_TIME|PICKUP_POD|IDENTITY_TYPE|IDENTITY_DATA\n')
-        fh.write('ALHZ104346|5|2013-02-01 01:23:45|UNCOLLECTED PARCEL DATACLEANUP|Other|0000')
-        fh.close()
+        test_file_dir = os.path.join('nparcel', 'tests', 'files', 'ftp')
+        test_file = 'VIC_VANA_REP_20130812140736.txt'
+
+        report = os.path.join(self._dir, test_file)
+        copy_file(os.path.join(test_file_dir, test_file), report)
 
         received = self._ftp.get_report_file_ids(report)
         expected = ['5']
@@ -320,12 +320,56 @@ class TestFtp(unittest2.TestCase):
     def test_inbound(self):
         """Inbound file transfer.
         """
-        self._ftp.config.add_section('ftp_inbound')
+        dir = self._ftp_dir
+        t_files = get_directory_files_list('nparcel/tests/files/returns')
+        for f in t_files:
+            copy_file(f, os.path.join(dir, os.path.basename(f)))
 
-        self._ftp.inbound(self._ftp)
+        # Prepare the config.
+        self._ftp.config.add_section('ftp_in')
+        self._ftp.config.set('ftp_in', 'host', '127.0.0.1')
+        self._ftp.config.set('ftp_in', 'port', '2121')
+        self._ftp.config.set('ftp_in', 'user', 'tester')
+        self._ftp.config.set('ftp_in', 'password', 'tester')
+        self._ftp.config.set('ftp_in', 'filter', 'VIC_VANA_REP_\d{14}\.txt')
+        self._ftp.config.set('ftp_in', 'target', '')
+        self._ftp.config.set('ftp_in', 'pod', 'True')
+        self._ftp._parse_config(file_based=False)
+
+        self._ftp.inbound(self._ftp.xfers[0], dry=True)
 
         # Clean up.
+        remove_files(get_directory_files_list(dir))
         self._ftp.reset_config()
+
+    def test_filter_file_list(self):
+        """Filter file list.
+        """
+        t_dir = os.path.join('nparcel', 'tests', 'files', 'returns')
+        t_files = get_directory_files_list(t_dir)
+
+        format = 'banana'
+        received = self._ftp.filter_file_list(t_files, format)
+        expected = []
+        msg = '"%s" filter list error' % format
+        self.assertListEqual(received, expected, msg)
+
+        format = 'VIC_VANA_REP_\d{14}\.txt'
+        received = self._ftp.filter_file_list(t_files, format)
+        priority_rep_file = ['VIC_VANA_REP_20131114044105.txt',
+                             'VIC_VANA_REP_20131114050106.txt']
+        expected = [os.path.join(t_dir, x) for x in priority_rep_file]
+        msg = '"%s" filter list error' % format
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        format = 'VIC_VANA_REI_\d{14}\.txt'
+        received = self._ftp.filter_file_list(t_files, format)
+        priority_rep_file = ['VIC_VANA_REI_20131114044602.txt',
+                             'VIC_VANA_REI_20131114045103.txt',
+                             'VIC_VANA_REI_20131114045604.txt']
+        expected = [os.path.join(t_dir, x) for x in priority_rep_file]
+        msg = '"%s" filter list error' % format
+        self.assertListEqual(sorted(received), sorted(expected), msg)
 
     @classmethod
     def tearDownClass(cls):

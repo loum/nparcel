@@ -282,7 +282,8 @@ def check_filename(file, format):
     m = r.match(os.path.basename(file))
     if m:
         status = True
+        log.debug('File "%s" matches filter "%s"' % (file, format))
     else:
-        log.error('File "%s" did not match filter "%s"' % (file, format))
+        log.debug('File "%s" did not match filter "%s"' % (file, format))
 
     return status
