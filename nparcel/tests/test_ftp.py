@@ -49,9 +49,7 @@ class TestFtp(unittest2.TestCase):
         t.start()
 
         cls._ftp = nparcel.Ftp()
-        cls._test_dir = 'nparcel/tests/files'
-        cls._priority_file = os.path.join(cls._test_dir,
-                                          'VIC_VANA_REP_20131108145146.txt')
+        cls._test_dir = os.path.join('nparcel', 'tests', 'files')
 
         # Create a temporary directory structure.
         cls._dir = tempfile.mkdtemp()
@@ -321,7 +319,8 @@ class TestFtp(unittest2.TestCase):
         """Inbound file transfer.
         """
         dir = self._ftp_dir
-        t_files = get_directory_files_list('nparcel/tests/files/returns')
+        t_files = get_directory_files_list(os.path.join(self._test_dir,
+                                                        'returns'))
         for f in t_files:
             copy_file(f, os.path.join(dir, os.path.basename(f)))
 
@@ -342,10 +341,110 @@ class TestFtp(unittest2.TestCase):
         remove_files(get_directory_files_list(dir))
         self._ftp.reset_config()
 
+    def test_get_files(self):
+        """Get files from remote resource.
+        """
+        dir = self._ftp_dir
+        t_files = get_directory_files_list(os.path.join(self._test_dir,
+                                                        'returns'))
+        remote_files = []
+        for f in t_files:
+            remote_files.append(os.path.basename(f))
+            copy_file(f, os.path.join(dir, os.path.basename(f)))
+
+        # Prepare the config.
+        self._ftp.config.add_section('ftp_in')
+        self._ftp.config.set('ftp_in', 'host', '127.0.0.1')
+        self._ftp.config.set('ftp_in', 'port', '2121')
+        self._ftp.config.set('ftp_in', 'user', 'tester')
+        self._ftp.config.set('ftp_in', 'password', 'tester')
+        self._ftp._parse_config(file_based=False)
+
+        self._ftp.connect_resource(self._ftp.xfers[0])
+
+        # No files to transfer.
+        files_to_transfer = []
+        received = self._ftp.get_files(files_to_transfer,
+                                       target_dir=self._dir,
+                                       dry=False)
+        expected = []
+        msg = 'No files to retrieve error'
+        self.assertListEqual(received, expected, msg)
+
+        # Single file transfer.
+        files_to_transfer = ['VIC_VANA_REF_20131114073201.txt']
+        received = self._ftp.get_files(files_to_transfer,
+                                       target_dir=self._dir,
+                                       dry=False)
+        expected = get_directory_files_list(self._dir)
+        expected = [os.path.basename(x) for x in expected]
+        ret = expected
+        msg = 'Single file retrieved error'
+        self.assertListEqual(received, expected, msg)
+
+        # Report files to transfer.
+        del expected[:]
+        received = self._ftp.get_files(remote_files,
+                                       target_dir=self._dir,
+                                       dry=False)
+        expected = get_directory_files_list(self._dir)
+        expected = [os.path.basename(x) for x in expected if x not in ret]
+        msg = 'Retrieved multiple file list error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Clean up.
+        self._ftp.disconnect_resource()
+        remove_files(get_directory_files_list(self._dir))
+        remove_files(get_directory_files_list(dir))
+        self._ftp.reset_config()
+
+    def test_get_files_partial_context(self):
+        """Retrieve remote files (partial context).
+        """
+        dir = self._ftp_dir
+        remote_file = os.path.join(self._test_dir,
+                                   'returns',
+                                   'VIC_VANA_REP_20131114050106.txt')
+        copy_file(remote_file,
+                  os.path.join(dir, os.path.basename(remote_file)))
+
+        # Prepare the config.
+        self._ftp.config.add_section('ftp_in')
+        self._ftp.config.set('ftp_in', 'host', '127.0.0.1')
+        self._ftp.config.set('ftp_in', 'port', '2121')
+        self._ftp.config.set('ftp_in', 'user', 'tester')
+        self._ftp.config.set('ftp_in', 'password', 'tester')
+        self._ftp._parse_config(file_based=False)
+
+        self._ftp.connect_resource(self._ftp.xfers[0])
+
+        # Single file transfer partial context.
+        files_to_transfer = ['VIC_VANA_REP_20131114050106.txt']
+        received = self._ftp.get_files(files_to_transfer,
+                                       target_dir=self._dir,
+                                       partial=True,
+                                       dry=False)
+        expected = [os.path.basename(remote_file)]
+        msg = 'Single file (partial context) get_files() return error'
+        self.assertListEqual(received, expected, msg)
+
+        # Check the local directory content.
+        received = get_directory_files_list(self._dir)
+        expected = [os.path.join(self._dir,
+                                 os.path.basename(remote_file) + '.tmp')]
+        msg = 'Single file (partial context) retrieved error'
+        self.assertListEqual(received, expected, msg)
+
+        # Clean up.
+        self._ftp.disconnect_resource()
+        remove_files(get_directory_files_list(self._dir))
+        remove_files(get_directory_files_list(dir))
+        self._ftp.reset_config()
+
     def test_filter_file_list(self):
         """Filter file list.
         """
-        t_dir = os.path.join('nparcel', 'tests', 'files', 'returns')
+        t_dir = os.path.join(self._test_dir, 'returns')
         t_files = get_directory_files_list(t_dir)
 
         format = 'banana'
@@ -376,7 +475,6 @@ class TestFtp(unittest2.TestCase):
         cls._ftpserver.stop()
 
         del cls._test_dir
-        del cls._priority_file
         cls._ftp = None
         del cls._ftp
         os.removedirs(cls._dir)

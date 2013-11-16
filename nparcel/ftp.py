@@ -195,6 +195,10 @@ class Ftp(ftplib.FTP):
 
             log.debug('Getting remote listing ...')
             remote_files = self.nlst()
+            try:
+                source = self.config.get(xfer, 'source')
+            except ConfigParser.NoOptionError:
+                source = None
 
     def outbound(self, xfer, dry=False):
         """Outgoing file transfer.
@@ -287,6 +291,53 @@ class Ftp(ftplib.FTP):
                 f.close()
 
                 self.archive_file(file, dry=dry)
+
+    def get_files(self, files, target_dir=None, partial=False, dry=False):
+        """Retrives files defined by *files* list.
+
+        Archives the transfered file upon success.
+
+        **Args:**
+            *xfer*: the config section of the current FTP context.
+
+            *files*: list of files to transfer
+
+        **Kwargs:**
+            *partial*: as transfers are incremental, boolean ``True``
+            will append ``.tmp`` to the filename on the local file
+            directory resource (default is ``False``)
+
+        **Returns:**
+            list of filenames successfully transferred (as identified on
+            the remote server)
+
+        """
+        log.info('Retrieving files ...')
+        files_retrieved = []
+
+        for f in files:
+            log.info('Retrieving file "%s"' % f)
+            target_file = f
+            if target_dir is not None:
+                target_file = os.path.join(target_dir, target_file)
+
+            if partial:
+                target_file = target_file + '.tmp'
+                log.debug('Partial FTP local filename: "%s"' % target_file)
+
+            if not dry:
+                log.info('Retrieving file "%s" to "%s"' % (f, target_file))
+                try:
+                    fh = open(target_file, 'wb')
+                    self.retrbinary('RETR %s' % f, fh.write)
+                    fh.close()
+                    files_retrieved.append(f)
+                except IOError, e:
+                    log.error('FTP retrieve error: e' % e)
+
+        log.info('Retrieved files count: %d' % len(files_retrieved))
+
+        return files_retrieved
 
     def archive_file(self, file, dry=False):
         """Move the Nparcel signature file and report to the archive
