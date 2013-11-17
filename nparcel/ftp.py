@@ -141,12 +141,20 @@ class Ftp(ftplib.FTP):
 
         try:
             fh = open(file)
-            # Consume the header.
-            fh.readline()
-            for line in fh:
-                keys.append(line.rsplit('|')[1])
         except IOError, err:
             log.error('Could not open file "%s"' % file)
+
+        if fh:
+            # Consume the header.
+            header = fh.readline().split('|')
+            try:
+                job_key_index = header.index('JOB_KEY')
+                for line in fh:
+                    keys.append(line.rsplit('|')[job_key_index])
+            except ValueError, e:
+                log.error('Unable to source "JOB_KEY" from header: %s' % e)
+
+            fh.close()
 
         return keys
 
@@ -188,17 +196,31 @@ class Ftp(ftplib.FTP):
                 source = self.config.get(xfer, 'source')
             except ConfigParser.NoOptionError:
                 source = None
-
             if source is not None:
                 log.info('Setting CWD on server to "%s"' % source)
                 self.cwd(source)
 
             log.debug('Getting remote listing ...')
             remote_files = self.nlst()
+
             try:
-                source = self.config.get(xfer, 'source')
+                filter = self.config.get(xfer, 'filter')
             except ConfigParser.NoOptionError:
-                source = None
+                filter = None
+            filtered_files = remote_files
+            if filter is not None:
+                filtered_files = list(self.filter_file_list(remote_files,
+                                                            filter))
+
+            # Transfer files.
+            try:
+                target = self.config.get(xfer, 'target')
+            except ConfigParser.NoOptionError:
+                target = None
+            self.get_files(filtered_files,
+                           target_dir=target,
+                           partial=True,
+                           dry=dry)
 
     def outbound(self, xfer, dry=False):
         """Outgoing file transfer.
@@ -309,7 +331,7 @@ class Ftp(ftplib.FTP):
 
         **Returns:**
             list of filenames successfully transferred (as identified on
-            the remote server)
+            the local server)
 
         """
         log.info('Retrieving files ...')
@@ -326,18 +348,29 @@ class Ftp(ftplib.FTP):
                 log.debug('Partial FTP local filename: "%s"' % target_file)
 
             if not dry:
-                log.info('Retrieving file "%s" to "%s"' % (f, target_file))
-                try:
-                    fh = open(target_file, 'wb')
-                    self.retrbinary('RETR %s' % f, fh.write)
-                    fh.close()
-                    files_retrieved.append(f)
-                except IOError, e:
-                    log.error('FTP retrieve error: e' % e)
+                xfer_status = self.get_remote_file(f, target_file)
+                if xfer_status is not None:
+                    files_retrieved.append(target_file)
 
         log.info('Retrieved files count: %d' % len(files_retrieved))
 
         return files_retrieved
+
+    def get_remote_file(self, remote_file, local_file):
+        """
+        """
+        log.info('Retrieving file "%s" to "%s"' % (remote_file, local_file))
+
+        xfered_file = None
+        try:
+            fh = open(local_file, 'wb')
+            self.retrbinary('RETR %s' % remote_file, fh.write)
+            fh.close()
+            xfered_file = local_file
+        except IOError, e:
+            log.error('FTP retrieve error: e' % e)
+
+        return local_file
 
     def archive_file(self, file, dry=False):
         """Move the Nparcel signature file and report to the archive
@@ -448,3 +481,52 @@ class Ftp(ftplib.FTP):
                 filtered_files.append(f)
 
         return filtered_files
+
+    def get_pod_files(self,
+                      report_files,
+                      target_dir=None,
+                      remove=False,
+                      dry=False):
+        """Retrieve POD files associated with list of *report_files*.
+
+        **Args:**
+            *report_files*: list of report files to retrieve PODs against
+
+        **Returns:**
+            list if PODs files retrieved
+
+        """
+        retrieved_pod_files = []
+
+        remote_files = self.nlst()
+        log.debug('Remote file list: %s' % remote_files)
+
+        for f in report_files:
+            log.info('Checking for POD files against report "%s"' % f)
+            keys = self.get_report_file_ids(f)
+            log.debug('Keys found: %s' % keys)
+            for key in keys:
+                for extension in ['ps', 'png']:
+                    pod_file = '%s.%s' % (key, extension)
+                    if pod_file in remote_files:
+                        log.debug('POD "%s" exists remotely' % pod_file)
+                        target_file = pod_file
+                        if target_dir is not None:
+                            target_file = os.path.join(target_dir,
+                                                       target_file)
+
+                        xfer_status = None
+                        if not dry:
+                            xfer_status = self.get_remote_file(pod_file,
+                                                               target_file)
+
+                        if xfer_status is not None:
+                            retrieved_pod_files.append(xfer_status)
+                            if remove:
+                                log.info('Removing "%s" remotely' % pod_file)
+                                self.delete(pod_file)
+                    else:
+                        log.debug('POD "%s" does not exist remotely' %
+                                  pod_file)
+
+        return retrieved_pod_files

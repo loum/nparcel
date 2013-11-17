@@ -330,7 +330,7 @@ class TestFtp(unittest2.TestCase):
         self._ftp.config.set('ftp_in', 'port', '2121')
         self._ftp.config.set('ftp_in', 'user', 'tester')
         self._ftp.config.set('ftp_in', 'password', 'tester')
-        self._ftp.config.set('ftp_in', 'filter', 'VIC_VANA_REP_\d{14}\.txt')
+        self._ftp.config.set('ftp_in', 'filter', '.*_VANA_RE[PFI]_\d{14}\.txt')
         self._ftp.config.set('ftp_in', 'target', '')
         self._ftp.config.set('ftp_in', 'pod', 'True')
         self._ftp._parse_config(file_based=False)
@@ -377,7 +377,6 @@ class TestFtp(unittest2.TestCase):
                                        target_dir=self._dir,
                                        dry=False)
         expected = get_directory_files_list(self._dir)
-        expected = [os.path.basename(x) for x in expected]
         ret = expected
         msg = 'Single file retrieved error'
         self.assertListEqual(received, expected, msg)
@@ -388,7 +387,6 @@ class TestFtp(unittest2.TestCase):
                                        target_dir=self._dir,
                                        dry=False)
         expected = get_directory_files_list(self._dir)
-        expected = [os.path.basename(x) for x in expected if x not in ret]
         msg = 'Retrieved multiple file list error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -424,7 +422,8 @@ class TestFtp(unittest2.TestCase):
                                        target_dir=self._dir,
                                        partial=True,
                                        dry=False)
-        expected = [os.path.basename(remote_file)]
+        expected = [os.path.join(self._dir,
+                                 os.path.basename(remote_file)) + '.tmp']
         msg = 'Single file (partial context) get_files() return error'
         self.assertListEqual(received, expected, msg)
 
@@ -469,6 +468,49 @@ class TestFtp(unittest2.TestCase):
         expected = [os.path.join(t_dir, x) for x in priority_rep_file]
         msg = '"%s" filter list error' % format
         self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def get_pod_files(self):
+        """Retrieve POD files.
+        """
+        dir = self._ftp_dir
+        report_files = [os.path.join(self._test_dir,
+                                     'returns',
+                                     'VIC_VANA_REP_20131114050106.txt')]
+        pod_file = os.path.join(self._test_dir,
+                                'returns',
+                                'P1014R0-0000NX32.ps')
+        copy_file(pod_file, os.path.join(dir, os.path.basename(pod_file)))
+
+        # Prepare the config.
+        self._ftp.config.add_section('ftp_in')
+        self._ftp.config.set('ftp_in', 'host', '127.0.0.1')
+        self._ftp.config.set('ftp_in', 'port', '2121')
+        self._ftp.config.set('ftp_in', 'user', 'tester')
+        self._ftp.config.set('ftp_in', 'password', 'tester')
+        self._ftp._parse_config(file_based=False)
+
+        self._ftp.connect_resource(self._ftp.xfers[0])
+
+        received = self._ftp.get_pod_files(report_files,
+                                           target_dir=self._dir,
+                                           remove=True,
+                                           dry=False)
+        expected = [os.path.join(self._dir, os.path.basename(pod_file))]
+        msg = 'Retrieved POD file error'
+        self.assertListEqual(received, expected, msg)
+
+        # Try retrieving the same file.
+        copy_file(pod_file, os.path.join(dir, os.path.basename(pod_file)))
+
+        received = self._ftp.get_pod_files(report_files,
+                                           target_dir=self._dir,
+                                           remove=True,
+                                           dry=False)
+
+        # Clean up.
+        self._ftp.disconnect_resource()
+        remove_files(get_directory_files_list(self._dir))
+        self._ftp.reset_config()
 
     @classmethod
     def tearDownClass(cls):
