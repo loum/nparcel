@@ -173,7 +173,7 @@ class TestFtp(unittest2.TestCase):
         self._ftp.config.set('ftp_t', 'source', dir)
         self._ftp.config.set('ftp_t', 'filter', 'VIC_VANA_REP_\d{14}\.txt')
         self._ftp.config.set('ftp_t', 'target', '')
-        self._ftp.config.set('ftp_t', 'pod', 'True')
+        self._ftp.config.set('ftp_t', 'pod', 'yes')
         self._ftp._parse_config(file_based=False)
 
         self._ftp.process(dry=False)
@@ -195,6 +195,132 @@ class TestFtp(unittest2.TestCase):
             remove_files(os.path.join(self._ftp_dir, f))
             remove_files(os.path.join(self._ftp.archive_dir, f))
         os.removedirs(dir)
+        self._ftp.reset_config()
+
+    def test_process_inbound_with_pod(self):
+        """Test the process cycle for inbound transfer with POD.
+        """
+        t_files = get_directory_files_list(os.path.join(self._test_dir,
+                                                        'returns'))
+        dir = self._ftp_dir
+        for f in t_files:
+            copy_file(f, os.path.join(dir, os.path.basename(f)))
+
+        # Prepare the config.
+        filter = '.*_VANA_RE[PFI]_\d{14}\.txt'
+        self._ftp.config.add_section('ftp_t')
+        self._ftp.config.set('ftp_t', 'host', '127.0.0.1')
+        self._ftp.config.set('ftp_t', 'port', '2121')
+        self._ftp.config.set('ftp_t', 'user', 'tester')
+        self._ftp.config.set('ftp_t', 'password', 'tester')
+        self._ftp.config.set('ftp_t', 'direction', 'inbound')
+        self._ftp.config.set('ftp_t', 'source', '')
+        self._ftp.config.set('ftp_t', 'filter', filter)
+        self._ftp.config.set('ftp_t', 'target', self._dir)
+        self._ftp.config.set('ftp_t', 'pod', 'Yes')
+        self._ftp.config.set('ftp_t', 'partial', 'YES')
+        self._ftp.config.set('ftp_t', 'delete', 'yes')
+        self._ftp._parse_config(file_based=False)
+
+        self._ftp.process(dry=False)
+
+        # Check FTP inbound directory (all files should be transfered).
+        received = get_directory_files_list(self._dir)
+        expected = [os.path.join(self._dir,
+                                 os.path.basename(x)) for x in t_files]
+        msg = 'FTP inbound directory list not as expected'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Clean up.
+        remove_files(get_directory_files_list(self._dir))
+        self._ftp.reset_config()
+
+    def test_process_inbound_without_pod(self):
+        """Test the process cycle for inbound transfer WITHOUT POD.
+        """
+        t_files = get_directory_files_list(os.path.join(self._test_dir,
+                                                        'returns'))
+        dir = self._ftp_dir
+        for f in t_files:
+            copy_file(f, os.path.join(dir, os.path.basename(f)))
+
+        # Prepare the config.
+        filter = '.*_VANA_RE[PFI]_\d{14}\.txt'
+        self._ftp.config.add_section('ftp_t')
+        self._ftp.config.set('ftp_t', 'host', '127.0.0.1')
+        self._ftp.config.set('ftp_t', 'port', '2121')
+        self._ftp.config.set('ftp_t', 'user', 'tester')
+        self._ftp.config.set('ftp_t', 'password', 'tester')
+        self._ftp.config.set('ftp_t', 'direction', 'inbound')
+        self._ftp.config.set('ftp_t', 'source', '')
+        self._ftp.config.set('ftp_t', 'filter', filter)
+        self._ftp.config.set('ftp_t', 'target', self._dir)
+        self._ftp.config.set('ftp_t', 'pod', 'NO')
+        self._ftp.config.set('ftp_t', 'partial', 'NO')
+        self._ftp.config.set('ftp_t', 'delete', 'yes')
+        self._ftp._parse_config(file_based=False)
+
+        self._ftp.process(dry=False)
+
+        # Check FTP inbound directory (only report files should be
+        # transfered).
+        received = get_directory_files_list(self._dir)
+        expected = get_directory_files_list(os.path.join(self._test_dir,
+                                                         'returns'), filter)
+        expected = [os.path.join(self._dir,
+                                 os.path.basename(x)) for x in expected]
+        msg = 'FTP inbound directory list not as expected'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Clean up.
+        remove_files(get_directory_files_list(self._ftp_dir))
+        remove_files(get_directory_files_list(self._dir))
+        self._ftp.reset_config()
+
+    def test_process_inbound_pod_without_delete(self):
+        """Test the process cycle for inbound transfer without delete.
+        """
+        t_files = get_directory_files_list(os.path.join(self._test_dir,
+                                                        'returns'))
+        dir = self._ftp_dir
+        for f in t_files:
+            copy_file(f, os.path.join(dir, os.path.basename(f)))
+
+        # Prepare the config.
+        filter = '.*_VANA_RE[PFI]_\d{14}\.txt'
+        self._ftp.config.add_section('ftp_t')
+        self._ftp.config.set('ftp_t', 'host', '127.0.0.1')
+        self._ftp.config.set('ftp_t', 'port', '2121')
+        self._ftp.config.set('ftp_t', 'user', 'tester')
+        self._ftp.config.set('ftp_t', 'password', 'tester')
+        self._ftp.config.set('ftp_t', 'direction', 'inbound')
+        self._ftp.config.set('ftp_t', 'source', '')
+        self._ftp.config.set('ftp_t', 'filter', filter)
+        self._ftp.config.set('ftp_t', 'target', self._dir)
+        self._ftp.config.set('ftp_t', 'pod', 'Yes')
+        self._ftp.config.set('ftp_t', 'partial', 'YES')
+        self._ftp.config.set('ftp_t', 'delete', 'NO')
+        self._ftp._parse_config(file_based=False)
+
+        self._ftp.process(dry=False)
+
+        # Check FTP inbound directory (all files should be transfered).
+        received = get_directory_files_list(self._dir)
+        expected = [os.path.join(self._dir,
+                                 os.path.basename(x)) for x in t_files]
+        msg = 'FTP inbound directory list not as expected'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Check FTP source directory (all files should be intact).
+        received = get_directory_files_list(self._ftp_dir)
+        expected = [os.path.join(self._ftp_dir,
+                                 os.path.basename(x)) for x in t_files]
+        msg = 'FTP inbound directory list not as expected'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Clean up.
+        remove_files(get_directory_files_list(self._ftp_dir))
+        remove_files(get_directory_files_list(self._dir))
         self._ftp.reset_config()
 
     def test_process_T1250(self):
@@ -275,7 +401,7 @@ class TestFtp(unittest2.TestCase):
         """Get list of files to transfer - non POD T1250.
         """
         source = 'nparcel/tests/files'
-        filter = 'T1250_TOLP_\d{14}\.txt'
+        filter = 'T1250_TOLP_\d{14}\.txt$'
         is_pod = False
 
         received = self._ftp.get_xfer_files(source, filter, is_pod)
@@ -332,7 +458,7 @@ class TestFtp(unittest2.TestCase):
         self._ftp.config.set('ftp_in', 'password', 'tester')
         self._ftp.config.set('ftp_in', 'filter', '.*_VANA_RE[PFI]_\d{14}\.txt')
         self._ftp.config.set('ftp_in', 'target', '')
-        self._ftp.config.set('ftp_in', 'pod', 'True')
+        self._ftp.config.set('ftp_in', 'pod', 'yes')
         self._ftp._parse_config(file_based=False)
 
         self._ftp.inbound(self._ftp.xfers[0], dry=True)
@@ -469,7 +595,7 @@ class TestFtp(unittest2.TestCase):
         msg = '"%s" filter list error' % format
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
-    def get_pod_files(self):
+    def test_get_pod_files(self):
         """Retrieve POD files.
         """
         dir = self._ftp_dir

@@ -2,6 +2,7 @@ __all__ = [
     "Ftp",
 ]
 import os
+import re
 import ftplib
 import socket
 
@@ -10,6 +11,7 @@ import ConfigParser
 from nparcel.utils.log import log
 from nparcel.utils.files import (create_dir,
                                  check_filename,
+                                 move_file,
                                  get_directory_files)
 
 
@@ -179,6 +181,8 @@ class Ftp(ftplib.FTP):
 
             if direction == 'outbound':
                 self.outbound(xfer, dry=dry)
+            elif direction == 'inbound':
+                self.inbound(xfer, dry=dry)
 
     def inbound(self, xfer, dry=False):
         """Incoming file transfer.
@@ -200,6 +204,18 @@ class Ftp(ftplib.FTP):
                 log.info('Setting CWD on server to "%s"' % source)
                 self.cwd(source)
 
+            try:
+                partial = (self.config.get(xfer,
+                                           'partial').lower() == 'yes')
+            except ConfigParser.NoOptionError, err:
+                partial = False
+
+            try:
+                remove_on_xfer = (self.config.get(xfer,
+                                                  'delete').lower() == 'yes')
+            except ConfigParser.NoOptionError, err:
+                remove_on_xfer = False
+
             log.debug('Getting remote listing ...')
             remote_files = self.nlst()
 
@@ -217,10 +233,38 @@ class Ftp(ftplib.FTP):
                 target = self.config.get(xfer, 'target')
             except ConfigParser.NoOptionError:
                 target = None
-            self.get_files(filtered_files,
-                           target_dir=target,
-                           partial=True,
-                           dry=dry)
+            xfered_files = self.get_files(filtered_files,
+                                          target_dir=target,
+                                          partial=partial,
+                                          dry=dry)
+            log.debug('Retrieved files %s' % xfered_files)
+
+            # Get POD files?
+            try:
+                is_pod = (self.config.get(xfer, 'pod').lower() == 'yes')
+            except ConfigParser.NoOptionError, err:
+                is_pod = False
+            if is_pod:
+                self.get_pod_files(xfered_files,
+                                   target_dir=target,
+                                   remove=remove_on_xfer,
+                                   dry=dry)
+
+            complete_files = []
+            if partial:
+                for tmp_file in xfered_files:
+                    perm_file = re.sub(r'.tmp$', str(), tmp_file)
+                    if move_file(tmp_file, perm_file):
+                        complete_files.append(perm_file)
+            else:
+                complete_files.extend(xfered_files)
+
+            if remove_on_xfer:
+                for remote_to_delete in complete_files:
+                    remote_to_delete = os.path.basename(remote_to_delete)
+                    log.info('Removing "%s" remotely ...' %
+                             remote_to_delete)
+                    self.delete(remote_to_delete)
 
     def outbound(self, xfer, dry=False):
         """Outgoing file transfer.
@@ -245,7 +289,7 @@ class Ftp(ftplib.FTP):
                 filter = None
 
             try:
-                is_pod = (self.config.get(xfer, 'pod') == 'True')
+                is_pod = (self.config.get(xfer, 'pod').lower() == 'yes')
             except ConfigParser.NoOptionError, err:
                 is_pod = False
 
@@ -338,7 +382,6 @@ class Ftp(ftplib.FTP):
         files_retrieved = []
 
         for f in files:
-            log.info('Retrieving file "%s"' % f)
             target_file = f
             if target_dir is not None:
                 target_file = os.path.join(target_dir, target_file)
@@ -523,7 +566,8 @@ class Ftp(ftplib.FTP):
                         if xfer_status is not None:
                             retrieved_pod_files.append(xfer_status)
                             if remove:
-                                log.info('Removing "%s" remotely' % pod_file)
+                                log.info('Removing "%s" remotely ...' %
+                                         pod_file)
                                 self.delete(pod_file)
                     else:
                         log.debug('POD "%s" does not exist remotely' %
