@@ -354,16 +354,21 @@ class FilterDaemon(nparcel.DaemonService):
         log.info('Closing out filtered file ...')
         files_closed = []
 
-        for fh in fhs.values():
+        filenames = []
+        for k, fh in fhs.iteritems():
             filename = fh.name
             file = os.path.basename(filename)
             fh.write('%%EOF\r\n')
             fh.close()
+            filenames.append(k)
 
             # ... and finally convert to T1250-proper.
             source = filename
             target = re.sub('\.tmp$', '', source)
             if move_file(source, target):
                 files_closed.append(target)
+
+        for f in filenames:
+            del fhs[f]
 
         return files_closed

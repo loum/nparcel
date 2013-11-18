@@ -1,10 +1,10 @@
 import unittest2
-import threading
 import tempfile
 import os
 
 import nparcel
 from nparcel.utils.files import (copy_file,
+                                 get_directory_files_list,
                                  remove_files)
 
 
@@ -12,7 +12,9 @@ class TestFilterDaemon(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._file = 'nparcel/tests/files/T1250_TOLI_20130828202901.txt'
+        cls._test_dir = os.path.join('nparcel', 'tests', 'files')
+        cls._file = os.path.join(cls._test_dir,
+                                 'T1250_TOLI_20130828202901.txt')
         cls._fd = nparcel.FilterDaemon(pidfile=None,
                                        config='nparcel/conf/nparceld.conf')
         cls._fd.emailer.set_template_base(os.path.join('nparcel',
@@ -58,9 +60,11 @@ class TestFilterDaemon(unittest2.TestCase):
         self._fd.set_staging_base(out_dir)
         self._fd.set_support_emails(None)
 
-        # Copy over our test file.
-        copy_file(self._file,
-                  os.path.join(in_dir, os.path.basename(self._file)))
+        # Copy over our test files.
+        t_file_dir = os.path.join('nparcel', 'tests', 'files', 'filter')
+        t_files = get_directory_files_list(t_file_dir)
+        for f in t_files:
+            copy_file(f, os.path.join(in_dir, os.path.basename(f)))
 
         # Start processing.
         self._fd.set_dry(dry)
@@ -68,9 +72,19 @@ class TestFilterDaemon(unittest2.TestCase):
         self._fd._start(self._fd._exit_event)
 
         expected_out_dir = os.path.join(out_dir, 'parcelpoint', 'out')
+        expected_out_filename = 'T1250_TOLP_20131118125707.txt'
         expected_out_file = os.path.join(expected_out_dir,
-                                         os.path.basename(self._file))
-        fh = open(self._file + '.filtered')
+                                         expected_out_filename)
+
+        # Check out directory.
+        received = get_directory_files_list(expected_out_dir)
+        expected = [expected_out_file]
+        msg = 'Outbound directory filtered file lists do not match'
+        self.assertListEqual(received, expected, msg)
+
+        # Check contents.
+        fh = open(os.path.join(self._test_dir,
+                               expected_out_filename + '.filtered'))
         expected = fh.read()
         fh.close()
         fh = open(expected_out_file)
@@ -163,6 +177,7 @@ class TestFilterDaemon(unittest2.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        del cls._test_dir
         del cls._file
         cls._fd = None
         del cls._fd

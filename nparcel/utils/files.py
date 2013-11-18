@@ -151,7 +151,6 @@ def move_file(source, target, err=False):
     if create_dir(os.path.dirname(target)):
         try:
             os.rename(source, target)
-            target_file = os.path.join(source, target)
             status = True
         except OSError, err:
             log.error('%s move to %s failed -- %s' % (source, target, err))
