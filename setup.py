@@ -4,7 +4,7 @@ import fnmatch
 import shutil
 from distutils.core import setup
 
-VERSION = '0.18'
+VERSION = '0.19'
 
 
 def opj(*args):

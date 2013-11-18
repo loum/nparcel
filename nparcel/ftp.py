@@ -141,12 +141,13 @@ class Ftp(ftplib.FTP):
         log.info('Checking file "%s" for JOB_KEYs' % file)
         keys = []
 
+        fh = None
         try:
             fh = open(file)
         except IOError, err:
             log.error('Could not open file "%s"' % file)
 
-        if fh:
+        if fh is not None:
             # Consume the header.
             header = fh.readline().split('|')
             try:
@@ -245,10 +246,11 @@ class Ftp(ftplib.FTP):
             except ConfigParser.NoOptionError, err:
                 is_pod = False
             if is_pod:
-                self.get_pod_files(xfered_files,
-                                   target_dir=target,
-                                   remove=remove_on_xfer,
-                                   dry=dry)
+                if len(xfered_files):
+                    self.get_pod_files(xfered_files,
+                                       target_dir=target,
+                                       remove=remove_on_xfer,
+                                       dry=dry)
 
             complete_files = []
             if partial:
@@ -352,8 +354,7 @@ class Ftp(ftplib.FTP):
                 f = open(file, 'rb')
                 log.info('Transferring "%s" to "%s" ...' % (file, filename))
                 if not dry:
-                    self.storbinary('STOR %s' % filename, f)
-                log.info('Transfer "%s" OK' % file)
+                    log.info(self.storbinary('STOR %s' % filename, f))
                 f.close()
 
                 self.archive_file(file, dry=dry)
@@ -407,13 +408,13 @@ class Ftp(ftplib.FTP):
         xfered_file = None
         try:
             fh = open(local_file, 'wb')
-            self.retrbinary('RETR %s' % remote_file, fh.write)
+            log.info(self.retrbinary('RETR %s' % remote_file, fh.write))
             fh.close()
             xfered_file = local_file
         except IOError, e:
-            log.error('FTP retrieve error: e' % e)
+            log.error('FTP retrieve error: %s' % e)
 
-        return local_file
+        return xfered_file
 
     def archive_file(self, file, dry=False):
         """Move the Nparcel signature file and report to the archive
