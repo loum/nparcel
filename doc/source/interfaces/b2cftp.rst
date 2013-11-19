@@ -174,6 +174,4 @@ via cron with the following entry::
 
 .. note::
 
-    Note the above crontab entry will send notifications at 55 minutes past
-    every hour
-
+    The above crontab entry will send notifications at 15 minute intervals

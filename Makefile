@@ -20,6 +20,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestParser \
 	 nparcel.tests:TestStopParser \
 	 nparcel.tests:TestDbSession \
+	 nparcel.tests:TestOraDbSession \
 	 nparcel.tests:TestReporter \
 	 nparcel.tests:TestEmailer \
 	 nparcel.tests:TestRest \

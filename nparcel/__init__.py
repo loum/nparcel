@@ -3,6 +3,7 @@ from nparcel.stopparser import StopParser
 from nparcel.service import Service
 from nparcel.loader import Loader
 from nparcel.dbsession import DbSession
+from nparcel.oradbsession import OraDbSession
 from nparcel.reporter import Reporter
 from nparcel.emailer import Emailer
 from nparcel.daemonservice import DaemonService
