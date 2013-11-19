@@ -1,10 +1,10 @@
-.. Nparcel B2C Primary Elect
+.. Primary Elect
 
 .. toctree::
     :maxdepth: 2
 
-Nparcel Primary Elect
-=====================
+Primary Elect
+=============
 *New in version 0.14*
 
 Primary Elect is a service provided to the customer that allows them

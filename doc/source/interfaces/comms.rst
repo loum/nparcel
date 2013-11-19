@@ -1,19 +1,19 @@
-.. Nparcel B2C Comms
+.. B2C Comms
 
 .. toctree::
     :maxdepth: 2
 
-Nparcel Comms
-=============
+Comms
+======
 
-The Nparcel comms facility manages comsumer notifications.  Notifications
-are provided via email and SMS.
+The Toll Parcel Portal comms facility manages comsumer notifications.
+Notifications are provided via email and SMS.
 
 The types of consumer notifications supported by the Comms facility are:
 
 * **"Sorry we missed you ..."**
 
-    Triggered when loaded into the Nparcel database
+    Triggered when loaded into the Toll Parcel Portal database
 
 * **Reminders**
 
@@ -22,18 +22,18 @@ The types of consumer notifications supported by the Comms facility are:
 
 * **Primary Elect**
 
-    Triggered *after* load into the Nparcel database and verification has
-    been obtained that the parcel has been delivered to the ADP.
-    Verification is typically provided via an alternate interface (for
-    example, MTS or TrasSend)
+    Triggered *after* load into the Toll Parcel Portal database and
+    verification has been obtained that the parcel has been delivered to
+    the ADP.  Verification is typically provided via an alternate interface
+    (for example, MTS or TransSend)
 
-Nparcel Comms Workflow
-----------------------
+Comms Workflow
+--------------
 
 .. note ::
 
-    Refer to the individual Nparcel B2C sub-systems for a more detailed
-    analysis of the business rules that trigger a comms event.
+    Refer to the individual Toll Parcel Portal B2C sub-systems for a more
+    detailed analysis of the business rules that trigger a comms event.
 
 In general, the various subsystems generate a comms event by providing an
 appropriately constructed file to the comms module interface.
@@ -61,7 +61,7 @@ follows::
 * **<jobitem.id>**
 
     The integer value representing the ``jobitem.id`` column in the
-    Nparcel database
+    Toll Parcel Portal database
 
 * **<template>**
 
@@ -122,7 +122,7 @@ following list details the required configuration options:
 
 .. image:: ../_static/comms_warning.png
     :align: center
-    :alt: Nparcel B2C Comms Queue Threshold Warning
+    :alt: Toll Parcel Portal B2C Comms Queue Threshold Warning
         
 
 * ``comms_queue_error`` (default 1000 )
@@ -183,8 +183,9 @@ simply logs the returned values.
   currently a manual process on a "need to know" basis.
 
 When an error is detected in code, all efforts are made to alert the
-Nparcel support email.  A sample failure email construct is as follows:
+Toll Parcel Point support email.  A sample failure email construct is as
+follows:
 
     .. image:: ../_static/comms_failure.png
         :align: center
-        :alt: Nparcel B2C Comms Failure Alert Email
+        :alt: Toll Parcel Point B2C Comms Failure Alert Email

@@ -1,4 +1,4 @@
-.. Nparcel B2C Modules Interfaces
+.. Toll Parcel Portal B2C Modules Interfaces
 
 Interfaces
 ==========
@@ -9,7 +9,7 @@ the inbound and outbound processing.
     :maxdepth: 2
 
     vsftpd.rst
-    outboundftp.rst
+    b2cftp.rst
     loader.rst
     npremind.rst
     primaryelect.rst

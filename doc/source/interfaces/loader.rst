@@ -1,15 +1,15 @@
-.. Nparcel B2C Loader
+.. Toll Parcel Portal B2C Loader
 
 .. toctree::
     :maxdepth: 2
 
-Nparcel Loader
-==============
+Loader
+======
 
-The Nparcel loader facility manages ...
+The Toll Parcel Portal loader facility manages ...
 
-Nparcel Loader Workflow
------------------------
+Loader Workflow
+---------------
 
 ``nploaderd`` Configuration Items
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

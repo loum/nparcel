@@ -1,22 +1,22 @@
-.. Nparcel B2C Replicator documentation master file
+.. Toll Parcel Portal B2C Middleware documentation master file
 
-Nparcel B2C Replicator
-======================
+Toll Parcel Portal B2C Middleware
+=================================
 
 Overview
 --------
 
-The Nparcel B2C Replicator package presents an interface to the various Toll
-divisions to upload missed parcel collection information into the Nparcel
-portal at http://www.nparcel.com.au
+The Toll Parcel Portal B2C middleware package presents an interface to the
+various Toll divisions to upload missed parcel collection information into
+the Toll `Parcel Portal <https://nparcel.tollgroup.com>`
 
 The following diagram describes various interfaces at a high-level:
 
 .. image:: _static/nparcel_overview.png
    :align: center
-   :alt: Nparcel B2C Replicator overview
+   :alt: Toll Parcel Portal B2C Middleware overview
 
-*The Nparcel B2C Replicator workflow*
+*The Toll Parcel Portal B2C Middleware workflow*
 
 Contents
 --------

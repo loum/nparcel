@@ -1,4 +1,4 @@
-.. Nparcel B2C Inbound FTP
+.. B2C Inbound FTP (vsftpd)
 
 .. toctree::
     :maxdepth: 2
