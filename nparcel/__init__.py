@@ -2,8 +2,6 @@ from nparcel.parser import Parser
 from nparcel.stopparser import StopParser
 from nparcel.service import Service
 from nparcel.loader import Loader
-from nparcel.dbsession import DbSession
-from nparcel.oradbsession import OraDbSession
 from nparcel.reporter import Reporter
 from nparcel.emailer import Emailer
 from nparcel.daemonservice import DaemonService
@@ -34,3 +32,6 @@ from table.job import Job
 from table.jobitem import JobItem
 from table.agent import Agent
 from table.identitytype import IdentityType
+from table.transsend import TransSend
+from nparcel.dbsession import DbSession
+from nparcel.oradbsession import OraDbSession

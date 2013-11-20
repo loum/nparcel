@@ -13,6 +13,8 @@ class TestOraDbSession(unittest2.TestCase):
         cls._db = nparcel.OraDbSession()
         cls._db.connect()
         cls._db.create_table(name='dummy', schema=DUMMY_SCHEMA)
+        cls._db.create_table(name='transsend',
+                             schema=cls._db.transsend.schema)
 
     def test_insert(self):
         """Insert into the DB table.
@@ -41,7 +43,7 @@ VALUES ('xxx')"""
         """Placeholder for real DB connectivity (disabled by default).
         """
         # To enable real DB connectivity, update the connection string
-        # and set the disabled variable to False.
+        # and set the disabled to False.
         disabled = True
 
         kwargs = {'host': 'host',

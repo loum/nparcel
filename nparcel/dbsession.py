@@ -12,6 +12,12 @@ from nparcel.utils.log import log
 class DbSession(object):
     """Nparcel DB session manager.
     """
+    _connection = None
+    _cursor = None
+    _job = nparcel.Job()
+    _jobitem = nparcel.JobItem()
+    _agent = nparcel.Agent()
+    _identity_type = nparcel.IdentityType()
 
     def __init__(self, **kwargs):
         self._host = kwargs.get('host')
@@ -20,13 +26,6 @@ class DbSession(object):
         self._user = kwargs.get('user')
         self._password = kwargs.get('password')
         self._port = kwargs.get('port')
-
-        self._connection = None
-        self._cursor = None
-        self._job = nparcel.Job()
-        self._jobitem = nparcel.JobItem()
-        self._agent = nparcel.Agent()
-        self._identity_type = nparcel.IdentityType()
 
     def __call__(self, sql=None):
         if sql is not None:

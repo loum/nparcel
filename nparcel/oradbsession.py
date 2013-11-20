@@ -5,15 +5,31 @@ import sqlite
 import datetime
 import cx_Oracle
 
-#import nparcel
+import nparcel
 from nparcel.utils.log import log
 
 
 class OraDbSession(object):
-    """Oralce DB session manager.
+    """Oracle DB session manager.
+
+    .. attribute:: connection
+
+        Database connection object.  Handles a :mod:`cx_Oracle.Connection`
+        object
+
+    .. attribute:: cursor
+
+        Database cursor object.  Handles a :mod:`cx_Oracle.Cursor` object
+        based on :attr:`connection`
+
+    .. attribute:: transsend
+
+        TransSend database ORM object based on :mod:`nparcel.TransSend`
+
     """
     _connection = None
     _cursor = None
+    _transsend = nparcel.TransSend()
 
     def __init__(self, **kwargs):
         self._host = kwargs.get('host')
@@ -84,16 +100,8 @@ class OraDbSession(object):
         self._connection = value
 
     @property
-    def job(self):
-        return self._job
-
-    @property
-    def jobitem(self):
-        return self._jobitem
-
-    @property
-    def identity_type(self):
-        return self._identity_type
+    def transsend(self):
+        return self._transsend
 
     @property
     def conn_string(self):

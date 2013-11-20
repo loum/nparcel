@@ -19,8 +19,6 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestLoaderIpec \
 	 nparcel.tests:TestParser \
 	 nparcel.tests:TestStopParser \
-	 nparcel.tests:TestDbSession \
-	 nparcel.tests:TestOraDbSession \
 	 nparcel.tests:TestReporter \
 	 nparcel.tests:TestEmailer \
 	 nparcel.tests:TestRest \
@@ -52,6 +50,9 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.table.tests:TestJobItem \
 	 nparcel.table.tests:TestTable \
 	 nparcel.table.tests:TestIdentityType \
+	 nparcel.table.tests:TestTransSend \
+	 nparcel.tests:TestDbSession \
+	 nparcel.tests:TestOraDbSession \
 	 nparcel.utils.tests:TestFiles
 
 sdist:
