@@ -1,4 +1,5 @@
 import unittest2
+import os
 
 import nparcel
 
@@ -63,6 +64,15 @@ VALUES ('xxx')"""
         if not disabled:
             db.connect()
             db.disconnect()
+
+    def test_load_fixture(self):
+        """Load a fixture into a table -- dodgy table name.
+        """
+        fixture_file = os.path.join('nparcel',
+                                    'tests',
+                                    'fixtures',
+                                    'transsend.py')
+        received = self._db.load_fixture(self._db.transsend, fixture_file)
 
     @classmethod
     def tearDownClass(cls):
