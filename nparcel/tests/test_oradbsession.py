@@ -14,7 +14,7 @@ class TestOraDbSession(unittest2.TestCase):
         cls._db = nparcel.OraDbSession()
         cls._db.connect()
         cls._db.create_table(name='dummy', schema=DUMMY_SCHEMA)
-        cls._db.create_table(name='transsend',
+        cls._db.create_table(name='v_nparcel_adp_connotes',
                              schema=cls._db.transsend.schema)
 
     def test_insert(self):

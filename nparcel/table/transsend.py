@@ -11,7 +11,7 @@ class TransSend(nparcel.Table):
     def __init__(self):
         """transsend table initialiser.
         """
-        super(TransSend, self).__init__('transsend')
+        super(TransSend, self).__init__('v_nparcel_adp_connotes')
 
     @property
     def schema(self):
@@ -24,3 +24,21 @@ class TransSend(nparcel.Table):
                 "job_last_updated_date TIMESTAMP",
                 "job_type TEXT(64)",
                 "job_status TEXT(64)"]
+
+    def connote_sql(self, connote_nbr):
+        """SQL wrapper to extract the collected items from the "jobitems"
+        table.
+
+        **Args:**
+            *connote*: Connote value relating to the
+            ``job_item.connote_nbr`` column
+
+        **Returns:**
+            the SQL string
+
+        """
+        sql = """SELECT *
+FROM %s
+WHERE connote_number = '%s'""" % (self.name, connote_nbr)
+
+        return sql
