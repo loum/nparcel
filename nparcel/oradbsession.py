@@ -3,6 +3,7 @@ ora__all__ = [
 ]
 import sqlite
 import datetime
+import cx_Oracle
 
 #import nparcel
 from nparcel.utils.log import log
@@ -16,11 +17,16 @@ class OraDbSession(object):
 
     def __init__(self, **kwargs):
         self._host = kwargs.get('host')
-        self._driver = kwargs.get('driver')
         self._database = kwargs.get('database')
         self._user = kwargs.get('user')
         self._password = kwargs.get('password')
         self._port = kwargs.get('port')
+        if self._port is not None:
+            try:
+                self._port = int(self._port)
+            except ValueError, e:
+                log.error('Port value "%s" could not conver to int: %s' % e)
+        self._sid = kwargs.get('sid')
 
     def __call__(self, sql=None):
         if sql is not None:
@@ -34,10 +40,6 @@ class OraDbSession(object):
         else:
             # This is a link check.
             return self.connection is not None
-
-    @property
-    def driver(self):
-        return self._driver
 
     @property
     def database(self):
@@ -54,6 +56,10 @@ class OraDbSession(object):
     @property
     def port(self):
         return self._port
+
+    @property
+    def sid(self):
+        return self._sid
 
     @property
     def row(self):
@@ -74,6 +80,9 @@ class OraDbSession(object):
     def connection(self):
         return self._connection
 
+    def set_connection(self, value):
+        self._connection = value
+
     @property
     def job(self):
         return self._job
@@ -85,6 +94,16 @@ class OraDbSession(object):
     @property
     def identity_type(self):
         return self._identity_type
+
+    @property
+    def conn_string(self):
+        host = self.host
+        user = self.user
+        password = self.password
+        port = self.port
+        sid = self.sid
+
+        return '%s/%s@%s:%d/%s' % (user, password, host, port, sid)
 
     def date_now(self, *args):
         """Helper method that returns the current time stamp in a format
@@ -112,19 +131,34 @@ class OraDbSession(object):
         log.info('Attempting database connection ...')
         status = False
 
-        try:
-            if self.host is None:
-                log.info('DB session (sqlite) -- starting ...')
-                self.set_connection(sqlite.connect(':memory:'))
+        if self.host is None:
+            log.info('DB session (sqlite) -- starting ...')
+            self.set_connection(sqlite.connect(':memory:'))
+        else:
+            try:
+                log.info('DB session (Oracle) -- starting ...')
+                self.set_connection(cx_Oracle.connect(self.conn_string))
+            except cx_Oracle.DatabaseError, err:
+                log.error('DB connection failed: %s' % str(err).rstrip())
 
+        if self.connection is not None:
             self.set_cursor(self.connection.cursor())
             log.info('DB session creation OK')
-            status = True
-        except Exception, e:
-            log.error('Database session creation failed: "%s"' % str(e))
-            pass
 
         return status
+
+    def disconnect(self):
+        """Disconnect from the database.
+
+        """
+        log.info('Disconnecting from DB ...')
+        if self.connection is not None:
+            self.cursor.close()
+            self.set_cursor(None)
+            self.connection.close()
+            self.set_connection(None)
+        else:
+            log.warn('No DB connection detected')
 
     def create_table(self, name, schema):
         """We'd only expect to create tables for testing purposes only.
@@ -135,14 +169,12 @@ class OraDbSession(object):
         self.cursor.execute(dml)
         self.connection.commit()
 
-    def close(self):
-        if self.connection is not None:
-            self._cursor = None
-            self.connection.close()
-            self._connection = None
-
     def insert(self, sql):
-        """
+        """Insert a record and return the new row id.
+
+        .. note::
+            Not enabled for Oracle.
+
         """
         id = None
 
@@ -151,22 +183,33 @@ class OraDbSession(object):
         # sqlite and MSSQL implement this differently.
         if self.host is None:
             self('SELECT last_insert_rowid()')
-        else:
-            self('SELECT SCOPE_IDENTITY()')
 
         id = self.cursor.fetchone()[0]
 
         return id
 
     def commit(self):
-        """
+        """Commit the database state.
+
+        .. note::
+            Not enabled for Oracle.
+
         """
         if self.host is None:
             # sqlite.
             self.connection.commit()
-        else:
-            # MSSQL.
-            self('COMMIT TRANSACTION')
+
+    def rollback(self):
+        """Rollback the database state.
+
+        .. note::
+            Not enabled for Oracle.
+
+        """
+        log.debug('Rolling back DB state')
+        if self.host is None:
+            # sqlite.
+            self.connection.rollback()
 
     def columns(self):
         """Return a list of column names within the current cursor context.

@@ -1,5 +1,4 @@
 import unittest2
-import os
 
 import nparcel
 
@@ -38,7 +37,32 @@ VALUES ('xxx')"""
         msg = 'Dummy table column names not as expected'
         self.assertListEqual(received, expected, msg)
 
+    def test_initialisation_to_real_oracle_db(self):
+        """Placeholder for real DB connectivity (disabled by default).
+        """
+        # To enable real DB connectivity, update the connection string
+        # and set the disabled variable to False.
+        disabled = True
+
+        kwargs = {'host': 'host',
+                  'user': 'user',
+                  'password': 'password',
+                  'port': 1521,
+                  'sid': 'sid'}
+        db = nparcel.OraDbSession(**kwargs)
+
+        # Check the connection string.
+        # Tweak the password to suit.
+        received = db.conn_string
+        expected = 'user/password@host:1521/sid'
+        msg = 'Oracle DB connection string error'
+        self.assertEqual(received, expected, msg)
+
+        if not disabled:
+            db.connect()
+            db.disconnect()
+
     @classmethod
     def tearDownClass(cls):
-        cls._db.close()
+        cls._db.disconnect()
         cls._db = None

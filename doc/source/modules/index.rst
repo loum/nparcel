@@ -12,6 +12,7 @@ Modules
     b2cconfig.rst
     parser.rst
     dbsession.rst
+    oradbsession.rst
 
     loaderdaemon.rst
     loader.rst
