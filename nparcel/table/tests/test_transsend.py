@@ -29,9 +29,11 @@ class TestTransSend(unittest2.TestCase):
         """Verify teh connote_sql string.
         """
         connote = 'APLD029228'
+        item_nbr = 'APLD029228001'
 
         # Check the query via SQL.
-        sql = self._db.transsend.connote_sql(connote_nbr=connote)
+        sql = self._db.transsend.connote_sql(connote_nbr=connote,
+                                             item_nbr=item_nbr)
         self._db(sql)
 
         received = []
@@ -41,15 +43,6 @@ class TestTransSend(unittest2.TestCase):
                      'APLD029228',
                      '19102',
                      'APLD029228001',
-                     'ON FOR DEL',
-                     '2013-05-28 00:00:00',
-                     '2013-05-27 14:34:25',
-                     'DEL',
-                     'Unresolved'),
-                    (5,
-                     'APLD029228',
-                     '19102',
-                     'APLD029228002',
                      'ON FOR DEL',
                      '2013-05-28 00:00:00',
                      '2013-05-27 14:34:25',

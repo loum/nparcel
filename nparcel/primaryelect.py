@@ -12,19 +12,55 @@ class PrimaryElect(nparcel.Service):
 
         :mod:`nparcel.StopParser` parser object
 
+    .. attribute:: ts_db
+
+        :mod:`cx_Oracle.Connection` object manager that interfaces
+        to the TransSend database
+
+    .. attribute:: delivered_header
+
+        string that represents the TransSend column header name for
+        a delivered item (default ``latest_scan_event_action``)
+
+    .. attribute:: delivered_event_key
+
+        string that represents a delivered event
+        (default ``delivered``)
+
     """
     _parser = nparcel.StopParser()
+    _ts_db = None
+    _delivered_header = 'latest_scan_event_action'
+    _delivered_event_key = 'delivered'
 
-    @property
-    def parser(self):
-        return self._parser
-
-    def __init__(self, db=None, comms_dir=None):
+    def __init__(self, db=None, ts_db=None, comms_dir=None):
         """Nparcel PrimaryElect initialisation.
 
         """
         super(nparcel.PrimaryElect, self).__init__(db=db,
                                                    comms_dir=comms_dir)
+
+        if ts_db is not None:
+            self._ts_db = ts_db
+
+    @property
+    def parser(self):
+        return self._parser
+
+    @property
+    def ts_db(self):
+        return self._ts_db
+
+    def set_ts_db(self, value):
+        self._ts_db = value
+
+    @property
+    def delivered_header(self):
+        return self._delivered_header
+
+    @property
+    def delivered_event_key(self):
+        return self._delivered_event_key
 
     def get_primary_elect_job_item_id(self, connote):
         """Return ``jobitem.id`` whose connote is associated with a
@@ -92,3 +128,40 @@ class PrimaryElect(nparcel.Service):
             self.parser.purge()
 
         return processed_ids
+
+    def connote_delivered(self, connote_nbr, item_nbr):
+        """Check if *connote_nbr* and *item_nbr* has been delivered.
+
+        Uses the TransSend database as source.
+
+        **Args:**
+            *connote_nbr*: Connote value relating to the
+            ``transsend.connote_number`` column
+
+            *item_nbr*: Item number value relating to the
+            ``transsend.item_number`` column
+
+        """
+        log.info('TransSend checking connote|item "%s|%s" delivery status' %
+                 (connote_nbr, item_nbr))
+
+        delivered = False
+        if self.ts_db is not None:
+            sql = self.ts_db.transsend.connote_sql(connote_nbr=connote_nbr,
+                                                   item_nbr=item_nbr)
+            self.ts_db(sql)
+
+            headers = self.ts_db.columns()
+            index = headers.index(self.delivered_header)
+
+            for row in self.ts_db.rows():
+                log.debug('TransSend "%s" value: "%s"' %
+                          (self.delivered_header, row[index].lower()))
+                if row[index].lower() == self.delivered_event_key:
+                    delivered = True
+                    break
+
+        log.info('TransSend connote|item "%s|%s" delivery status: %s' %
+                 (connote_nbr, item_nbr, delivered))
+
+        return delivered

@@ -79,9 +79,9 @@ class StopParser(object):
             boolean ``False`` otherwise
 
         """
-        delivered = False
+        log.info('MTS checking connote "%s" delivery status' % connote)
 
-        log.info('Checking connote "%s" delivery status' % connote)
+        delivered = False
         item = self.connote_lookup(connote)
         if item is not None:
             if item[self.arrival_header]:

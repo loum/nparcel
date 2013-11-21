@@ -70,7 +70,7 @@
         'connote_number': 'ANWD011307',
         'transsend_job_number': '19846',
         'item_number': 'ANWD011307001',
-        'latest_scan_event_action': 'OUT OF DEPOT',
+        'latest_scan_event_action': 'DELIVERED',
         'job_due_date': str(datetime.datetime(2013, 5, 28, 0, 0)),
         'job_last_updated_date': str(datetime.datetime(2013, 5, 27, 20, 7, 4)),
         'job_type': 'DEL',

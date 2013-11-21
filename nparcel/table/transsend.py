@@ -25,13 +25,16 @@ class TransSend(nparcel.Table):
                 "job_type TEXT(64)",
                 "job_status TEXT(64)"]
 
-    def connote_sql(self, connote_nbr):
+    def connote_sql(self, connote_nbr, item_nbr):
         """SQL wrapper to extract the collected items from the "jobitems"
         table.
 
         **Args:**
-            *connote*: Connote value relating to the
+            *connote_nbr*: Connote value relating to the
             ``transsend.connote_number`` column
+
+            *item_nbr*: Item number value relating to the
+            ``transsend.item_number`` column
 
         **Returns:**
             the SQL string
@@ -39,6 +42,7 @@ class TransSend(nparcel.Table):
         """
         sql = """SELECT *
 FROM %s
-WHERE connote_number = '%s'""" % (self.name, connote_nbr)
+WHERE connote_number = '%s'
+AND item_number = '%s'""" % (self.name, connote_nbr, item_nbr)
 
         return sql
