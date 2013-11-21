@@ -114,15 +114,25 @@ class PrimaryElect(nparcel.Service):
         for (id,
              connote,
              item_nbr) in self.get_uncollected_primary_elect_job_items():
-            log.info('Checking MTS for PE id|connote|item: "%s|%s|%s"' %
+            log.info('Processing PE id|connote|item: "%s|%s|%s ..."' %
                      (id, connote, item_nbr))
-            if self.parser.connote_delivered(connote):
+
+            delivered_status = False
+            if (self.parser.connote_delivered(connote) or
+                self.connote_delivered(connote, item_nbr)):
+                delivered_status = True
+
+            if delivered_status:
                 log.info('Preparing comms flag for job_item.id: %d' % id)
-                if (self.flag_comms('email', id, 'pe') and
-                    self.flag_comms('sms', id, 'pe')):
-                    processed_ids.append(id)
+                if not dry:
+                    if (self.flag_comms('email', id, 'pe') and
+                        self.flag_comms('sms', id, 'pe')):
+                        processed_ids.append(id)
                 else:
                     log.error('Comms flag error for job_item.id: %d' % id)
+
+            log.info('PE id|connote|item: "%s|%s|%s" check complete' %
+                     (id, connote, item_nbr))
 
         if mts_file is not None:
             self.parser.purge()
@@ -141,6 +151,10 @@ class PrimaryElect(nparcel.Service):
             *item_nbr*: Item number value relating to the
             ``transsend.item_number`` column
 
+        **Returns:**
+            boolean ``True`` if the *connote*/*item_nbr* combination
+            has been delivered
+
         """
         log.info('TransSend checking connote|item "%s|%s" delivery status' %
                  (connote_nbr, item_nbr))
@@ -153,6 +167,7 @@ class PrimaryElect(nparcel.Service):
 
             headers = self.ts_db.columns()
             index = headers.index(self.delivered_header)
+            log.debug('Delivered header index: %d' % index)
 
             for row in self.ts_db.rows():
                 log.debug('TransSend "%s" value: "%s"' %

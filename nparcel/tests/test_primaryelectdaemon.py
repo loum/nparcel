@@ -13,6 +13,16 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls._ts_db = nparcel.OraDbSession()
+        cls._ts_db.connect()
+        cls._ts_db.create_table(name='v_nparcel_adp_connotes',
+                                schema=cls._ts_db.transsend.schema)
+        fixture_file = os.path.join('nparcel',
+                                    'tests',
+                                    'fixtures',
+                                    'transsend.py')
+        cls._ts_db.load_fixture(cls._ts_db.transsend, fixture_file)
+
         cls._ped = nparcel.PrimaryElectDaemon(pidfile=None)
 
         cls._report_in_dirs = tempfile.mkdtemp()
@@ -22,7 +32,7 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
         cls._ped.set_comms_dir(cls._comms_dir)
 
         # Call up front to pre-load the DB.
-        cls._ped.set_pe()
+        cls._ped.set_pe(ts_db=cls._ts_db)
 
         cls._test_dir = 'nparcel/tests/files'
         cls._test_file = 'mts_delivery_report_20131018100758.csv'
@@ -53,17 +63,26 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
                 {'agent_id': agent_01,
                  'job_ts': '%s' % cls._now,
                  'service_code': 3,
-                 'bu_id': 1}]
+                 'bu_id': 1},
+                {'agent_id': agent_01,
+                 'job_ts': '%s' % cls._now,
+                 'service_code': 3,
+                 'bu_id': 2}]
         sql = db.job.insert_sql(jobs[0])
         job_01 = db.insert(sql)
         sql = db.job.insert_sql(jobs[1])
         job_02 = db.insert(sql)
+        sql = db.job.insert_sql(jobs[2])
+        job_03 = db.insert(sql)
 
         # Rules as follows:
         # id_000 - not primary elect
         # id_001 - primary elect with valid recipients/delivered
         # id_002 - primary elect no recipients
         # id_003 - primary elect/not delivered
+        # id_003 - primary elect/not delivered
+        # id_004 - primary elect/delivered (TransSend)
+        # id_005 - primary elect/not delivered (TransSend)
         jobitems = [{'connote_nbr': 'con_001',
                      'item_nbr': 'item_nbr_001',
                      'email_addr': 'loumar@tollgroup.com',
@@ -88,6 +107,18 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
                      'email_addr': 'loumar@tollgroup.com',
                      'phone_nbr': '0431602145',
                      'job_id': job_02,
+                     'created_ts': '%s' % cls._now},
+                    {'connote_nbr': 'ANWD011307',
+                     'item_nbr': 'ANWD011307001',
+                     'email_addr': 'loumar@tollgroup.com',
+                     'phone_nbr': '0431602145',
+                     'job_id': job_03,
+                     'created_ts': '%s' % cls._now},
+                    {'connote_nbr': 'IANZ012764',
+                     'item_nbr': 'IANZ012764',
+                     'email_addr': 'loumar@tollgroup.com',
+                     'phone_nbr': '0431602145',
+                     'job_id': job_03,
                      'created_ts': '%s' % cls._now}]
         sql = db.jobitem.insert_sql(jobitems[0])
         cls._id_000 = db.insert(sql)
@@ -97,6 +128,10 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
         cls._id_002 = db.insert(sql)
         sql = db.jobitem.insert_sql(jobitems[3])
         cls._id_003 = db.insert(sql)
+        sql = db.jobitem.insert_sql(jobitems[4])
+        cls._id_004 = db.insert(sql)
+        sql = db.jobitem.insert_sql(jobitems[5])
+        cls._id_005 = db.insert(sql)
         db.commit()
 
     def test_init(self):
@@ -117,8 +152,8 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
         self._ped.set_dry(old_dry)
         self._ped._exit_event.clear()
 
-    def test_start_non_dry_loop(self):
-        """Start non-dry loop.
+    def test_start_non_dry_loop_with_transsend(self):
+        """Start non-dry loop -- transsend.
         """
         dry = False
 
@@ -135,7 +170,9 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
 
         # Comms files should have been created.
         comms_files = ['email.%d.pe' % self._id_001,
-                       'sms.%d.pe' % self._id_001]
+                       'sms.%d.pe' % self._id_001,
+                       'email.%d.pe' % self._id_004,
+                       'sms.%d.pe' % self._id_004]
         expected = [os.path.join(self._comms_dir, x) for x in comms_files]
         received = get_directory_files_list(self._comms_dir)
         msg = 'Primary Elect comms file error'
@@ -144,7 +181,7 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
         # Clean up.
         remove_files(expected)
         remove_files(os.path.join(self._report_in_dirs, self._test_file))
-        self._ped.set_file(old_dry)
+        self._ped.set_dry(old_dry)
         self._ped.set_batch(old_batch)
         self._ped.set_support_emails(old_support_emails)
         self._ped._exit_event.clear()

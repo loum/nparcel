@@ -133,7 +133,18 @@ class PrimaryElectDaemon(nparcel.DaemonService):
     def pe(self):
         return self._pe
 
-    def set_pe(self, db=None, comms_dir=None):
+    def set_pe(self, db=None, ts_db=None, comms_dir=None):
+        """Create a PrimaryElect object,
+
+        **Kwargs:**
+            *db*: :mod:`nparcel.DbSession` object
+
+            *ts_db*: :mod:`nparcel.OraDbSession` object
+
+            *comms_dir*: directory where to place comms events file
+            for further processing
+
+        """
         if db is None:
             db = self.db_kwargs
 
@@ -141,7 +152,9 @@ class PrimaryElectDaemon(nparcel.DaemonService):
             comms_dir = self.comms_dir
 
         if self._pe is None:
-            self._pe = nparcel.PrimaryElect(db=db, comms_dir=comms_dir)
+            self._pe = nparcel.PrimaryElect(db=db,
+                                            ts_db=ts_db,
+                                            comms_dir=comms_dir)
 
             try:
                 self._pe.set_delivered_header(self.config.delivered_header)
@@ -183,22 +196,21 @@ class PrimaryElectDaemon(nparcel.DaemonService):
         while not event.isSet():
             files = []
 
-            if self.pe.db():
+            if not self.pe.db() or not self.pe.ts_db():
+                log.error('ODBC connection failure -- aborting')
+                event.set()
+            else:
                 if self.file is not None:
                     files.append(self.file)
                     event.set()
                 else:
                     files.extend(self.get_files())
-            else:
-                log.error('ODBC connection failure -- aborting')
-                event.set()
-                continue
 
-            # Start processing files.
-            for file in files:
-                log.info('Processing file: "%s" ...' % file)
-                if self.validate_file(file):
-                    self.pe.process(file, dry=self.dry)
+                # Start processing files.
+                for file in files:
+                    log.info('Processing file: "%s" ...' % file)
+                    if self.validate_file(file):
+                        self.pe.process(file, dry=self.dry)
 
             if not event.isSet():
                 if self.dry:

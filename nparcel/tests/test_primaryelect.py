@@ -52,17 +52,25 @@ class TestPrimaryElect(unittest2.TestCase):
                 {'agent_id': agent_01,
                  'job_ts': '%s' % cls._now,
                  'service_code': 3,
-                 'bu_id': 1}]
+                 'bu_id': 1},
+                {'agent_id': agent_01,
+                 'job_ts': '%s' % cls._now,
+                 'service_code': 3,
+                 'bu_id': 2}]
         sql = cls._pe.db.job.insert_sql(jobs[0])
         job_01 = cls._pe.db.insert(sql)
         sql = cls._pe.db.job.insert_sql(jobs[1])
         job_02 = cls._pe.db.insert(sql)
+        sql = cls._pe.db.job.insert_sql(jobs[2])
+        job_03 = cls._pe.db.insert(sql)
 
         # Rules as follows:
         # id_000 - not primary elect
         # id_001 - primary elect with valid recipients/delivered
         # id_002 - primary elect no recipients
         # id_003 - primary elect/not delivered
+        # id_004 - primary elect/delivered (TransSend)
+        # id_005 - primary elect/not delivered (TransSend)
         jobitems = [{'connote_nbr': 'con_001',
                      'item_nbr': 'item_nbr_001',
                      'email_addr': 'loumar@tollgroup.com',
@@ -87,6 +95,18 @@ class TestPrimaryElect(unittest2.TestCase):
                      'email_addr': 'loumar@tollgroup.com',
                      'phone_nbr': '0431602145',
                      'job_id': job_02,
+                     'created_ts': '%s' % cls._now},
+                    {'connote_nbr': 'ANWD011307',
+                     'item_nbr': 'ANWD011307001',
+                     'email_addr': 'loumar@tollgroup.com',
+                     'phone_nbr': '0431602145',
+                     'job_id': job_03,
+                     'created_ts': '%s' % cls._now},
+                    {'connote_nbr': 'IANZ012764',
+                     'item_nbr': 'IANZ012764',
+                     'email_addr': 'loumar@tollgroup.com',
+                     'phone_nbr': '0431602145',
+                     'job_id': job_03,
                      'created_ts': '%s' % cls._now}]
         sql = cls._pe.db.jobitem.insert_sql(jobitems[0])
         cls._id_000 = cls._pe.db.insert(sql)
@@ -96,6 +116,11 @@ class TestPrimaryElect(unittest2.TestCase):
         cls._id_002 = cls._pe.db.insert(sql)
         sql = cls._pe.db.jobitem.insert_sql(jobitems[3])
         cls._id_003 = cls._pe.db.insert(sql)
+        sql = cls._pe.db.jobitem.insert_sql(jobitems[4])
+        cls._id_004 = cls._pe.db.insert(sql)
+        sql = cls._pe.db.jobitem.insert_sql(jobitems[5])
+        cls._id_005 = cls._pe.db.insert(sql)
+        cls._pe.db.commit()
 
     def test_init(self):
         """Initialise a PrimaryElect object.
@@ -127,12 +152,23 @@ class TestPrimaryElect(unittest2.TestCase):
         msg = 'Primary elect job no recipients should produce empty list'
         self.assertListEqual(received, expected, msg)
 
+    def test_process_dry_run(self):
+        """Check processing -- dry run.
+        """
+        dry = True
+
+        received = self._pe.process(self._test_file, dry=dry)
+        expected = []
+        msg = 'List of processed primary elect items incorrect'
+        self.assertListEqual(received, expected, msg)
+
     def test_process(self):
         """Check processing.
         """
-        dry = True
+        dry = False
+
         received = self._pe.process(self._test_file, dry=dry)
-        expected = [self._id_001]
+        expected = [self._id_001, self._id_004]
         msg = 'List of processed primary elect items incorrect'
         self.assertListEqual(received, expected, msg)
 
@@ -142,7 +178,11 @@ class TestPrimaryElect(unittest2.TestCase):
         expected = [os.path.join(self._comms_dir, '%s.%d.%s') %
                     ('email', self._id_001, 'pe'),
                     os.path.join(self._comms_dir, '%s.%d.%s') %
-                    ('sms', self._id_001, 'pe')]
+                    ('sms', self._id_001, 'pe'),
+                    os.path.join(self._comms_dir, '%s.%d.%s') %
+                    ('email', self._id_004, 'pe'),
+                    os.path.join(self._comms_dir, '%s.%d.%s') %
+                    ('sms', self._id_004, 'pe')]
         msg = 'Comms directory file list error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -152,11 +192,25 @@ class TestPrimaryElect(unittest2.TestCase):
     def test_process_no_mts_file(self):
         """Check processing -- no MTS file.
         """
-        dry = True
+        dry = False
+
         received = self._pe.process(None, dry=dry)
-        expected = []
+        expected = [self._id_004]
         msg = 'Processed primary elect should return empty list'
         self.assertListEqual(received, expected, msg)
+
+        # Check that the comms files were written out.
+        received = [os.path.join(self._comms_dir,
+                                 x) for x in os.listdir(self._comms_dir)]
+        expected = [os.path.join(self._comms_dir, '%s.%d.%s') %
+                    ('email', self._id_004, 'pe'),
+                    os.path.join(self._comms_dir, '%s.%d.%s') %
+                    ('sms', self._id_004, 'pe')]
+        msg = 'Comms directory file list error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Cleanup.
+        remove_files(received)
 
     def test_connote_delivered_no_db(self):
         """Query delivered status against TransSend.
