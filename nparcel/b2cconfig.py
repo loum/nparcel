@@ -159,7 +159,17 @@ class B2CConfig(nparcel.Config):
     .. attribute:: filter_customer
 
         downstream recipient of filtered T1250 files
-        (default "parcelpoint")
+        (default ``parcelpoint``)
+
+    .. attribute:: delivered_header
+
+        string that represents the TransSend column header name for
+        a delivered item (default ``latest_scan_event_action``)
+
+    .. attribute:: delivered_event_key
+
+        string that represents a delivered event
+        (default ``delivered``)
 
     """
     _dirs_to_check = []
@@ -197,6 +207,8 @@ class B2CConfig(nparcel.Config):
     _pe_inbound_mts = ['/data/nparcel/mts']
     _pe_mts_filename_format = 'mts_delivery_report_\d{14}\.csv'
     _filter_customer = 'parcelpoint'
+    _delivered_header = 'latest_scan_event_action'
+    _delivered_event_key = 'delivered'
 
     def __init__(self, file=None):
         """Nparcel Config initialisation.
@@ -682,6 +694,23 @@ class B2CConfig(nparcel.Config):
             log.debug('Using default comms queue error: %s' %
                       self.comms_q_error)
 
+        # Transend.
+        try:
+            self._delivered_header = self.get('transsend',
+                                              'delivered_header')
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default delivered_header: %s' %
+                      self.delivered_header)
+
+        try:
+            self._delivered_header = self.get('transsend',
+                                              'delivered_event_key')
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default delivered_event_key: %s' %
+                      self.delivered_event_key)
+
     def condition(self, bu, flag):
         """Return the *bu* condition *flag* value.
 
@@ -898,6 +927,56 @@ class B2CConfig(nparcel.Config):
 
         return kwargs
 
+    def ts_db_kwargs(self):
+        """Extract TransSend database connectivity information from the
+        config.
+
+        Database connectivity information is taken from the
+        ``[transsend_db]`` section in the configuration file.  A typical
+        example is::
+
+            [transsend_db]
+            host = SIEDBDOD04
+            user = nparcel
+            password = <passwd>
+            port = 1521
+            sid = TRCOPUAT
+
+        Base assumptions on "host" keyword.  No "host" means this must be a
+        test scenario in which case the database session is a memory-based
+        sqlite instance.
+
+        **Returns:**
+            dictionary-based data structure of the form::
+
+                kwargs = {'host': ...,
+                          'user': ...,
+                          'password': ...,
+                          'port': ...,
+                          'sid': ...}
+
+        """
+        kwargs = None
+
+        try:
+            host = self.get('transsend_db', 'host')
+            user = self.get('transsend_db', 'user')
+            password = self.get('transsend_db', 'password')
+            port = self.get('transsend_db', 'port')
+            if port is not None and port:
+                port = int(port)
+            sid = self.get('transsend_db', 'sid')
+            kwargs = {'host': host,
+                      'user': user,
+                      'password': password,
+                      'port': port,
+                      'sid': sid}
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
+            log.info('Missing TransSend DB key via config: %s' % err)
+
+        return kwargs
+
     def proxy_kwargs(self):
         """Extract proxy connectivity information from the configuration.
 
@@ -1059,3 +1138,17 @@ class B2CConfig(nparcel.Config):
             log.warn('Config proxy: %s' % err)
 
         return kwargs
+
+    @property
+    def delivered_header(self):
+        return self._delivered_header
+
+    def set_delivered_header(self, value):
+        self._delivered_header = value
+
+    @property
+    def delivered_event_key(self):
+        return self._delivered_event_key
+
+    def set_delivered_event_key(self, value):
+        self._delivered_event_key = value

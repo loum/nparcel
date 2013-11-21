@@ -218,6 +218,22 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Comms message queue error error'
         self.assertEqual(received, expected, msg)
 
+    def test_parse_config_transsend(self):
+        """Parse items from the config -- TransSend.
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        received = self._c.delivered_header
+        expected = 'latest_scan_event_action'
+        msg = 'TransSend delivered_header value error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.delivered_event_key
+        expected = 'delivered'
+        msg = 'TransSend delivered_event_key value error'
+        self.assertEqual(received, expected, msg)
+
     def test_condition_flag_item_excp_true(self):
         """Check item_excp flag settings -- True.
         """
@@ -450,6 +466,14 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'DB connection string should be None'
         self.assertIsNone(self._c.db_kwargs(), msg)
+
+    def test_ts_db_kwargs_no_items(self):
+        """Produce a TransSend DB connection string -- no items.
+        """
+        self._c.set_config_file(self._file)
+
+        msg = 'TransSend DB connection string should be None'
+        self.assertIsNone(self._c.ts_db_kwargs(), msg)
 
     def test_proxy_kwargs_no_items(self):
         """Produce a proxy connection dictionary structure -- no items.

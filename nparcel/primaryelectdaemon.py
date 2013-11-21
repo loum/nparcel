@@ -143,6 +143,26 @@ class PrimaryElectDaemon(nparcel.DaemonService):
         if self._pe is None:
             self._pe = nparcel.PrimaryElect(db=db, comms_dir=comms_dir)
 
+            try:
+                self._pe.set_delivered_header(self.config.delivered_header)
+            except AttributeError, err:
+                log.info('Using default PE delivered_header: "%s"' %
+                         self._pe.delivered_header)
+
+            try:
+                event_key = self.config.delivered_event_key
+                self._pe.set_delivered_event_key(event_key)
+            except AttributeError, err:
+                log.info('Using default PE delivered_event_key: "%s"' %
+                         self._pe.delivered_event_key)
+
+            try:
+                if self.config.ts_db_kwargs() is not None:
+                    self.set_ts_db_kwargs(self.config.ts_db_kwargs())
+            except AttributeError, err:
+                msg = ('TransSend DB kwargs not defined in config')
+                log.info(msg)
+
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
 
