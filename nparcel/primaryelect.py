@@ -55,14 +55,11 @@ class PrimaryElect(nparcel.Service):
         for row in self.db.rows():
             yield row
 
-    def process(self, mts_file, connotes=None, dry=False):
+    def process(self, mts_file=None, dry=False):
         """Checks whether a Primary Elect job item has had comms sent.
 
-        **Args:**
-            *mts_file*: path to the MTS delivery report file
-
         **Kwargs:**
-            *connotes*: list of connotes from the MTS data store
+            *mts_file*: path to the MTS delivery report file
 
             *dry*: only report, do not execute
 
@@ -74,12 +71,15 @@ class PrimaryElect(nparcel.Service):
         """
         processed_ids = []
 
-        self.parser.set_in_file(mts_file)
-        self.parser.read()
+        if mts_file is not None:
+            self.parser.set_in_file(mts_file)
+            self.parser.read()
 
-        for (id, connote) in self.get_uncollected_primary_elect_job_items():
-            log.info('Checking uncollected PE id/connote: "%s/%s"' %
-                     (id, connote))
+        for (id,
+             connote,
+             item_nbr) in self.get_uncollected_primary_elect_job_items():
+            log.info('Checking MTS for PE id|connote|item: "%s|%s|%s"' %
+                     (id, connote, item_nbr))
             if self.parser.connote_delivered(connote):
                 log.info('Preparing comms flag for job_item.id: %d' % id)
                 if (self.flag_comms('email', id, 'pe') and
@@ -88,6 +88,7 @@ class PrimaryElect(nparcel.Service):
                 else:
                     log.error('Comms flag error for job_item.id: %d' % id)
 
-        self.parser.purge()
+        if mts_file is not None:
+            self.parser.purge()
 
         return processed_ids

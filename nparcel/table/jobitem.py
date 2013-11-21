@@ -272,7 +272,7 @@ AND j.service_code = 3""" % (self.name, connote)
             the SQL string
 
         """
-        sql = """SELECT ji.id, ji.connote_nbr
+        sql = """SELECT ji.id, ji.connote_nbr, ji.item_nbr
 FROM job as j, %s as ji
 WHERE ji.job_id = j.id
 AND ji.pickup_ts is NULL

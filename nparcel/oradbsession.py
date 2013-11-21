@@ -152,6 +152,8 @@ class OraDbSession(object):
         if self.connection is not None:
             self.set_cursor(self.connection.cursor())
             log.info('DB session creation OK')
+            if self.host is not None:
+                self('ALTER SESSION SET CURRENT_SCHEMA = transsendops_uat')
 
         return status
 

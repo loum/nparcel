@@ -138,6 +138,15 @@ class TestPrimaryElect(unittest2.TestCase):
         # Cleanup.
         remove_files(received)
 
+    def test_process_no_mts_file(self):
+        """Check processing -- no MTS file.
+        """
+        dry = True
+        received = self._pe.process(None, dry=dry)
+        expected = []
+        msg = 'Processed primary elect should return empty list'
+        self.assertListEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._pe = None

@@ -395,7 +395,9 @@ AND notify_ts IS NOT NULL""" % job_item_id
         received = []
         for row in self._db.rows():
             received.append(row)
-        expected = [(self._valid_job_item_id_03, 'pe_connote')]
+        expected = [(self._valid_job_item_id_03,
+                     'pe_connote',
+                     'pe_item_nbr')]
         msg = 'uncollected_primary_elect_jobitems_sql return list incorrect'
         self.assertListEqual(received, expected, msg)
 

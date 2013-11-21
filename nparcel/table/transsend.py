@@ -31,7 +31,7 @@ class TransSend(nparcel.Table):
 
         **Args:**
             *connote*: Connote value relating to the
-            ``job_item.connote_nbr`` column
+            ``transsend.connote_number`` column
 
         **Returns:**
             the SQL string
