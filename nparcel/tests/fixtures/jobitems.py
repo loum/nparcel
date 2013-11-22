@@ -55,4 +55,42 @@
         'email_addr': 'loumar@tollgroup.com',
         'phone_nbr': '0431602145'
     },
+    {
+        'id': 6,
+        'connote_nbr': 'uncollected_connote_sc_1',
+        'item_nbr': 'uncollected_connote_sc_1_item_nbr',
+        'job_id': 3,
+        'created_ts': str(datetime.datetime.now()),
+        'email_addr': 'loumar@tollgroup.com',
+        'phone_nbr': '0431602145'
+    },
+    {
+        'id': 7,
+        'connote_nbr': 'collected_connote_sc_1',
+        'item_nbr': 'collected_sc_1_item_nbr',
+        'job_id': 3,
+        'created_ts': str(datetime.datetime.now()),
+        'pickup_ts': str(datetime.datetime.now()),
+        'email_addr': 'loumar@tollgroup.com',
+        'phone_nbr': '0431602145'
+    },
+    {
+        'id': 8,
+        'connote_nbr': 'uncoll_connote_sc_1_ntfy',
+        'item_nbr': 'uncoll_sc_1_item_nbr_ntfy',
+        'job_id': 3,
+        'created_ts': str(datetime.datetime.now()),
+        'notify_ts': str(datetime.datetime.now()),
+        'email_addr': 'loumar@tollgroup.com',
+        'phone_nbr': '0431602145'
+    },
+    {
+        'id': 9,
+        'connote_nbr': 'uncollected_connote_sc_4',
+        'item_nbr': 'uncollected_connote_sc_4_item_nbr',
+        'job_id': 4,
+        'created_ts': str(datetime.datetime.now()),
+        'email_addr': 'loumar@tollgroup.com',
+        'phone_nbr': '0431602145'
+    },
 ]

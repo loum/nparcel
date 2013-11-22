@@ -281,3 +281,31 @@ AND (ji.email_addr != '' OR ji.phone_nbr != '')
 AND j.service_code = 3""" % self.name
 
         return sql
+
+    def uncollected_sc_jobitems_sql(self, service_code, bu_ids):
+        """SQL wrapper to extract uncollected Service Code-based jobs.
+
+        Service Code jobs are identified by a integer value in the
+        ``job.service_code`` column.
+
+        **Args:**
+            *service_code*: value relating to the ``job.service_code``
+            column
+
+            *bu_ids*: tuple of Business Unit ID's to search against.  The
+            *bu_ids* relate to the ``job.bu_id`` field
+
+        **Returns:**
+            the SQL string
+
+        """
+        sql = """SELECT ji.id, ji.connote_nbr, ji.item_nbr
+FROM job as j, %s as ji
+WHERE ji.job_id = j.id
+AND ji.pickup_ts is NULL
+AND ji.notify_ts is NULL
+AND (ji.email_addr != '' OR ji.phone_nbr != '')
+AND j.bu_id IN %s
+AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
+
+        return sql

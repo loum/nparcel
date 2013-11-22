@@ -358,6 +358,58 @@ AND notify_ts IS NOT NULL""" % job_item_id
         msg = 'uncollected_primary_elect_jobitems_sql return list incorrect'
         self.assertListEqual(received, expected, msg)
 
+    def test_uncollected_service_code_jobitems_sql_no_bu_ids(self):
+        """Verify uncollected_service_code_jobitems SQL string.
+        """
+        bu_ids = ()
+        service_code = 1
+        sql = self._db.jobitem.uncollected_sc_jobitems_sql(service_code,
+                                                           bu_ids)
+        self._db(sql)
+
+        received = []
+        for row in self._db.rows():
+            received.append(row)
+        expected = []
+        msg = 'Uncollected service code with no bu_ids error'
+        self.assertListEqual(received, expected, msg)
+
+    def test_uncollected_service_code_jobitems_sql_bu_1(self):
+        """Verify uncollected_service_code_jobitems SQL string.
+        """
+        bu_ids = (1,)
+        service_code = 1
+        sql = self._db.jobitem.uncollected_sc_jobitems_sql(service_code,
+                                                           bu_ids)
+        self._db(sql)
+
+        received = []
+        for row in self._db.rows():
+            received.append(row)
+        expected = [(6,
+                     'uncollected_connote_sc_1',
+                     'uncollected_connote_sc_1_item_nbr')]
+        msg = 'Uncollected service code with bu_ids 1 error'
+        self.assertListEqual(received, expected, msg)
+
+    def test_uncollected_service_code_jobitems_sql_bu_2(self):
+        """Verify uncollected_service_code_jobitems SQL string.
+        """
+        bu_ids = (1, 2)
+        service_code = 4
+        sql = self._db.jobitem.uncollected_sc_jobitems_sql(service_code,
+                                                           bu_ids)
+        self._db(sql)
+
+        received = []
+        for row in self._db.rows():
+            received.append(row)
+        expected = [(9,
+                     'uncollected_connote_sc_4',
+                     'uncollected_connote_sc_4_item_nbr')]
+        msg = 'Uncollected service code with bu_ids 4 error'
+        self.assertListEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._db.close()
