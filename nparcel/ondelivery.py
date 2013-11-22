@@ -108,7 +108,9 @@ class OnDelivery(nparcel.Service):
                 (<jobitem.id>, <jobitem.connote_nbr>)
 
         """
-        sql = self.db.jobitem.uncollected_primary_elect_jobitems_sql()
+        bu_ids = (1, 2, 3)
+
+        sql = self.db.jobitem.uncollected_jobitems_sql(bu_ids=bu_ids)
         self.db(sql)
         for row in self.db.rows():
             yield row

@@ -262,43 +262,28 @@ AND j.service_code = 3""" % (self.name, connote)
 
         return sql
 
-    def uncollected_primary_elect_jobitems_sql(self):
-        """SQL wrapper to extract uncollected primary elect jobs.
-
-        Primary elect jobs are identified by a integer value 3 in the
-        ``job.service_code`` column.
-
-        **Returns:**
-            the SQL string
-
-        """
-        sql = """SELECT ji.id, ji.connote_nbr, ji.item_nbr
-FROM job as j, %s as ji
-WHERE ji.job_id = j.id
-AND ji.pickup_ts is NULL
-AND ji.notify_ts is NULL
-AND (ji.email_addr != '' OR ji.phone_nbr != '')
-AND j.service_code = 3""" % self.name
-
-        return sql
-
-    def uncollected_sc_jobitems_sql(self, service_code, bu_ids):
+    def uncollected_jobitems_sql(self, service_code=3, bu_ids=None):
         """SQL wrapper to extract uncollected Service Code-based jobs.
 
         Service Code jobs are identified by a integer value in the
         ``job.service_code`` column.
 
+        The *bu_ids* relate to the ``job.bu_id`` column.
+
         **Args:**
             *service_code*: value relating to the ``job.service_code``
-            column
+            column (default ``3`` for Primary Elect)
 
-            *bu_ids*: tuple of Business Unit ID's to search against.  The
-            *bu_ids* relate to the ``job.bu_id`` field
+            *bu_ids*: integer based tuple of Business Unit ID's to search
+            against (default ``None`` ignores all Business Units)
 
         **Returns:**
             the SQL string
 
         """
+        if bu_ids is None:
+            bu_ids = tuple()
+
         sql = """SELECT ji.id, ji.connote_nbr, ji.item_nbr
 FROM job as j, %s as ji
 WHERE ji.job_id = j.id

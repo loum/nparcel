@@ -346,7 +346,8 @@ AND notify_ts IS NOT NULL""" % job_item_id
     def test_uncollected_primary_elect_jobitems_sql(self):
         """Verify uncollected_primary_elect_jobitems SQL string.
         """
-        sql = self._db.jobitem.uncollected_primary_elect_jobitems_sql()
+        bu_ids = (1, 2, 3)
+        sql = self._db.jobitem.uncollected_jobitems_sql(bu_ids=bu_ids)
         self._db(sql)
 
         received = []
@@ -363,8 +364,8 @@ AND notify_ts IS NOT NULL""" % job_item_id
         """
         bu_ids = ()
         service_code = 1
-        sql = self._db.jobitem.uncollected_sc_jobitems_sql(service_code,
-                                                           bu_ids)
+        sql = self._db.jobitem.uncollected_jobitems_sql(service_code,
+                                                        bu_ids)
         self._db(sql)
 
         received = []
@@ -379,8 +380,8 @@ AND notify_ts IS NOT NULL""" % job_item_id
         """
         bu_ids = (1,)
         service_code = 1
-        sql = self._db.jobitem.uncollected_sc_jobitems_sql(service_code,
-                                                           bu_ids)
+        sql = self._db.jobitem.uncollected_jobitems_sql(service_code,
+                                                        bu_ids)
         self._db(sql)
 
         received = []
@@ -397,8 +398,8 @@ AND notify_ts IS NOT NULL""" % job_item_id
         """
         bu_ids = (1, 2)
         service_code = 4
-        sql = self._db.jobitem.uncollected_sc_jobitems_sql(service_code,
-                                                           bu_ids)
+        sql = self._db.jobitem.uncollected_jobitems_sql(service_code,
+                                                        bu_ids)
         self._db(sql)
 
         received = []
