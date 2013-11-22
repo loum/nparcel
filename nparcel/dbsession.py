@@ -88,6 +88,10 @@ class DbSession(object):
         return self._jobitem
 
     @property
+    def agent(self):
+        return self._agent
+
+    @property
     def identity_type(self):
         return self._identity_type
 
@@ -214,3 +218,28 @@ class DbSession(object):
         """Return a list of column names within the current cursor context.
         """
         return list(map(lambda x: x[0], self.cursor.description))
+
+    def load_fixture(self, table, fixture):
+        """Load a *fixture* file into a *table*
+
+        **Args:**
+            *table*: a table ORM oject to load the fixture into
+
+            *fixture*: name of the fixture file.
+
+        """
+        table_name = table.name
+        log.info('Loading fixture file "%s" into table "%s"' %
+                 (fixture, table_name))
+
+        fh = None
+        try:
+            fh = open(fixture)
+        except IOError, e:
+            log.error('Fixture file "%s" error' % (fixture, e))
+
+        if fh is not None:
+            items = eval(fh.read())
+            for i in items:
+                sql = table.insert_sql(i)
+                self(sql)

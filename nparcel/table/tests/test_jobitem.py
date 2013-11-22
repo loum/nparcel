@@ -1,5 +1,6 @@
 import unittest2
 import datetime
+import os
 
 import nparcel
 
@@ -13,104 +14,60 @@ class TestJobItem(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls._now = datetime.datetime.now()
+
         cls.maxDiff = None
         cls._job_item = nparcel.JobItem()
         cls._db = nparcel.DbSession()
         cls._db.connect()
 
+        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
         # Prepare some sample data.
         # Agent.
-        agents = [{'code': 'N031',
-                   'state': 'VIC',
-                   'name': 'N031 Name',
-                   'address': 'N031 Address',
-                   'postcode': '1234',
-                   'suburb': 'N031 Suburb'},
-                  {'code': 'BAD1',
-                   'state': 'NSW',
-                   'name': 'BAD1 Name',
-                   'address': 'BAD1 Address',
-                   'postcode': '5678',
-                   'suburb': 'BAD1 Suburb'}]
-        agent_ok = cls._db.insert(cls._db._agent.insert_sql(agents[0]))
-        agent_nok = cls._db.insert(cls._db._agent.insert_sql(agents[1]))
+        fixture_file = os.path.join(fixture_dir, 'agents.py')
+        cls._db.load_fixture(cls._db.agent, fixture_file)
 
-        cls._now = datetime.datetime.now()
-        # "job" table
-        jobs = [{'card_ref_nbr': 'priority ref',
-                 'agent_id': agent_ok,
-                 'job_ts': '%s' % cls._now,
-                 'bu_id': BU['priority']},
-                {'card_ref_nbr': 'primary_elect_card_ref',
-                 'agent_id': agent_ok,
-                 'job_ts': '%s' % cls._now,
-                 'service_code': 3,
-                 'bu_id': BU['priority']}]
-        sql = cls._db.job.insert_sql(jobs[0])
-        priority_job_id = cls._db.insert(sql=sql)
-        sql = cls._db.job.insert_sql(jobs[1])
-        pe_job_id = cls._db.insert(sql=sql)
+        # Job table.
+        fixture_file = os.path.join(fixture_dir, 'jobs.py')
+        cls._db.load_fixture(cls._db.job, fixture_file)
+        sql = """UPDATE job
+SET job_ts = '%s'""" % cls._now
+        cls._db(sql)
+
+        priority_job_id = 1
+        pe_job_id = 2
 
         # "identity_type" table.
-        identity_types = [{'description': 'identity_type description'}]
-        for identity_type in identity_types:
-            sql = cls._db.identity_type.insert_sql(identity_type)
-            id_type_id = cls._db.insert(sql=sql)
+        fixture_file = os.path.join(fixture_dir, 'identity_type.py')
+        cls._db.load_fixture(cls._db.identity_type, fixture_file)
+        id_type_id = 1
 
-        # "job_item" table.
-        jobitems = [{'connote_nbr': '218501217863',
-                     'item_nbr': 'priority_item_nbr_001',
-                     'job_id': priority_job_id,
-                     'created_ts': '%s' % cls._now,
-                     'pickup_ts': '%s' % cls._now,
-                     'pod_name': 'pod_name 218501217863',
-                     'identity_type_id': id_type_id,
-                     'identity_type_data': 'identity 218501217863',
-                     'email_addr': 'loumar@tollgroup.com',
-                     'phone_nbr': '0431602145'},
-                    {'connote_nbr': '218501217old',
-                     'item_nbr': 'priority_item_nbr_old',
-                     'job_id': priority_job_id,
-                     'created_ts': '%s' %
-                      (cls._now - datetime.timedelta(seconds=864000)),
-                     'notify_ts': '%s' %
-                      (cls._now - datetime.timedelta(seconds=864000)),
-                     'pod_name': 'pod_name 218501217old',
-                     'identity_type_id': id_type_id,
-                     'identity_type_data': 'identity 218501217old',
-                     'email_addr': 'loumar@tollgroup.com'},
-                    {'connote_nbr': 'pe_connote',
-                     'item_nbr': 'pe_item_nbr',
-                     'job_id': pe_job_id,
-                     'created_ts': '%s' % cls._now,
-                     'email_addr': 'loumar@tollgroup.com',
-                     'phone_nbr': '0431602145'},
-                    {'connote_nbr': 'pe_connote_02',
-                     'item_nbr': 'pe_item_nbr',
-                     'job_id': pe_job_id,
-                     'created_ts': '%s' % cls._now,
-                     'email_addr': '',
-                     'phone_nbr': ''},
-                    {'connote_nbr': 'pe_collected_connote',
-                     'item_nbr': 'pe_collected_connote',
-                     'job_id': pe_job_id,
-                     'created_ts': '%s' % cls._now,
-                     'pickup_ts': '%s' % cls._now,
-                     'pod_name': 'pod_name pe_collected',
-                     'identity_type_id': id_type_id,
-                     'identity_type_data': 'identity pe_collected',
-                     'email_addr': 'loumar@tollgroup.com',
-                     'phone_nbr': '0431602145'}]
-        sql = cls._db.jobitem.insert_sql(jobitems[0])
-        cls._valid_job_item_id_01 = cls._db.insert(sql=sql)
-        sql = cls._db.jobitem.insert_sql(jobitems[1])
-        cls._valid_job_item_id_02 = cls._db.insert(sql=sql)
-        sql = cls._db.jobitem.insert_sql(jobitems[2])
-        cls._valid_job_item_id_03 = cls._db.insert(sql=sql)
-        sql = cls._db.jobitem.insert_sql(jobitems[3])
-        cls._valid_job_item_id_04 = cls._db.insert(sql=sql)
-        sql = cls._db.jobitem.insert_sql(jobitems[4])
-        cls._valid_job_item_id_05 = cls._db.insert(sql=sql)
+        # job_items table.
+        fixture_file = os.path.join(fixture_dir, 'jobitems.py')
+        cls._db.load_fixture(cls._db.jobitem, fixture_file)
+
+        # Update the timestamps.
+        sql = """UPDATE job_item
+SET created_ts = '%s'
+WHERE id IN (1, 3, 4, 5)""" % cls._now
+        cls._db(sql)
+
+        sql = """UPDATE job_item
+SET pickup_ts = '%s'
+WHERE id IN (1, 5)""" % cls._now
+        cls._db(sql)
+
+        delayed_dt = cls._now - datetime.timedelta(seconds=(86400 * 5))
+        sql = """UPDATE job_item
+SET created_ts = '%(dt)s', notify_ts = '%(dt)s'
+WHERE id = 2""" % {'dt': delayed_dt}
+        cls._db(sql)
+
+        cls._valid_job_item_id_01 = 1
+        cls._valid_job_item_id_02 = 2
+        cls._valid_job_item_id_03 = 3
+        cls._valid_job_item_id_04 = 4
+        cls._valid_job_item_id_05 = 5
 
         cls._db.commit()
 
@@ -225,7 +182,7 @@ class TestJobItem(unittest2.TestCase):
                      1,
                      '%s' % self._now,
                      'pod_name 218501217863',
-                     'identity_type description',
+                     "Driver's License",
                      'identity 218501217863',
                      'priority_item_nbr_001',
                      'N031',
@@ -234,7 +191,7 @@ class TestJobItem(unittest2.TestCase):
                      5,
                      '%s' % self._now,
                      'pod_name pe_collected',
-                     'identity_type description',
+                     "Driver's License",
                      'identity pe_collected',
                      'pe_collected_connote',
                      'N031',
@@ -256,7 +213,7 @@ class TestJobItem(unittest2.TestCase):
                      1,
                      '%s' % self._now,
                      'pod_name 218501217863',
-                     'identity_type description',
+                     "Driver's License",
                      'identity 218501217863',
                      'priority_item_nbr_001',
                      'N031',
