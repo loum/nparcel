@@ -9,11 +9,11 @@ from nparcel.utils.files import (remove_files,
                                  copy_file)
 
 
-class TestPrimaryElectDaemon(unittest2.TestCase):
+class TestOnDeliveryDaemon(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._ped = nparcel.PrimaryElectDaemon(pidfile=None)
+        cls._ped = nparcel.OnDeliveryDaemon(pidfile=None)
 
         cls._report_in_dirs = tempfile.mkdtemp()
         cls._ped.set_report_in_dirs([cls._report_in_dirs])
@@ -134,13 +134,13 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
         db.commit()
 
     def test_init(self):
-        """Intialise a PrimaryElectDaemon object.
+        """Intialise a OnDeliveryDaemon object.
         """
-        msg = 'Not a nparcel.PrimaryElectDaemon object'
-        self.assertIsInstance(self._ped, nparcel.PrimaryElectDaemon, msg)
+        msg = 'Not a nparcel.OnDeliveryDaemon object'
+        self.assertIsInstance(self._ped, nparcel.OnDeliveryDaemon, msg)
 
     def test_start(self):
-        """Primary Elect _start dry loop.
+        """On Delivery _start dry loop.
         """
         old_dry = self._ped.dry
 
@@ -174,7 +174,7 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
                        'sms.%d.pe' % self._id_004]
         expected = [os.path.join(self._comms_dir, x) for x in comms_files]
         received = get_directory_files_list(self._comms_dir)
-        msg = 'Primary Elect comms file error'
+        msg = 'On Delivery (Primary Elect) comms file error'
         self.assertListEqual(sorted(expected), sorted(received), msg)
 
         # Clean up.

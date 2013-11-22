@@ -26,7 +26,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestRestSmser \
 	 nparcel.tests:TestDaemonService \
 	 nparcel.tests:TestLoaderDaemon \
-	 nparcel.tests:TestPrimaryElectDaemon \
+	 nparcel.tests:TestOnDeliveryDaemon \
 	 nparcel.tests:TestCommsDaemon \
 	 nparcel.tests:TestReminderDaemon \
 	 nparcel.tests:TestMapperDaemon \
@@ -39,7 +39,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestFtp \
 	 nparcel.tests:TestService \
 	 nparcel.tests:TestReminder \
-	 nparcel.tests:TestPrimaryElect \
+	 nparcel.tests:TestOnDelivery \
 	 nparcel.tests:TestInit \
 	 nparcel.tests:TestComms \
 	 nparcel.tests:TestMapper \

@@ -1,5 +1,5 @@
 __all__ = [
-    "PrimaryElectDaemon",
+    "OnDeliveryDaemon",
 ]
 import time
 import signal
@@ -11,8 +11,8 @@ from nparcel.utils.log import log
 from nparcel.utils.files import get_directory_files_list
 
 
-class PrimaryElectDaemon(nparcel.DaemonService):
-    """Daemoniser facility for the :class:`nparcel.PrimaryElect` class.
+class OnDeliveryDaemon(nparcel.DaemonService):
+    """Daemoniser facility for the :class:`nparcel.OnDelivery` class.
 
     .. attribute:: report_in_dir
 
@@ -42,10 +42,10 @@ class PrimaryElectDaemon(nparcel.DaemonService):
                  dry=False,
                  batch=False,
                  config=None):
-        super(PrimaryElectDaemon, self).__init__(pidfile=pidfile,
-                                                 file=file,
-                                                 dry=dry,
-                                                 batch=batch)
+        super(OnDeliveryDaemon, self).__init__(pidfile=pidfile,
+                                               file=file,
+                                               dry=dry,
+                                               batch=batch)
 
         if config is not None:
             self.config = nparcel.B2CConfig(file=config)
@@ -134,7 +134,7 @@ class PrimaryElectDaemon(nparcel.DaemonService):
         return self._pe
 
     def set_pe(self, db=None, ts_db_kwargs=None, comms_dir=None):
-        """Create a PrimaryElect object,
+        """Create a OnDelivery object,
 
         **Kwargs:**
             *db*: :mod:`nparcel.DbSession` object
@@ -159,9 +159,9 @@ class PrimaryElectDaemon(nparcel.DaemonService):
             comms_dir = self.comms_dir
 
         if self._pe is None:
-            self._pe = nparcel.PrimaryElect(db_kwargs=db,
-                                            ts_db_kwargs=ts_db_kwargs,
-                                            comms_dir=comms_dir)
+            self._pe = nparcel.OnDelivery(db_kwargs=db,
+                                          ts_db_kwargs=ts_db_kwargs,
+                                          comms_dir=comms_dir)
 
             try:
                 self._pe.set_delivered_header(self.config.delivered_header)
@@ -252,7 +252,7 @@ class PrimaryElectDaemon(nparcel.DaemonService):
         return status
 
     def get_files(self):
-        """Searches the :attr:`nparcel.PrimaryElectDaemon.report_in_dirs`
+        """Searches the :attr:`nparcel.OnDeliveryDaemon.report_in_dirs`
         configuration item as the source directory for MTS report files.
 
         There may be more than one MTS file available for processing

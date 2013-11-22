@@ -1,4 +1,4 @@
-.. Nparcel B2C Modules Index
+.. Toll Parcel Portal B2C Modules Index
 
 Modules
 =======
@@ -29,8 +29,8 @@ Modules
     reminderdaemon.rst
     stopparser.rst
 
-    primaryelect.rst
-    primaryelectdaemon.rst
+    ondelivery.rst
+    ondeliverydaemon.rst
 
     comms.rst
     commsdaemon.rst

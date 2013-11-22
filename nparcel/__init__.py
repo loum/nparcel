@@ -7,7 +7,7 @@ from nparcel.emailer import Emailer
 from nparcel.daemonservice import DaemonService
 from nparcel.loaderdaemon import LoaderDaemon
 from nparcel.exporterdaemon import ExporterDaemon
-from nparcel.primaryelectdaemon import PrimaryElectDaemon
+from nparcel.ondeliverydaemon import OnDeliveryDaemon
 from nparcel.commsdaemon import CommsDaemon
 from nparcel.reminderdaemon import ReminderDaemon
 from nparcel.mapperdaemon import MapperDaemon
@@ -20,7 +20,7 @@ from nparcel.config import Config
 from nparcel.b2cconfig import B2CConfig
 from nparcel.ftp import Ftp
 from nparcel.reminder import Reminder
-from nparcel.primaryelect import PrimaryElect
+from nparcel.ondelivery import OnDelivery
 from nparcel.init import Init
 from nparcel.comms import Comms
 from nparcel.based import BaseD

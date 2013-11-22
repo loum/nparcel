@@ -1,12 +1,12 @@
 __all__ = [
-    "PrimaryElect",
+    "OnDelivery",
 ]
 import nparcel
 from nparcel.utils.log import log
 
 
-class PrimaryElect(nparcel.Service):
-    """Nparcel PrimaryElect class.
+class OnDelivery(nparcel.Service):
+    """Nparcel OnDelivery class.
 
     .. attribute:: parser
 
@@ -46,10 +46,10 @@ class PrimaryElect(nparcel.Service):
     _ts_db = None
 
     def __init__(self, db_kwargs=None, ts_db_kwargs=None, comms_dir=None):
-        """Nparcel PrimaryElect initialisation.
+        """Nparcel OnDelivery initialisation.
 
         """
-        super(nparcel.PrimaryElect, self).__init__(db=db_kwargs,
+        super(nparcel.OnDelivery, self).__init__(db=db_kwargs,
                                                    comms_dir=comms_dir)
 
         if ts_db_kwargs is not None:

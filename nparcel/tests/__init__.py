@@ -12,7 +12,7 @@ from test_restsmser import TestRestSmser
 from test_daemonservice import TestDaemonService
 from test_loaderdaemon import TestLoaderDaemon
 from test_exporterdaemon import TestExporterDaemon
-from test_primaryelectdaemon import TestPrimaryElectDaemon
+from test_ondeliverydaemon import TestOnDeliveryDaemon
 from test_commsdaemon import TestCommsDaemon
 from test_reminderdaemon import TestReminderDaemon
 from test_mapperdaemon import TestMapperDaemon
@@ -25,7 +25,7 @@ from test_b2cconfig import TestB2CConfig
 from test_ftp import TestFtp
 from test_service import TestService
 from test_reminder import TestReminder
-from test_primaryelect import TestPrimaryElect
+from test_ondelivery import TestOnDelivery
 from test_init import TestInit
 from test_comms import TestComms
 from test_mapper import TestMapper

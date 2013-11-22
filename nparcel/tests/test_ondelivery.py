@@ -7,24 +7,25 @@ import nparcel
 from nparcel.utils.files import remove_files
 
 
-class TestPrimaryElect(unittest2.TestCase):
+class TestOnDelivery(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
         cls._comms_dir = tempfile.mkdtemp()
-        cls._pe = nparcel.PrimaryElect(comms_dir=cls._comms_dir)
-        cls._pe.ts_db.create_table(name='v_nparcel_adp_connotes',
-                                   schema=cls._pe.ts_db.transsend.schema)
+        cls._on = nparcel.OnDelivery(comms_dir=cls._comms_dir)
+        cls._on.ts_db.create_table(name='v_nparcel_adp_connotes',
+                                   schema=cls._on.ts_db.transsend.schema)
         fixture_file = os.path.join('nparcel',
                                     'tests',
                                     'fixtures',
                                     'transsend.py')
-        cls._pe.ts_db.load_fixture(cls._pe.ts_db.transsend, fixture_file)
+        cls._on.ts_db.load_fixture(cls._on.ts_db.transsend, fixture_file)
 
         test_dir = 'nparcel/tests/files'
         test_file = 'mts_delivery_report_20131018100758.csv'
         cls._test_file = os.path.join(test_dir, test_file)
 
+        db = cls._on.db
         agents = [{'code': 'N031',
                    'state': 'VIC',
                    'name': 'N031 Name',
@@ -37,10 +38,10 @@ class TestPrimaryElect(unittest2.TestCase):
                    'address': 'BAD1 Address',
                    'postcode': '5678',
                    'suburb': 'BAD1 Suburb'}]
-        sql = cls._pe.db._agent.insert_sql(agents[0])
-        agent_01 = cls._pe.db.insert(sql)
-        sql = cls._pe.db._agent.insert_sql(agents[1])
-        agent_02 = cls._pe.db.insert(sql)
+        sql = db._agent.insert_sql(agents[0])
+        agent_01 = db.insert(sql)
+        sql = db._agent.insert_sql(agents[1])
+        agent_02 = db.insert(sql)
 
         cls._now = datetime.datetime.now()
         jobs = [{'agent_id': agent_01,
@@ -54,12 +55,12 @@ class TestPrimaryElect(unittest2.TestCase):
                  'job_ts': '%s' % cls._now,
                  'service_code': 3,
                  'bu_id': 2}]
-        sql = cls._pe.db.job.insert_sql(jobs[0])
-        job_01 = cls._pe.db.insert(sql)
-        sql = cls._pe.db.job.insert_sql(jobs[1])
-        job_02 = cls._pe.db.insert(sql)
-        sql = cls._pe.db.job.insert_sql(jobs[2])
-        job_03 = cls._pe.db.insert(sql)
+        sql = db.job.insert_sql(jobs[0])
+        job_01 = db.insert(sql)
+        sql = db.job.insert_sql(jobs[1])
+        job_02 = db.insert(sql)
+        sql = db.job.insert_sql(jobs[2])
+        job_03 = db.insert(sql)
 
         # Rules as follows:
         # id_000 - not primary elect
@@ -105,30 +106,30 @@ class TestPrimaryElect(unittest2.TestCase):
                      'phone_nbr': '0431602145',
                      'job_id': job_03,
                      'created_ts': '%s' % cls._now}]
-        sql = cls._pe.db.jobitem.insert_sql(jobitems[0])
-        cls._id_000 = cls._pe.db.insert(sql)
-        sql = cls._pe.db.jobitem.insert_sql(jobitems[1])
-        cls._id_001 = cls._pe.db.insert(sql)
-        sql = cls._pe.db.jobitem.insert_sql(jobitems[2])
-        cls._id_002 = cls._pe.db.insert(sql)
-        sql = cls._pe.db.jobitem.insert_sql(jobitems[3])
-        cls._id_003 = cls._pe.db.insert(sql)
-        sql = cls._pe.db.jobitem.insert_sql(jobitems[4])
-        cls._id_004 = cls._pe.db.insert(sql)
-        sql = cls._pe.db.jobitem.insert_sql(jobitems[5])
-        cls._id_005 = cls._pe.db.insert(sql)
-        cls._pe.db.commit()
+        sql = db.jobitem.insert_sql(jobitems[0])
+        cls._id_000 = db.insert(sql)
+        sql = db.jobitem.insert_sql(jobitems[1])
+        cls._id_001 = db.insert(sql)
+        sql = db.jobitem.insert_sql(jobitems[2])
+        cls._id_002 = db.insert(sql)
+        sql = db.jobitem.insert_sql(jobitems[3])
+        cls._id_003 = db.insert(sql)
+        sql = db.jobitem.insert_sql(jobitems[4])
+        cls._id_004 = db.insert(sql)
+        sql = db.jobitem.insert_sql(jobitems[5])
+        cls._id_005 = db.insert(sql)
+        db.commit()
 
     def test_init(self):
-        """Initialise a PrimaryElect object.
+        """Initialise a OnDelivery object.
         """
-        msg = 'Object is not a nparcel.PrimaryElect'
-        self.assertIsInstance(self._pe, nparcel.PrimaryElect, msg)
+        msg = 'Object is not a nparcel.OnDelivery'
+        self.assertIsInstance(self._on, nparcel.OnDelivery, msg)
 
     def test_get_primary_elect_job_item_id_not_pe(self):
         """jobitem.id's of connote that is not a primary elect job.
         """
-        received = self._pe.get_primary_elect_job_item_id('con_001')
+        received = self._on.get_primary_elect_job_item_id('con_001')
         expected = []
         msg = 'Non-primary elect job should produce empty list'
         self.assertListEqual(received, expected, msg)
@@ -136,7 +137,7 @@ class TestPrimaryElect(unittest2.TestCase):
     def test_get_primary_elect_job_item_id_valid_pe(self):
         """jobitem.id's of connote that is a primary elect job.
         """
-        received = self._pe.get_primary_elect_job_item_id('GOLW010997')
+        received = self._on.get_primary_elect_job_item_id('GOLW010997')
         expected = [self._id_001]
         msg = 'Primary elect job should produce ids'
         self.assertListEqual(received, expected, msg)
@@ -144,7 +145,7 @@ class TestPrimaryElect(unittest2.TestCase):
     def test_get_primary_elect_job_item_id_valid_pe_no_comms(self):
         """jobitem.id's of connote that is a primary elect job -- no comms.
         """
-        received = self._pe.get_primary_elect_job_item_id('con_003')
+        received = self._on.get_primary_elect_job_item_id('con_003')
         expected = []
         msg = 'Primary elect job no recipients should produce empty list'
         self.assertListEqual(received, expected, msg)
@@ -154,7 +155,7 @@ class TestPrimaryElect(unittest2.TestCase):
         """
         dry = True
 
-        received = self._pe.process(self._test_file, dry=dry)
+        received = self._on.process(self._test_file, dry=dry)
         expected = []
         msg = 'List of processed primary elect items incorrect'
         self.assertListEqual(received, expected, msg)
@@ -164,7 +165,7 @@ class TestPrimaryElect(unittest2.TestCase):
         """
         dry = False
 
-        received = self._pe.process(self._test_file, dry=dry)
+        received = self._on.process(self._test_file, dry=dry)
         expected = [self._id_001, self._id_004]
         msg = 'List of processed primary elect items incorrect'
         self.assertListEqual(received, expected, msg)
@@ -193,7 +194,7 @@ class TestPrimaryElect(unittest2.TestCase):
 
         job_items = [(5, 'ANWD011307', 'ANWD011307001')]
 
-        received = self._pe.process(self._test_file,
+        received = self._on.process(self._test_file,
                                     job_items=job_items,
                                     dry=dry)
         expected = [self._id_004]
@@ -218,7 +219,7 @@ class TestPrimaryElect(unittest2.TestCase):
         """
         dry = False
 
-        received = self._pe.process(None, dry=dry)
+        received = self._on.process(None, dry=dry)
         expected = [self._id_004]
         msg = 'Processed primary elect should return empty list'
         self.assertListEqual(received, expected, msg)
@@ -242,7 +243,7 @@ class TestPrimaryElect(unittest2.TestCase):
         connote = 'APLD029228'
         item_nbr = 'APLD029228001'
 
-        received = self._pe.connote_delivered(connote, item_nbr)
+        received = self._on.connote_delivered(connote, item_nbr)
         msg = 'TransSend delivery check should be False -- no DB conn'
         self.assertFalse(received)
 
@@ -252,7 +253,7 @@ class TestPrimaryElect(unittest2.TestCase):
         connote = 'APLD029228'
         item_nbr = 'APLD029228001'
 
-        received = self._pe.connote_delivered(connote, item_nbr)
+        received = self._on.connote_delivered(connote, item_nbr)
         msg = 'TransSend delivery check should be False'
         self.assertFalse(received)
 
@@ -262,14 +263,14 @@ class TestPrimaryElect(unittest2.TestCase):
         connote = 'ANWD011307'
         item_nbr = 'ANWD011307001'
 
-        received = self._pe.connote_delivered(connote, item_nbr)
+        received = self._on.connote_delivered(connote, item_nbr)
         msg = 'TransSend delivery check should be True'
         self.assertTrue(received)
 
     @classmethod
     def tearDownClass(cls):
-        cls._pe = None
-        del cls._pe
+        cls._on = None
+        del cls._on
         os.removedirs(cls._comms_dir)
         del cls._comms_dir
         del cls._test_file

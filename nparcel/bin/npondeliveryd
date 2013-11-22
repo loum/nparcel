@@ -38,11 +38,11 @@ def main():
         file = based.options.file
 
     # OK, start processing.
-    ped = nparcel.PrimaryElectDaemon(pidfile=based.pidfile,
-                                     file=file,
-                                     dry=based.dry,
-                                     batch=based.batch,
-                                     config=based.options.config)
+    ped = nparcel.OnDeliveryDaemon(pidfile=based.pidfile,
+                                   file=file,
+                                   dry=based.dry,
+                                   batch=based.batch,
+                                   config=based.options.config)
 
     based.launch_command(ped, script_name)
 
