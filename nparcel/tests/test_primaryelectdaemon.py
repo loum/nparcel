@@ -13,16 +13,6 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._ts_db = nparcel.OraDbSession()
-        cls._ts_db.connect()
-        cls._ts_db.create_table(name='v_nparcel_adp_connotes',
-                                schema=cls._ts_db.transsend.schema)
-        fixture_file = os.path.join('nparcel',
-                                    'tests',
-                                    'fixtures',
-                                    'transsend.py')
-        cls._ts_db.load_fixture(cls._ts_db.transsend, fixture_file)
-
         cls._ped = nparcel.PrimaryElectDaemon(pidfile=None)
 
         cls._report_in_dirs = tempfile.mkdtemp()
@@ -32,7 +22,16 @@ class TestPrimaryElectDaemon(unittest2.TestCase):
         cls._ped.set_comms_dir(cls._comms_dir)
 
         # Call up front to pre-load the DB.
-        cls._ped.set_pe(ts_db=cls._ts_db)
+        cls._ped.set_pe(ts_db_kwargs=None)
+        schema = cls._ped.pe.ts_db.transsend.schema
+        cls._ped.pe.ts_db.create_table(name='v_nparcel_adp_connotes',
+                                       schema=schema)
+        fixture_file = os.path.join('nparcel',
+                                    'tests',
+                                    'fixtures',
+                                    'transsend.py')
+        cls._ped.pe.ts_db.load_fixture(cls._ped.pe.ts_db.transsend,
+                                       fixture_file)
 
         cls._test_dir = 'nparcel/tests/files'
         cls._test_file = 'mts_delivery_report_20131018100758.csv'

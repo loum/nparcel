@@ -30,19 +30,26 @@ class OraDbSession(object):
     _connection = None
     _cursor = None
     _transsend = nparcel.TransSend()
+    _host = None
+    _database = None
+    _user = None
+    _password = None
+    _port = None
+    _sid = None
 
-    def __init__(self, **kwargs):
-        self._host = kwargs.get('host')
-        self._database = kwargs.get('database')
-        self._user = kwargs.get('user')
-        self._password = kwargs.get('password')
-        self._port = kwargs.get('port')
-        if self._port is not None:
-            try:
-                self._port = int(self._port)
-            except ValueError, e:
-                log.error('Port value "%s" could not conver to int: %s' % e)
-        self._sid = kwargs.get('sid')
+    def __init__(self, kwargs=None):
+        if kwargs is not None:
+            self._host = kwargs.get('host')
+            self._database = kwargs.get('database')
+            self._user = kwargs.get('user')
+            self._password = kwargs.get('password')
+            self._port = kwargs.get('port')
+            if self._port is not None:
+                try:
+                    self._port = int(self._port)
+                except ValueError, e:
+                    log.error('Port "%s" could not cast to int: %s' % e)
+            self._sid = kwargs.get('sid')
 
     def __call__(self, sql=None):
         if sql is not None:
@@ -105,13 +112,11 @@ class OraDbSession(object):
 
     @property
     def conn_string(self):
-        host = self.host
-        user = self.user
-        password = self.password
-        port = self.port
-        sid = self.sid
-
-        return '%s/%s@%s:%d/%s' % (user, password, host, port, sid)
+        return '%s/%s@%s:%d/%s' % (self.user,
+                                   self.password,
+                                   self.host,
+                                   self.port,
+                                   self.sid)
 
     def date_now(self, *args):
         """Helper method that returns the current time stamp in a format
@@ -224,7 +229,7 @@ class OraDbSession(object):
     def columns(self):
         """Return a list of column names within the current cursor context.
         """
-        return list(map(lambda x: x[0], self.cursor.description))
+        return list(map(lambda x: x[0].lower(), self.cursor.description))
 
     def load_fixture(self, table, fixture):
         """Load a *fixture* file into a *table*

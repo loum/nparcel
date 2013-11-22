@@ -12,10 +12,16 @@ class PrimaryElect(nparcel.Service):
 
         :mod:`nparcel.StopParser` parser object
 
-    .. attribute:: ts_db
+    .. attribute:: ts_db_kwargs
 
-        :mod:`cx_Oracle.Connection` object manager that interfaces
-        to the TransSend database
+        dictionary structure of key/values representing the TransSend
+        connection.  Typical format is::
+
+            kwargs = {'host': 'host',
+                      'user': 'user',
+                      'password': 'password',
+                      'port': 1521,
+                      'sid': 'sid'}
 
     .. attribute:: delivered_header
 
@@ -27,32 +33,44 @@ class PrimaryElect(nparcel.Service):
         string that represents a delivered event
         (default ``delivered``)
 
+    .. attribute:: ts_db
+
+        :mod:`cx_Oracle` object to manage the TransSend database
+        connectivity
+
     """
     _parser = nparcel.StopParser()
-    _ts_db = None
+    _ts_db_kwargs = None
     _delivered_header = 'latest_scan_event_action'
     _delivered_event_key = 'delivered'
+    _ts_db = None
 
-    def __init__(self, db=None, ts_db=None, comms_dir=None):
+    def __init__(self, db_kwargs=None, ts_db_kwargs=None, comms_dir=None):
         """Nparcel PrimaryElect initialisation.
 
         """
-        super(nparcel.PrimaryElect, self).__init__(db=db,
+        super(nparcel.PrimaryElect, self).__init__(db=db_kwargs,
                                                    comms_dir=comms_dir)
 
-        if ts_db is not None:
-            self._ts_db = ts_db
+        if ts_db_kwargs is not None:
+            self._ts_db_kwargs = ts_db_kwargs
+        self._ts_db = nparcel.OraDbSession(ts_db_kwargs)
+        self._ts_db.connect()
+
+    def __del__(self):
+        if self.ts_db is not None:
+            self.ts_db.disconnect()
 
     @property
     def parser(self):
         return self._parser
 
     @property
-    def ts_db(self):
-        return self._ts_db
+    def ts_db_kwargs(self):
+        return self._ts_db_kwargs
 
-    def set_ts_db(self, value):
-        self._ts_db = value
+    def set_ts_db_kwargs(self, value):
+        self._ts_db_kwargs = value
 
     @property
     def delivered_header(self):
@@ -61,6 +79,10 @@ class PrimaryElect(nparcel.Service):
     @property
     def delivered_event_key(self):
         return self._delivered_event_key
+
+    @property
+    def ts_db(self):
+        return self._ts_db
 
     def get_primary_elect_job_item_id(self, connote):
         """Return ``jobitem.id`` whose connote is associated with a
@@ -166,6 +188,7 @@ class PrimaryElect(nparcel.Service):
             self.ts_db(sql)
 
             headers = self.ts_db.columns()
+            log.debug('Headers received: %s' % str(headers))
             index = headers.index(self.delivered_header)
             log.debug('Delivered header index: %d' % index)
 

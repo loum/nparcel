@@ -11,19 +11,16 @@ class TestPrimaryElect(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._ts_db = nparcel.OraDbSession()
-        cls._ts_db.connect()
-        cls._ts_db.create_table(name='v_nparcel_adp_connotes',
-                                schema=cls._ts_db.transsend.schema)
+        cls._comms_dir = tempfile.mkdtemp()
+        cls._pe = nparcel.PrimaryElect(comms_dir=cls._comms_dir)
+        cls._pe.ts_db.create_table(name='v_nparcel_adp_connotes',
+                                   schema=cls._pe.ts_db.transsend.schema)
         fixture_file = os.path.join('nparcel',
                                     'tests',
                                     'fixtures',
                                     'transsend.py')
-        cls._ts_db.load_fixture(cls._ts_db.transsend, fixture_file)
+        cls._pe.ts_db.load_fixture(cls._pe.ts_db.transsend, fixture_file)
 
-        cls._comms_dir = tempfile.mkdtemp()
-        cls._pe = nparcel.PrimaryElect(ts_db=cls._ts_db,
-                                       comms_dir=cls._comms_dir)
         test_dir = 'nparcel/tests/files'
         test_file = 'mts_delivery_report_20131018100758.csv'
         cls._test_file = os.path.join(test_dir, test_file)
@@ -218,15 +215,9 @@ class TestPrimaryElect(unittest2.TestCase):
         connote = 'APLD029228'
         item_nbr = 'APLD029228001'
 
-        old_ts_db = self._pe.ts_db
-        self._pe.set_ts_db(None)
-
         received = self._pe.connote_delivered(connote, item_nbr)
         msg = 'TransSend delivery check should be False -- no DB conn'
         self.assertFalse(received)
-
-        # Clean up.
-        self._pe.set_ts_db(old_ts_db)
 
     def test_connote_delivered_not_delivered(self):
         """Query delivered status against TransSend -- not delivered.
@@ -250,8 +241,6 @@ class TestPrimaryElect(unittest2.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls._ts_db.disconnect()
-        cls._ts_db = None
         cls._pe = None
         del cls._pe
         os.removedirs(cls._comms_dir)

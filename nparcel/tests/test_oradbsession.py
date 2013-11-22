@@ -52,7 +52,7 @@ VALUES ('xxx')"""
                   'password': 'password',
                   'port': 1521,
                   'sid': 'sid'}
-        db = nparcel.OraDbSession(**kwargs)
+        db = nparcel.OraDbSession(kwargs)
 
         # Check the connection string.
         # Tweak the password to suit.

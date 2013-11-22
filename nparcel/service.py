@@ -40,6 +40,10 @@ class Service(object):
         if comms_dir is not None:
             self.set_comms_dir(comms_dir)
 
+    def __del__(self):
+        if self.db is not None:
+            self.db.disconnect()
+
     @property
     def comms_dir(self):
         return self._comms_dir

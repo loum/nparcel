@@ -133,13 +133,14 @@ class PrimaryElectDaemon(nparcel.DaemonService):
     def pe(self):
         return self._pe
 
-    def set_pe(self, db=None, ts_db=None, comms_dir=None):
+    def set_pe(self, db=None, ts_db_kwargs=None, comms_dir=None):
         """Create a PrimaryElect object,
 
         **Kwargs:**
             *db*: :mod:`nparcel.DbSession` object
 
-            *ts_db*: :mod:`nparcel.OraDbSession` object
+            *ts_db_kwargs*: dictionary of key/value pairs representing
+            the TransSend connection
 
             *comms_dir*: directory where to place comms events file
             for further processing
@@ -148,12 +149,18 @@ class PrimaryElectDaemon(nparcel.DaemonService):
         if db is None:
             db = self.db_kwargs
 
+        if ts_db_kwargs is None:
+            try:
+                ts_db_kwargs = self.config.ts_db_kwargs()
+            except AttributeError, err:
+                log.info('TransSend DB kwargs not defined in config')
+
         if comms_dir is None:
             comms_dir = self.comms_dir
 
         if self._pe is None:
-            self._pe = nparcel.PrimaryElect(db=db,
-                                            ts_db=ts_db,
+            self._pe = nparcel.PrimaryElect(db_kwargs=db,
+                                            ts_db_kwargs=ts_db_kwargs,
                                             comms_dir=comms_dir)
 
             try:
@@ -168,13 +175,6 @@ class PrimaryElectDaemon(nparcel.DaemonService):
             except AttributeError, err:
                 log.info('Using default PE delivered_event_key: "%s"' %
                          self._pe.delivered_event_key)
-
-            try:
-                if self.config.ts_db_kwargs() is not None:
-                    self.set_ts_db_kwargs(self.config.ts_db_kwargs())
-            except AttributeError, err:
-                msg = ('TransSend DB kwargs not defined in config')
-                log.info(msg)
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
