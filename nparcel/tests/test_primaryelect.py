@@ -186,6 +186,33 @@ class TestPrimaryElect(unittest2.TestCase):
         # Cleanup.
         remove_files(received)
 
+    def test_process_inline(self):
+        """Check processing.
+        """
+        dry = False
+
+        job_items = [(5, 'ANWD011307', 'ANWD011307001')]
+
+        received = self._pe.process(self._test_file,
+                                    job_items=job_items,
+                                    dry=dry)
+        expected = [self._id_004]
+        msg = 'List of processed primary elect items incorrect'
+        self.assertListEqual(received, expected, msg)
+
+        # Check that the comms files were written out.
+        received = [os.path.join(self._comms_dir,
+                                 x) for x in os.listdir(self._comms_dir)]
+        expected = [os.path.join(self._comms_dir, '%s.%d.%s') %
+                    ('email', self._id_004, 'pe'),
+                    os.path.join(self._comms_dir, '%s.%d.%s') %
+                    ('sms', self._id_004, 'pe')]
+        msg = 'Comms directory file list error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Cleanup.
+        remove_files(received)
+
     def test_process_no_mts_file(self):
         """Check processing -- no MTS file.
         """

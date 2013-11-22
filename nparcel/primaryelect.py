@@ -113,13 +113,16 @@ class PrimaryElect(nparcel.Service):
         for row in self.db.rows():
             yield row
 
-    def process(self, mts_file=None, dry=False):
+    def process(self, mts_file=None, job_items=None, dry=False):
         """Checks whether a Primary Elect job item has had comms sent.
 
         **Kwargs:**
             *mts_file*: path to the MTS delivery report file
 
             *dry*: only report, do not execute
+
+            *job_items*: list of ``(<id>, <connote>, <item_nbr>)``
+            that can be fed into the process loop directly
 
         **Returns:**
             list of primary elect job_items for whom notifications were
@@ -133,9 +136,12 @@ class PrimaryElect(nparcel.Service):
             self.parser.set_in_file(mts_file)
             self.parser.read()
 
-        for (id,
-             connote,
-             item_nbr) in self.get_uncollected_primary_elect_job_items():
+        if job_items is None:
+            job_items = self.get_uncollected_primary_elect_job_items()
+        else:
+            log.info('Received job_items list inline')
+
+        for (id, connote, item_nbr) in job_items:
             log.info('Processing PE id|connote|item: "%s|%s|%s ..."' %
                      (id, connote, item_nbr))
 
