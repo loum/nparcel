@@ -21,7 +21,9 @@ FLAG_MAP = {'item_number_excp': 0,
             'send_sc_2': 9,
             'send_sc_4': 10,
             'delay_template_sc_4': 11,
-            'ignore_sc_4': 12}
+            'ignore_sc_4': 12,
+            'pe_comms': 13,
+            'on_del_sc_4': 14}
 
 
 class B2CConfig(nparcel.Config):
@@ -817,7 +819,8 @@ class B2CConfig(nparcel.Config):
         if self.cond:
             for bu in self.cond.keys():
                 if self.condition(bu, flag):
-                    log.debug('Facility "%s" required by "%s"' % (flag, bu))
+                    log.debug('Facility "%s" required by "%s"' %
+                              (flag, bu))
                     status = True
                     break
         else:
@@ -859,6 +862,7 @@ class B2CConfig(nparcel.Config):
             section of the config.  For example, 'priority'.
 
         **Returns:**
+            ``file_bu`` string such as ``TOLP``, ``TOLF`` or ``TOLI``
 
         """
         file_code_for_bu = None
@@ -875,6 +879,32 @@ class B2CConfig(nparcel.Config):
                     break
 
         return file_code_for_bu
+
+    def bu_ids_with_set_condition(self, flag):
+        """Given condition *flag*, will traverse the condition map for
+        all Business Units and return the Business Unit IDs for the set
+        flags.
+
+        **Args:**
+            *flag*: string-based condition map flag to check.  For example,
+            ``pe_comms``
+
+        **Returns:**
+            tuple structure with the Business Unit ID's whose *flag* is
+            set
+
+        """
+        log.debug('Getting BU ids for set "%s" condition' % flag)
+
+        set_bu_ids = []
+        for bu_name, id in self.business_units.iteritems():
+            if self.condition(self.bu_to_file(bu_name), flag):
+                set_bu_ids.append(int(id))
+
+        set_bu_ids = tuple(sorted(set_bu_ids))
+        log.debug('"%s" flag set BU ids: %s' % (flag, str(set_bu_ids)))
+
+        return set_bu_ids
 
     def db_kwargs(self):
         """Extract database connectivity information from the config.

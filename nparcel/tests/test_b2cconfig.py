@@ -126,9 +126,9 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'Conditions map not as expected'
         received = self._c.cond
-        expected = {'tolp': '0001000000000',
-                    'tolf': '0001011000000',
-                    'toli': '1000100000000'}
+        expected = {'tolp': '000100000000010',
+                    'tolf': '000101100000010',
+                    'toli': '100010000000010'}
         self.assertDictEqual(received, expected, msg)
 
         msg = 'RESTful API not as expected'
@@ -310,7 +310,9 @@ class TestB2CConfig(unittest2.TestCase):
                     'send_sc_2': False,
                     'send_sc_4': False,
                     'delay_template_sc_4': False,
-                    'ignore_sc_4': False}
+                    'ignore_sc_4': False,
+                    'pe_comms': False,
+                    'on_del_sc_4': False}
         msg = 'Dodgy Business Unit condition map should be empty dict'
         self.assertDictEqual(received, expected, msg)
 
@@ -367,7 +369,9 @@ class TestB2CConfig(unittest2.TestCase):
                     'send_sc_2': False,
                     'send_sc_4': False,
                     'delay_template_sc_4': False,
-                    'ignore_sc_4': False}
+                    'ignore_sc_4': False,
+                    'pe_comms': True,
+                    'on_del_sc_4': False}
         msg = 'Valid Business Unit condition map should produce dict values'
         self.assertDictEqual(received, expected, msg)
 
@@ -390,7 +394,9 @@ class TestB2CConfig(unittest2.TestCase):
                     'send_sc_2': False,
                     'send_sc_4': False,
                     'delay_template_sc_4': False,
-                    'ignore_sc_4': False}
+                    'ignore_sc_4': False,
+                    'pe_comms': True,
+                    'on_del_sc_4': False}
         msg = 'Fast condition map should produce dict values'
         self.assertDictEqual(received, expected, msg)
 
@@ -458,6 +464,27 @@ class TestB2CConfig(unittest2.TestCase):
         received = self._c.bu_to_file('dodgy')
         msg = 'Dodgy bu_to_file translation not None'
         self.assertIsNone(received, msg)
+
+    def test_bu_ids_with_set_condition(self):
+        """Check Business Unit IDs that are set in the condition map.
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        received = self._c.bu_ids_with_set_condition('pe_comms')
+        expected = (1, 2, 3)
+        msg = 'pe_comms set condition map BU ids error'
+        self.assertTupleEqual(received, expected, msg)
+
+        received = self._c.bu_ids_with_set_condition('item_number_excp')
+        expected = (3,)
+        msg = 'item_number_excp set condition map BU ids error'
+        self.assertTupleEqual(received, expected, msg)
+
+        received = self._c.bu_ids_with_set_condition('on_del_sc_4')
+        expected = ()
+        msg = 'on_del_sc_4 set condition map BU ids error'
+        self.assertTupleEqual(received, expected, msg)
 
     def test_db_kwargs_no_items(self):
         """Produce a DB connection string -- no items.
