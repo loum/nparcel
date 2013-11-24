@@ -210,7 +210,9 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                 for file in files:
                     log.info('Processing file: "%s" ...' % file)
                     if self.validate_file(file):
-                        self.pe.process(file, dry=self.dry)
+                        self.pe.process(template='pe',
+                                        mts_file=file,
+                                        dry=self.dry)
 
             if not event.isSet():
                 if self.dry:

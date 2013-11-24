@@ -165,7 +165,9 @@ class TestOnDelivery(unittest2.TestCase):
         """
         dry = False
 
-        received = self._on.process(self._test_file, dry=dry)
+        received = self._on.process(template='pe',
+                                    mts_file=self._test_file,
+                                    dry=dry)
         expected = [self._id_001, self._id_004]
         msg = 'List of processed primary elect items incorrect'
         self.assertListEqual(received, expected, msg)
@@ -192,10 +194,12 @@ class TestOnDelivery(unittest2.TestCase):
         """
         dry = False
 
+        template = 'pe'
         job_items = [(5, 'ANWD011307', 'ANWD011307001')]
 
-        received = self._on.process(self._test_file,
+        received = self._on.process(template=template,
                                     job_items=job_items,
+                                    mts_file=self._test_file,
                                     dry=dry)
         expected = [self._id_004]
         msg = 'List of processed primary elect items incorrect'
@@ -219,7 +223,7 @@ class TestOnDelivery(unittest2.TestCase):
         """
         dry = False
 
-        received = self._on.process(None, dry=dry)
+        received = self._on.process(template='pe', dry=dry)
         expected = [self._id_004]
         msg = 'Processed primary elect should return empty list'
         self.assertListEqual(received, expected, msg)

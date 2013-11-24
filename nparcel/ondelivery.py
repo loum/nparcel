@@ -97,9 +97,15 @@ class OnDelivery(nparcel.Service):
 
         return ids
 
-    def get_uncollected_primary_elect_job_items(self):
-        """Generator that returns the ``jobitem.id`` and
-        ``jobitem.connote_nbr`` of uncollected Primary Elect job items.
+    def get_uncollected_job_items(self, service_code=3, bu_ids=None):
+        """Generator that returns the ``jobitem.id``,
+        ``jobitem.connote_nbr`` and ``jobitem.item_nbr`` of uncollected
+        Primary Elect job items.
+
+        **Kwargs:**
+            *service_code*: integer of ``job.service_code`` columns
+
+            *bu_ids*: tuple of Business Unit ID integers to search against
 
         **Returns:**
             generator object which represents an uncollected job item
@@ -108,23 +114,31 @@ class OnDelivery(nparcel.Service):
                 (<jobitem.id>, <jobitem.connote_nbr>)
 
         """
-        bu_ids = (1, 2, 3)
+        if bu_ids is None:
+            bu_ids = (1, 2, 3)
 
-        sql = self.db.jobitem.uncollected_jobitems_sql(bu_ids=bu_ids)
+        sql = self.db.jobitem.uncollected_jobitems_sql(service_code,
+                                                       bu_ids=bu_ids)
         self.db(sql)
         for row in self.db.rows():
             yield row
 
-    def process(self, mts_file=None, job_items=None, dry=False):
+    def process(self,
+                template,
+                service_code=None,
+                bu_ids=None,
+                job_items=None,
+                mts_file=None,
+                dry=False):
         """Checks whether a Primary Elect job item has had comms sent.
 
         **Kwargs:**
+            *job_items*: list of ``(<id>, <connote>, <item_nbr>)``
+            that can be fed into the process loop directly
+
             *mts_file*: path to the MTS delivery report file
 
             *dry*: only report, do not execute
-
-            *job_items*: list of ``(<id>, <connote>, <item_nbr>)``
-            that can be fed into the process loop directly
 
         **Returns:**
             list of primary elect job_items for whom notifications were
@@ -139,7 +153,12 @@ class OnDelivery(nparcel.Service):
             self.parser.read()
 
         if job_items is None:
-            job_items = self.get_uncollected_primary_elect_job_items()
+            if service_code is None:
+                service_code = 3
+            if bu_ids is None:
+                bu_ids = tuple([1, 2, 3])
+            job_items = self.get_uncollected_job_items(service_code,
+                                                       bu_ids)
         else:
             log.info('Received job_items list inline')
 
@@ -155,8 +174,8 @@ class OnDelivery(nparcel.Service):
             if delivered_status:
                 log.info('Preparing comms flag for job_item.id: %d' % id)
                 if not dry:
-                    if (self.flag_comms('email', id, 'pe') and
-                        self.flag_comms('sms', id, 'pe')):
+                    if (self.flag_comms('email', id, template) and
+                        self.flag_comms('sms', id, template)):
                         processed_ids.append(id)
                 else:
                     log.error('Comms flag error for job_item.id: %d' % id)
