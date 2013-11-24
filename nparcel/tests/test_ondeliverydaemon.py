@@ -38,99 +38,26 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
         cls._test_filepath = os.path.join(cls._test_dir, cls._test_file)
 
         db = cls._odd.od.db
-        agents = [{'code': 'N031',
-                   'state': 'VIC',
-                   'name': 'N031 Name',
-                   'address': 'N031 Address',
-                   'postcode': '1234',
-                   'suburb': 'N031 Suburb'},
-                  {'code': 'BAD1',
-                   'state': 'NSW',
-                   'name': 'BAD1 Name',
-                   'address': 'BAD1 Address',
-                   'postcode': '5678',
-                   'suburb': 'BAD1 Suburb'}]
-        sql = db._agent.insert_sql(agents[0])
-        agent_01 = db.insert(sql)
-        sql = db._agent.insert_sql(agents[1])
-        agent_02 = db.insert(sql)
+        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        # Prepare some sample data.
+        # Agent.
+        fixture_file = os.path.join(fixture_dir, 'agents.py')
+        db.load_fixture(db.agent, fixture_file)
 
         cls._now = datetime.datetime.now()
-        jobs = [{'agent_id': agent_01,
-                 'job_ts': '%s' % cls._now,
-                 'bu_id': 1},
-                {'agent_id': agent_01,
-                 'job_ts': '%s' % cls._now,
-                 'service_code': 3,
-                 'bu_id': 1},
-                {'agent_id': agent_01,
-                 'job_ts': '%s' % cls._now,
-                 'service_code': 3,
-                 'bu_id': 2}]
-        sql = db.job.insert_sql(jobs[0])
-        job_01 = db.insert(sql)
-        sql = db.job.insert_sql(jobs[1])
-        job_02 = db.insert(sql)
-        sql = db.job.insert_sql(jobs[2])
-        job_03 = db.insert(sql)
 
-        # Rules as follows:
-        # id_000 - not primary elect
-        # id_001 - primary elect with valid recipients/delivered
-        # id_002 - primary elect no recipients
-        # id_003 - primary elect/not delivered
-        # id_003 - primary elect/not delivered
-        # id_004 - primary elect/delivered (TransSend)
-        # id_005 - primary elect/not delivered (TransSend)
-        jobitems = [{'connote_nbr': 'con_001',
-                     'item_nbr': 'item_nbr_001',
-                     'email_addr': 'loumar@tollgroup.com',
-                     'phone_nbr': '0431602145',
-                     'job_id': job_01,
-                     'created_ts': '%s' % cls._now},
-                    {'connote_nbr': 'GOLW010997',
-                     'item_nbr': 'item_nbr_002',
-                     'email_addr': 'loumar@tollgroup.com',
-                     'phone_nbr': '0431602145',
-                     'job_id': job_02,
-                     'created_ts': '%s' % cls._now},
-                    {'connote_nbr': 'con_003',
-                     'item_nbr': 'item_nbr_003',
-                     'email_addr': '',
-                     'phone_nbr': '',
-                     'job_id': job_02,
-                     'created_ts': '%s' % cls._now,
-                     'pickup_ts': '%s' % cls._now},
-                    {'connote_nbr': 'GOLW013730',
-                     'item_nbr': 'item_nbr_004',
-                     'email_addr': 'loumar@tollgroup.com',
-                     'phone_nbr': '0431602145',
-                     'job_id': job_02,
-                     'created_ts': '%s' % cls._now},
-                    {'connote_nbr': 'ANWD011307',
-                     'item_nbr': 'ANWD011307001',
-                     'email_addr': 'loumar@tollgroup.com',
-                     'phone_nbr': '0431602145',
-                     'job_id': job_03,
-                     'created_ts': '%s' % cls._now},
-                    {'connote_nbr': 'IANZ012764',
-                     'item_nbr': 'IANZ012764',
-                     'email_addr': 'loumar@tollgroup.com',
-                     'phone_nbr': '0431602145',
-                     'job_id': job_03,
-                     'created_ts': '%s' % cls._now}]
-        sql = db.jobitem.insert_sql(jobitems[0])
-        cls._id_000 = db.insert(sql)
-        sql = db.jobitem.insert_sql(jobitems[1])
-        cls._id_001 = db.insert(sql)
-        sql = db.jobitem.insert_sql(jobitems[2])
-        cls._id_002 = db.insert(sql)
-        sql = db.jobitem.insert_sql(jobitems[3])
-        cls._id_003 = db.insert(sql)
-        sql = db.jobitem.insert_sql(jobitems[4])
-        cls._id_004 = db.insert(sql)
-        sql = db.jobitem.insert_sql(jobitems[5])
-        cls._id_005 = db.insert(sql)
+        # Job table.
+        fixture_file = os.path.join(fixture_dir, 'jobs.py')
+        db.load_fixture(db.job, fixture_file)
+
+        # "identity_type" table.
+        fixture_file = os.path.join(fixture_dir, 'identity_type.py')
+        db.load_fixture(db.identity_type, fixture_file)
+
+        # job_items table.
+        fixture_file = os.path.join(fixture_dir, 'jobitems.py')
+        db.load_fixture(db.jobitem, fixture_file)
+
         db.commit()
 
     def test_init(self):
@@ -170,12 +97,12 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
         self._odd._start(self._odd._exit_event)
 
         # Comms files should have been created.
-        comms_files = ['email.%d.pe' % self._id_001,
-                       'sms.%d.pe' % self._id_001,
-                       'email.%d.pe' % self._id_004,
-                       'sms.%d.pe' % self._id_004]
-        expected = [os.path.join(self._comms_dir, x) for x in comms_files]
         received = get_directory_files_list(self._comms_dir)
+        comms_files = ['email.10.pe',
+                       'sms.10.pe',
+                       'email.12.pe',
+                       'sms.12.pe']
+        expected = [os.path.join(self._comms_dir, x) for x in comms_files]
         msg = 'On Delivery (Primary Elect) comms file error'
         self.assertListEqual(sorted(expected), sorted(received), msg)
 

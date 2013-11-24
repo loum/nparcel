@@ -22,46 +22,43 @@ class TestJobItem(unittest2.TestCase):
         cls._db.connect()
 
         fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        db = cls._db
         # Prepare some sample data.
         # Agent.
         fixture_file = os.path.join(fixture_dir, 'agents.py')
-        cls._db.load_fixture(cls._db.agent, fixture_file)
+        db.load_fixture(db.agent, fixture_file)
 
         # Job table.
         fixture_file = os.path.join(fixture_dir, 'jobs.py')
-        cls._db.load_fixture(cls._db.job, fixture_file)
+        db.load_fixture(db.job, fixture_file)
         sql = """UPDATE job
 SET job_ts = '%s'""" % cls._now
-        cls._db(sql)
-
-        priority_job_id = 1
-        pe_job_id = 2
+        db(sql)
 
         # "identity_type" table.
         fixture_file = os.path.join(fixture_dir, 'identity_type.py')
-        cls._db.load_fixture(cls._db.identity_type, fixture_file)
-        id_type_id = 1
+        db.load_fixture(db.identity_type, fixture_file)
 
         # job_items table.
         fixture_file = os.path.join(fixture_dir, 'jobitems.py')
-        cls._db.load_fixture(cls._db.jobitem, fixture_file)
+        db.load_fixture(db.jobitem, fixture_file)
 
         # Update the timestamps.
         sql = """UPDATE job_item
 SET created_ts = '%s'
 WHERE id IN (1, 3, 4, 5)""" % cls._now
-        cls._db(sql)
+        db(sql)
 
         sql = """UPDATE job_item
 SET pickup_ts = '%s'
 WHERE id IN (1, 5)""" % cls._now
-        cls._db(sql)
+        db(sql)
 
         delayed_dt = cls._now - datetime.timedelta(seconds=(86400 * 5))
         sql = """UPDATE job_item
 SET created_ts = '%(dt)s', notify_ts = '%(dt)s'
 WHERE id = 2""" % {'dt': delayed_dt}
-        cls._db(sql)
+        db(sql)
 
         cls._valid_job_item_id_01 = 1
         cls._valid_job_item_id_02 = 2
@@ -69,7 +66,7 @@ WHERE id = 2""" % {'dt': delayed_dt}
         cls._valid_job_item_id_04 = 4
         cls._valid_job_item_id_05 = 5
 
-        cls._db.commit()
+        db.commit()
 
     def test_init(self):
         """Initialise a JobItem object.
@@ -353,11 +350,12 @@ AND notify_ts IS NOT NULL""" % job_item_id
         received = []
         for row in self._db.rows():
             received.append(row)
-        expected = [(self._valid_job_item_id_03,
-                     'pe_connote',
-                     'pe_item_nbr')]
+        expected = [(3, 'pe_connote', 'pe_item_nbr'),
+                    (10, 'GOLW010997', 'GOLW010997'),
+                    (12, 'ANWD011307', 'ANWD011307001'),
+                    (13, 'IANZ012764', 'IANZ012764')]
         msg = 'uncollected_primary_elect_jobitems_sql return list incorrect'
-        self.assertListEqual(received, expected, msg)
+        self.assertListEqual(sorted(received), sorted(expected), msg)
 
     def test_uncollected_service_code_jobitems_sql_no_bu_ids(self):
         """Verify uncollected_service_code_jobitems SQL string.

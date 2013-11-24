@@ -93,4 +93,44 @@
         'email_addr': 'loumar@tollgroup.com',
         'phone_nbr': '0431602145'
     },
+    {
+        # Primary Elect -- delivered with recipients (MTS)
+        'id': 10,
+        'connote_nbr': 'GOLW010997',
+        'item_nbr': 'GOLW010997',
+        'job_id': 2,
+        'created_ts': str(datetime.datetime.now()),
+        'email_addr': 'loumar@tollgroup.com',
+        'phone_nbr': '0431602145'
+    },
+    {
+        # Primary Elect -- delivered without recipients (MTS)
+        'id': 11,
+        'connote_nbr': 'GOLW012846',
+        'item_nbr': 'GOLW012846',
+        'job_id': 2,
+        'created_ts': str(datetime.datetime.now()),
+        'email_addr': '',
+        'phone_nbr': ''
+    },
+    {
+        # Primary Elect -- delivered (TransSend)
+        'id': 12,
+        'connote_nbr': 'ANWD011307',
+        'item_nbr': 'ANWD011307001',
+        'job_id': 2,
+        'created_ts': str(datetime.datetime.now()),
+        'email_addr': 'loumar@tollgroup.com',
+        'phone_nbr': '0431602145'
+    },
+    {
+        # Primary Elect -- not delivered (TransSend)
+        'id': 13,
+        'connote_nbr': 'IANZ012764',
+        'item_nbr': 'IANZ012764',
+        'job_id': 2,
+        'created_ts': str(datetime.datetime.now()),
+        'email_addr': 'loumar@tollgroup.com',
+        'phone_nbr': '0431602145'
+    },
 ]
