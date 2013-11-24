@@ -13,31 +13,31 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._ped = nparcel.OnDeliveryDaemon(pidfile=None)
+        cls._odd = nparcel.OnDeliveryDaemon(pidfile=None)
 
         cls._report_in_dirs = tempfile.mkdtemp()
-        cls._ped.set_report_in_dirs([cls._report_in_dirs])
+        cls._odd.set_report_in_dirs([cls._report_in_dirs])
 
         cls._comms_dir = tempfile.mkdtemp()
-        cls._ped.set_comms_dir(cls._comms_dir)
+        cls._odd.set_comms_dir(cls._comms_dir)
 
         # Call up front to pre-load the DB.
-        cls._ped.set_pe(ts_db_kwargs=None)
-        schema = cls._ped.pe.ts_db.transsend.schema
-        cls._ped.pe.ts_db.create_table(name='v_nparcel_adp_connotes',
+        cls._odd.set_on_delivery(ts_db_kwargs=None)
+        schema = cls._odd.od.ts_db.transsend.schema
+        cls._odd.od.ts_db.create_table(name='v_nparcel_adp_connotes',
                                        schema=schema)
         fixture_file = os.path.join('nparcel',
                                     'tests',
                                     'fixtures',
                                     'transsend.py')
-        cls._ped.pe.ts_db.load_fixture(cls._ped.pe.ts_db.transsend,
+        cls._odd.od.ts_db.load_fixture(cls._odd.od.ts_db.transsend,
                                        fixture_file)
 
         cls._test_dir = 'nparcel/tests/files'
         cls._test_file = 'mts_delivery_report_20131018100758.csv'
         cls._test_filepath = os.path.join(cls._test_dir, cls._test_file)
 
-        db = cls._ped.pe.db
+        db = cls._odd.od.db
         agents = [{'code': 'N031',
                    'state': 'VIC',
                    'name': 'N031 Name',
@@ -137,35 +137,37 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
         """Intialise a OnDeliveryDaemon object.
         """
         msg = 'Not a nparcel.OnDeliveryDaemon object'
-        self.assertIsInstance(self._ped, nparcel.OnDeliveryDaemon, msg)
+        self.assertIsInstance(self._odd, nparcel.OnDeliveryDaemon, msg)
 
-    def test_start(self):
+    def test_start_dry_loop(self):
         """On Delivery _start dry loop.
         """
-        old_dry = self._ped.dry
+        old_dry = self._odd.dry
 
-        self._ped.set_dry()
-        self._ped._start(self._ped.exit_event)
+        self._odd.set_dry()
+        self._odd._start(self._odd.exit_event)
 
         # Clean up.
-        self._ped.set_dry(old_dry)
-        self._ped._exit_event.clear()
+        self._odd.set_dry(old_dry)
+        self._odd._exit_event.clear()
 
     def test_start_non_dry_loop_with_transsend(self):
         """Start non-dry loop -- transsend.
         """
         dry = False
 
-        old_dry = self._ped.dry
-        old_batch = self._ped.batch
-        old_support_emails = self._ped.support_emails
+        old_dry = self._odd.dry
+        old_batch = self._odd.batch
+        old_support_emails = self._odd.support_emails
+        old_pe_comms_ids = self._odd.pe_bu_ids
         copy_file(os.path.join(self._test_dir, self._test_file),
                   os.path.join(self._report_in_dirs, self._test_file))
 
         # Start processing.
-        self._ped.set_dry(dry)
-        self._ped.set_batch()
-        self._ped._start(self._ped._exit_event)
+        self._odd.set_dry(dry)
+        self._odd.set_batch()
+        self._odd.set_pe_bu_ids((1, 2, 3))
+        self._odd._start(self._odd._exit_event)
 
         # Comms files should have been created.
         comms_files = ['email.%d.pe' % self._id_001,
@@ -180,10 +182,39 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
         # Clean up.
         remove_files(expected)
         remove_files(os.path.join(self._report_in_dirs, self._test_file))
-        self._ped.set_dry(old_dry)
-        self._ped.set_batch(old_batch)
-        self._ped.set_support_emails(old_support_emails)
-        self._ped._exit_event.clear()
+        self._odd.set_dry(old_dry)
+        self._odd.set_batch(old_batch)
+        self._odd.set_support_emails(old_support_emails)
+        self._odd.set_pe_bu_ids(old_pe_comms_ids)
+        self._odd._exit_event.clear()
+
+    def test_start_non_dry_loop_with_transsend_no_pe_comms(self):
+        """Start non-dry loop -- transsend and no PE comms IDs.
+        """
+        dry = False
+
+        old_dry = self._odd.dry
+        old_batch = self._odd.batch
+        old_support_emails = self._odd.support_emails
+        copy_file(os.path.join(self._test_dir, self._test_file),
+                  os.path.join(self._report_in_dirs, self._test_file))
+
+        # Start processing.
+        self._odd.set_dry(dry)
+        self._odd.set_batch()
+        self._odd._start(self._odd._exit_event)
+
+        received = get_directory_files_list(self._comms_dir)
+        expected = []
+        msg = 'On Delivery (Primary Elect) no PE IDs comms file error'
+        self.assertListEqual(sorted(expected), sorted(received), msg)
+
+        # Clean up.
+        remove_files(os.path.join(self._report_in_dirs, self._test_file))
+        self._odd.set_dry(old_dry)
+        self._odd.set_batch(old_batch)
+        self._odd.set_support_emails(old_support_emails)
+        self._odd._exit_event.clear()
 
     def test_validate_file_not_mts_format(self):
         """Parse non-MTS formatted file.
@@ -191,7 +222,7 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
         f_obj = tempfile.NamedTemporaryFile()
         mts_file = f_obj.name
 
-        received = self._ped.validate_file(mts_file)
+        received = self._odd.validate_file(mts_file)
         msg = 'Dodgy MTS file shoould not validate'
         self.assertFalse(received)
 
@@ -204,7 +235,7 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
         mts_file = f.name
         f.close()
 
-        received = self._ped.validate_file(mts_file)
+        received = self._odd.validate_file(mts_file)
         msg = 'Dodgy MTS file shoould not validate'
         self.assertTrue(received)
 
@@ -224,7 +255,7 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
             fh = open(os.path.join(self._report_in_dirs, file), 'w')
             fh.close()
 
-        received = self._ped.get_files()
+        received = self._odd.get_files()
         expected = [os.path.join(self._report_in_dirs, mts_file[0])]
         msg = 'MTS report files from get_files() error'
         self.assertListEqual(received, expected, msg)
@@ -236,17 +267,17 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
     def test_get_files_empty_report_dir(self):
         """Get report files -- empty report directory.
         """
-        received = self._ped.get_files()
+        received = self._odd.get_files()
         expected = []
         msg = 'Report files from get_files() error'
         self.assertListEqual(received, expected, msg)
 
     @classmethod
     def tearDownClass(cls):
-        cls._ped = None
+        cls._odd = None
         cls._test_file = None
         cls._test_filepath = None
-        del cls._ped
+        del cls._odd
         del cls._test_file
         del cls._test_filepath
 

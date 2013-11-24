@@ -132,7 +132,17 @@ class OnDelivery(nparcel.Service):
                 dry=False):
         """Checks whether a Primary Elect job item has had comms sent.
 
+        **Args:**
+            *template*: the comms notification template to use.  For
+            example, ``pe`` for the Primary Elect check
+
         **Kwargs:**
+            *service_code*: ``job.service_code`` column value to use in the
+            uncollected ``job_items`` table extraction
+
+            *bu_ids*: the Business Unit IDs to use in the uncollected
+            ``job_items`` table extraction
+
             *job_items*: list of ``(<id>, <connote>, <item_nbr>)``
             that can be fed into the process loop directly
 

@@ -28,13 +28,35 @@ class OnDeliveryDaemon(nparcel.DaemonService):
 
         directory where comms files are kept for further processing
 
+    .. attribute:: db_kwargs
+
+        dictionary of connection string values for the Toll Parcel Point
+        database.  Typical format is::
+
+            {'driver': ...,
+             'host': ...,
+             'database': ...,
+             'user': ...,
+             'password': ...,
+             'port': ...}
+
+    .. attribute od
+
+        :mod:`nparcel.OnDelivery` object
+
+    .. attribute:: pe_bu_ids
+
+        Business Unit IDs to use in the Primary Elect uncollected
+        ``job_items`` table extraction
+
     """
     _config = None
     _report_in_dirs = ['/data/nparcel/mts']
     _report_file_format = 'mts_delivery_report_\d{14}\.csv'
     _comms_dir = '/data/nparcel/comms'
     _db_kwargs = None
-    _pe = None
+    _od = None
+    _pe_bu_ids = ()
 
     def __init__(self,
                  pidfile,
@@ -93,6 +115,13 @@ class OnDeliveryDaemon(nparcel.DaemonService):
             msg = ('DB kwargs not defined in config')
             log.info(msg)
 
+        try:
+            self.set_bu_ids(self.config.pe_comms_ids)
+        except AttributeError, err:
+            msg = ('PE comms IDs not defined in config -- using %s' %
+                   str(self.pe_bu_ids))
+            log.info(msg)
+
     @property
     def report_in_dirs(self):
         return self._report_in_dirs
@@ -130,10 +159,17 @@ class OnDeliveryDaemon(nparcel.DaemonService):
             self._db_kwargs = value
 
     @property
-    def pe(self):
-        return self._pe
+    def od(self):
+        return self._od
 
-    def set_pe(self, db=None, ts_db_kwargs=None, comms_dir=None):
+    @property
+    def pe_bu_ids(self):
+        return self._pe_bu_ids
+
+    def set_pe_bu_ids(self, values):
+        self._pe_bu_ids = values
+
+    def set_on_delivery(self, db=None, ts_db_kwargs=None, comms_dir=None):
         """Create a OnDelivery object,
 
         **Kwargs:**
@@ -158,23 +194,23 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         if comms_dir is None:
             comms_dir = self.comms_dir
 
-        if self._pe is None:
-            self._pe = nparcel.OnDelivery(db_kwargs=db,
+        if self._od is None:
+            self._od = nparcel.OnDelivery(db_kwargs=db,
                                           ts_db_kwargs=ts_db_kwargs,
                                           comms_dir=comms_dir)
 
             try:
-                self._pe.set_delivered_header(self.config.delivered_header)
+                self._od.set_delivered_header(self.config.delivered_header)
             except AttributeError, err:
                 log.info('Using default PE delivered_header: "%s"' %
-                         self._pe.delivered_header)
+                         self._od.delivered_header)
 
             try:
                 event_key = self.config.delivered_event_key
-                self._pe.set_delivered_event_key(event_key)
+                self._od.set_delivered_event_key(event_key)
             except AttributeError, err:
                 log.info('Using default PE delivered_event_key: "%s"' %
-                         self._pe.delivered_event_key)
+                         self._od.delivered_event_key)
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
@@ -191,28 +227,35 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         """
         signal.signal(signal.SIGTERM, self._exit_handler)
 
-        self.set_pe(comms_dir=self.comms_dir)
+        self.set_on_delivery(comms_dir=self.comms_dir)
 
         while not event.isSet():
-            files = []
+            mts_files = []
 
-            if not self.pe.db() or not self.pe.ts_db():
+            if not self.od.db() or not self.od.ts_db():
                 log.error('ODBC connection failure -- aborting')
                 event.set()
             else:
                 if self.file is not None:
-                    files.append(self.file)
+                    mts_files.append(self.file)
                     event.set()
                 else:
-                    files.extend(self.get_files())
+                    mts_files.extend(self.get_files())
 
-                # Start processing files.
-                for file in files:
-                    log.info('Processing file: "%s" ...' % file)
-                    if self.validate_file(file):
-                        self.pe.process(template='pe',
-                                        mts_file=file,
-                                        dry=self.dry)
+            mts_file = None
+            if len(mts_files):
+                mts_file = mts_files[0]
+
+            msg = 'Starting uncollected Primary Elect on delivery check ...'
+            log.info(msg)
+            processed_ids = self.od.process(template='pe',
+                                            service_code=3,
+                                            bu_ids=self.pe_bu_ids,
+                                            mts_file=mts_file,
+                                            dry=self.dry)
+            msg = ('Uncollected Primary Elect IDs processed: "%s"' %
+                   processed_ids)
+            log.info(msg)
 
             if not event.isSet():
                 if self.dry:
@@ -270,8 +313,10 @@ class OnDeliveryDaemon(nparcel.DaemonService):
             log.info('Searching "%s" for report files' % report_in_dir)
             files = get_directory_files_list(report_in_dir,
                                              filter=self.report_file_format)
-            if len(files):
-                report_files.extend(files)
+
+        for f in files:
+            if self.validate_file(f):
+                report_files.append(f)
 
         report_files.sort()
         log.debug('All report files: "%s"' % report_files)
@@ -279,6 +324,6 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         report_file = []
         if len(report_files):
             report_file.append(report_files[-1])
-            log.info('Found report file "%s"' % report_file)
+            log.info('Using report file "%s"' % report_file)
 
         return report_file
