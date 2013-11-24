@@ -910,6 +910,10 @@ class B2CConfig(nparcel.Config):
     def pe_comms_ids(self):
         return self.bu_ids_with_set_condition('pe_comms')
 
+    @property
+    def sc4_comms_ids(self):
+        return self.bu_ids_with_set_condition('on_del_sc_4')
+
     def db_kwargs(self):
         """Extract database connectivity information from the config.
 

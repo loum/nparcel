@@ -4,7 +4,7 @@
         'connote_number': 'TWAD358893',
         'transsend_job_number': '4558',
         'item_number': 'TWAD358893001',
-        'latest_scan_event_action': 'INTO DEPOT',
+        'latest_scan_event_action': 'DELIVERED',
         'job_due_date': str(datetime.datetime(2013, 5, 28, 0, 0)),
         'job_last_updated_date': str(datetime.datetime(2013, 5, 27, 8, 7, 8)),
         'job_type': 'DEL',

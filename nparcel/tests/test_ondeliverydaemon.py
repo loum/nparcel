@@ -115,8 +115,8 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
         self._odd.set_pe_bu_ids(old_pe_comms_ids)
         self._odd._exit_event.clear()
 
-    def test_start_non_dry_loop_with_transsend_no_pe_comms(self):
-        """Start non-dry loop -- transsend and no PE comms IDs.
+    def test_start_non_dry_loop_with_no_bu_ids_defined(self):
+        """Start non-dry loop -- PE/SC 4 no BU defined.
         """
         dry = False
 
@@ -141,6 +141,40 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
         self._odd.set_dry(old_dry)
         self._odd.set_batch(old_batch)
         self._odd.set_support_emails(old_support_emails)
+        self._odd._exit_event.clear()
+
+    def test_start_non_dry_loop_with_transsend_with_sc4_comms(self):
+        """Start non-dry loop -- transsend and service code 4 comms.
+        """
+        dry = False
+
+        old_dry = self._odd.dry
+        old_batch = self._odd.batch
+        old_support_emails = self._odd.support_emails
+        old_sc4_ids = self._odd.sc4_bu_ids
+        copy_file(os.path.join(self._test_dir, self._test_file),
+                  os.path.join(self._report_in_dirs, self._test_file))
+
+        # Start processing.
+        self._odd.set_dry(dry)
+        self._odd.set_batch()
+        self._odd.set_sc4_bu_ids((1,))
+        self._odd._start(self._odd._exit_event)
+
+        received = get_directory_files_list(self._comms_dir)
+        comms_files = ['email.14.body',
+                       'sms.14.body']
+        expected = [os.path.join(self._comms_dir, x) for x in comms_files]
+        msg = 'On Delivery (SC 4) comms file error'
+        self.assertListEqual(sorted(expected), sorted(received), msg)
+
+        # Clean up.
+        remove_files(expected)
+        remove_files(os.path.join(self._report_in_dirs, self._test_file))
+        self._odd.set_dry(old_dry)
+        self._odd.set_batch(old_batch)
+        self._odd.set_support_emails(old_support_emails)
+        self._odd.set_sc4_bu_ids(old_sc4_ids)
         self._odd._exit_event.clear()
 
     def test_validate_file_not_mts_format(self):

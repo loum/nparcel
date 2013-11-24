@@ -85,6 +85,7 @@
         'phone_nbr': '0431602145'
     },
     {
+        # Service Code 4 -- BU ID 2 (not exist in MTS or TransSend)
         'id': 9,
         'connote_nbr': 'uncollected_connote_sc_4',
         'item_nbr': 'uncollected_connote_sc_4_item_nbr',
@@ -129,6 +130,16 @@
         'connote_nbr': 'IANZ012764',
         'item_nbr': 'IANZ012764',
         'job_id': 2,
+        'created_ts': str(datetime.datetime.now()),
+        'email_addr': 'loumar@tollgroup.com',
+        'phone_nbr': '0431602145'
+    },
+    {
+        # Service Code 4 -- BU ID (1, ) delivered (TransSend)
+        'id': 14,
+        'connote_nbr': 'TWAD358893',
+        'item_nbr': 'TWAD358893001',
+        'job_id': 5,
         'created_ts': str(datetime.datetime.now()),
         'email_addr': 'loumar@tollgroup.com',
         'phone_nbr': '0431602145'

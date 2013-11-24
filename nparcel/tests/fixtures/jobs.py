@@ -30,4 +30,12 @@
         'service_code': 4,
         'bu_id': 2,
     },
+    {
+        'id': 5,
+        'card_ref_nbr': 'on_del_sc_4_ref_nbr',
+        'agent_id': 1,
+        'job_ts': str(datetime.datetime.now()),
+        'service_code': 4,
+        'bu_id': 1,
+    },
 ]

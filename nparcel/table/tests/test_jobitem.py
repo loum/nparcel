@@ -405,9 +405,10 @@ AND notify_ts IS NOT NULL""" % job_item_id
             received.append(row)
         expected = [(9,
                      'uncollected_connote_sc_4',
-                     'uncollected_connote_sc_4_item_nbr')]
+                     'uncollected_connote_sc_4_item_nbr'),
+                    (14, 'TWAD358893', 'TWAD358893001')]
         msg = 'Uncollected service code with bu_ids 4 error'
-        self.assertListEqual(received, expected, msg)
+        self.assertListEqual(sorted(received), sorted(expected), msg)
 
     @classmethod
     def tearDownClass(cls):

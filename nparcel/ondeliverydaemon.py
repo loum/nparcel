@@ -46,7 +46,12 @@ class OnDeliveryDaemon(nparcel.DaemonService):
 
     .. attribute:: pe_bu_ids
 
-        Business Unit IDs to use in the Primary Elect uncollected
+        Business Unit IDs to use in the Primary Elect on delivery
+        ``job_items`` table extraction
+
+    .. attribute:: sc4_bu_ids
+
+        Business Unit IDs to use in the Service Code 4 on delivery
         ``job_items`` table extraction
 
     """
@@ -57,6 +62,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
     _db_kwargs = None
     _od = None
     _pe_bu_ids = ()
+    _sc4_bu_ids = ()
 
     def __init__(self,
                  pidfile,
@@ -116,10 +122,17 @@ class OnDeliveryDaemon(nparcel.DaemonService):
             log.info(msg)
 
         try:
-            self.set_bu_ids(self.config.pe_comms_ids)
+            self.set_pe_bu_ids(self.config.pe_comms_ids)
         except AttributeError, err:
             msg = ('PE comms IDs not defined in config -- using %s' %
                    str(self.pe_bu_ids))
+            log.info(msg)
+
+        try:
+            self.set_sc4_bu_ids(self.config.sc4_comms_ids)
+        except AttributeError, err:
+            msg = ('SC 4 comms IDs not defined in config -- using %s' %
+                   str(self.sc4_bu_ids))
             log.info(msg)
 
     @property
@@ -168,6 +181,13 @@ class OnDeliveryDaemon(nparcel.DaemonService):
 
     def set_pe_bu_ids(self, values):
         self._pe_bu_ids = values
+
+    @property
+    def sc4_bu_ids(self):
+        return self._sc4_bu_ids
+
+    def set_sc4_bu_ids(self, values):
+        self._sc4_bu_ids = values
 
     def set_on_delivery(self, db=None, ts_db_kwargs=None, comms_dir=None):
         """Create a OnDelivery object,
@@ -246,14 +266,25 @@ class OnDeliveryDaemon(nparcel.DaemonService):
             if len(mts_files):
                 mts_file = mts_files[0]
 
-            msg = 'Starting uncollected Primary Elect on delivery check ...'
+            msg = 'On Delivery Primary Elect check ...'
             log.info(msg)
             processed_ids = self.od.process(template='pe',
                                             service_code=3,
                                             bu_ids=self.pe_bu_ids,
                                             mts_file=mts_file,
                                             dry=self.dry)
-            msg = ('Uncollected Primary Elect IDs processed: "%s"' %
+            msg = ('Primary Elect job_items.id comms files created: "%s"' %
+                   processed_ids)
+            log.info(msg)
+
+            msg = 'Starting Service Code 4 On Delivery check ...'
+            log.info(msg)
+            processed_ids = self.od.process(template='body',
+                                            service_code=4,
+                                            bu_ids=self.sc4_bu_ids,
+                                            mts_file=mts_file,
+                                            dry=self.dry)
+            msg = ('Service Code 4 job_items.id comms files created: "%s"' %
                    processed_ids)
             log.info(msg)
 
