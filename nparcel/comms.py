@@ -168,6 +168,8 @@ class Comms(object):
                     move_file(comms_file, comms_file_err)
                 for addr in self.emailer.support:
                     template_items['error_comms'] = action.upper()
+                    bad_email = template_items['email_addr']
+                    template_items['bad_email_addr'] = bad_email
                     template_items['email_addr'] = addr
                     email_status = self.send_email(template_items,
                                                    template=template,

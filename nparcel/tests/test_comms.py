@@ -741,6 +741,7 @@ WHERE id = %d""" % self._id_000
         """
         received = self._c.get_agent_details(self._id_000)
         expected = {'address': 'V031 Address',
+                    'bu_id': 1,
                     'connote_nbr': 'con_001',
                     'created_ts': '%s' % self._now,
                     'item_nbr': 'item_nbr_001',

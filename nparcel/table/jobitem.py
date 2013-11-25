@@ -182,6 +182,8 @@ AND reminder_ts IS NULL""" % (start_date, uncollected_period)
         * ``jobitem.phone_nbr``
         * ``jobitem.pickup_ts``
 
+        and the *job.bu_id*.
+
         **Args:**
             job_item_id: the jobitem.id value to search against
 
@@ -198,7 +200,8 @@ AND reminder_ts IS NULL""" % (start_date, uncollected_period)
        ji.created_ts,
        ji.email_addr,
        ji.phone_nbr,
-       ji.pickup_ts
+       ji.pickup_ts,
+       j.bu_id
 FROM job_item as ji, job as j, agent as ag
 WHERE ji.job_id = j.id
 AND j.agent_id = ag.id

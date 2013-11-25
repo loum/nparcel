@@ -516,12 +516,14 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'Proxy kwargs should produce a populated dictionary'
         received = self._c.proxy_kwargs()
-        expected = {'host': 'auproxy-farm.toll.com.au',
-                    'password': '',
-                    'port': 8080,
-                    'protocol': 'https',
-                    'user': 'loumar'}
-        self.assertDictEqual(received, expected, msg)
+        expected = None
+        if received is not None:
+            expected = {'host': 'auproxy-farm.toll.com.au',
+                        'password': '',
+                        'port': 8080,
+                        'protocol': 'https',
+                        'user': 'loumar'}
+        self.assertEqual(received, expected, msg)
 
     def test_proxy_string_no_values(self):
         """Produce a proxy string -- no values.

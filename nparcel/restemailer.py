@@ -370,7 +370,7 @@ class RestEmailer(nparcel.Rest):
         subject_t = f.read()
         f.close()
         subject_s = string.Template(subject_t)
-        subject_string = subject_s.substitute(**data)
+        subject_string = subject_s.substitute(**data).rstrip()
 
         log.debug('Email comms subject string: "%s"' % subject_string)
 

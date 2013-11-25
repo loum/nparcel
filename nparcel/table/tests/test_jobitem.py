@@ -252,7 +252,8 @@ WHERE id = 2""" % {'dt': delayed_dt}
                      self._now.isoformat(' '),
                      'loumar@tollgroup.com',
                      '0431602145',
-                     self._now.isoformat(' '))]
+                     self._now.isoformat(' '),
+                     1)]
         msg = 'Agent details based on job_item.id not as expected'
         self.assertListEqual(received, expected, msg)
 

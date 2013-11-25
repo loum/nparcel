@@ -102,7 +102,7 @@ class TestRestEmailer(unittest2.TestCase):
         """
         d = {'connote_nbr': 'subject_connote'}
         received = self._re.get_subject_line(d, base_dir='nparcel')
-        expected = 'Toll Consumer Delivery tracking # subject_connote\n'
+        expected = 'Toll Consumer Delivery tracking # subject_connote'
         msg = 'Base body subject line not as expected'
         self.assertEqual(received, expected, msg)
 
