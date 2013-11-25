@@ -21,8 +21,10 @@ class TestExporterIpec(unittest2.TestCase):
 
         # Prepare some sample data.
         # "agent" table.
-        agents = [{'code': 'OK01'},
-                  {'code': 'BAD1'}]
+        agents = [{'code': 'OK01',
+                   'state': 'VIC'},
+                  {'code': 'BAD1',
+                   'state': 'VIC'}]
         agent_ok = cls._e.db.insert(cls._e.db._agent.insert_sql(agents[0]))
         agent_nok = cls._e.db.insert(cls._e.db._agent.insert_sql(agents[1]))
 

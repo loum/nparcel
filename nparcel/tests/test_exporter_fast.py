@@ -191,7 +191,8 @@ class TestExporterFast(unittest2.TestCase):
                      '%s|%s|%s|%s|%s|%s|%s' %
                      ('fast_connote_nbr_04',
                       '4',
-                      self._now.isoformat(' ')[:-7],
+                      self._e.convert_timezone(self._now.isoformat(' ')[:-7],
+                                               'QLD'),
                       'pod_name fast 04',
                       'License',
                       'fast identity 04',
@@ -207,7 +208,8 @@ class TestExporterFast(unittest2.TestCase):
                      '%s|%s|%s|%s|%s|%s|%s' %
                      ('fast_connote_nbr_06',
                       '6',
-                      self._now.isoformat(' ')[:-7],
+                      self._e.convert_timezone(self._now.isoformat(' ')[:-7],
+                                               'SA'),
                       'pod_name fast 06',
                       'License',
                       'fast identity 06',
@@ -293,7 +295,8 @@ class TestExporterFast(unittest2.TestCase):
                      'ITEM_NBR',
                      'fast_connote_nbr_04',
                      '4',
-                     self._now.isoformat(' ')[:-7],
+                     self._e.convert_timezone(self._now.isoformat(' ')[:-7],
+                                              'QLD'),
                      'pod_name fast 04',
                      'License',
                      'fast identity 04',
@@ -314,7 +317,8 @@ class TestExporterFast(unittest2.TestCase):
                      'ITEM_NBR',
                      'fast_connote_nbr_06',
                      '6',
-                     self._now.isoformat(' ')[:-7],
+                     self._e.convert_timezone(self._now.isoformat(' ')[:-7],
+                                              'SA'),
                      'pod_name fast 06',
                      'License',
                      'fast identity 06',
@@ -335,7 +339,8 @@ class TestExporterFast(unittest2.TestCase):
                      'ITEM_NBR',
                      'fast_connote_nbr_01',
                      '1',
-                     self._now.isoformat(' ')[:-7],
+                     self._e.convert_timezone(self._now.isoformat(' ')[:-7],
+                                              'VIC'),
                      'pod_name fast 01',
                      'License',
                      'fast identity 01',
@@ -353,9 +358,8 @@ class TestExporterFast(unittest2.TestCase):
         pod_files = []
         bu_staging_dir = os.path.join(self._e._staging_dir, 'fast', 'out')
         for item in items:
-           pod_file = os.path.join(bu_staging_dir,
-                                   '%s.ps' % str(item[1]))
-           pod_files.append(pod_file)
+            pod_file = os.path.join(bu_staging_dir, '%s.ps' % str(item[1]))
+            pod_files.append(pod_file)
 
         received = get_directory_files_list(bu_staging_dir, '.*\.ps')
         expected = pod_files
