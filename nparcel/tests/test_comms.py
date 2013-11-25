@@ -376,9 +376,6 @@ class TestComms(unittest2.TestCase):
         files_to_delete = dodgy
         if dry:
             files_to_delete += comms_files
-        else:
-            files_to_delete.append('email.2.body.err')
-            files_to_delete.append('sms.2.body.err')
 
         fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
         remove_files(fs)
@@ -501,7 +498,7 @@ WHERE id = %d""" % self._id_000
         if not dry:
             received = self._c.get_comms_files()
             expected = []
-            msg = 'Primary elect comms files second pass processing incorrect'
+            msg = 'Primary elect comms files 2nd pass processing incorrect'
             self.assertListEqual(received, expected, msg)
 
         # Cleanup.

@@ -129,7 +129,7 @@ class Comms(object):
                 log.warn('%s pickup_ts has been set -- not sending comms' %
                          comms_file)
                 if not dry:
-                    move_file(comms_file, comms_file_err)
+                    remove_files(comms_file)
                 comms_status = False
 
         if comms_status:
