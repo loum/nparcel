@@ -163,10 +163,6 @@ class OnDelivery(nparcel.Service):
             self.parser.read()
 
         if job_items is None:
-            if service_code is None:
-                service_code = 3
-            if bu_ids is None:
-                bu_ids = tuple([1, 2, 3])
             job_items = self.get_uncollected_job_items(service_code,
                                                        bu_ids)
         else:

@@ -202,6 +202,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
             for further processing
 
         """
+        log.debug('Setting the OnDelivery object ...')
         if db is None:
             db = self.db_kwargs
 
@@ -268,25 +269,31 @@ class OnDeliveryDaemon(nparcel.DaemonService):
 
             msg = 'On Delivery Primary Elect check ...'
             log.info(msg)
-            processed_ids = self.od.process(template='pe',
-                                            service_code=3,
-                                            bu_ids=self.pe_bu_ids,
-                                            mts_file=mts_file,
-                                            dry=self.dry)
-            msg = ('Primary Elect job_items.id comms files created: "%s"' %
-                   processed_ids)
-            log.info(msg)
+            if len(self.pe_bu_ids):
+                processed_ids = self.od.process(template='pe',
+                                                service_code=3,
+                                                bu_ids=self.pe_bu_ids,
+                                                mts_file=mts_file,
+                                                dry=self.dry)
+                msg = ('PE job_items.id comms files created: "%s"' %
+                       processed_ids)
+                log.info(msg)
+            else:
+                log.info("No Primary Elect BU ID's defined -- skipping")
 
             msg = 'Starting Service Code 4 On Delivery check ...'
             log.info(msg)
-            processed_ids = self.od.process(template='body',
-                                            service_code=4,
-                                            bu_ids=self.sc4_bu_ids,
-                                            mts_file=mts_file,
-                                            dry=self.dry)
-            msg = ('Service Code 4 job_items.id comms files created: "%s"' %
-                   processed_ids)
-            log.info(msg)
+            if len(self.sc4_bu_ids):
+                processed_ids = self.od.process(template='body',
+                                                service_code=4,
+                                                bu_ids=self.sc4_bu_ids,
+                                                mts_file=mts_file,
+                                                dry=self.dry)
+                msg = ('SC 4 job_items.id comms files created: "%s"' %
+                       processed_ids)
+                log.info(msg)
+            else:
+                log.info("No Service Code 4 BU ID's defined -- skipping")
 
             if not event.isSet():
                 if self.dry:
