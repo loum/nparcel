@@ -170,11 +170,15 @@ class DbSession(object):
         self.create_table("agent", self._agent.schema)
         self.create_table("identity_type", self._identity_type.schema)
 
-    def close(self):
+    def disconnect(self):
+        log.info('Disconnecting from DB ...')
         if self.connection is not None:
+            self._cursor.close()
             self._cursor = None
             self.connection.close()
             self._connection = None
+        else:
+            log.warn('No DB connection detected')
 
     def insert(self, sql):
         """

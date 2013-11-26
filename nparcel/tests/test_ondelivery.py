@@ -155,7 +155,13 @@ class TestOnDelivery(unittest2.TestCase):
         """
         dry = True
 
-        received = self._on.process(self._test_file, dry=dry)
+        service_code = 3
+        bu_ids = (1, 2, 3)
+        received = self._on.process(template='pe',
+                                    service_code=service_code,
+                                    bu_ids=bu_ids,
+                                    mts_file=self._test_file,
+                                    dry=dry)
         expected = []
         msg = 'List of processed primary elect items incorrect'
         self.assertListEqual(received, expected, msg)
@@ -165,7 +171,11 @@ class TestOnDelivery(unittest2.TestCase):
         """
         dry = False
 
+        service_code = 3
+        bu_ids = (1, 2, 3)
         received = self._on.process(template='pe',
+                                    service_code=service_code,
+                                    bu_ids=bu_ids,
                                     mts_file=self._test_file,
                                     dry=dry)
         expected = [self._id_001, self._id_004]
@@ -195,9 +205,13 @@ class TestOnDelivery(unittest2.TestCase):
         dry = False
 
         template = 'pe'
+        service_code = 3
+        bu_ids = (1, 2, 3)
         job_items = [(5, 'ANWD011307', 'ANWD011307001')]
 
         received = self._on.process(template=template,
+                                    service_code=service_code,
+                                    bu_ids=bu_ids,
                                     job_items=job_items,
                                     mts_file=self._test_file,
                                     dry=dry)
@@ -223,7 +237,13 @@ class TestOnDelivery(unittest2.TestCase):
         """
         dry = False
 
-        received = self._on.process(template='pe', dry=dry)
+        template = 'pe'
+        service_code = 3
+        bu_ids = (1, 2, 3)
+        received = self._on.process(template=template,
+                                    service_code=service_code,
+                                    bu_ids=bu_ids,
+                                    dry=dry)
         expected = [self._id_004]
         msg = 'Processed primary elect should return empty list'
         self.assertListEqual(received, expected, msg)

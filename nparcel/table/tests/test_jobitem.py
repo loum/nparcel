@@ -413,7 +413,7 @@ AND notify_ts IS NOT NULL""" % job_item_id
 
     @classmethod
     def tearDownClass(cls):
-        cls._db.close()
+        cls._db.disconnect()
         cls._db = None
         del cls._db
         del cls._valid_job_item_id_01

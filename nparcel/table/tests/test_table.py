@@ -35,5 +35,5 @@ class TestTable(unittest2.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls._db.close()
+        cls._db.disconnect()
         cls._db = None

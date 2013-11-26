@@ -125,8 +125,8 @@ class OnDelivery(nparcel.Service):
 
     def process(self,
                 template,
-                service_code=None,
-                bu_ids=None,
+                service_code,
+                bu_ids,
                 job_items=None,
                 mts_file=None,
                 dry=False):
@@ -136,12 +136,13 @@ class OnDelivery(nparcel.Service):
             *template*: the comms notification template to use.  For
             example, ``pe`` for the Primary Elect check
 
-        **Kwargs:**
             *service_code*: ``job.service_code`` column value to use in the
             uncollected ``job_items`` table extraction
 
             *bu_ids*: the Business Unit IDs to use in the uncollected
             ``job_items`` table extraction
+
+        **Kwargs:**
 
             *job_items*: list of ``(<id>, <connote>, <item_nbr>)``
             that can be fed into the process loop directly

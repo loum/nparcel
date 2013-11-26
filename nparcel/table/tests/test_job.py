@@ -285,7 +285,7 @@ VALUES ("%s", "%s")""" % (bc, self._job_ts)
 
     @classmethod
     def tearDownClass(cls):
-        cls._db.close()
+        cls._db.disconnect()
         cls._db = None
         cls._job = None
         cls._job_ts = None

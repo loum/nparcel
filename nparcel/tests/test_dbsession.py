@@ -40,5 +40,5 @@ VALUES ('xxx')"""
 
     @classmethod
     def tearDownClass(cls):
-        cls._db.close()
+        cls._db.disconnect()
         cls._db = None

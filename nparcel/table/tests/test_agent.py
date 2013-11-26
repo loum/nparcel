@@ -61,6 +61,6 @@ VALUES ("%s")""" % a_code
 
     @classmethod
     def tearDownClass(cls):
-        cls._db.close()
+        cls._db.disconnect()
         cls._db = None
         cls._test_id = None
