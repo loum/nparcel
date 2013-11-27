@@ -392,6 +392,24 @@ AND notify_ts IS NOT NULL""" % job_item_id
         msg = 'Uncollected service code with bu_ids 1 error'
         self.assertListEqual(received, expected, msg)
 
+    def test_uncollected_service_code_jobitems_sql_single_bu_syntax(self):
+        """Verify uncollected_service_code_jobitems SQL string.
+        """
+        bu_ids = (2,)
+        service_code = 1
+        received = self._db.jobitem.uncollected_jobitems_sql(service_code,
+                                                             bu_ids)
+        expected = """SELECT ji.id, ji.connote_nbr, ji.item_nbr
+FROM job as j, job_item as ji
+WHERE ji.job_id = j.id
+AND ji.pickup_ts is NULL
+AND ji.notify_ts is NULL
+AND (ji.email_addr != '' OR ji.phone_nbr != '')
+AND j.bu_id IN (2)
+AND j.service_code = 1"""
+        msg = 'Uncollected service code single BU syntax error'
+        self.assertEqual(received, expected, msg)
+
     def test_uncollected_service_code_jobitems_sql_bu_2(self):
         """Verify uncollected_service_code_jobitems SQL string.
         """

@@ -287,6 +287,9 @@ AND j.service_code = 3""" % (self.name, connote)
         if bu_ids is None:
             bu_ids = tuple()
 
+        if len(bu_ids) == 1:
+            bu_ids = '(%d)' % bu_ids[0]
+
         sql = """SELECT ji.id, ji.connote_nbr, ji.item_nbr
 FROM job as j, %s as ji
 WHERE ji.job_id = j.id
