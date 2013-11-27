@@ -193,7 +193,7 @@ class Ftp(ftplib.FTP):
             an FTP transfer instance
 
         """
-        log.info('Preparing outbound xfer ...')
+        log.info('Preparing inbound xfer ...')
 
         if self.connect_resource(xfer):
             xfer_set = []
@@ -281,26 +281,26 @@ class Ftp(ftplib.FTP):
         """
         log.info('Preparing outbound xfer ...')
 
-        if self.connect_resource(xfer):
-            xfer_set = []
-            source = self.config.get(xfer, 'source')
+        xfer_set = []
+        source = self.config.get(xfer, 'source')
 
-            try:
-                filter = self.config.get(xfer, 'filter')
-            except ConfigParser.NoOptionError, err:
-                filter = None
+        try:
+            filter = self.config.get(xfer, 'filter')
+        except ConfigParser.NoOptionError, err:
+            filter = None
 
-            try:
-                is_pod = (self.config.get(xfer, 'pod').lower() == 'yes')
-            except ConfigParser.NoOptionError, err:
-                is_pod = False
+        try:
+            is_pod = (self.config.get(xfer, 'pod').lower() == 'yes')
+        except ConfigParser.NoOptionError, err:
+            is_pod = False
 
-            xfer_set = self.get_xfer_files(source, filter, is_pod)
+        xfer_set = self.get_xfer_files(source, filter, is_pod)
 
-            if len(xfer_set):
+        if len(xfer_set):
+            if self.connect_resource(xfer):
                 self.xfer_files(xfer, xfer_set, dry=dry)
 
-            self.disconnect_resource()
+        self.disconnect_resource()
 
     def get_xfer_files(self, source, filter=None, is_pod=False):
         """For outbound file transfers, get a list of files to transfer.
