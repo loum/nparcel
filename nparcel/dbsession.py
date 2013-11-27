@@ -17,6 +17,7 @@ class DbSession(object):
     _job = nparcel.Job()
     _jobitem = nparcel.JobItem()
     _agent = nparcel.Agent()
+    _agent_stocktake = nparcel.AgentStocktake()
     _identity_type = nparcel.IdentityType()
 
     def __init__(self, **kwargs):
@@ -90,6 +91,10 @@ class DbSession(object):
     @property
     def agent(self):
         return self._agent
+
+    @property
+    def agent_stocktake(self):
+        return self._agent_stocktake
 
     @property
     def identity_type(self):
