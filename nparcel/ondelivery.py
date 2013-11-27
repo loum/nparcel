@@ -184,8 +184,6 @@ class OnDelivery(nparcel.Service):
                     if (self.flag_comms('email', id, template) and
                         self.flag_comms('sms', id, template)):
                         processed_ids.append(id)
-                else:
-                    log.error('Comms flag error for job_item.id: %d' % id)
 
             log.info('PE id|connote|item: "%s|%s|%s" check complete' %
                      (id, connote, item_nbr))
