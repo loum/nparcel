@@ -441,6 +441,19 @@ AND notify_ts IS NOT NULL""" % job_item_id
         msg = 'Reference-based job_item query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
+    def test_job_based_reference_sql(self):
+        """Verify the job_based_reference_sql SQL.
+        """
+        ref = 'TEST_REF_001'
+        sql = self._db.jobitem.job_based_reference_sql(ref)
+
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [(19, 'ARTZ061184', '00393403250082030046')]
+        msg = 'Job table based reference query error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._db.disconnect()

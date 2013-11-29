@@ -295,7 +295,7 @@ VALUES ("%s", "%s")""" % (bc, self._job_ts)
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [(6, 'TEST_REF_001')]
+        expected = [(6,)]
         msg = 'Job table reference check error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 

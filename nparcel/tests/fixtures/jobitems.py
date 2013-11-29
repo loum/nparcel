@@ -184,4 +184,14 @@
         'email_addr': '',
         'phone_nbr': '.'
     },
+    {
+        # Uncollected job_items -- matched via job.card_ref_nbr
+        'id': 19,
+        'connote_nbr': 'ARTZ061184',
+        'item_nbr': '00393403250082030046',
+        'job_id': 6,
+        'created_ts': str(datetime.datetime.now()),
+        'email_addr': 'loumar@tollgroup.com',
+        'phone_nbr': '0431602145'
+    },
 ]
