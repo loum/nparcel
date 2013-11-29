@@ -144,4 +144,44 @@
         'email_addr': 'loumar@tollgroup.com',
         'phone_nbr': '0431602145'
     },
+    {
+        # Aged Parcel connote match.
+        'id': 15,
+        'connote_nbr': 'TEST_REF_001',
+        'item_nbr': 'aged_connote_match',
+        'job_id': 7,
+        'created_ts': str(datetime.datetime.now()),
+        'email_addr': 'loumar@tollgroup.com',
+        'phone_nbr': '0431602145'
+    },
+    {
+        # Aged Parcel item_nbr match.
+        'id': 16,
+        'connote_nbr': 'aged_item_match',
+        'item_nbr': 'TEST_REF_001',
+        'job_id': 7,
+        'created_ts': str(datetime.datetime.now()),
+        'email_addr': 'loumar@tollgroup.com',
+        'phone_nbr': '0431602145'
+    },
+    {
+        # Uncollected job_items -- bad recipients
+        'id': 17,
+        'connote_nbr': 'ARTZ061184',
+        'item_nbr': '00393403250082030044',
+        'job_id': 4,
+        'created_ts': str(datetime.datetime.now()),
+        'email_addr': '.',
+        'phone_nbr': ''
+    },
+    {
+        # Uncollected job_items -- bad recipients
+        'id': 18,
+        'connote_nbr': 'ARTZ061184',
+        'item_nbr': '00393403250082030045',
+        'job_id': 4,
+        'created_ts': str(datetime.datetime.now()),
+        'email_addr': '',
+        'phone_nbr': '.'
+    },
 ]

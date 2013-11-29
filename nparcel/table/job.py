@@ -144,3 +144,19 @@ SET state = '%s'
 WHERE id = %d""" % (self.name, state, id)
 
         return sql
+
+    def reference_sql(self, reference_nbr):
+        """Extract card_ref_nbr number against *reference_nbr*.
+
+        **Args:**
+            *reference_nbr*: parcel ID number as scanned by the agent
+
+        **Returns:**
+            the SQL string
+
+        """
+        sql = """SELECT id, card_ref_nbr
+FROM %s
+WHERE card_ref_nbr = '%s'""" % (self.name, reference_nbr)
+
+        return sql

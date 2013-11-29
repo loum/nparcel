@@ -1,5 +1,6 @@
 import unittest2
 import datetime
+import os
 
 import nparcel
 
@@ -10,8 +11,20 @@ class TestJob(unittest2.TestCase):
     def setUpClass(cls):
         cls._job = nparcel.Job()
         cls._db = nparcel.DbSession()
-        cls._db.connect()
+        db = cls._db
+        db.connect()
+
         cls._job_ts = datetime.datetime.now().isoformat(' ')[:-3]
+
+        # Prepare some sample data.
+        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixtures = [{'db': db.job,
+                     'fixture': 'jobs.py'}]
+        for i in fixtures:
+            fixture_file = os.path.join(fixture_dir, i['fixture'])
+            db.load_fixture(i['db'], fixture_file)
+
+        db.commit()
 
     def test_check_barcode(self):
         """Bar code check.
@@ -22,13 +35,11 @@ class TestJob(unittest2.TestCase):
         sql = """
 INSERT INTO job (card_ref_nbr, job_ts)
 VALUES ("%s", "%s")""" % (bc, self._job_ts)
-        self._db(sql)
+        id = self._db.insert(sql)
 
         self._db(self._job.check_barcode(barcode=bc))
-        received = []
-        for row in self._db.rows():
-            received.append(row[0])
-        expected = [1]
+        received = [x[0] for x in list(self._db.rows())]
+        expected = [id]
         msg = 'Barcode value not returned from "job" table'
         self.assertListEqual(received, expected, msg)
 
@@ -104,9 +115,7 @@ VALUES ("%s", "%s")""" % (bc, self._job_ts)
 
         sql = self._db.job.connote_based_job_sql(connote='218501217863')
         self._db(sql)
-        received = []
-        for row in self._db.rows():
-            received.append(row[0])
+        received = [x[0] for x in self._db.rows()]
         msg = 'Connote based job id query results not as expected'
         self.assertEqual(received[0], job_id, msg)
 
@@ -259,29 +268,36 @@ VALUES ("%s", "%s")""" % (bc, self._job_ts)
         job_002 = self._db.insert(self._job.insert_sql(jobs[2]))
         job_003 = self._db.insert(self._job.insert_sql(jobs[3]))
 
-        received = []
         self._db(self._job.postcode_sql())
-        for row in self._db.rows():
-            received.append(row)
-        expected = [(1, '3754', 'VIC'),
-                    (4, '3752', None)]
+        received = list(self._db.rows())
+        expected = [(job_000, '3754', 'VIC'), (job_003, '3752', None)]
         msg = 'Postcode SQL returned unexpected list of values'
         self.assertListEqual(received, expected, msg)
 
         sql = self._db.job.update_postcode_sql(job_003, 'VIC')
         self._db(sql)
 
-        received = []
         self._db(self._job.postcode_sql())
-        for row in self._db.rows():
-            received.append(row)
-        expected = [(1, '3754', 'VIC'),
-                    (4, '3752', 'VIC')]
+        received = list(self._db.rows())
+        expected = [(job_000, '3754', 'VIC'), (job_003, '3752', 'VIC')]
         msg = 'Postcode SQL (post update) returned unexpected list'
-        self.assertListEqual(received, expected, msg)
+        self.assertListEqual(sorted(received), sorted(expected), msg)
 
         # Cleanup.
         self._db.connection.rollback()
+
+    def test_reference_sql(self):
+        """Verify the reference_sql SQL.
+        """
+        ref = 'TEST_REF_001'
+
+        sql = self._job.reference_sql(ref)
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [(6, 'TEST_REF_001')]
+        msg = 'Job table reference check error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
 
     @classmethod
     def tearDownClass(cls):

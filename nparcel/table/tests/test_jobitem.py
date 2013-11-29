@@ -411,6 +411,22 @@ AND notify_ts IS NOT NULL""" % job_item_id
         msg = 'Uncollected service code with bu_ids 4 error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
+    def test_uncollected_service_code_jobitems_sql_no_recipients(self):
+        """Verify uncollected_service_code_jobitems SQL -- no recipients.
+        """
+        bu_ids = (2, )
+        service_code = 4
+        sql = self._db.jobitem.uncollected_jobitems_sql(service_code,
+                                                        bu_ids)
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [(9,
+                     'uncollected_connote_sc_4',
+                     'uncollected_connote_sc_4_item_nbr')]
+        msg = 'Uncollected service bad recipients error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._db.disconnect()

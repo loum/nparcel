@@ -170,7 +170,7 @@ class OnDelivery(nparcel.Service):
             log.info('Received job_items list inline')
 
         for (id, connote, item_nbr) in job_items:
-            log.info('Processing PE id|connote|item: "%s|%s|%s ..."' %
+            log.info('Processing On Del id|connote|item: "%s|%s|%s ..."' %
                      (id, connote, item_nbr))
 
             delivered_status = False
@@ -187,7 +187,7 @@ class OnDelivery(nparcel.Service):
                 else:
                     log.error('Comms flag error for job_item.id: %d' % id)
 
-            log.info('PE id|connote|item: "%s|%s|%s" check complete' %
+            log.info('On Del id|connote|item: "%s|%s|%s" check complete' %
                      (id, connote, item_nbr))
 
         if mts_file is not None:

@@ -271,6 +271,9 @@ AND j.service_code = 3""" % (self.name, connote)
         Service Code jobs are identified by a integer value in the
         ``job.service_code`` column.
 
+        Query will ignore records that have either white space or
+        a spurious ``.`` in the email or phone number columns.
+
         The *bu_ids* relate to the ``job.bu_id`` column.
 
         **Args:**
@@ -292,7 +295,7 @@ FROM job as j, %s as ji
 WHERE ji.job_id = j.id
 AND ji.pickup_ts is NULL
 AND ji.notify_ts is NULL
-AND (ji.email_addr != '' OR ji.phone_nbr != '')
+AND (ji.email_addr NOT IN ('', '.') OR ji.phone_nbr NOT IN ('', '.'))
 AND j.bu_id IN %s
 AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
 
