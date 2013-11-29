@@ -427,6 +427,20 @@ AND notify_ts IS NOT NULL""" % job_item_id
         msg = 'Uncollected service bad recipients error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
+    def test_reference_sql(self):
+        """Verify the reference_sql SQL.
+        """
+        ref = 'TEST_REF_001'
+        sql = self._db.jobitem.reference_sql(ref)
+
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [(15, 'TEST_REF_001', 'aged_connote_match'),
+                    (16, 'aged_item_match', 'TEST_REF_001')]
+        msg = 'Reference-based job_item query error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._db.disconnect()

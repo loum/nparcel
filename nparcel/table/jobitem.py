@@ -300,3 +300,22 @@ AND j.bu_id IN %s
 AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
 
         return sql
+
+    def reference_sql(self, reference_nbr):
+        """Extract connote_nbr/item_nbr against *reference_nbr*.
+
+        Query is an ``OR`` against both ``connote_nbr`` and ``item_nbr``.
+
+        **Args:**
+            *reference_nbr*: parcel ID number as scanned by the agent
+
+        **Returns:**
+            the SQL string
+
+        """
+        sql = """SELECT id, connote_nbr, item_nbr
+FROM %(name)s
+WHERE connote_nbr = '%(ref)s'
+OR item_nbr = '%(ref)s'""" % {'name': self.name, 'ref': reference_nbr}
+
+        return sql
