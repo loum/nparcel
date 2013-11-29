@@ -302,7 +302,7 @@ AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
 
         return sql
 
-    def reference_sql(self, reference_nbr):
+    def reference_sql(self, reference_nbr, db_alias='ji'):
         """Extract connote_nbr/item_nbr against *reference_nbr*.
 
         Query is an ``OR`` against both ``connote_nbr`` and ``item_nbr``.
@@ -314,10 +314,17 @@ AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
             the SQL string
 
         """
-        sql = """SELECT ji.id, ji.connote_nbr, ji.item_nbr
-FROM %(name)s as ji
-WHERE ji.connote_nbr = '%(ref)s'
-OR ji.item_nbr = '%(ref)s'""" % {'name': self.name, 'ref': reference_nbr}
+        sql = """SELECT DISTINCT %(alias)s.id,
+       %(alias)s.connote_nbr,
+       %(alias)s.item_nbr
+FROM %(name)s as %(alias)s
+WHERE %(alias)s.connote_nbr = '%(ref)s'
+OR %(alias)s.item_nbr = '%(ref)s'
+UNION
+%(union)s""" % {'name': self.name,
+                'ref': reference_nbr,
+                'alias': db_alias,
+                'union': self.job_based_reference_sql(reference_nbr)}
 
         return sql
 

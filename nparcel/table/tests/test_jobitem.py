@@ -437,7 +437,8 @@ AND notify_ts IS NOT NULL""" % job_item_id
 
         received = list(self._db.rows())
         expected = [(15, 'TEST_REF_001', 'aged_connote_match'),
-                    (16, 'aged_item_match', 'TEST_REF_001')]
+                    (16, 'aged_item_match', 'TEST_REF_001'),
+                    (19, 'ARTZ061184', '00393403250082030046')]
         msg = 'Reference-based job_item query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
