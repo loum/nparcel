@@ -302,13 +302,16 @@ AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
 
         return sql
 
-    def reference_sql(self, reference_nbr, db_alias='ji'):
+    def reference_sql(self, reference_nbr, alias='ji'):
         """Extract connote_nbr/item_nbr against *reference_nbr*.
 
         Query is an ``OR`` against both ``connote_nbr`` and ``item_nbr``.
 
         **Args:**
             *reference_nbr*: parcel ID number as scanned by the agent
+
+        **Kwargs:**
+            *alias*: table alias (defualt ``ji``)
 
         **Returns:**
             the SQL string
@@ -323,12 +326,12 @@ OR %(alias)s.item_nbr = '%(ref)s'
 UNION
 %(union)s""" % {'name': self.name,
                 'ref': reference_nbr,
-                'alias': db_alias,
+                'alias': alias,
                 'union': self.job_based_reference_sql(reference_nbr)}
 
         return sql
 
-    def job_based_reference_sql(self, reference_nbr, db_alias='ji'):
+    def job_based_reference_sql(self, reference_nbr, alias='ji'):
         """Extract connote_nbr/item_nbr against *reference_nbr* matched
         to the ``job.card_ref_nbr``.
 
@@ -338,7 +341,7 @@ UNION
             *reference_nbr*: parcel ID number as scanned by the agent
 
         **Kwargs:**
-            *db_string*: table alias
+            *alias*: table alias
 
         **Returns:**
             the SQL string
@@ -353,6 +356,6 @@ WHERE %(alias)s.job_id IN
 %(sql)s
 )""" % {'name': self.name,
         'sql': self._job.reference_sql(reference_nbr),
-        'alias': db_alias}
+        'alias': alias}
 
         return sql

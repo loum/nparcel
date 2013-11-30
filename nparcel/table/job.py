@@ -145,14 +145,14 @@ WHERE id = %d""" % (self.name, state, id)
 
         return sql
 
-    def reference_sql(self, reference_nbr, db_alias='j'):
+    def reference_sql(self, reference_nbr, alias='j'):
         """Extract card_ref_nbr number against *reference_nbr*.
 
         **Args:**
             *reference_nbr*: parcel ID number as scanned by the agent
 
         **Kwargs:**
-            *db_string*: table alias
+            *alias*: table alias (default ``j``)
 
         **Returns:**
             the SQL string
@@ -162,6 +162,6 @@ WHERE id = %d""" % (self.name, state, id)
 FROM %(name)s as %(alias)s
 WHERE %(alias)s.card_ref_nbr = '%(ref)s'""" % {'name': self.name,
                                                'ref': reference_nbr,
-                                               'alias': db_alias}
+                                               'alias': alias}
 
         return sql
