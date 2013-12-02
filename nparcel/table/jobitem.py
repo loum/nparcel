@@ -337,10 +337,15 @@ AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
 
         sql = """SELECT DISTINCT %(alias)s.id,
        %(alias)s.connote_nbr,
-       %(alias)s.item_nbr
+       %(alias)s.item_nbr,
+       j.job_ts,
+       %(alias)s.created_ts,
+       %(alias)s.notify_ts,
+       %(alias)s.pickup_ts
 FROM %(name)s as %(alias)s, job as j
-WHERE (%(alias)s.connote_nbr IN (%(ref)s)
-       OR %(alias)s.item_nbr IN (%(ref)s))
+WHERE %(alias)s.job_id = j.id
+AND (%(alias)s.connote_nbr IN (%(ref)s)
+     OR %(alias)s.item_nbr IN (%(ref)s))
 AND %(alias)s.pickup_ts %(pickup_sql)s
 UNION
 %(union)s""" % {'name': self.name,
@@ -365,6 +370,10 @@ UNION
             *reference_nbr*: parcel ID number as scanned by the agent
 
         **Kwargs:**
+            *picked_up*: boolean flag that will extract ``job_items``
+            that have been picked up if ``True``. Otherwise, will extract
+            ``job_items`` that have not been picked up if ``False``.
+
             *alias*: table alias
 
         **Returns:**
@@ -379,9 +388,14 @@ UNION
 
         sql = """SELECT %(alias)s.id,
        %(alias)s.connote_nbr,
-       %(alias)s.item_nbr
-FROM %(name)s as %(alias)s
-WHERE %(alias)s.job_id IN
+       %(alias)s.item_nbr,
+       j.job_ts,
+       %(alias)s.created_ts,
+       %(alias)s.notify_ts,
+       %(alias)s.pickup_ts
+FROM %(name)s as %(alias)s, job as j
+WHERE %(alias)s.job_id = j.id
+AND %(alias)s.job_id IN
 (
 %(sql)s
 )

@@ -50,12 +50,17 @@ SET job_ts = '%s'""" % cls._now
         # "job_item" table timestamp updates.
         sql = """UPDATE job_item
 SET created_ts = '%s'
-WHERE id IN (1, 3, 4, 5)""" % cls._now
+WHERE id IN (1, 3, 4, 5, 15, 16, 19, 20, 21, 22)""" % cls._now
         db(sql)
 
         sql = """UPDATE job_item
 SET pickup_ts = '%s'
-WHERE id IN (1, 5)""" % cls._now
+WHERE id IN (1, 5, 21)""" % cls._now
+        db(sql)
+
+        sql = """UPDATE job_item
+SET notify_ts = '%s'
+WHERE id IN (21)""" % cls._now
         db(sql)
 
         delayed_dt = cls._now - datetime.timedelta(seconds=(86400 * 5))
@@ -440,9 +445,27 @@ AND notify_ts IS NOT NULL""" % job_item_id
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [(15, 'TEST_REF_001', 'aged_connote_match'),
-                    (16, 'aged_item_match', 'TEST_REF_001'),
-                    (19, 'ARTZ061184', '00393403250082030046')]
+        expected = [(15,
+                     'TEST_REF_001',
+                     'aged_connote_match',
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     None,
+                     None),
+                    (16,
+                     'aged_item_match',
+                     'TEST_REF_001',
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     None,
+                     None),
+                    (19,
+                     'ARTZ061184',
+                     '00393403250082030046',
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     None,
+                     None)]
         msg = 'Reference-based job_item query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -454,8 +477,20 @@ AND notify_ts IS NOT NULL""" % job_item_id
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [(20, 'TEST_REF_NOT_PROC', '00393403250082030047'),
-                    (22, 'ARTZ061184', '00393403250082030048')]
+        expected = [(20,
+                     'TEST_REF_NOT_PROC',
+                     '00393403250082030047',
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     None,
+                     None),
+                    (22,
+                     'ARTZ061184',
+                     '00393403250082030048',
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     None,
+                     None)]
         msg = 'AgentStocktake-based job_item (not processed) query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -467,7 +502,13 @@ AND notify_ts IS NOT NULL""" % job_item_id
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [(21, 'ARTZ061184', 'TEST_REF_NOT_PROC_PCKD_UP')]
+        expected = [(21,
+                     'ARTZ061184',
+                     'TEST_REF_NOT_PROC_PCKD_UP',
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     '%s' % self._now)]
         msg = 'AgentStocktake-based job_item (not processed) query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -480,7 +521,13 @@ AND notify_ts IS NOT NULL""" % job_item_id
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [(19, 'ARTZ061184', '00393403250082030046')]
+        expected = [(19,
+                     'ARTZ061184',
+                     '00393403250082030046',
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     None,
+                     None)]
         msg = 'Job table based reference query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -494,7 +541,13 @@ AND notify_ts IS NOT NULL""" % job_item_id
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [(22, 'ARTZ061184', '00393403250082030048')]
+        expected = [(22,
+                     'ARTZ061184',
+                     '00393403250082030048',
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     None,
+                     None)]
         msg = 'Job table based reference query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
