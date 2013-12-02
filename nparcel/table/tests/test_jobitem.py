@@ -446,30 +446,42 @@ AND notify_ts IS NOT NULL""" % job_item_id
 
         received = list(self._db.rows())
         expected = [(15,
+                     1,
                      'TEST_REF_001',
+                     'aged_parcel_unmatched',
                      'aged_connote_match',
                      '%s' % self._now,
                      '%s' % self._now,
                      None,
                      None,
+                     15,
+                     'Con Sumerfifteen',
                      'VIC999',
                      'VIC Test Newsagent 999'),
                     (16,
+                     1,
                      'aged_item_match',
+                     'aged_parcel_unmatched',
                      'TEST_REF_001',
                      '%s' % self._now,
                      '%s' % self._now,
                      None,
                      None,
+                     16,
+                     'Con Sumersixteen',
                      'VIC999',
                      'VIC Test Newsagent 999'),
                     (19,
+                     1,
                      'ARTZ061184',
+                     'TEST_REF_001',
                      '00393403250082030046',
                      '%s' % self._now,
                      '%s' % self._now,
                      None,
                      None,
+                     19,
+                     'Con Sumernineteen',
                      'VIC999',
                      'VIC Test Newsagent 999')]
         msg = 'Reference-based job_item query error'
@@ -484,21 +496,29 @@ AND notify_ts IS NOT NULL""" % job_item_id
 
         received = list(self._db.rows())
         expected = [(20,
+                     1,
                      'TEST_REF_NOT_PROC',
+                     'aged_parcel_unmatched',
                      '00393403250082030047',
                      '%s' % self._now,
                      '%s' % self._now,
                      None,
                      None,
+                     20,
+                     'Con Sumertwenty',
                      'VIC999',
                      'VIC Test Newsagent 999'),
                     (22,
+                     1,
                      'ARTZ061184',
+                     'JOB_TEST_REF_NOT_PROC_PCKD_UP',
                      '00393403250082030048',
                      '%s' % self._now,
                      '%s' % self._now,
                      None,
                      None,
+                     22,
+                     'Con Sumertwentytwo',
                      'VIC999',
                      'VIC Test Newsagent 999')]
         msg = 'AgentStocktake-based job_item (not processed) query error'
@@ -513,12 +533,16 @@ AND notify_ts IS NOT NULL""" % job_item_id
 
         received = list(self._db.rows())
         expected = [(21,
+                     1,
                      'ARTZ061184',
+                     'aged_parcel_unmatched',
                      'TEST_REF_NOT_PROC_PCKD_UP',
                      '%s' % self._now,
                      '%s' % self._now,
                      '%s' % self._now,
                      '%s' % self._now,
+                     21,
+                     'Con Sumertwentyone',
                      'VIC999',
                      'VIC Test Newsagent 999')]
         msg = 'AgentStocktake-based job_item (not processed) query error'
@@ -534,12 +558,16 @@ AND notify_ts IS NOT NULL""" % job_item_id
 
         received = list(self._db.rows())
         expected = [(19,
+                     1,
                      'ARTZ061184',
+                     'TEST_REF_001',
                      '00393403250082030046',
                      '%s' % self._now,
                      '%s' % self._now,
                      None,
                      None,
+                     19,
+                     'Con Sumernineteen',
                      'VIC999',
                      'VIC Test Newsagent 999')]
         msg = 'Job table based reference query error'
@@ -556,12 +584,16 @@ AND notify_ts IS NOT NULL""" % job_item_id
 
         received = list(self._db.rows())
         expected = [(22,
+                     1,
                      'ARTZ061184',
+                     'JOB_TEST_REF_NOT_PROC_PCKD_UP',
                      '00393403250082030048',
                      '%s' % self._now,
                      '%s' % self._now,
                      None,
                      None,
+                     22,
+                     'Con Sumertwentytwo',
                      'VIC999',
                      'VIC Test Newsagent 999')]
         msg = 'Job table based reference query error'

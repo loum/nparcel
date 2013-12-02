@@ -335,13 +335,17 @@ AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
         if reference_nbr is None:
             ref = self._agent_stocktake.reference_sql()
 
-        sql = """SELECT DISTINCT %(alias)s.id,
+        sql = """SELECT DISTINCT %(alias)s.id as JOB_ITEM_ID,
+       j.bu_id as JOB_BU_ID,
        %(alias)s.connote_nbr,
+       j.card_ref_nbr,
        %(alias)s.item_nbr,
        j.job_ts,
        %(alias)s.created_ts,
        %(alias)s.notify_ts,
        %(alias)s.pickup_ts,
+       %(alias)s.pieces,
+       %(alias)s.consumer_name,
        ag.dp_code,
        ag.name
 FROM %(name)s as %(alias)s, job as j, agent as ag
@@ -389,13 +393,17 @@ UNION
         else:
             pickup_sql += 'IS NOT NULL'
 
-        sql = """SELECT %(alias)s.id,
+        sql = """SELECT %(alias)s.id as JOB_ITEM_ID,
+       j.bu_id as JOB_BU_ID,
        %(alias)s.connote_nbr,
+       j.card_ref_nbr,
        %(alias)s.item_nbr,
        j.job_ts,
        %(alias)s.created_ts,
        %(alias)s.notify_ts,
        %(alias)s.pickup_ts,
+       %(alias)s.pieces,
+       %(alias)s.consumer_name,
        ag.dp_code,
        ag.name
 FROM %(name)s as %(alias)s, job as j, agent as ag
