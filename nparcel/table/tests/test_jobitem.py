@@ -21,29 +21,33 @@ class TestJobItem(unittest2.TestCase):
         cls._db = nparcel.DbSession()
         cls._db.connect()
 
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        # Create the tables.
+        cls._db.create_table(name='agent_stocktake',
+                             schema=cls._db.agent_stocktake.schema)
+
         db = cls._db
         # Prepare some sample data.
-        # Agent.
-        fixture_file = os.path.join(fixture_dir, 'agents.py')
-        db.load_fixture(db.agent, fixture_file)
+        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixtures = [{'db': db.agent_stocktake,
+                     'fixture': 'agent_stocktakes.py'},
+                    {'db': db.agent,
+                     'fixture': 'agents.py'},
+                    {'db': db.identity_type,
+                     'fixture': 'identity_type.py'},
+                    {'db': db.job,
+                     'fixture': 'jobs.py'},
+                    {'db': db.jobitem,
+                     'fixture': 'jobitems.py'}]
+        for i in fixtures:
+            fixture_file = os.path.join(fixture_dir, i['fixture'])
+            db.load_fixture(i['db'], fixture_file)
 
-        # Job table.
-        fixture_file = os.path.join(fixture_dir, 'jobs.py')
-        db.load_fixture(db.job, fixture_file)
+        # "job" table timestamp updates.
         sql = """UPDATE job
 SET job_ts = '%s'""" % cls._now
         db(sql)
 
-        # "identity_type" table.
-        fixture_file = os.path.join(fixture_dir, 'identity_type.py')
-        db.load_fixture(db.identity_type, fixture_file)
-
-        # job_items table.
-        fixture_file = os.path.join(fixture_dir, 'jobitems.py')
-        db.load_fixture(db.jobitem, fixture_file)
-
-        # Update the timestamps.
+        # "job_item" table timestamp updates.
         sql = """UPDATE job_item
 SET created_ts = '%s'
 WHERE id IN (1, 3, 4, 5)""" % cls._now
@@ -430,7 +434,7 @@ AND notify_ts IS NOT NULL""" % job_item_id
     def test_reference_sql(self):
         """Verify the reference_sql SQL.
         """
-        ref = 'TEST_REF_001'
+        ref = "'TEST_REF_001'"
         sql = self._db.jobitem.reference_sql(ref)
 
         self._db(sql)
@@ -442,10 +446,23 @@ AND notify_ts IS NOT NULL""" % job_item_id
         msg = 'Reference-based job_item query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
+    def test_reference_sql_refs_from_agent_stocktake(self):
+        """Verify the reference_sql SQL -- refs from AgentStocktake table.
+        """
+        #ref = 'TEST_REF_NOT_PROC'
+        sql = self._db.jobitem.reference_sql()
+
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [(20, 'TEST_REF_NOT_PROC', '00393403250082030047')]
+        msg = 'AgentStocktake-based job_item (not processed) query error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
     def test_job_based_reference_sql(self):
         """Verify the job_based_reference_sql SQL.
         """
-        ref = 'TEST_REF_001'
+        ref = "'TEST_REF_001'"
         sql = self._db.jobitem.job_based_reference_sql(ref)
 
         self._db(sql)

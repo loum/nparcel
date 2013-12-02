@@ -160,8 +160,8 @@ WHERE id = %d""" % (self.name, state, id)
         """
         sql = """SELECT %(alias)s.id
 FROM %(name)s as %(alias)s
-WHERE %(alias)s.card_ref_nbr = '%(ref)s'""" % {'name': self.name,
-                                               'ref': reference_nbr,
-                                               'alias': alias}
+WHERE %(alias)s.card_ref_nbr IN (%(ref)s)""" % {'name': self.name,
+                                                'ref': reference_nbr,
+                                                'alias': alias}
 
         return sql

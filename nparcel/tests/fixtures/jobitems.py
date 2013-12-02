@@ -194,4 +194,14 @@
         'email_addr': 'loumar@tollgroup.com',
         'phone_nbr': '0431602145'
     },
+    {
+        # Uncollected job_items -- agent_stocktake not processed
+        'id': 20,
+        'connote_nbr': 'TEST_REF_NOT_PROC',
+        'item_nbr': '00393403250082030047',
+        'job_id': 7,
+        'created_ts': str(datetime.datetime.now()),
+        'email_addr': 'loumar@tollgroup.com',
+        'phone_nbr': '0431602145'
+    },
 ]

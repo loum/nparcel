@@ -289,7 +289,7 @@ VALUES ("%s", "%s")""" % (bc, self._job_ts)
     def test_reference_sql(self):
         """Verify the reference_sql SQL.
         """
-        ref = 'TEST_REF_001'
+        ref = "'TEST_REF_001'"
 
         sql = self._job.reference_sql(ref)
         self._db(sql)

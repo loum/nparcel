@@ -21,12 +21,12 @@ class AgentStocktake(nparcel.Table):
                 "reference_nbr TEXT(32)",
                 "processed_ts CHAR(6)"]
 
-    def reference_sql(self, alias='as'):
+    def reference_sql(self, alias='st'):
         """Extract ``agent_stocktake.reference_nbr`` records that have not
         been processed (``agent_stocktake.processed_ts`` is ``NULL``).
 
         **Kwargs:**
-            *alias*: table alias (defualt ``as``)
+            *alias*: table alias (default ``st``)
 
         **Returns:**
             the SQL string

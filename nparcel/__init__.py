@@ -29,10 +29,10 @@ from nparcel.filter import Filter
 from nparcel.mts import Mts
 from table import Table
 from table.job import Job
+from table.agent_stocktake import AgentStocktake
 from table.jobitem import JobItem
 from table.agent import Agent
 from table.identitytype import IdentityType
 from table.transsend import TransSend
-from table.agent_stocktake import AgentStocktake
 from nparcel.dbsession import DbSession
 from nparcel.oradbsession import OraDbSession

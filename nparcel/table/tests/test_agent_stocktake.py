@@ -37,6 +37,17 @@ class TestAgentStocktake(unittest2.TestCase):
         msg = 'Reference-based agent_stocktake query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
+    def test_reference_sql_no_alias(self):
+        """Verify the reference_sql SQL (no alias).
+        """
+        sql = self._st.reference_sql()
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [('TEST_REF_NOT_PROC',)]
+        msg = 'Reference-based agent_stocktake query error (no alias)'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._db.disconnect()

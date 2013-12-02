@@ -10,6 +10,7 @@ class JobItem(nparcel.Table):
     """Nparcel DB Job_Item table ORM.
     """
     _job = nparcel.Job()
+    _agent_stocktake = nparcel.AgentStocktake()
 
     def __init__(self):
         """Nparcel job_item table initialiser.
@@ -302,32 +303,37 @@ AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
 
         return sql
 
-    def reference_sql(self, reference_nbr, alias='ji'):
+    def reference_sql(self, reference_nbr=None, alias='ji'):
         """Extract connote_nbr/item_nbr against *reference_nbr*.
 
         Query is an ``OR`` against both ``connote_nbr`` and ``item_nbr``.
 
-        **Args:**
-            *reference_nbr*: parcel ID number as scanned by the agent
-
         **Kwargs:**
-            *alias*: table alias (defualt ``ji``)
+            *reference_nbr*: parcel ID number as scanned by the agent.  If
+            ``None``, then the values from the ``agent_stocktake`` table
+            will be used.
+
+            *alias*: table alias (default ``ji``)
 
         **Returns:**
             the SQL string
 
         """
+        ref = reference_nbr
+        if reference_nbr is None:
+            ref = self._agent_stocktake.reference_sql()
+
         sql = """SELECT DISTINCT %(alias)s.id,
        %(alias)s.connote_nbr,
        %(alias)s.item_nbr
 FROM %(name)s as %(alias)s
-WHERE %(alias)s.connote_nbr = '%(ref)s'
-OR %(alias)s.item_nbr = '%(ref)s'
+WHERE %(alias)s.connote_nbr IN (%(ref)s)
+OR %(alias)s.item_nbr IN (%(ref)s)
 UNION
 %(union)s""" % {'name': self.name,
-                'ref': reference_nbr,
+                'ref': ref,
                 'alias': alias,
-                'union': self.job_based_reference_sql(reference_nbr)}
+                'union': self.job_based_reference_sql(ref)}
 
         return sql
 
