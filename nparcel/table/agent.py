@@ -49,9 +49,10 @@ WHERE id=%d""" % id
     @property
     def schema(self):
         return ["id INTEGER PRIMARY KEY",
-                "name CHAR(100)",
-                "address CHAR(80)",
-                "suburb CHAR(30)",
-                "state CHAR(3)",
-                "postcode CHAR(4)",
-                "code CHAR(6)"]
+                "name TEXT(100)",
+                "address TEXT(80)",
+                "suburb TEXT(30)",
+                "state TEXT(3)",
+                "postcode TEXT(4)",
+                "dp_code TEXT(10)",
+                "code TEXT(6)"]

@@ -451,21 +451,27 @@ AND notify_ts IS NOT NULL""" % job_item_id
                      '%s' % self._now,
                      '%s' % self._now,
                      None,
-                     None),
+                     None,
+                     'VIC999',
+                     'VIC Test Newsagent 999'),
                     (16,
                      'aged_item_match',
                      'TEST_REF_001',
                      '%s' % self._now,
                      '%s' % self._now,
                      None,
-                     None),
+                     None,
+                     'VIC999',
+                     'VIC Test Newsagent 999'),
                     (19,
                      'ARTZ061184',
                      '00393403250082030046',
                      '%s' % self._now,
                      '%s' % self._now,
                      None,
-                     None)]
+                     None,
+                     'VIC999',
+                     'VIC Test Newsagent 999')]
         msg = 'Reference-based job_item query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -483,14 +489,18 @@ AND notify_ts IS NOT NULL""" % job_item_id
                      '%s' % self._now,
                      '%s' % self._now,
                      None,
-                     None),
+                     None,
+                     'VIC999',
+                     'VIC Test Newsagent 999'),
                     (22,
                      'ARTZ061184',
                      '00393403250082030048',
                      '%s' % self._now,
                      '%s' % self._now,
                      None,
-                     None)]
+                     None,
+                     'VIC999',
+                     'VIC Test Newsagent 999')]
         msg = 'AgentStocktake-based job_item (not processed) query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -508,7 +518,9 @@ AND notify_ts IS NOT NULL""" % job_item_id
                      '%s' % self._now,
                      '%s' % self._now,
                      '%s' % self._now,
-                     '%s' % self._now)]
+                     '%s' % self._now,
+                     'VIC999',
+                     'VIC Test Newsagent 999')]
         msg = 'AgentStocktake-based job_item (not processed) query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -527,7 +539,9 @@ AND notify_ts IS NOT NULL""" % job_item_id
                      '%s' % self._now,
                      '%s' % self._now,
                      None,
-                     None)]
+                     None,
+                     'VIC999',
+                     'VIC Test Newsagent 999')]
         msg = 'Job table based reference query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -547,7 +561,9 @@ AND notify_ts IS NOT NULL""" % job_item_id
                      '%s' % self._now,
                      '%s' % self._now,
                      None,
-                     None)]
+                     None,
+                     'VIC999',
+                     'VIC Test Newsagent 999')]
         msg = 'Job table based reference query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 

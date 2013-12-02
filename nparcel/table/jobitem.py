@@ -341,9 +341,12 @@ AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
        j.job_ts,
        %(alias)s.created_ts,
        %(alias)s.notify_ts,
-       %(alias)s.pickup_ts
-FROM %(name)s as %(alias)s, job as j
+       %(alias)s.pickup_ts,
+       ag.dp_code,
+       ag.name
+FROM %(name)s as %(alias)s, job as j, agent as ag
 WHERE %(alias)s.job_id = j.id
+AND j.agent_id = ag.id
 AND (%(alias)s.connote_nbr IN (%(ref)s)
      OR %(alias)s.item_nbr IN (%(ref)s))
 AND %(alias)s.pickup_ts %(pickup_sql)s
@@ -392,9 +395,12 @@ UNION
        j.job_ts,
        %(alias)s.created_ts,
        %(alias)s.notify_ts,
-       %(alias)s.pickup_ts
-FROM %(name)s as %(alias)s, job as j
+       %(alias)s.pickup_ts,
+       ag.dp_code,
+       ag.name
+FROM %(name)s as %(alias)s, job as j, agent as ag
 WHERE %(alias)s.job_id = j.id
+AND j.agent_id = ag.id
 AND %(alias)s.job_id IN
 (
 %(sql)s

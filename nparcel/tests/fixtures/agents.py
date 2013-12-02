@@ -20,6 +20,7 @@
     {
         'id': 3,
         'code': 'V999',
+        'dp_code': 'VIC999',
         'state': 'VIC',
         'name': 'VIC Test Newsagent 999',
     },
