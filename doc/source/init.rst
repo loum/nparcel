@@ -1,4 +1,4 @@
-.. Nparcel B2C Environment Initialisation
+.. Toll Parcel Portal B2C Environment Initialisation
 
 .. toctree::
     :maxdepth: 2
@@ -6,9 +6,9 @@
 Environment Initialisation
 ==========================
 
-The Nparcel B2C software package is available to all system users.  However,
-the environment needs to be initialised and configured for any of the
-functionality to be useful.
+The Toll Parcel Portal B2C software package is available to all system
+users.  However, the environment needs to be initialised and configured
+for any of the functionality to be useful.
 
 Fresh Install
 -------------
@@ -40,7 +40,7 @@ display to the terminal the files and directories that will be required::
     Processing dry run True
     Starting npinit ...
     Preparing environment in "/home/guest/.nparceld"
-    Copying "/usr/lib/python2.4/site-packages/nparcel/conf/init.conf.0.18"
+    Copying "/usr/lib/python2.4/site-packages/nparcel/conf/init.conf.0.20"
     ...
 
 ``npinit`` will create the base directory structure in the ``.nparceld``
@@ -48,17 +48,17 @@ directory off the current user's home directory.
 
 Keys Files at a Glance ...
 ++++++++++++++++++++++++++
-As of release 0.18, the required directory structure is as follows::
+As of release 0.20, the required directory structure is as follows::
 
     $ tree .nparceld
     .nparceld
     |-- conf
     |   |-- init.conf
-    |   |-- init.conf.0.18
-    |   |-- log.conf.0.18
-    |   |-- nparceld.conf.0.18
-    |   |-- npftp.conf.0.18
-    |   `-- npmts.conf.0.18
+    |   |-- init.conf.0.20
+    |   |-- log.conf.0.20
+    |   |-- nparceld.conf.0.20
+    |   |-- npftp.conf.0.20
+    |   `-- npmts.conf.0.20
     |-- pids
     |-- logs
     `-- templates
@@ -90,20 +90,24 @@ As of release 0.18, the required directory structure is as follows::
 
 The main directories are:
 
-* ``conf`` - Nparcel B2C configuration files
-* ``templates`` - template file used by the Nparcel B2C comms facility
+* ``conf`` - Toll Parcel Portal B2C configuration files
+* ``templates`` - template file used by the Toll Parcel Portal B2C comms
+  facility
+* ``pids`` - daemoniser PID file container.  An active daemon will write
+  a PID file into this directory
+* ``logs`` - where daemoniser logs to
 
 Enable the Logger Handlers
 ++++++++++++++++++++++++++
 Log handlers manage the log files and need to be confgured::
 
     $ cd ~/.nparceld
-    $ ln -s conf/log.conf.0.18 log.conf
+    $ ln -s conf/log.conf.0.20 log.conf
 
 Set the Default Configuration
 +++++++++++++++++++++++++++++
-All commands use some form of configuration.  By default, the Nparcel B2C
-components look for the default config at ``~.nparceld/nparceld.conf``::
+All commands use some form of configuration.  By default, the Toll Parcel Portal B2C components look for the default config at
+``~.nparceld/nparceld.conf``::
 
     $ nploaderd status
     2013-10-08 17:26:04,266 CRITICAL:: Unable to locate config file:
@@ -112,7 +116,7 @@ components look for the default config at ``~.nparceld/nparceld.conf``::
 As a start, we can use the package-provided default::
 
     $ cd ~/.nparceld
-    $ ln -s conf/nparceld.conf.0.18 nparceld.conf
+    $ ln -s conf/nparceld.conf.0.20 nparceld.conf
 
 From here we should get some sane information::
 
@@ -121,10 +125,10 @@ From here we should get some sane information::
 
 Provide Database Connection Details
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-For the Nparcel B2C tools to be useful, you will need to add the database
-instance connection details into the ``nparceld.conf`` configuration file.
-By default, a new ``nparceld.conf`` configuration file features a section
-stub::
+For the Toll Parcel Portal B2C tools to be useful, you will need to add
+the database instance connection details into the ``nparceld.conf``
+configuration file.  By default, a new ``nparceld.conf`` configuration
+file features a section stub::
 
     [db]
 
@@ -145,7 +149,7 @@ The default configuration mappings are provided as a generalisation of the
 Business Unit requirements during development.  These may have been modified
 during production and should be verified.
 
-The default settings for the condition map in release 0.18 are as follows::
+The default settings for the condition map in release 0.20 are as follows::
 
     [conditions]
     #      0000000001
@@ -158,9 +162,9 @@ Adjust these to align with your environments requirements.
 
 Supply the Esendex REST Credentials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If the Nparcel B2C comms facility is to be used, then supply the Esendex
-API credentials for both email and SMS under the ``[rest]`` configuration
-section::
+If the Toll Parcel Portal B2C comms facility is to be used, then supply
+the Esendex API credentials for both email and SMS under the ``[rest``
+configuration section::
 
     [rest]
     sms_api = https://api.esendex.com/v1.0/messagedispatcher
@@ -184,16 +188,16 @@ The outbound FTP service has its own configuration file, ``npftp.conf``.
 be linked to the appropriate lcoation::
 
     $ cd ~/.nparceld
-    $ ln -s conf/npftp.conf.0.18 npftp.conf
+    $ ln -s conf/npftp.conf.0.20 npftp.conf
 
 Connect to the MTS Interface
 ++++++++++++++++++++++++++++
 The MTS interface provides delivery report information that is cross-checked
-against the Primary Elect jobs within the Nparcel database as a trigger
-point for sending out consumer comms::
+against the Primary Elect jobs within the Toll Parcel Portal database as a
+trigger point for sending out consumer comms::
 
     $ cd ~/.nparceld
-    $ ln -s conf/npmts.conf.0.18 npmts.conf
+    $ ln -s conf/npmts.conf.0.20 npmts.conf
 
 Edit the ``npmts.conf`` file and provide the supplied MTS credentials::
 
