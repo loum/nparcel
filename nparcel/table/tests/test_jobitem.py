@@ -447,15 +447,27 @@ AND notify_ts IS NOT NULL""" % job_item_id
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
     def test_reference_sql_refs_from_agent_stocktake(self):
-        """Verify the reference_sql SQL -- refs from AgentStocktake table.
+        """Verify the reference_sql SQL -- refs from AgentStocktake.
         """
-        #ref = 'TEST_REF_NOT_PROC'
         sql = self._db.jobitem.reference_sql()
 
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [(20, 'TEST_REF_NOT_PROC', '00393403250082030047')]
+        expected = [(20, 'TEST_REF_NOT_PROC', '00393403250082030047'),
+                    (22, 'ARTZ061184', '00393403250082030048')]
+        msg = 'AgentStocktake-based job_item (not processed) query error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_reference_sql_refs_from_agent_stocktake_picked_up(self):
+        """Verify the reference_sql SQL -- picked refs from AgentStocktake.
+        """
+        sql = self._db.jobitem.reference_sql(picked_up=True)
+
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [(21, 'ARTZ061184', 'TEST_REF_NOT_PROC_PCKD_UP')]
         msg = 'AgentStocktake-based job_item (not processed) query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -469,6 +481,20 @@ AND notify_ts IS NOT NULL""" % job_item_id
 
         received = list(self._db.rows())
         expected = [(19, 'ARTZ061184', '00393403250082030046')]
+        msg = 'Job table based reference query error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_job_based_reference_sql_picked_up(self):
+        """Verify the job_based_reference_sql SQL -- picked_up.
+        """
+        ref = "'JOB_TEST_REF_NOT_PROC_PCKD_UP'"
+        sql = self._db.jobitem.job_based_reference_sql(ref,
+                                                       picked_up=False)
+
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [(22, 'ARTZ061184', '00393403250082030048')]
         msg = 'Job table based reference query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 

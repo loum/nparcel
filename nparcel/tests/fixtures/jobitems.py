@@ -204,4 +204,26 @@
         'email_addr': 'loumar@tollgroup.com',
         'phone_nbr': '0431602145'
     },
+    {
+        # Uncollected job_items -- agent_stocktake not processed or
+        # picked up
+        'id': 21,
+        'connote_nbr': 'ARTZ061184',
+        'item_nbr': 'TEST_REF_NOT_PROC_PCKD_UP',
+        'job_id': 7,
+        'created_ts': str(datetime.datetime.now()),
+        'email_addr': 'loumar@tollgroup.com',
+        'phone_nbr': '0431602145',
+        'pickup_ts': str(datetime.datetime.now()),
+    },
+    {
+        # Uncollected job_items -- matched via job.card_ref_nbr
+        'id': 22,
+        'connote_nbr': 'ARTZ061184',
+        'item_nbr': '00393403250082030048',
+        'job_id': 8,
+        'created_ts': str(datetime.datetime.now()),
+        'email_addr': 'loumar@tollgroup.com',
+        'phone_nbr': '0431602145'
+    },
 ]

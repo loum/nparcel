@@ -52,4 +52,11 @@
         'job_ts': str(datetime.datetime.now()),
         'bu_id': 1,
     },
+    {
+        'id': 8,
+        'card_ref_nbr': 'JOB_TEST_REF_NOT_PROC_PCKD_UP',
+        'agent_id': 3,
+        'job_ts': str(datetime.datetime.now()),
+        'bu_id': 1,
+    },
 ]

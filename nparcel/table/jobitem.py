@@ -303,7 +303,10 @@ AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
 
         return sql
 
-    def reference_sql(self, reference_nbr=None, alias='ji'):
+    def reference_sql(self,
+                      reference_nbr=None,
+                      picked_up=False,
+                      alias='ji'):
         """Extract connote_nbr/item_nbr against *reference_nbr*.
 
         Query is an ``OR`` against both ``connote_nbr`` and ``item_nbr``.
@@ -313,12 +316,21 @@ AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
             ``None``, then the values from the ``agent_stocktake`` table
             will be used.
 
+            *picked_up*: boolean flag that will extract ``job_items``
+            that have been picked up if ``True``. Otherwise, will extract
+            ``job_items`` that have not been picked up if ``False``.
+
             *alias*: table alias (default ``ji``)
 
         **Returns:**
             the SQL string
 
         """
+        if not picked_up:
+            pickup_sql = 'IS NULL'
+        else:
+            pickup_sql = 'IS NOT NULL'
+
         ref = reference_nbr
         if reference_nbr is None:
             ref = self._agent_stocktake.reference_sql()
@@ -326,18 +338,24 @@ AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
         sql = """SELECT DISTINCT %(alias)s.id,
        %(alias)s.connote_nbr,
        %(alias)s.item_nbr
-FROM %(name)s as %(alias)s
-WHERE %(alias)s.connote_nbr IN (%(ref)s)
-OR %(alias)s.item_nbr IN (%(ref)s)
+FROM %(name)s as %(alias)s, job as j
+WHERE (%(alias)s.connote_nbr IN (%(ref)s)
+       OR %(alias)s.item_nbr IN (%(ref)s))
+AND %(alias)s.pickup_ts %(pickup_sql)s
 UNION
 %(union)s""" % {'name': self.name,
                 'ref': ref,
                 'alias': alias,
-                'union': self.job_based_reference_sql(ref)}
+                'union': self.job_based_reference_sql(ref,
+                                                      picked_up=picked_up),
+                'pickup_sql': pickup_sql}
 
         return sql
 
-    def job_based_reference_sql(self, reference_nbr, alias='ji'):
+    def job_based_reference_sql(self,
+                                reference_nbr,
+                                picked_up=False,
+                                alias='ji'):
         """Extract connote_nbr/item_nbr against *reference_nbr* matched
         to the ``job.card_ref_nbr``.
 
@@ -353,6 +371,12 @@ UNION
             the SQL string
 
         """
+        pickup_sql = 'AND %s.pickup_ts ' % alias
+        if not picked_up:
+            pickup_sql += 'IS NULL'
+        else:
+            pickup_sql += 'IS NOT NULL'
+
         sql = """SELECT %(alias)s.id,
        %(alias)s.connote_nbr,
        %(alias)s.item_nbr
@@ -360,8 +384,10 @@ FROM %(name)s as %(alias)s
 WHERE %(alias)s.job_id IN
 (
 %(sql)s
-)""" % {'name': self.name,
-        'sql': self._job.reference_sql(reference_nbr),
-        'alias': alias}
+)
+%(pickup_sql)s""" % {'name': self.name,
+                     'sql': self._job.reference_sql(reference_nbr),
+                     'alias': alias,
+                     'pickup_sql': pickup_sql}
 
         return sql

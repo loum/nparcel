@@ -33,7 +33,9 @@ class TestAgentStocktake(unittest2.TestCase):
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [('TEST_REF_NOT_PROC',)]
+        expected = [('TEST_REF_NOT_PROC',),
+                    ('JOB_TEST_REF_NOT_PROC_PCKD_UP',),
+                    ('TEST_REF_NOT_PROC_PCKD_UP',)]
         msg = 'Reference-based agent_stocktake query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -44,7 +46,9 @@ class TestAgentStocktake(unittest2.TestCase):
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [('TEST_REF_NOT_PROC',)]
+        expected = [('TEST_REF_NOT_PROC',),
+                    ('JOB_TEST_REF_NOT_PROC_PCKD_UP',),
+                    ('TEST_REF_NOT_PROC_PCKD_UP',)]
         msg = 'Reference-based agent_stocktake query error (no alias)'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
