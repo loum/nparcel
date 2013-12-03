@@ -43,3 +43,31 @@ class Uncollected(nparcel.Auditer):
         log.info('Uncollected (Aged) Report processing complete')
 
         return aged_jobitem_ids
+
+    def _cleanse(self, header, row):
+        """Generic modififications to the raw query result.
+
+        Mods include:
+        * prepend ``=`` to the ``CONNOTE_NBR``, ``BARCODE`` and ``ITEM_NBR``
+        columns
+
+        **Args:**
+            *header*: list of column headers
+
+            *row*: tuple structure that represents the raw row result
+
+        **Returns:**
+            the altered *row* tuple structure
+
+        """
+        log.debug('Cleansing row "%s"' % str(row))
+
+        tmp_row_list = list(row)
+
+        for i in ['CONNOTE_NBR', 'BARCODE', 'ITEM_NBR']:
+            index = header.index(i)
+            log.debug('Prepending "=" to column|value "%s|%s"' %
+                      (i, str(tmp_row_list[index])))
+            tmp_row_list[index] = '=%s' % tmp_row_list[index]
+
+        return tuple(tmp_row_list)
