@@ -28,6 +28,7 @@ from nparcel.mapper import Mapper
 from nparcel.filter import Filter
 from nparcel.mts import Mts
 from nparcel.auditer import Auditer
+from nparcel.uncollected import Uncollected
 from table import Table
 from table.job import Job
 from table.agent_stocktake import AgentStocktake

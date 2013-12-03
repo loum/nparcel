@@ -17,5 +17,5 @@ class TestAuditer(unittest2.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls._c = None
-        del cls._c
+        cls._a = None
+        del cls._a

@@ -50,7 +50,7 @@ class OnDelivery(nparcel.Service):
 
         """
         super(nparcel.OnDelivery, self).__init__(db=db_kwargs,
-                                                   comms_dir=comms_dir)
+                                                 comms_dir=comms_dir)
 
         if ts_db_kwargs is not None:
             self._ts_db_kwargs = ts_db_kwargs
@@ -143,7 +143,6 @@ class OnDelivery(nparcel.Service):
             ``job_items`` table extraction
 
         **Kwargs:**
-
             *job_items*: list of ``(<id>, <connote>, <item_nbr>)``
             that can be fed into the process loop directly
 

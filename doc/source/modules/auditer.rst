@@ -4,7 +4,7 @@
     :maxdepth: 2
 
 Auditer
-======
+=======
 
 .. automodule:: nparcel.auditer
     :members:

@@ -56,6 +56,8 @@ Modules
 
     auditer.rst
 
+    uncollected.rst
+
 Indices and tables
 ------------------
 
