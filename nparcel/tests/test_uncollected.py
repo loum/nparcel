@@ -11,6 +11,8 @@ class TestUncollected(unittest2.TestCase):
     def setUpClass(cls):
         cls._now = datetime.datetime.now()
 
+        cls.maxDiff = None
+
         cls._u = nparcel.Uncollected()
         db = cls._u.db
         db.create_table(name='agent_stocktake',
@@ -119,13 +121,13 @@ WHERE id IN (20, 22)""" % cls._now
         received = self._u._cleanse(headers, row)
         expected = (22,
                     1,
-                    '=ARTZ061184',
-                    '=JOB_TEST_REF_NOT_PROC_PCKD_UP',
-                    '=00393403250082030048',
-                    '%s' % self._now,
-                    '%s' % self._now,
-                    None,
-                    None,
+                    '="ARTZ061184"',
+                    '="JOB_TEST_REF_NOT_PROC_PCKD_UP"',
+                    '="00393403250082030048"',
+                    '="%s"' % self._now,
+                    '="%s"' % self._now,
+                    '',
+                    '',
                     22,
                     'Con Sumertwentytwo',
                     'VIC999',

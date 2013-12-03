@@ -22,30 +22,31 @@ class TestWriter(unittest2.TestCase):
         msg = 'Object is not an nparcel.Writer'
         self.assertIsInstance(self._w, nparcel.Writer, msg)
 
-    def test_header_write(self):
-        """Write out the headers.
+    def test_write(self):
+        """Write out the headers and content.
         """
         hdrs = ['JOB_ITEM_ID',
                 'JOB_BU_ID',
-                'ji.connote_nbr',
-                'j.card_ref_nbr',
-                'ji.item_nbr',
-                'j.job_ts',
-                'ji.created_ts',
-                'ji.notify_ts',
-                'ji.pickup_ts',
-                'ji.pieces',
-                'ji.consumer_name',
-                'ag.dp_code', 'ag.name']
+                'CONNOTE_NBR',
+                'BARCODE',
+                'ITEM_NBR',
+                'JOB_TS',
+                'CREATED_TS',
+                'NOTIFY_TS',
+                'PICKUP_TS',
+                'PIECES',
+                'CONSUMER_NAME',
+                'DP_CODE',
+                'AGENT_NAME']
         self._w.set_headers(hdrs)
 
         data = expected = [(20,
                             1,
-                            'TEST_REF_NOT_PROC',
-                            'aged_parcel_unmatched',
-                            '00393403250082030047',
-                            '%s' % self._now,
-                            '%s' % self._now,
+                            '="TEST_REF_NOT_PROC"',
+                            '="aged_parcel_unmatched"',
+                            '="00393403250082030047"',
+                            '="%s"' % self._now,
+                            '="%s"' % self._now,
                             None,
                             None,
                             20,
@@ -54,11 +55,11 @@ class TestWriter(unittest2.TestCase):
                             'VIC Test Newsagent 999'),
                            (22,
                             1,
-                            'ARTZ061184',
-                            'JOB_TEST_REF_NOT_PROC_PCKD_UP',
-                            '00393403250082030048',
-                            '%s' % self._now,
-                            '%s' % self._now,
+                            '="ARTZ061184"',
+                            '="JOB_TEST_REF_NOT_PROC_PCKD_UP"',
+                            '="00393403250082030048"',
+                            '="%s"' % self._now,
+                            '="%s"' % self._now,
                             None,
                             None,
                             22,
@@ -72,7 +73,7 @@ class TestWriter(unittest2.TestCase):
         self._w(data)
 
         # Clean up.
-        remove_files(file)
+        #remove_files(file)
 
     @classmethod
     def tearDownClass(cls):

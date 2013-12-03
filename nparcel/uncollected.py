@@ -64,10 +64,19 @@ class Uncollected(nparcel.Auditer):
 
         tmp_row_list = list(row)
 
-        for i in ['CONNOTE_NBR', 'BARCODE', 'ITEM_NBR']:
+        for i in ['CONNOTE_NBR',
+                  'BARCODE',
+                  'ITEM_NBR',
+                  'JOB_TS',
+                  'CREATED_TS',
+                  'NOTIFY_TS',
+                  'PICKUP_TS']:
             index = header.index(i)
             log.debug('Prepending "=" to column|value "%s|%s"' %
                       (i, str(tmp_row_list[index])))
-            tmp_row_list[index] = '=%s' % tmp_row_list[index]
+            if tmp_row_list[index] is None:
+                tmp_row_list[index] = str()
+            else:
+                tmp_row_list[index] = '="%s"' % tmp_row_list[index]
 
         return tuple(tmp_row_list)
