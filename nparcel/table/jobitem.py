@@ -9,6 +9,8 @@ import nparcel
 class JobItem(nparcel.Table):
     """Nparcel DB Job_Item table ORM.
     """
+    _job = nparcel.Job()
+    _agent_stocktake = nparcel.AgentStocktake()
 
     def __init__(self):
         """Nparcel job_item table initialiser.
@@ -271,6 +273,9 @@ AND j.service_code = 3""" % (self.name, connote)
         Service Code jobs are identified by a integer value in the
         ``job.service_code`` column.
 
+        Query will ignore records that have either white space or
+        a spurious ``.`` in the email or phone number columns.
+
         The *bu_ids* relate to the ``job.bu_id`` column.
 
         **Args:**
@@ -295,8 +300,125 @@ FROM job as j, %s as ji
 WHERE ji.job_id = j.id
 AND ji.pickup_ts is NULL
 AND ji.notify_ts is NULL
-AND (ji.email_addr != '' OR ji.phone_nbr != '')
+AND (ji.email_addr NOT IN ('', '.') OR ji.phone_nbr NOT IN ('', '.'))
 AND j.bu_id IN %s
 AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
+
+        return sql
+
+    def reference_sql(self,
+                      reference_nbr=None,
+                      picked_up=False,
+                      alias='ji'):
+        """Extract connote_nbr/item_nbr against *reference_nbr*.
+
+        Query is an ``OR`` against both ``connote_nbr`` and ``item_nbr``.
+
+        **Kwargs:**
+            *reference_nbr*: parcel ID number as scanned by the agent.  If
+            ``None``, then the values from the ``agent_stocktake`` table
+            will be used.
+
+            *picked_up*: boolean flag that will extract ``job_items``
+            that have been picked up if ``True``. Otherwise, will extract
+            ``job_items`` that have not been picked up if ``False``.
+
+            *alias*: table alias (default ``ji``)
+
+        **Returns:**
+            the SQL string
+
+        """
+        if not picked_up:
+            pickup_sql = 'IS NULL'
+        else:
+            pickup_sql = 'IS NOT NULL'
+
+        ref = reference_nbr
+        if reference_nbr is None:
+            ref = self._agent_stocktake.reference_sql()
+
+        sql = """SELECT DISTINCT %(alias)s.id as JOB_ITEM_ID,
+       j.bu_id as JOB_BU_ID,
+       %(alias)s.connote_nbr,
+       j.card_ref_nbr,
+       %(alias)s.item_nbr,
+       j.job_ts,
+       %(alias)s.created_ts,
+       %(alias)s.notify_ts,
+       %(alias)s.pickup_ts,
+       %(alias)s.pieces,
+       %(alias)s.consumer_name,
+       ag.dp_code,
+       ag.name
+FROM %(name)s as %(alias)s, job as j, agent as ag
+WHERE %(alias)s.job_id = j.id
+AND j.agent_id = ag.id
+AND (%(alias)s.connote_nbr IN (%(ref)s)
+     OR %(alias)s.item_nbr IN (%(ref)s))
+AND %(alias)s.pickup_ts %(pickup_sql)s
+UNION
+%(union)s""" % {'name': self.name,
+                'ref': ref,
+                'alias': alias,
+                'union': self.job_based_reference_sql(ref,
+                                                      picked_up=picked_up),
+                'pickup_sql': pickup_sql}
+
+        return sql
+
+    def job_based_reference_sql(self,
+                                reference_nbr,
+                                picked_up=False,
+                                alias='ji'):
+        """Extract connote_nbr/item_nbr against *reference_nbr* matched
+        to the ``job.card_ref_nbr``.
+
+        Query is an ``OR`` against both ``connote_nbr`` and ``item_nbr``.
+
+        **Args:**
+            *reference_nbr*: parcel ID number as scanned by the agent
+
+        **Kwargs:**
+            *picked_up*: boolean flag that will extract ``job_items``
+            that have been picked up if ``True``. Otherwise, will extract
+            ``job_items`` that have not been picked up if ``False``.
+
+            *alias*: table alias
+
+        **Returns:**
+            the SQL string
+
+        """
+        pickup_sql = 'AND %s.pickup_ts ' % alias
+        if not picked_up:
+            pickup_sql += 'IS NULL'
+        else:
+            pickup_sql += 'IS NOT NULL'
+
+        sql = """SELECT %(alias)s.id as JOB_ITEM_ID,
+       j.bu_id as JOB_BU_ID,
+       %(alias)s.connote_nbr,
+       j.card_ref_nbr,
+       %(alias)s.item_nbr,
+       j.job_ts,
+       %(alias)s.created_ts,
+       %(alias)s.notify_ts,
+       %(alias)s.pickup_ts,
+       %(alias)s.pieces,
+       %(alias)s.consumer_name,
+       ag.dp_code,
+       ag.name
+FROM %(name)s as %(alias)s, job as j, agent as ag
+WHERE %(alias)s.job_id = j.id
+AND j.agent_id = ag.id
+AND %(alias)s.job_id IN
+(
+%(sql)s
+)
+%(pickup_sql)s""" % {'name': self.name,
+                     'sql': self._job.reference_sql(reference_nbr),
+                     'alias': alias,
+                     'pickup_sql': pickup_sql}
 
         return sql

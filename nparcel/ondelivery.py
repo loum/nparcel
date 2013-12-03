@@ -50,7 +50,7 @@ class OnDelivery(nparcel.Service):
 
         """
         super(nparcel.OnDelivery, self).__init__(db=db_kwargs,
-                                                   comms_dir=comms_dir)
+                                                 comms_dir=comms_dir)
 
         if ts_db_kwargs is not None:
             self._ts_db_kwargs = ts_db_kwargs
@@ -143,7 +143,6 @@ class OnDelivery(nparcel.Service):
             ``job_items`` table extraction
 
         **Kwargs:**
-
             *job_items*: list of ``(<id>, <connote>, <item_nbr>)``
             that can be fed into the process loop directly
 
@@ -170,7 +169,7 @@ class OnDelivery(nparcel.Service):
             log.info('Received job_items list inline')
 
         for (id, connote, item_nbr) in job_items:
-            log.info('Processing PE id|connote|item: "%s|%s|%s ..."' %
+            log.info('Processing On Del id|connote|item: "%s|%s|%s ..."' %
                      (id, connote, item_nbr))
 
             delivered_status = False
@@ -185,7 +184,7 @@ class OnDelivery(nparcel.Service):
                         self.flag_comms('sms', id, template)):
                         processed_ids.append(id)
 
-            log.info('PE id|connote|item: "%s|%s|%s" check complete' %
+            log.info('On Del id|connote|item: "%s|%s|%s" check complete' %
                      (id, connote, item_nbr))
 
         if mts_file is not None:

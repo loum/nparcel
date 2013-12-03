@@ -245,7 +245,7 @@ class DbSession(object):
         try:
             fh = open(fixture)
         except IOError, e:
-            log.error('Fixture file "%s" error' % (fixture, e))
+            log.error('Fixture file "%s" error: %s' % (fixture, e))
 
         if fh is not None:
             items = eval(fh.read())

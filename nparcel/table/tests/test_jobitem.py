@@ -21,37 +21,46 @@ class TestJobItem(unittest2.TestCase):
         cls._db = nparcel.DbSession()
         cls._db.connect()
 
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        # Create the tables.
+        cls._db.create_table(name='agent_stocktake',
+                             schema=cls._db.agent_stocktake.schema)
+
         db = cls._db
         # Prepare some sample data.
-        # Agent.
-        fixture_file = os.path.join(fixture_dir, 'agents.py')
-        db.load_fixture(db.agent, fixture_file)
+        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixtures = [{'db': db.agent_stocktake,
+                     'fixture': 'agent_stocktakes.py'},
+                    {'db': db.agent,
+                     'fixture': 'agents.py'},
+                    {'db': db.identity_type,
+                     'fixture': 'identity_type.py'},
+                    {'db': db.job,
+                     'fixture': 'jobs.py'},
+                    {'db': db.jobitem,
+                     'fixture': 'jobitems.py'}]
+        for i in fixtures:
+            fixture_file = os.path.join(fixture_dir, i['fixture'])
+            db.load_fixture(i['db'], fixture_file)
 
-        # Job table.
-        fixture_file = os.path.join(fixture_dir, 'jobs.py')
-        db.load_fixture(db.job, fixture_file)
+        # "job" table timestamp updates.
         sql = """UPDATE job
 SET job_ts = '%s'""" % cls._now
         db(sql)
 
-        # "identity_type" table.
-        fixture_file = os.path.join(fixture_dir, 'identity_type.py')
-        db.load_fixture(db.identity_type, fixture_file)
-
-        # job_items table.
-        fixture_file = os.path.join(fixture_dir, 'jobitems.py')
-        db.load_fixture(db.jobitem, fixture_file)
-
-        # Update the timestamps.
+        # "job_item" table timestamp updates.
         sql = """UPDATE job_item
 SET created_ts = '%s'
-WHERE id IN (1, 3, 4, 5)""" % cls._now
+WHERE id IN (1, 3, 4, 5, 15, 16, 19, 20, 21, 22)""" % cls._now
         db(sql)
 
         sql = """UPDATE job_item
 SET pickup_ts = '%s'
-WHERE id IN (1, 5)""" % cls._now
+WHERE id IN (1, 5, 21)""" % cls._now
+        db(sql)
+
+        sql = """UPDATE job_item
+SET notify_ts = '%s'
+WHERE id IN (21)""" % cls._now
         db(sql)
 
         delayed_dt = cls._now - datetime.timedelta(seconds=(86400 * 5))
@@ -427,6 +436,185 @@ AND j.service_code = 1"""
                      'uncollected_connote_sc_4_item_nbr'),
                     (14, 'TWAD358893', 'TWAD358893001')]
         msg = 'Uncollected service code with bu_ids 4 error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_uncollected_service_code_jobitems_sql_no_recipients(self):
+        """Verify uncollected_service_code_jobitems SQL -- no recipients.
+        """
+        bu_ids = (2, )
+        service_code = 4
+        sql = self._db.jobitem.uncollected_jobitems_sql(service_code,
+                                                        bu_ids)
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [(9,
+                     'uncollected_connote_sc_4',
+                     'uncollected_connote_sc_4_item_nbr')]
+        msg = 'Uncollected service bad recipients error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_reference_sql(self):
+        """Verify the reference_sql SQL.
+        """
+        ref = "'TEST_REF_001'"
+        sql = self._db.jobitem.reference_sql(ref)
+
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [(15,
+                     1,
+                     'TEST_REF_001',
+                     'aged_parcel_unmatched',
+                     'aged_connote_match',
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     None,
+                     None,
+                     15,
+                     'Con Sumerfifteen',
+                     'VIC999',
+                     'VIC Test Newsagent 999'),
+                    (16,
+                     1,
+                     'aged_item_match',
+                     'aged_parcel_unmatched',
+                     'TEST_REF_001',
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     None,
+                     None,
+                     16,
+                     'Con Sumersixteen',
+                     'VIC999',
+                     'VIC Test Newsagent 999'),
+                    (19,
+                     1,
+                     'ARTZ061184',
+                     'TEST_REF_001',
+                     '00393403250082030046',
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     None,
+                     None,
+                     19,
+                     'Con Sumernineteen',
+                     'VIC999',
+                     'VIC Test Newsagent 999')]
+        msg = 'Reference-based job_item query error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_reference_sql_refs_from_agent_stocktake(self):
+        """Verify the reference_sql SQL -- refs from AgentStocktake.
+        """
+        sql = self._db.jobitem.reference_sql()
+
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [(20,
+                     1,
+                     'TEST_REF_NOT_PROC',
+                     'aged_parcel_unmatched',
+                     '00393403250082030047',
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     None,
+                     None,
+                     20,
+                     'Con Sumertwenty',
+                     'VIC999',
+                     'VIC Test Newsagent 999'),
+                    (22,
+                     1,
+                     'ARTZ061184',
+                     'JOB_TEST_REF_NOT_PROC_PCKD_UP',
+                     '00393403250082030048',
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     None,
+                     None,
+                     22,
+                     'Con Sumertwentytwo',
+                     'VIC999',
+                     'VIC Test Newsagent 999')]
+        msg = 'AgentStocktake-based job_item (not processed) query error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_reference_sql_refs_from_agent_stocktake_picked_up(self):
+        """Verify the reference_sql SQL -- picked refs from AgentStocktake.
+        """
+        sql = self._db.jobitem.reference_sql(picked_up=True)
+
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [(21,
+                     1,
+                     'ARTZ061184',
+                     'aged_parcel_unmatched',
+                     'TEST_REF_NOT_PROC_PCKD_UP',
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     21,
+                     'Con Sumertwentyone',
+                     'VIC999',
+                     'VIC Test Newsagent 999')]
+        msg = 'AgentStocktake-based job_item (not processed) query error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_job_based_reference_sql(self):
+        """Verify the job_based_reference_sql SQL.
+        """
+        ref = "'TEST_REF_001'"
+        sql = self._db.jobitem.job_based_reference_sql(ref)
+
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [(19,
+                     1,
+                     'ARTZ061184',
+                     'TEST_REF_001',
+                     '00393403250082030046',
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     None,
+                     None,
+                     19,
+                     'Con Sumernineteen',
+                     'VIC999',
+                     'VIC Test Newsagent 999')]
+        msg = 'Job table based reference query error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_job_based_reference_sql_picked_up(self):
+        """Verify the job_based_reference_sql SQL -- picked_up.
+        """
+        ref = "'JOB_TEST_REF_NOT_PROC_PCKD_UP'"
+        sql = self._db.jobitem.job_based_reference_sql(ref,
+                                                       picked_up=False)
+
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [(22,
+                     1,
+                     'ARTZ061184',
+                     'JOB_TEST_REF_NOT_PROC_PCKD_UP',
+                     '00393403250082030048',
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     None,
+                     None,
+                     22,
+                     'Con Sumertwentytwo',
+                     'VIC999',
+                     'VIC Test Newsagent 999')]
+        msg = 'Job table based reference query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
     @classmethod
