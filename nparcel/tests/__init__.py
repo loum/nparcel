@@ -31,3 +31,4 @@ from test_comms import TestComms
 from test_mapper import TestMapper
 from test_filter import TestFilter
 from test_mts import TestMts
+from test_auditer import TestAuditer

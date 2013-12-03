@@ -54,6 +54,8 @@ Modules
 
     mts.rst
 
+    auditer.rst
+
 Indices and tables
 ------------------
 
