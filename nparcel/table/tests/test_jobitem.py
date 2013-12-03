@@ -413,7 +413,7 @@ FROM job as j, job_item as ji
 WHERE ji.job_id = j.id
 AND ji.pickup_ts is NULL
 AND ji.notify_ts is NULL
-AND (ji.email_addr != '' OR ji.phone_nbr != '')
+AND (ji.email_addr NOT IN ('', '.') OR ji.phone_nbr NOT IN ('', '.'))
 AND j.bu_id IN (2)
 AND j.service_code = 1"""
         msg = 'Uncollected service code single BU syntax error'

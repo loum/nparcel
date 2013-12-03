@@ -58,6 +58,8 @@ Modules
 
     uncollected.rst
 
+    writer.rst
+
 Indices and tables
 ------------------
 
