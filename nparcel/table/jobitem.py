@@ -338,19 +338,7 @@ AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
         if reference_nbr is None:
             ref = self._agent_stocktake.reference_sql()
 
-        sql = """SELECT DISTINCT %(alias)s.id as JOB_ITEM_ID,
-       j.bu_id as JOB_BU_ID,
-       %(alias)s.connote_nbr,
-       j.card_ref_nbr,
-       %(alias)s.item_nbr,
-       j.job_ts,
-       %(alias)s.created_ts,
-       %(alias)s.notify_ts,
-       %(alias)s.pickup_ts,
-       %(alias)s.pieces,
-       %(alias)s.consumer_name,
-       ag.dp_code,
-       ag.name
+        sql = """SELECT DISTINCT %(columns)s
 FROM %(name)s as %(alias)s, job as j, agent as ag
 WHERE %(alias)s.job_id = j.id
 AND j.agent_id = ag.id
@@ -358,7 +346,8 @@ AND (%(alias)s.connote_nbr IN (%(ref)s)
      OR %(alias)s.item_nbr IN (%(ref)s))
 AND %(alias)s.pickup_ts %(pickup_sql)s
 UNION
-%(union)s""" % {'name': self.name,
+%(union)s""" % {'columns': self._select_columns(alias),
+                'name': self.name,
                 'ref': ref,
                 'alias': alias,
                 'union': self.job_based_reference_sql(ref,
@@ -396,19 +385,7 @@ UNION
         else:
             pickup_sql += 'IS NOT NULL'
 
-        sql = """SELECT %(alias)s.id as JOB_ITEM_ID,
-       j.bu_id as JOB_BU_ID,
-       %(alias)s.connote_nbr,
-       j.card_ref_nbr,
-       %(alias)s.item_nbr,
-       j.job_ts,
-       %(alias)s.created_ts,
-       %(alias)s.notify_ts,
-       %(alias)s.pickup_ts,
-       %(alias)s.pieces,
-       %(alias)s.consumer_name,
-       ag.dp_code,
-       ag.name
+        sql = """SELECT DISTINCT %(columns)s
 FROM %(name)s as %(alias)s, job as j, agent as ag
 WHERE %(alias)s.job_id = j.id
 AND j.agent_id = ag.id
@@ -416,9 +393,37 @@ AND %(alias)s.job_id IN
 (
 %(sql)s
 )
-%(pickup_sql)s""" % {'name': self.name,
+%(pickup_sql)s""" % {'columns': self._select_columns(alias),
+                     'name': self.name,
                      'sql': self._job.reference_sql(reference_nbr),
                      'alias': alias,
                      'pickup_sql': pickup_sql}
 
         return sql
+
+    def _select_columns(self, alias='ji'):
+        """Helper method that captures required columns in the
+        uncollected aged report query.
+
+        **Kwargs:**
+            *alias*: table alias
+
+        **Returns:**
+            the SQL string
+
+        """
+        columns = """%(alias)s.id as JOB_ITEM_ID,
+       j.bu_id as JOB_BU_ID,
+       %(alias)s.connote_nbr as CONNOTE_NBR,
+       j.card_ref_nbr as BARCODE,
+       %(alias)s.item_nbr as ITEM_NBR,
+       j.job_ts as JOB_TS,
+       %(alias)s.created_ts as CREATED_TS,
+       %(alias)s.notify_ts as NOTIFY_TS,
+       %(alias)s.pickup_ts as PICKUP_TS,
+       %(alias)s.pieces as PIECES,
+       %(alias)s.consumer_name as CONSUMER_NAME,
+       ag.dp_code as DP_CODE,
+       ag.name as AGENT_NAME""" % {'alias': alias}
+
+        return columns
