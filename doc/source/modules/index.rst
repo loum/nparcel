@@ -59,6 +59,7 @@ Modules
     uncollected.rst
 
     writer.rst
+    xlwriter.rst
 
 Indices and tables
 ------------------
