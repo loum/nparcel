@@ -33,7 +33,8 @@ class TestAgentStocktake(unittest2.TestCase):
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [('TEST_REF_NOT_PROC',),
+        expected = [('TEST_REF_001',),
+                    ('TEST_REF_NOT_PROC',),
                     ('JOB_TEST_REF_NOT_PROC_PCKD_UP',),
                     ('TEST_REF_NOT_PROC_PCKD_UP',)]
         msg = 'Reference-based agent_stocktake query error'
@@ -46,11 +47,19 @@ class TestAgentStocktake(unittest2.TestCase):
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [('TEST_REF_NOT_PROC',),
+        expected = [('TEST_REF_001',),
+                    ('TEST_REF_NOT_PROC',),
                     ('JOB_TEST_REF_NOT_PROC_PCKD_UP',),
                     ('TEST_REF_NOT_PROC_PCKD_UP',)]
         msg = 'Reference-based agent_stocktake query error (no alias)'
         self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_update_processed_ts_sql(self):
+        """Verify the update_processed_ts_sql SQL.
+        """
+        now = self._db.date_now()
+        sql = self._st.update_processed_ts_sql(now)
+        self._db(sql)
 
     @classmethod
     def tearDownClass(cls):

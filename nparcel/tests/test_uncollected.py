@@ -43,7 +43,7 @@ SET job_ts = '%s'""" % cls._now
         # "job_item" table timestamp updates.
         sql = """UPDATE job_item
 SET created_ts = '%s'
-WHERE id IN (20, 22)""" % cls._now
+WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
         db(sql)
 
         db.commit()
@@ -60,7 +60,46 @@ WHERE id IN (20, 22)""" % cls._now
         dry = True
 
         received = self._u.process(dry=dry)
-        expected = [(20,
+        expected = [(15,
+                     1,
+                     'TEST_REF_001',
+                     'aged_parcel_unmatched',
+                     'aged_connote_match',
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     None,
+                     None,
+                     15,
+                     'Con Sumerfifteen',
+                     'VIC999',
+                     'VIC Test Newsagent 999'),
+                    (16,
+                     1,
+                     'aged_item_match',
+                     'aged_parcel_unmatched',
+                     'TEST_REF_001',
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     None,
+                     None,
+                     16,
+                     'Con Sumersixteen',
+                     'VIC999',
+                     'VIC Test Newsagent 999'),
+                    (19,
+                     1,
+                     'ARTZ061184',
+                     'TEST_REF_001',
+                     '00393403250082030046',
+                     '%s' % self._now,
+                     '%s' % self._now,
+                     None,
+                     None,
+                     19,
+                     'Con Sumernineteen',
+                     'VIC999',
+                     'VIC Test Newsagent 999'),
+                    (20,
                      1,
                      'TEST_REF_NOT_PROC',
                      'aged_parcel_unmatched',

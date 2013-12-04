@@ -73,7 +73,7 @@ class TestWriter(unittest2.TestCase):
         self._w(data)
 
         # Clean up.
-        #remove_files(file)
+        remove_files(file)
 
     @classmethod
     def tearDownClass(cls):

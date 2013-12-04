@@ -30,6 +30,11 @@ class Uncollected(nparcel.Auditer):
         """
         log.info('Starting Uncollected (Aged) Report ...')
 
+        log.debug('Setting processed_ts column')
+        ts_now = self.db.date_now()
+        sql = self.db.agent_stocktake.update_processed_ts_sql(ts_now)
+        self.db(sql)
+
         aged_jobitem_ids = []
 
         sql = self.db.jobitem.reference_sql()

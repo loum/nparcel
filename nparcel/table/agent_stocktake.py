@@ -24,8 +24,8 @@ class AgentStocktake(nparcel.Table):
                 "processed_ts CHAR(6)"]
 
     def reference_sql(self, day_range=7, alias='st'):
-        """Extract ``agent_stocktake.reference_nbr`` records that have not
-        been processed (``agent_stocktake.processed_ts`` is ``NULL``).
+        """Extract ``agent_stocktake.reference_nbr`` records within
+        *day_range* days from now.
 
         **Kwargs:**
             *day_range*: number of days from current time to include
@@ -43,9 +43,32 @@ class AgentStocktake(nparcel.Table):
 
         sql = """SELECT DISTINCT %(alias)s.reference_nbr
 FROM %(name)s as %(alias)s
-WHERE %(alias)s.processed_ts IS NULL
-AND created_ts > '%(start_date)s'""" % {'name': self.name,
-                                        'alias': alias,
-                                        'start_date': start_date}
+WHERE created_ts > '%(start_date)s'""" % {'name': self.name,
+                                          'alias': alias,
+                                          'start_date': start_date}
+
+        return sql
+
+    def update_processed_ts_sql(self, ts_string):
+        """Update the ``agent_stocktake.processed_ts`` to the
+        :mod:`datetime` structure denoted by *ts_string* (where the current
+        column value is NULL).
+
+        **Args:**
+            *ts_string*: string representation of time in ISO format.
+            For example, ``2013-12-04 12:00:00``
+
+        **Kwargs:**
+            *day_range*: number of days from current time to include
+            in search (default 7.0 days)
+
+        **Returns:**
+            the SQL string
+
+        """
+        sql = """UPDATE %(name)s
+SET processed_ts = '%(ts)s'
+WHERE processed_ts IS NULL""" % {'name': self.name,
+                                 'ts': ts_string}
 
         return sql
