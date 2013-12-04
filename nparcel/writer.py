@@ -75,3 +75,60 @@ class Writer(object):
 
     def set_write_headers(self, value=False):
         self._write_headers = value
+
+    def filter(self, headers, headers_displayed, row):
+        """Takes a list of column *headers* and filters the *row*
+        based on the list of *headers_displayed*.
+
+        **Args:**
+            *headers*: all column headers
+
+            *headers_displayed*: headers to display
+
+            *row*: tuple-based column values
+
+        **Returns:**
+            tuple of filtered *row* values
+
+        """
+        log.debug('Filtering out data to display for row: "%s"' % str(row))
+
+        new_row_list = []
+        for i in headers_displayed:
+            log.debug('Extracting header "%s" value' % i)
+            index = headers.index(i)
+            value = row[index]
+            log.debug('Header "%s" value is "%s"' % (i, value))
+            new_row_list.append(value)
+
+        return tuple(new_row_list)
+
+    def header_aliases(self, headers_displayed, header_aliases):
+        """Substitute the raw header_values in *headers_displayed* with
+        the aliases defined in *header_alises*.
+
+        **Args:**
+            *headers_displayed*: headers to display
+
+            *header_aliases*: dictionary structure that maps the raw
+            header value to the alias.  Typical form is::
+
+                {'AGENT_NAME': 'Agent Name',
+                 ...}
+
+        """
+        log.debug('Substituting header aliases as per: "%s"' %
+                  str(header_aliases))
+
+        new_header_list = []
+        for i in headers_displayed:
+            log.debug('Substituting alias for header "%s"' % i)
+            alias = header_aliases.get(i)
+            if alias is not None:
+                log.debug('Header "%s" alias is "%s"' % (i, alias))
+                new_header_list.append(alias)
+            else:
+                log.debug('Header "%s" has no alias' % i)
+                new_header_list.append(i)
+
+        return new_header_list

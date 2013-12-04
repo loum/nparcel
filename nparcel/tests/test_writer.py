@@ -75,6 +75,85 @@ class TestWriter(unittest2.TestCase):
         # Clean up.
         remove_files(file)
 
+    def test_filter(self):
+        """Filter columns to display.
+        """
+        hdrs = ['JOB_ITEM_ID',
+                'JOB_BU_ID',
+                'CONNOTE_NBR',
+                'BARCODE',
+                'ITEM_NBR',
+                'JOB_TS',
+                'CREATED_TS',
+                'NOTIFY_TS',
+                'PICKUP_TS',
+                'PIECES',
+                'CONSUMER_NAME',
+                'DP_CODE',
+                'AGENT_NAME']
+        hdrs_to_display = ['DP_CODE',
+                           'AGENT_NAME',
+                           'JOB_BU_ID',
+                           'CONNOTE_NBR',
+                           'ITEM_NBR',
+                           'CONSUMER_NAME',
+                           'PIECES']
+        data = expected = (20,
+                           1,
+                           '="TEST_REF_NOT_PROC"',
+                           '="aged_parcel_unmatched"',
+                           '="00393403250082030047"',
+                           '="%s"' % self._now,
+                           '="%s"' % self._now,
+                           None,
+                           None,
+                           20,
+                           'Con Sumertwenty',
+                           'VIC999',
+                           'VIC Test Newsagent 999')
+
+        received = self._w.filter(headers=hdrs,
+                                  headers_displayed=hdrs_to_display,
+                                  row=data)
+        expected = ('VIC999',
+                    'VIC Test Newsagent 999',
+                    1,
+                    '="TEST_REF_NOT_PROC"',
+                    '="00393403250082030047"',
+                    'Con Sumertwenty',
+                    20)
+        msg = 'Filtered row error'
+        self.assertTupleEqual(received, expected, msg)
+
+    def test_header_aliases(self):
+        """Substitue header aliases.
+        """
+        hdrs_to_display = ['DP_CODE',
+                           'AGENT_NAME',
+                           'JOB_BU_ID',
+                           'CONNOTE_NBR',
+                           'ITEM_NBR',
+                           'CONSUMER_NAME',
+                           'PIECES']
+        aliases = {'DP_CODE': 'Agent',
+                   'AGENT_NAME': 'Agent Name',
+                   'JOB_BU_ID': 'Business Unit',
+                   'CONNOTE_NBR': 'Connote',
+                   'ITEM_NBR': 'Item Nbr',
+                   'PIECES': 'Pieces'}
+
+        received = self._w.header_aliases(headers_displayed=hdrs_to_display,
+                                          header_aliases=aliases)
+        expected = ['Agent',
+                    'Agent Name',
+                    'Business Unit',
+                    'Connote',
+                    'Item Nbr',
+                    'CONSUMER_NAME',
+                    'Pieces']
+        msg = 'Header alias substitution error'
+        self.assertListEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._w = None
