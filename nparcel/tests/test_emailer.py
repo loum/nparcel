@@ -1,4 +1,5 @@
 import unittest2
+import os
 
 import nparcel
 
@@ -8,7 +9,8 @@ class TestEmailer(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._e = nparcel.Emailer()
-        cls._e.set_template_base('nparcel')
+        cls._recipients = ['loumar@tollgroup.com']
+        cls._e.set_template_base(os.path.join('nparcel', 'templates'))
 
     def test_init(self):
         """Verify initialisation of an nparcel.Emailer object.
@@ -81,6 +83,59 @@ class TestEmailer(unittest2.TestCase):
         # Clean up.
         self._e.set_recipients(None)
 
+    def test_send_comms(self):
+        """Test send_comms.
+        """
+        # We don't really test anything here.  But, to check that
+        # email alerts are sent set dry to False.
+        dry = True
+        data = {}
+
+        subject_data = {}
+        subject = self._e.get_subject_line(data=subject_data,
+                                           template='test')
+        subject = subject.rstrip()
+
+        received = subject
+        expected = 'TEST COMMS'
+        msg = 'Subject line error'
+        self.assertEqual(received, expected, msg)
+
+        self._e.send_comms(template='test',
+                           subject_data=subject,
+                           data=data,
+                           recipients=self._recipients,
+                           dry=dry)
+
+    def test_send_comms_subject_template(self):
+        """Test send_comms auto-find subject template.
+        """
+        # We don't really test anything here.  But, to check that
+        # email alerts are sent set dry to False.
+        dry = True
+        data = {}
+
+        self._e.send_comms(template='test',
+                           data=data,
+                           recipients=self._recipients,
+                           dry=dry)
+
+    def test_send_comms_with_subject(self):
+        """Test send_comms auto-find subject template.
+        """
+        # We don't really test anything here.  But, to check that
+        # email alerts are sent set dry to False.
+        dry = True
+
+        subject = 'Override subject'
+        data = {}
+        self._e.send_comms(template='test',
+                           data=data,
+                           subject_data=subject,
+                           recipients=self._recipients,
+                           dry=dry)
+
     @classmethod
     def tearDownClass(cls):
         cls._e = None
+        del cls._recipients[:]

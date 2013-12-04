@@ -250,3 +250,70 @@ class Emailer(object):
         log.debug('Email comms subject string: "%s"' % subject_string)
 
         return subject_string
+
+    def send_comms(self,
+                   template,
+                   data,
+                   subject_data=None,
+                   recipients=None,
+                   dry=False):
+        """Use the :attr:`nparcel.Emailer` object to generate email
+        notification based on *template* and *data* dictionary value.
+
+        *subject_data* can be delivered in a few ways:
+
+            * as a string it will simply pass it through to the subject
+              email
+
+            * as a dictionary in the form::
+
+                {'data': {<key>: <value>,
+                          ...},
+                'template': <template>}
+
+            where the ``data`` and ``template`` keys define the
+            template arrangment
+
+            * nothing at all (``None``) in which case it will try to fudge
+              a subject template based on the email body template
+
+        **Args:**
+            *template*: the email template to use to generate the HTML-based
+            email content.  Template format is ``email_<name>_html.t`` where
+            ``<name>`` is the expected argument value
+
+            *data*: dictionary structure that contains the values that will
+            plug into the template file
+
+        **Kwargs:**
+            *subject_data*: string or dictionary value that will form
+            the email subject line
+
+            *recipients*: list of email addresses to send to.  If not
+            ``None``, will override the :attr:`nparcel.Emailer.recipients`
+            values
+
+            *dry*: don't execute, just report
+
+        """
+        if recipients is not None:
+            self.set_recipients(recipients)
+
+        subject = str()
+        subject_template_data = {}
+        subject_template = None
+        if subject_data is not None:
+            if isinstance(subject_data, str):
+                subject = subject_data
+            elif isinstance(subject_data, dict):
+                subject_template_data = subject.get('data')
+                subject_template = subject.get('template')
+
+        if not subject and subject_template is None:
+            subject = self.get_subject_line(data, template=template)
+            subject = subject.rstrip()
+
+        mime = self.create_comms(subject=subject,
+                                 data=data,
+                                 template=template)
+        self.send(mime_message=mime, dry=dry)

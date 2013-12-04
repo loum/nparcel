@@ -209,10 +209,10 @@ class FilterDaemon(nparcel.DaemonService):
                         data = {'file': file,
                                 'facility': self.__class__.__name__,
                                 'err_table': alert_table}
-                        self.alert(template='proc_err',
-                                   data=data,
-                                   recipients=self.support_emails,
-                                   dry=self.dry)
+                        self.emailer.send_comms(template='proc_err',
+                                                data=data,
+                                                recipients=self.support_emails,
+                                                dry=self.dry)
                 else:
                     log.error('%s processing failed.' % file)
                     if not eof_found:

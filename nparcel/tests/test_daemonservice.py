@@ -19,58 +19,6 @@ class TestDaemonService(unittest2.TestCase):
         msg = 'Not a nparcel.DaemonService object'
         self.assertIsInstance(self._ds, nparcel.DaemonService, msg)
 
-    def test_alert(self):
-        """Test alert comms.
-        """
-        # We don't really test anything here.  But, to check that
-        # email alerts are sent set dry to False.
-        dry = True
-        data = {}
-
-        subject_data = {}
-        subject = self._ds.emailer.get_subject_line(data=subject_data,
-                                                    template='test')
-        subject = subject.rstrip()
-
-        received = subject
-        expected = 'TEST COMMS'
-        msg = 'Subject line error'
-        self.assertEqual(received, expected, msg)
-
-        self._ds.alert(template='test',
-                       subject_data=subject,
-                       data=data,
-                       recipients=self._recipients,
-                       dry=dry)
-
-    def test_alert_subject_template(self):
-        """Test alert comms auto-find subject template.
-        """
-        # We don't really test anything here.  But, to check that
-        # email alerts are sent set dry to False.
-        dry = True
-        data = {}
-
-        self._ds.alert(template='test',
-                       data=data,
-                       recipients=self._recipients,
-                       dry=dry)
-
-    def test_alert_with_subject(self):
-        """Test alert comms auto-find subject template.
-        """
-        # We don't really test anything here.  But, to check that
-        # email alerts are sent set dry to False.
-        dry = True
-
-        subject = 'Override subject'
-        data = {}
-        self._ds.alert(template='test',
-                       data=data,
-                       subject_data=subject,
-                       recipients=self._recipients,
-                       dry=dry)
-
     def test_alert_failed_processing(self):
         """Test alert comms for a processing error.
         """
@@ -86,10 +34,10 @@ class TestDaemonService(unittest2.TestCase):
                 'facility': 'facility',
                 'err_table': err_table}
 
-        self._ds.alert(template='proc_err',
-                       data=data,
-                       recipients=self._recipients,
-                       dry=dry)
+        self._ds.emailer.send_comms(template='proc_err',
+                                    data=data,
+                                    recipients=self._recipients,
+                                    dry=dry)
 
     def test_create_table(self):
         """HTML table creation.
