@@ -54,6 +54,7 @@ class Writer(object):
         return self._outfile
 
     def set_outfile(self, value=None):
+        log.debug('Setting outfile to "%s"' % value)
         self._outfile = value
 
     @property

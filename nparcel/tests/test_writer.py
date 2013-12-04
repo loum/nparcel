@@ -79,5 +79,6 @@ class TestWriter(unittest2.TestCase):
     def tearDownClass(cls):
         cls._w = None
         del cls._w
+        os.removedirs(cls._dir)
         cls._dir = None
         del cls._dir
