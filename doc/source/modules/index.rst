@@ -57,6 +57,7 @@ Modules
     auditer.rst
 
     uncollected.rst
+    uncollecteddeamon.rst
 
     writer.rst
     xlwriter.rst

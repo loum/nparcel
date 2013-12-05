@@ -7,8 +7,8 @@ from nparcel.utils.log import log
 
 class Uncollected(nparcel.Auditer):
     """Toll Parcel Portal base Uncollected class.
-    """
 
+    """
     def __init__(self, db_kwargs=None):
         """Uncollected initialiser.
 
@@ -35,7 +35,7 @@ class Uncollected(nparcel.Auditer):
         sql = self.db.agent_stocktake.update_processed_ts_sql(ts_now)
         self.db(sql)
 
-        aged_jobitem_ids = []
+        aged_jobitems = []
 
         sql = self.db.jobitem.reference_sql()
         self.db(sql)
@@ -43,11 +43,11 @@ class Uncollected(nparcel.Auditer):
         log.debug('Columns: %s' % self.db.columns())
         for i in self.db.rows():
             log.debug('Found job_item: %s' % str(i))
-            aged_jobitem_ids.append(i)
+            aged_jobitems.append(i)
 
         log.info('Uncollected (Aged) Report processing complete')
 
-        return aged_jobitem_ids
+        return aged_jobitems
 
     def _cleanse(self, header, row):
         """Generic modififications to the raw query result.

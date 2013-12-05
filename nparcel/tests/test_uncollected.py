@@ -209,3 +209,5 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
     def tearDownClass(cls):
         cls._u = None
         del cls._u
+        cls._now = None
+        del cls._now
