@@ -7,6 +7,8 @@ import smtplib
 import string
 from email.MIMEText import MIMEText
 from email.MIMEMultipart import MIMEMultipart
+from email.MIMEBase import MIMEBase
+from email import Encoders
 import getpass
 from socket import gaierror, getfqdn
 
@@ -72,12 +74,12 @@ class Emailer(object):
         Empty recipient lists are ignored and no email send attempt is made.
 
         **Args:**
-            subject: the email subject
+            *subject*: the email subject
 
-            msg: email message
+            *msg*: email message
 
         **Kwargs:**
-            dry: do not send, only report what would happen
+            *dry*: do not send, only report what would happen
 
         """
         log.info('Sending email comms ...')
@@ -137,7 +139,7 @@ class Emailer(object):
         Runs a simple regex validation across the *email* address is
 
         **Args:**
-            email: the email address to validate
+            *email*: the email address to validate
 
         **Returns:**
             boolean ``True`` if the email validates
@@ -160,13 +162,14 @@ class Emailer(object):
                      subject,
                      data,
                      template=None,
+                     files=None,
                      err=False):
         """Create the MIME multipart message.
 
         **Args:**
-            subject: the email subject
+            *subject*: the email subject
 
-            data: dictionary structure of items to expected by the HTML
+            *data*: dictionary structure of items to expected by the HTML
             email templates::
 
                 {'name': 'Auburn Newsagency',
@@ -177,8 +180,10 @@ class Emailer(object):
                  'item_nbr': '3456789012-item_nbr'}
 
         **Kwargs:**
-            base_dir: override the standard location to search for the
+            *base_dir*: override the standard location to search for the
             templates (default ``~user_home/.nparceld/templates``).
+
+            *files*: list of files to send as an attachment
 
         **Returns:**
             MIME multipart-formatted serialised string
@@ -212,6 +217,17 @@ class Emailer(object):
 
         main_text = MIMEText(main, 'html')
         msgAlternative.attach(main_text)
+
+        if files is not None:
+            for f in files:
+                log.debug('Attaching file: "%s"' % f)
+                part = MIMEBase('application', "octet-stream")
+                part.set_payload(open(f, "rb").read())
+                Encoders.encode_base64(part)
+                part.add_header('Content-Disposition',
+                                'attachment; filename="%s"' %
+                                 os.path.basename(f))
+                msgAlternative.attach(part)
 
         return mime_msg.as_string()
 
@@ -256,6 +272,7 @@ class Emailer(object):
                    data,
                    subject_data=None,
                    recipients=None,
+                   files=None,
                    dry=False):
         """Use the :attr:`nparcel.Emailer` object to generate email
         notification based on *template* and *data* dictionary value.
@@ -293,6 +310,8 @@ class Emailer(object):
             ``None``, will override the :attr:`nparcel.Emailer.recipients`
             values
 
+            *files*: list of files to send as an attachment
+
             *dry*: don't execute, just report
 
         """
@@ -315,5 +334,6 @@ class Emailer(object):
 
         mime = self.create_comms(subject=subject,
                                  data=data,
-                                 template=template)
+                                 template=template,
+                                 files=files)
         self.send(mime_message=mime, dry=dry)

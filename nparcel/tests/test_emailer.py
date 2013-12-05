@@ -107,6 +107,32 @@ class TestEmailer(unittest2.TestCase):
                            recipients=self._recipients,
                            dry=dry)
 
+    def test_send_comms_with_attachment(self):
+        """Test send_comms -- with attachment.
+        """
+        # We don't really test anything here.  But, to check that
+        # email alerts are sent set dry to False.
+        dry = True
+        data = {}
+        attach_file = os.path.join('nparcel', 'tests', 'files', 'test.xlsx')
+
+        subject_data = {}
+        subject = self._e.get_subject_line(data=subject_data,
+                                           template='test')
+        subject = subject.rstrip()
+
+        received = subject
+        expected = 'TEST COMMS'
+        msg = 'Subject line error'
+        self.assertEqual(received, expected, msg)
+
+        self._e.send_comms(template='test',
+                           subject_data=subject,
+                           data=data,
+                           recipients=self._recipients,
+                           files=[attach_file],
+                           dry=dry)
+
     def test_send_comms_subject_template(self):
         """Test send_comms auto-find subject template.
         """
