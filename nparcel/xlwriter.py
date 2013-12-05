@@ -1,19 +1,39 @@
 __all__ = [
     "Xlwriter",
 ]
+import datetime
+
 import nparcel
 from nparcel.utils.log import log
 from nparcel.openpyxl import Workbook
 from nparcel.openpyxl.style import Color, Fill, Border
 from nparcel.openpyxl.cell import get_column_letter
 
-Color.REALLYLIGHTBLUE = 'FFD3E9FF'
-Color.LIGHTGREY = 'FFD1D1D1'
 Color.LIGHTBLUE = 'FFB5DAFF'
+Color.LIGHTERBLUE = 'FFE9F4FF'
+Color.LIGHTGREY = 'FFD1D1D1'
+Color.REALLYLIGHTGREY = 'FFF1F1F1'
 
 
 class Xlwriter(nparcel.Writer):
     """Toll Parcel Portal Writer class.
+
+    .. attribute::
+        *title*: report title that is presented with more pronounced font
+
+    .. attribute::
+        *subtitle*: second level title
+
+    .. attribute::
+        *worksheet_title*: title that will appear on the current
+        worksheet tab
+
+    .. attribute::
+        *headers*: data column headers
+
+    .. attribute::
+        *date*: string representation of date and time.  Typically used to
+        capture when the report was run
 
     """
     _title = None
@@ -21,6 +41,7 @@ class Xlwriter(nparcel.Writer):
     _worksheet_title = None
     _headers = []
     _header_widths = {}
+    _date = datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')
 
     def __init__(self, outfile=None):
         """Writer initialiser.
@@ -41,49 +62,89 @@ class Xlwriter(nparcel.Writer):
         ws.title = self.worksheet_title
 
         # Main title.
+        row = 0
         end_column = len(self.headers) - 1
-        ws.merge_cells(start_row=0,
+        ws.merge_cells(start_row=row,
                        start_column=0,
-                       end_row=0,
+                       end_row=row,
                        end_column=end_column)
-        cell = ws.cell('A1')
+        cell = ws.cell(row=row, column=0)
         cell.style.font.size = 20
         cell.style.font.bold = True
         cell.style.fill.fill_type = Fill.FILL_SOLID
         cell.style.fill.start_color.index = Color.LIGHTGREY
         cell.value = self.title
+        row += 1
 
-        # Main subtitle.
-        ws.merge_cells(start_row=1,
+        # Subtitle.
+        sub_title_end_column = end_column - 2
+        ws.merge_cells(start_row=row,
                        start_column=0,
-                       end_row=1,
-                       end_column=end_column)
-        cell = ws.cell('A2')
+                       end_row=row,
+                       end_column=sub_title_end_column)
+        cell = ws.cell(row=row, column=0)
         cell.style.font.size = 10
         cell.style.fill.fill_type = Fill.FILL_SOLID
         cell.style.fill.start_color.index = Color.LIGHTGREY
         cell.value = self.subtitle
 
+        # Date
+        ws.merge_cells(start_row=row,
+                       start_column=sub_title_end_column + 1,
+                       end_row=row,
+                       end_column=end_column)
+        cell = ws.cell(row=row, column=sub_title_end_column + 1)
+        cell.style.font.size = 10
+        cell.style.fill.fill_type = Fill.FILL_SOLID
+        cell.style.fill.start_color.index = Color.LIGHTGREY
+        cell.value = 'Report Date: %s' % self.date
+        row += 1
+
         # Headers.
         for column in range(len(self.headers)):
-            cell = ws.cell(row=2, column=column)
+            cell = ws.cell(row=row, column=column)
             cell.style.fill.fill_type = Fill.FILL_SOLID
             cell.style.fill.start_color.index = Color.LIGHTBLUE
             cell.style.borders.bottom.border_style = Border.BORDER_THIN
             cell.value = self.headers[column]
+        row += 1
 
         # Data.
-        #for row in rows:
-        #    cell.style.fill.fill_type = Fill.FILL_SOLID
-        #    cell.style.fill.start_color.index = Color.REALLYLIGHTBLUE
+        for data_item in data:
+            for row_index in range(len(data_item)):
+                v = data_item[row_index]
+                cell = ws.cell(row=row, column=row_index)
+                if not (row % 2):
+                    cell.style.fill.fill_type = Fill.FILL_SOLID
+                    cell.style.fill.start_color.index = Color.LIGHTERBLUE
+                cell.value = v
+
+            row += 1
 
         # Column Dimensions.
         for column in range(len(self.headers)):
-            h = self.headers[column]
-            l = self.header_widths.get(h)
+            hdr = self.headers[column]
+            hdr_length = self.header_widths.get(hdr)
             column_letter = get_column_letter(column + 1)
-            if l is not None:
-                ws.column_dimensions[column_letter].width = l
+            if hdr_length is not None:
+                ws.column_dimensions[column_letter].width = hdr_length
+
+        # Summary.
+        row += 1
+        ws.merge_cells(start_row=row,
+                       start_column=0,
+                       end_row=row,
+                       end_column=2)
+
+        for column in range(len(self.headers)):
+            cell = ws.cell(row=row, column=column)
+            cell.style.fill.fill_type = Fill.FILL_SOLID
+            cell.style.fill.start_color.index = Color.REALLYLIGHTGREY
+            cell.style.borders.bottom.border_style = Border.BORDER_DOUBLE
+        cell = ws.cell(row=row, column=0)
+        cell.style.font.bold = True
+        cell.value = 'Total: %d' % len(data)
+        ws.row_dimensions[row + 1].height = 20
 
         if self.outfile is not None:
             log.info('Preparing "%s" for output' % self.outfile)
@@ -104,7 +165,7 @@ class Xlwriter(nparcel.Writer):
         return self._subtitle
 
     def set_subtitle(self, value=None):
-        log.debug('Setting report subtitle to "%s"' % value)
+        log.debug('Setting report subtitle to "%s"' % str(value))
         self._subtitle = value
 
     @property
@@ -112,7 +173,7 @@ class Xlwriter(nparcel.Writer):
         return self._worksheet_title
 
     def set_worksheet_title(self, value=None):
-        log.debug('Setting worksheet title to "%s"' % value)
+        log.debug('Setting worksheet title to "%s"' % str(value))
         self._worksheet_title = value
 
     @property
@@ -137,3 +198,11 @@ class Xlwriter(nparcel.Writer):
         if values is not None:
             log.debug('Setting header_widths to "%s"' % str(values))
             self._header_widths = values
+
+    @property
+    def date(self):
+        return self._date
+
+    def set_date(self, value=None):
+        log.debug('Setting date to "%s"' % str(value))
+        self._date = value
