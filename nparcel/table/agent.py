@@ -54,5 +54,6 @@ WHERE id=%d""" % id
                 "suburb TEXT(30)",
                 "state TEXT(3)",
                 "postcode TEXT(4)",
+                "phone_nbr TEXT(12)",
                 "dp_code TEXT(10)",
                 "code TEXT(6)"]

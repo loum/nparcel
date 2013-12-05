@@ -475,7 +475,13 @@ AND j.service_code = 1"""
                      15,
                      'Con Sumerfifteen',
                      'VIC999',
-                     'VIC Test Newsagent 999'),
+                     'V999',
+                     'VIC Test Newsagent 999',
+                     '13 Test Street',
+                     'Testville',
+                     'VIC',
+                     '1234',
+                     '0431602145'),
                     (16,
                      1,
                      'aged_item_match',
@@ -488,7 +494,13 @@ AND j.service_code = 1"""
                      16,
                      'Con Sumersixteen',
                      'VIC999',
-                     'VIC Test Newsagent 999'),
+                     'V999',
+                     'VIC Test Newsagent 999',
+                     '13 Test Street',
+                     'Testville',
+                     'VIC',
+                     '1234',
+                     '0431602145'),
                     (19,
                      1,
                      'ARTZ061184',
@@ -501,7 +513,13 @@ AND j.service_code = 1"""
                      19,
                      'Con Sumernineteen',
                      'VIC999',
-                     'VIC Test Newsagent 999')]
+                     'V999',
+                     'VIC Test Newsagent 999',
+                     '13 Test Street',
+                     'Testville',
+                     'VIC',
+                     '1234',
+                     '0431602145')]
         msg = 'Reference-based job_item query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -525,7 +543,13 @@ AND j.service_code = 1"""
                      15,
                      'Con Sumerfifteen',
                      'VIC999',
-                     'VIC Test Newsagent 999'),
+                     'V999',
+                     'VIC Test Newsagent 999',
+                     '13 Test Street',
+                     'Testville',
+                     'VIC',
+                     '1234',
+                     '0431602145'),
                     (16,
                      1,
                      'aged_item_match',
@@ -538,7 +562,13 @@ AND j.service_code = 1"""
                      16,
                      'Con Sumersixteen',
                      'VIC999',
-                     'VIC Test Newsagent 999'),
+                     'V999',
+                     'VIC Test Newsagent 999',
+                     '13 Test Street',
+                     'Testville',
+                     'VIC',
+                     '1234',
+                     '0431602145'),
                     (19,
                      1,
                      'ARTZ061184',
@@ -551,7 +581,13 @@ AND j.service_code = 1"""
                      19,
                      'Con Sumernineteen',
                      'VIC999',
-                     'VIC Test Newsagent 999'),
+                     'V999',
+                     'VIC Test Newsagent 999',
+                     '13 Test Street',
+                     'Testville',
+                     'VIC',
+                     '1234',
+                     '0431602145'),
                     (20,
                      1,
                      'TEST_REF_NOT_PROC',
@@ -564,7 +600,13 @@ AND j.service_code = 1"""
                      20,
                      'Con Sumertwenty',
                      'VIC999',
-                     'VIC Test Newsagent 999'),
+                     'V999',
+                     'VIC Test Newsagent 999',
+                     '13 Test Street',
+                     'Testville',
+                     'VIC',
+                     '1234',
+                     '0431602145'),
                     (22,
                      1,
                      'ARTZ061184',
@@ -577,7 +619,13 @@ AND j.service_code = 1"""
                      22,
                      'Con Sumertwentytwo',
                      'VIC999',
-                     'VIC Test Newsagent 999')]
+                     'V999',
+                     'VIC Test Newsagent 999',
+                     '13 Test Street',
+                     'Testville',
+                     'VIC',
+                     '1234',
+                     '0431602145')]
         msg = 'AgentStocktake-based job_item (not processed) query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -601,7 +649,13 @@ AND j.service_code = 1"""
                      21,
                      'Con Sumertwentyone',
                      'VIC999',
-                     'VIC Test Newsagent 999')]
+                     'V999',
+                     'VIC Test Newsagent 999',
+                     '13 Test Street',
+                     'Testville',
+                     'VIC',
+                     '1234',
+                     '0431602145')]
         msg = 'AgentStocktake-based job_item (not processed) query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -626,7 +680,13 @@ AND j.service_code = 1"""
                      19,
                      'Con Sumernineteen',
                      'VIC999',
-                     'VIC Test Newsagent 999')]
+                     'V999',
+                     'VIC Test Newsagent 999',
+                     '13 Test Street',
+                     'Testville',
+                     'VIC',
+                     '1234',
+                     '0431602145')]
         msg = 'Job table based reference query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -652,7 +712,13 @@ AND j.service_code = 1"""
                      22,
                      'Con Sumertwentytwo',
                      'VIC999',
-                     'VIC Test Newsagent 999')]
+                     'V999',
+                     'VIC Test Newsagent 999',
+                     '13 Test Street',
+                     'Testville',
+                     'VIC',
+                     '1234',
+                     '0431602145')]
         msg = 'Job table based reference query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 

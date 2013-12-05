@@ -23,5 +23,9 @@
         'dp_code': 'VIC999',
         'state': 'VIC',
         'name': 'VIC Test Newsagent 999',
+        'address': '13 Test Street',
+        'suburb': 'Testville',
+        'postcode': '1234',
+        'phone_nbr': '0431602145',
     },
 ]

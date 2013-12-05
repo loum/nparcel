@@ -424,6 +424,12 @@ AND %(alias)s.job_id IN
        %(alias)s.pieces as PIECES,
        %(alias)s.consumer_name as CONSUMER_NAME,
        ag.dp_code as DP_CODE,
-       ag.name as AGENT_NAME""" % {'alias': alias}
+       ag.code as AGENT_CODE,
+       ag.name as AGENT_NAME,
+       ag.address as AGENT_ADDRESS,
+       ag.suburb as AGENT_SUBURB,
+       ag.state as AGENT_STATE,
+       ag.postcode as AGENT_POSTCODE,
+       ag.phone_nbr as AGENT_PHONE_NBR""" % {'alias': alias}
 
         return columns
