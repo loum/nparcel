@@ -50,7 +50,20 @@ class TestXlwriter(unittest2.TestCase):
         file = os.path.join(self._dir, 'test.xlsx')
         self._x.set_outfile(file)
 
-        data = []
+        data = [('VIC999',
+                 'VIC Test Newsagent 999',
+                 1,
+                 'TEST_REF_01',
+                 '003934032500820300xx',
+                 'Con Sumertwenty',
+                 20),
+                ('NSW999',
+                 'NSW Test Newsagent 999',
+                 2,
+                 'TEST_REF_02',
+                 '003934032500820300yy',
+                 'Con Sumertwentyone',
+                  21)]
         self._x(data)
 
         # Clean up.
