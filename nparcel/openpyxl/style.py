@@ -60,8 +60,6 @@ class Color(HashableObject):
     DARKGREEN = 'FF008000'
     YELLOW = 'FFFFFF00'
     DARKYELLOW = 'FF808000'
-    LIGHTGREY = 'FFD1D1D1'
-    LIGHTBLUE = 'FFB5DAFF'
 
     __fields__ = ('index',)
     __slots__ = __fields__

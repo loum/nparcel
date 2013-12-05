@@ -29,6 +29,24 @@ class TestXlwriter(unittest2.TestCase):
         sub_title = 'ITEMS UNCOLLECTED FOR MORE THAN 7 DAYS'
         self._x.set_subtitle(sub_title)
 
+        ws_title = 'Uncollected'
+        self._x.set_worksheet_title(ws_title)
+
+        headers = ['Agent',
+                   'Agent Name',
+                   'Business Unit',
+                   'Connote',
+                   'Item Nbr',
+                   'To',
+                   'Pieces']
+        self._x.set_headers(headers)
+
+        header_widths = {'Agent Name': 30,
+                         'Connote': 40,
+                         'Item Nbr': 50,
+                         'To': 30}
+        self._x.set_header_widths(header_widths)
+
         file = os.path.join(self._dir, 'test.xlsx')
         self._x.set_outfile(file)
 
