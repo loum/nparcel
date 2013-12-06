@@ -15,6 +15,8 @@ class TestReporterDaemon(unittest2.TestCase):
 
         cls._ud = nparcel.ReporterDaemon(pidfile=None)
         db = cls._ud._report.db
+        cls._ud.emailer.set_template_base(os.path.join('nparcel',
+                                                       'templates'))
         db.create_table(name='agent_stocktake',
                         schema=db.agent_stocktake.schema)
 
@@ -57,9 +59,11 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
         msg = 'Not a nparcel.ReporterDaemon object'
         self.assertIsInstance(self._ud, nparcel.ReporterDaemon, msg)
 
-    def test_start_dry(self):
-        """ReporterDaemon _start processing loop -- dry run.
+    def test_start(self):
+        """ReporterDaemon _start processing loop.
         """
+        dry = True
+
         old_dry = self._ud.dry
         old_display_hrds = self._ud.display_hdrs
         display_hdrs = ['DP_CODE',
@@ -109,7 +113,10 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
               'sheet_title': 'Uncollected'}
         self._ud.set_ws(ws)
 
-        self._ud.set_dry()
+        old_recipients = self._ud.recipients
+        self._ud.set_recipients(['loumar@tollgroup.com'])
+
+        self._ud.set_dry(dry)
         self._ud._start(self._ud.exit_event)
 
         # Clean up.
@@ -118,8 +125,39 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
         self._ud.set_aliases(old_aliases)
         self._ud.set_header_widths(old_widths)
         self._ud.set_ws(old_ws)
+        self._ud.set_recipients(old_recipients)
         self._ud.exit_event.clear()
         remove_files(self._ud.report_filename)
+
+    def test_send(self):
+        """Send the report to the recipients list'
+        """
+        dry = True
+
+        old_dry = self._ud.dry
+        self._ud.set_dry(dry)
+
+        old_report_filename = self._ud.report_filename
+        file = 'Stocktake_uncollected_aged_report_20131206122050.xlsx'
+        attach_file = os.path.join('nparcel', 'tests', 'files', file)
+        self._ud.set_report_filename(attach_file)
+
+        old_ws = self._ud.ws
+        title = 'Toll Parcel Portal Stocktake Uncollected (Aged) Report'
+        now = self._now.strftime('%d/%m/%Y')
+        self._ud.set_ws({'title': title})
+
+        old_recipients = self._ud.recipients
+        self._ud.set_recipients(['loumar@tollgroup.com'])
+
+        now = self._now.strftime('%d/%m/%Y %H:%M')
+        self._ud.send_email(date_ts=self._now)
+
+        # Clean up.
+        self._ud.set_dry(old_dry)
+        self._ud.set_report_filename(old_report_filename)
+        self._ud.set_ws(old_ws)
+        self._ud.set_recipients(old_recipients)
 
     @classmethod
     def tearDownClass(cls):

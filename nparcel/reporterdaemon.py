@@ -14,6 +14,10 @@ class ReporterDaemon(nparcel.DaemonService):
     """Daemoniser facility for the reporting classes.
 
     .. attribute::
+        *bu_id*: integer relating to the Business Unit ``job.bu_id``
+        column
+
+    .. attribute::
         *outfile*: output filename base
 
     .. attribute::
@@ -75,7 +79,11 @@ class ReporterDaemon(nparcel.DaemonService):
     .. attribute::
         *report_filename*: the generated report filename
 
+    .. attribute::
+        *recipients*: list of email recipients
+
     """
+    _bu_id = None
     _outdir = '/data/nparcel/reports'
     _outfile = 'Stocktake_uncollected_aged_report_'
     _outfile_ts_format = '%Y%m%d%H%M%S'
@@ -86,6 +94,7 @@ class ReporterDaemon(nparcel.DaemonService):
     _header_widths = {}
     _ws = {}
     _report_filename = None
+    _recipients = []
 
     def __init__(self,
                  pidfile,
@@ -110,6 +119,15 @@ class ReporterDaemon(nparcel.DaemonService):
         # TODO -- read outdir from the config.
         create_dir(self.outdir)
         self._report = nparcel.Uncollected(db_kwargs=self.db_kwargs)
+        self._emailer = nparcel.Emailer()
+
+    @property
+    def bu_id(self):
+        return self._bu_id
+
+    def set_bu_id(self, value):
+        self._bu_id = value
+        log.debug('Set Business Unit ID to "%s"' % self._bu_id)
 
     @property
     def outdir(self):
@@ -214,6 +232,21 @@ class ReporterDaemon(nparcel.DaemonService):
         self._report_filename = value
         log.debug('Set report filename to "%s"' % self._report_filename)
 
+    @property
+    def recipients(self):
+        return self._recipients
+
+    def set_recipients(self, values=None):
+        del self._recipients[:]
+        self._recipients
+
+        if values is not None:
+            self._recipients.extend(values)
+            log.debug('Setting report recipients to "%s"' %
+                      self._recipients)
+        else:
+            log.debug('Clearing headers to display list')
+
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
 
@@ -254,6 +287,8 @@ class ReporterDaemon(nparcel.DaemonService):
             writer.set_header_widths(self.header_widths)
             writer(filtered_rows)
 
+            self.send_email()
+
             if not event.isSet():
                 if self.dry:
                     log.info('Dry run iteration complete -- aborting')
@@ -261,3 +296,32 @@ class ReporterDaemon(nparcel.DaemonService):
                 elif self.batch:
                     log.info('Batch run iteration complete -- aborting')
                     event.set()
+
+    def send_email(self, date_ts=None):
+        """Send the report via email.
+
+        **Kwargs:**
+            *date_ts*: :mod:`datetime` object that can override the
+            report date and time.
+
+        """
+        title = self.ws.get('title')
+        if date_ts is None:
+            now = datetime.datetime.now().strftime('%d/%m/%Y %H:%M')
+        else:
+            now = date_ts.strftime('%d/%m/%Y')
+        subject_data = {'title': title,
+                        'bu': self.bu_id,
+                        'date': now}
+        subject = self._emailer.get_subject_line(data=subject_data,
+                                                 template='report')
+        subject = subject.rstrip()
+
+        data = {'title': title,
+                'date': now}
+        self._emailer.send_comms(template='report',
+                                 subject_data=subject,
+                                 data=data,
+                                 recipients=self.recipients,
+                                 files=[self.report_filename],
+                                 dry=self.dry)
