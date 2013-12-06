@@ -54,12 +54,10 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
         msg = 'Object is not an nparcel.Uncollected'
         self.assertIsInstance(self._u, nparcel.Uncollected, msg)
 
-    def test_process_dry_run(self):
-        """Check uncollected aged parcel processing -- dry run.
+    def test_process(self):
+        """Check uncollected aged parcel processing.
         """
-        dry = True
-
-        received = self._u.process(dry=dry)
+        received = self._u.process()
         expected = [(15,
                      1,
                      'TEST_REF_001',

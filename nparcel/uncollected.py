@@ -8,19 +8,35 @@ from nparcel.utils.log import log
 class Uncollected(nparcel.Auditer):
     """Toll Parcel Portal base Uncollected class.
 
+    .. attribute::
+        *columns*: list of names of the query columns
+
     """
+    _columns = []
+
     def __init__(self, db_kwargs=None):
         """Uncollected initialiser.
 
         """
         super(nparcel.Uncollected, self).__init__(db_kwargs=db_kwargs)
 
-    def process(self, dry=False):
+    @property
+    def columns(self):
+        return self._columns
+
+    def set_columns(self, values=None):
+        del self._columns[:]
+        self._columns = []
+
+        if values is not None:
+            log.debug('Setting columns to "%s"' % values)
+            self._columns.extend(values)
+        else:
+            log.debug('Cleared columns list')
+
+    def process(self):
         """Checks ``agent_stocktake`` table for items that exist
         in the Toll Parcel Portal and are uncollected and aged.
-
-        **Kwargs:**
-            *dry*: only report, do not execute
 
         **Returns:**
             list of ``job_item`` IDs that have been reported uncollected
@@ -28,7 +44,7 @@ class Uncollected(nparcel.Auditer):
             Point database.
 
         """
-        log.info('Starting Uncollected (Aged) Report ...')
+        log.info('Starting Uncollected (Aged) extraction ...')
 
         log.debug('Setting processed_ts column')
         ts_now = self.db.date_now()
@@ -40,12 +56,10 @@ class Uncollected(nparcel.Auditer):
         sql = self.db.jobitem.reference_sql()
         self.db(sql)
 
-        log.debug('Columns: %s' % self.db.columns())
+        self.set_columns(self.db.columns())
         for i in self.db.rows():
             log.debug('Found job_item: %s' % str(i))
             aged_jobitems.append(i)
-
-        log.info('Uncollected (Aged) Report processing complete')
 
         return aged_jobitems
 
