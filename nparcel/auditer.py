@@ -1,9 +1,11 @@
 __all__ = [
     "Auditer",
 ]
-import nparcel
+import datetime
 
+import nparcel
 from nparcel.utils.log import log
+from nparcel.utils import date_diff
 
 
 class Auditer(nparcel.Service):
@@ -78,5 +80,53 @@ class Auditer(nparcel.Service):
                                                              translated_bu))
             else:
                 log.debug('Unable to translate BU for "%s"' % orig_value)
+
+        return tuple(tmp_row_list)
+
+    def add_date_diff(self,
+                      headers,
+                      row,
+                      time_column='JOB_TS',
+                      time_to_compare=None):
+        """Calculate the date delta between the value in the *time_column*
+        and *time_to_compare*.
+
+        Time delta will eventually be appended to the *row* tuple and
+        returned to the caller.
+
+        **Args:**
+            *header*: list of column headers
+
+            *row*: tuple structure that represents the raw row result
+
+            *time_column*: column header to use in the time
+            comparison
+
+        **Kwargs:**
+            *time_to_compare*: time to compare against (default ``None``
+            in which time current time is used)
+
+        **Returns:**
+            the altered *row* tuple structure with new date delta
+            value appended (if *time_column* exists)
+
+        """
+        tmp_row_list = list(row)
+
+        index = None
+        try:
+            index = headers.index(time_column)
+        except ValueError, err:
+            log.warn('No "%s" column in headers' % time_column)
+
+        delta = None
+        if index is not None:
+            start_time = row[index]
+            if time_to_compare is None:
+                fmt = '%Y-%m-%d %H:%M:%S'
+                time_to_compare = datetime.datetime.now().strftime(fmt)
+            delta = date_diff(start_time, time_to_compare)
+
+        tmp_row_list.append(delta)
 
         return tuple(tmp_row_list)
