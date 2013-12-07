@@ -13,27 +13,32 @@ from nparcel.utils.files import create_dir
 class ReporterDaemon(nparcel.DaemonService):
     """Daemoniser facility for the reporting classes.
 
-    .. attribute::
-        *bu_ids*: dictionary mapping between Business Unit ID (``job.bu_id``
+    .. attribute:: bu_ids
+
+        dictionary mapping between Business Unit ID (``job.bu_id``
         column) and a human-readable format.  The default is::
 
             {1: 'Toll Priority',
              2: 'Toll Fast',
              3: 'Toll IPEC'}
 
-    .. attribute::
-        *outfile*: output filename base
+    .. attribute:: outfile
 
-    .. attribute::
-        *outfile_ts_format*: timestamp format to append to the *outfile*
+        output filename base
+
+    .. attribute:: outfile_ts_format
+
+        timestamp format to append to the *outfile*
         (default ``YYYYMMDDHHMMSS``)
 
-    .. attribute::
-        *outdir*: temporary working directory to where report files are
-        staged to for further processing
+    .. attribute:: outdir
 
-    .. attribute::
-        *extension*: report filename extension
+        temporary working directory to where report files are
+        staged to for further processing (default ``/data/nparcel/reports``)
+
+    .. attribute:: extension
+
+        report filename extension
 
     .. attribute:: db_kwargs
 
@@ -47,13 +52,15 @@ class ReporterDaemon(nparcel.DaemonService):
              'password': ...,
              'port': ...}
 
-    .. attribute::
-        *display_hdrs*: list of column headers to display in the report
+    .. attribute:: display_hdrs
+
+        list of column headers to display in the report
         This can control the order and appearance of the raw query column
         set
 
-    .. attribute::
-        *aliases*: dictionary of raw header names and the preferred alias
+    .. attribute:: aliases
+
+        dictionary of raw header names and the preferred alias
         to display in the report.  For example::
 
             {'DP_CODE': 'Agent',
@@ -63,28 +70,32 @@ class ReporterDaemon(nparcel.DaemonService):
              'ITEM_NBR': 'Item Nbr',
              'PIECES': 'Pieces'}
 
-    .. attribute::
-        *header_widths*: dictionary of aliased header names and prefered
-        column width.  For example::
+    .. attribute:: header_widths
+
+        dictionary of aliased header names and prefered column width.
+        For example::
 
                 {'Agent Name': 30,
                  'Connote': 40,
                  'Item Nbr': 50,
                  'To': 30}
 
-    .. attribute::
-        *ws*: dictionary of values to represent within the Excel worksheet.
+    .. attribute:: ws
+
+        dictionary of values to represent within the Excel worksheet.
         Notable values include::
 
             {'title': ...
              'subtitle': ...
              'sheet_title': ...}
 
-    .. attribute::
-        *report_filename*: the generated report filename
+    .. attribute:: report_filename
 
-    .. attribute::
-        *recipients*: list of email recipients
+        the generated report filename
+
+    .. attribute:: recipients
+
+        list of email recipients
 
     """
     _bu_ids = {1: 'Toll Priority',
@@ -98,7 +109,9 @@ class ReporterDaemon(nparcel.DaemonService):
     _display_hdrs = []
     _aliases = {}
     _header_widths = {}
-    _ws = {}
+    _ws = {'title': str(),
+           'sub_title': str(),
+           'sheet_title': str()}
     _report_filename = None
     _recipients = []
 
@@ -122,8 +135,38 @@ class ReporterDaemon(nparcel.DaemonService):
             msg = ('DB kwargs not defined in config')
             log.info(msg)
 
-        # TODO -- read outdir from the config.
+        try:
+            if self.config.report_bu_ids is not None:
+                self.set_bu_ids(self.config.report_bu_ids)
+        except AttributeError, err:
+            log.info('Report BU IDs (report_bu_ids) not defined in config')
+
+        try:
+            if self.config.report_outfile is not None:
+                self.set_outfile(self.config.report_outfile)
+        except AttributeError, err:
+            log.info('Report outfile not defined in config')
+
+        try:
+            if self.config.report_outfile_ts_format is not None:
+                tmp_ts_format = self.config.report_outfile_ts_format
+                self.set_outfile_ts_format(tmp_ts_format)
+        except AttributeError, err:
+            log.info('Report outfile_ts_format not defined in config')
+
+        try:
+            if self.config.report_extension is not None:
+                self.set_extension(self.config.report_extension)
+        except AttributeError, err:
+            log.info('Report report_extension not defined in config')
+
+        try:
+            if self.config.report_outdir is not None:
+                self.set_outdir(self.config.report_outdir)
+        except AttributeError, err:
+            log.info('Report outdir not defined in config')
         create_dir(self.outdir)
+
         self._report = nparcel.Uncollected(db_kwargs=self.db_kwargs,
                                            bu_ids=self.bu_ids)
         self._emailer = nparcel.Emailer()
@@ -147,32 +190,33 @@ class ReporterDaemon(nparcel.DaemonService):
 
     def set_outdir(self, value):
         self._outdir = value
-        log.debug('Set outbound directory to "%s"' % self._outdir)
-        create_dir(self._outdir)
+        log.debug('Set outbound directory to "%s"' % self.outdir)
+        create_dir(self.outdir)
 
     @property
     def outfile(self):
         return self._outfile
 
     def set_outfile(self, value):
-        log.debug('Setting outfile base to "%s"' % value)
         self._outfile = value
+        log.debug('Set outfile base to "%s"' % self.outfile)
 
     @property
     def outfile_ts_format(self):
         return self._outfile_ts_format
 
     def set_outfile_ts_format(self, value):
-        log.debug('Setting outfile time stamp format to "%s"' % value)
         self._outfile_ts_format = value
+        log.debug('Set outfile time stamp format to "%s"' %
+                  self.outfile_ts_format)
 
     @property
     def extension(self):
         return self._extension
 
     def set_extension(self, value):
-        log.debug('Setting extension base to "%s"' % value)
         self._extension = value
+        log.debug('Set extension to "%s"' % self.extension)
 
     @property
     def db_kwargs(self):
@@ -234,6 +278,9 @@ class ReporterDaemon(nparcel.DaemonService):
             self._ws = values
             log.debug('Set worksheet values to "%s"' % self._ws)
         else:
+            self._ws = {'title': str(),
+                        'sub_title': str(),
+                        'sheet_title': str()}
             log.debug('Cleared worksheet values')
 
     @property
@@ -274,7 +321,7 @@ class ReporterDaemon(nparcel.DaemonService):
             log.info('Starting stocktake report ...')
             now = datetime.datetime.now().strftime(self.outfile_ts_format)
 
-            rows = self._report.process()
+            rows = self._report.process(dry=self.dry)
 
             # Write out the export file.
             outfile = '%s%s.%s' % (self.outfile, now, self.extension)

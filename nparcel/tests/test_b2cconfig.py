@@ -234,6 +234,39 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'TransSend delivered_event_key value error'
         self.assertEqual(received, expected, msg)
 
+    def test_parse_reporter(self):
+        """Parse items from the config -- reporter.
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        received = self._c.report_bu_ids
+        expected = {'1': 'Toll Priority',
+                    '2': 'Toll Fast',
+                    '3': 'Toll IPEC'}
+        msg = 'Config reporter bu_ids value error'
+        self.assertDictEqual(received, expected, msg)
+
+        received = self._c.report_outfile
+        expected = 'Report_'
+        msg = 'Config reporter outfile value error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.report_outfile_ts_format
+        expected = 'YYYYMMDDHHMMSS'
+        msg = 'Config reporter outfile ts format value error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.report_outdir
+        expected = '/data/nparcel/reports'
+        msg = 'Config reporter outdir value error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.report_extension
+        expected = 'xlsx'
+        msg = 'Config reporter extension value error'
+        self.assertEqual(received, expected, msg)
+
     def test_condition_flag_item_excp_true(self):
         """Check item_excp flag settings -- True.
         """

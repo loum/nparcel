@@ -21,10 +21,6 @@ class TestJobItem(unittest2.TestCase):
         cls._db = nparcel.DbSession()
         cls._db.connect()
 
-        # Create the tables.
-        cls._db.create_table(name='agent_stocktake',
-                             schema=cls._db.agent_stocktake.schema)
-
         db = cls._db
         # Prepare some sample data.
         fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')

@@ -18,8 +18,6 @@ class TestUncollected(unittest2.TestCase):
 
         cls._u = nparcel.Uncollected(bu_ids=bu_ids)
         db = cls._u.db
-        db.create_table(name='agent_stocktake',
-                        schema=db.agent_stocktake.schema)
 
         # Prepare some sample data.
         fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')

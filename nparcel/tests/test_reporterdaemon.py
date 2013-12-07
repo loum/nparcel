@@ -17,8 +17,6 @@ class TestReporterDaemon(unittest2.TestCase):
         db = cls._ud._report.db
         cls._ud.emailer.set_template_base(os.path.join('nparcel',
                                                        'templates'))
-        db.create_table(name='agent_stocktake',
-                        schema=db.agent_stocktake.schema)
 
         cls._dir = tempfile.mkdtemp()
         cls._ud.set_outdir(cls._dir)
@@ -79,7 +77,8 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
                         'ITEM_NBR',
                         'CONSUMER_NAME',
                         'PIECES',
-                        'JOB_TS']
+                        'JOB_TS',
+                        'DELTA_TIME']
         self._ud.set_display_hdrs(display_hdrs)
         old_aliases = self._ud.aliases
         aliases = {'DP_CODE': 'Agent',
@@ -95,7 +94,8 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
                    'ITEM_NBR': 'Item Nbr',
                    'CONSUMER_NAME': 'To',
                    'PIECES': 'Pieces',
-                   'JOB_TS': 'Handover'}
+                   'JOB_TS': 'Handover',
+                   'DELTA_TIME': 'Days'}
         self._ud.set_aliases(aliases)
         old_widths = self._ud.header_widths
         widths = {'Agent Name': 20,

@@ -1,0 +1,50 @@
+#!/usr/bin/python
+
+import os
+import inspect
+import signal
+
+import nparcel
+from nparcel.utils.log import (log,
+                               set_log_level,
+                               set_console,
+                               rollover)
+
+
+def main():
+    config_file = os.path.join(os.path.expanduser('~'),
+                               '.nparceld',
+                               'nparceld.conf')
+
+    based = nparcel.BaseD(config=config_file)
+    based.set_command('start')
+    script_name = inspect.getfile(inspect.currentframe())
+    script_name = os.path.basename(script_name)
+    based.set_script_name(script_name)
+    based.parser.set_usage('usage: %prog [options]')
+    based.parser.add_option('-t', '--template_dir',
+                            dest='template_dir',
+                            help='location of SQL template files')
+    based.check_args()
+
+    if based.options.dry is not None:
+        set_console()
+    else:
+        rollover()
+
+    # Enable detailed logging if required.
+    if based.options.verbose == 0:
+        set_log_level('INFO')
+    else:
+        log.info('Logging verbosity set to "INFO" level')
+
+    # OK, start processing.
+    rep = nparcel.ReporterDaemon(pidfile=based.pidfile,
+                                 dry=based.dry,
+                                 config=based.options.config)
+
+    based.set_batch(True)
+    based.launch_command(rep, script_name)
+
+if __name__ == '__main__':
+    main()

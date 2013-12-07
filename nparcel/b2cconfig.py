@@ -173,6 +173,24 @@ class B2CConfig(nparcel.Config):
         string that represents a delivered event
         (default ``delivered``)
 
+    .. attribute:: report_bu_ids
+
+        dictionary mapping between Business Unit ID (``job.bu_id``
+        column) and a human-readable format
+
+    .. attribute:: report_outfile
+
+        basename that is used to generate the report file
+
+    .. attribute:: report_outdir
+
+        temporary working directory to where report files are
+        staged to for further processing
+
+    .. attribute:: report_extension
+
+        report filename extension
+
     """
     _dirs_to_check = []
     _pe_dirs_to_check = []
@@ -211,6 +229,11 @@ class B2CConfig(nparcel.Config):
     _filter_customer = 'parcelpoint'
     _delivered_header = 'latest_scan_event_action'
     _delivered_event_key = 'delivered'
+    _report_bu_ids = {}
+    _report_outfile = 'Report'
+    _report_outfile_ts_format = 'YYYYMMDDHHMMSS'
+    _report_outdir = '/data/nparcel/reports'
+    _report_extension = 'xlsx'
 
     def __init__(self, file=None):
         """Nparcel Config initialisation.
@@ -713,6 +736,45 @@ class B2CConfig(nparcel.Config):
             log.debug('Using default delivered_event_key: %s' %
                       self.delivered_event_key)
 
+        # Reporter.
+        try:
+            self._report_bu_ids = dict(self.items('report_bu_ids'))
+            log.debug('Report BU IDs %s' % str(self._report_bu_ids))
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default report_bu_ids: %s' %
+                      self.report_bu_ids)
+
+        try:
+            self._report_outfile = self.get('report_base',
+                                            'outfile')
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default report outfile: %s' %
+                      self.report_outfile)
+
+        try:
+            self._report_outfile_ts_format = self.get('report_base',
+                                                      'outfile_ts_format')
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default report outfile_ts_format: %s' %
+                      self.report_outfile_ts_format)
+
+        try:
+            self._report_outdir = self.get('report_base', 'outdir')
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default report outdir: %s' %
+                      self.report_outdir)
+
+        try:
+            self._report_extension = self.get('report_base', 'extension')
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default report extension: %s' %
+                      self.report_extension)
+
     def condition(self, bu, flag):
         """Return the *bu* condition *flag* value.
 
@@ -1190,3 +1252,50 @@ class B2CConfig(nparcel.Config):
 
     def set_delivered_event_key(self, value):
         self._delivered_event_key = value
+
+    @property
+    def report_bu_ids(self):
+        return self._report_bu_ids
+
+    def set_report_bu_ids(self, values):
+        self._report_bu_ids.clear()
+
+        if values is not None:
+            self._report_bu_ids = values
+            log.debug('Set report_bu_ids to "%s"' % self._report_bu_ids)
+        else:
+            log.debug('Cleared report_bu_ids')
+
+    @property
+    def report_outfile(self):
+        return self._report_outfile
+
+    def set_report_outfile(self, value):
+        self._outfile = value
+        log.debug('Set report outfile to "%s"' % self._outfile)
+
+    @property
+    def report_outfile_ts_format(self):
+        return self._report_outfile_ts_format
+
+    def set_report_outfile_ts_format(self, value):
+        self._report_outfile_ts_format = value
+        log.debug('Set report outfile_ts_format to "%s"' %
+                  self._report_outfile_ts_format)
+
+    @property
+    def report_outdir(self):
+        return self._report_outdir
+
+    def set_report_outdir(self, value):
+        self._report_outdir = value
+        log.debug('Set report outbound directory to "%s"' %
+                  self._report_outdir)
+
+    @property
+    def report_extension(self):
+        return self._report_extension
+
+    def set_report_extension(self, value):
+        self._report_extension = value
+        log.debug('Set report extension to "%s"' % self.report_extension)

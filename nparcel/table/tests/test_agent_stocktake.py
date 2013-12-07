@@ -12,8 +12,6 @@ class TestAgentStocktake(unittest2.TestCase):
         cls._db = nparcel.DbSession()
         cls._db.connect()
 
-        cls._db.create_table(name='agent_stocktake',
-                             schema=cls._db.agent_stocktake.schema)
         fixture_file = os.path.join('nparcel',
                                     'tests',
                                     'fixtures',

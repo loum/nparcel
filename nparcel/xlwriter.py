@@ -18,21 +18,25 @@ Color.REALLYLIGHTGREY = 'FFF1F1F1'
 class Xlwriter(nparcel.Writer):
     """Toll Parcel Portal Writer class.
 
-    .. attribute::
-        *title*: report title that is presented with more pronounced font
+    .. attribute:: title
 
-    .. attribute::
-        *subtitle*: second level title
+        report title that is presented with more pronounced font
 
-    .. attribute::
-        *worksheet_title*: title that will appear on the current
-        worksheet tab
+    .. attribute:: subtitle
 
-    .. attribute::
-        *headers*: data column headers
+        second level title
 
-    .. attribute::
-        *date*: string representation of date and time.  Typically used to
+    .. attribute:: worksheet_title
+
+        title that will appear on the current worksheet tab
+
+    .. attribute:: headers
+
+        data column headers
+
+    .. attribute:: date
+
+        string representation of date and time.  Typically used to
         capture when the report was run
 
     """
@@ -64,6 +68,8 @@ class Xlwriter(nparcel.Writer):
         # Main title.
         row = 0
         end_column = len(self.headers) - 1
+        if end_column < 0:
+            end_column = 0
         ws.merge_cells(start_row=row,
                        start_column=0,
                        end_row=row,
@@ -78,6 +84,8 @@ class Xlwriter(nparcel.Writer):
 
         # Subtitle.
         sub_title_end_column = end_column - 2
+        if sub_title_end_column < 0:
+            sub_title_end_column = 0
         ws.merge_cells(start_row=row,
                        start_column=0,
                        end_row=row,

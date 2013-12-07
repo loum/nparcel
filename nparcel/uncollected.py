@@ -11,6 +11,10 @@ class Uncollected(nparcel.Auditer):
     .. attribute::
         *columns*: list of names of the query columns
 
+    .. attribute::
+        *delta_time_column*: raw column name to use for time delta
+        (default ``JOB_TS`` which relates to the ``job.job_ts`` column)
+
     """
     _columns = []
     _delta_time_column = 'JOB_TS'
@@ -44,9 +48,12 @@ class Uncollected(nparcel.Auditer):
         self._delta_time_column = value
         log.debug('Set delta time column to "%s"' % self._delta_time_column)
 
-    def process(self):
+    def process(self, dry=False):
         """Checks ``agent_stocktake`` table for items that exist
         in the Toll Parcel Portal and are uncollected and aged.
+
+        **Kwargs:**
+            *dry*: do not execute, only report
 
         **Returns:**
             list of ``job_item`` IDs that have been reported uncollected
@@ -58,8 +65,10 @@ class Uncollected(nparcel.Auditer):
 
         log.debug('Setting processed_ts column')
         ts_now = self.db.date_now()
-        sql = self.db.agent_stocktake.update_processed_ts_sql(ts_now)
-        self.db(sql)
+        if not dry:
+            sql = self.db.agent_stocktake.update_processed_ts_sql(ts_now)
+            self.db(sql)
+            self.db.commit()
 
         aged_jobitems = []
 

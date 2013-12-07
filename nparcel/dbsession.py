@@ -174,6 +174,7 @@ class DbSession(object):
         self.create_table("job_item", self.jobitem.schema)
         self.create_table("agent", self._agent.schema)
         self.create_table("identity_type", self._identity_type.schema)
+        self.create_table("agent_stocktake", self._agent_stocktake.schema)
 
     def disconnect(self):
         log.info('Disconnecting from DB ...')
