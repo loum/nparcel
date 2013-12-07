@@ -14,11 +14,12 @@ class Uncollected(nparcel.Auditer):
     """
     _columns = []
 
-    def __init__(self, db_kwargs=None):
+    def __init__(self, db_kwargs=None, bu_ids=None):
         """Uncollected initialiser.
 
         """
-        super(nparcel.Uncollected, self).__init__(db_kwargs=db_kwargs)
+        super(nparcel.Uncollected, self).__init__(db_kwargs=db_kwargs,
+                                                  bu_ids=bu_ids)
 
     @property
     def columns(self):
@@ -61,7 +62,13 @@ class Uncollected(nparcel.Auditer):
             log.debug('Found job_item: %s' % str(i))
             aged_jobitems.append(i)
 
-        return aged_jobitems
+        translated_aged_jobitems = []
+        for i in aged_jobitems:
+            translated_aged_jobitems.append(self._translate_bu(self.columns,
+                                                               i,
+                                                               self.bu_ids))
+
+        return translated_aged_jobitems
 
     def _cleanse(self, header, row):
         """Generic modififications to the raw query result.

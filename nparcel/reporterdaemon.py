@@ -14,8 +14,12 @@ class ReporterDaemon(nparcel.DaemonService):
     """Daemoniser facility for the reporting classes.
 
     .. attribute::
-        *bu_id*: integer relating to the Business Unit ``job.bu_id``
-        column
+        *bu_ids*: dictionary mapping between Business Unit ID (``job.bu_id``
+        column) and a human-readable format.  The default is::
+
+            {1: 'Toll Priority',
+             2: 'Toll Fast',
+             3: 'Toll IPEC'}
 
     .. attribute::
         *outfile*: output filename base
@@ -83,7 +87,9 @@ class ReporterDaemon(nparcel.DaemonService):
         *recipients*: list of email recipients
 
     """
-    _bu_id = None
+    _bu_ids = {1: 'Toll Priority',
+               2: 'Toll Fast',
+               3: 'Toll IPEC'}
     _outdir = '/data/nparcel/reports'
     _outfile = 'Stocktake_uncollected_aged_report_'
     _outfile_ts_format = '%Y%m%d%H%M%S'
@@ -118,16 +124,22 @@ class ReporterDaemon(nparcel.DaemonService):
 
         # TODO -- read outdir from the config.
         create_dir(self.outdir)
-        self._report = nparcel.Uncollected(db_kwargs=self.db_kwargs)
+        self._report = nparcel.Uncollected(db_kwargs=self.db_kwargs,
+                                           bu_ids=self.bu_ids)
         self._emailer = nparcel.Emailer()
 
     @property
-    def bu_id(self):
-        return self._bu_id
+    def bu_ids(self):
+        return self._bu_ids
 
-    def set_bu_id(self, value):
-        self._bu_id = value
-        log.debug('Set Business Unit ID to "%s"' % self._bu_id)
+    def set_bu_ids(self, values):
+        self._bu_ids.clear()
+
+        if values is not None:
+            self._bu_ids = values
+            log.debug('Set bu_ids to "%s"' % self._bu_ids)
+        else:
+            log.debug('Cleared bu_ids')
 
     @property
     def outdir(self):
@@ -297,12 +309,15 @@ class ReporterDaemon(nparcel.DaemonService):
                     log.info('Batch run iteration complete -- aborting')
                     event.set()
 
-    def send_email(self, date_ts=None):
+    def send_email(self, date_ts=None, bu=None):
         """Send the report via email.
 
         **Kwargs:**
             *date_ts*: :mod:`datetime` object that can override the
             report date and time.
+
+            *bu*: the Business Unit string description.  For example,
+            ``Toll Priority``
 
         """
         title = self.ws.get('title')
@@ -311,7 +326,7 @@ class ReporterDaemon(nparcel.DaemonService):
         else:
             now = date_ts.strftime('%d/%m/%Y')
         subject_data = {'title': title,
-                        'bu': self.bu_id,
+                        'bu': bu,
                         'date': now}
         subject = self._emailer.get_subject_line(data=subject_data,
                                                  template='report')

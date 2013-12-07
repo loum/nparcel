@@ -10,10 +10,13 @@ class TestUncollected(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._now = datetime.datetime.now()
+        bu_ids = {1: 'Toll Priority',
+                  2: 'Toll Fast',
+                  3: 'Toll IPEC'}
 
         cls.maxDiff = None
 
-        cls._u = nparcel.Uncollected()
+        cls._u = nparcel.Uncollected(bu_ids=bu_ids)
         db = cls._u.db
         db.create_table(name='agent_stocktake',
                         schema=db.agent_stocktake.schema)
@@ -59,7 +62,7 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
         """
         received = self._u.process()
         expected = [(15,
-                     1,
+                     'Toll Priority',
                      'TEST_REF_001',
                      'aged_parcel_unmatched',
                      'aged_connote_match',
@@ -78,7 +81,7 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
                      '1234',
                      '0431602145'),
                     (16,
-                     1,
+                     'Toll Priority',
                      'aged_item_match',
                      'aged_parcel_unmatched',
                      'TEST_REF_001',
@@ -97,7 +100,7 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
                      '1234',
                      '0431602145'),
                     (19,
-                     1,
+                     'Toll Priority',
                      'ARTZ061184',
                      'TEST_REF_001',
                      '00393403250082030046',
@@ -116,7 +119,7 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
                      '1234',
                      '0431602145'),
                     (20,
-                     1,
+                     'Toll Priority',
                      'TEST_REF_NOT_PROC',
                      'aged_parcel_unmatched',
                      '00393403250082030047',
@@ -135,7 +138,7 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
                      '1234',
                      '0431602145'),
                     (22,
-                     1,
+                     'Toll Priority',
                      'ARTZ061184',
                      'JOB_TEST_REF_NOT_PROC_PCKD_UP',
                      '00393403250082030048',
