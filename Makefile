@@ -59,7 +59,8 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.table.tests:TestAgentStocktake \
 	 nparcel.tests:TestDbSession \
 	 nparcel.tests:TestOraDbSession \
-	 nparcel.utils.tests:TestFiles
+	 nparcel.utils.tests:TestFiles \
+	 nparcel.utils.tests:TestUtils
 
 sdist:
 	$(PY) setup.py sdist
