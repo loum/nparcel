@@ -13,6 +13,7 @@ class Uncollected(nparcel.Auditer):
 
     """
     _columns = []
+    _delta_time_column = 'JOB_TS'
 
     def __init__(self, db_kwargs=None, bu_ids=None):
         """Uncollected initialiser.
@@ -34,6 +35,14 @@ class Uncollected(nparcel.Auditer):
             self._columns.extend(values)
         else:
             log.debug('Cleared columns list')
+
+    @property
+    def delta_time_column(self):
+        return self._delta_time_column
+
+    def set_delta_time_column(self, value):
+        self._delta_time_column = value
+        log.debug('Set delta time column to "%s"' % self._delta_time_column)
 
     def process(self):
         """Checks ``agent_stocktake`` table for items that exist
@@ -68,7 +77,18 @@ class Uncollected(nparcel.Auditer):
                                                                i,
                                                                self.bu_ids))
 
-        return translated_aged_jobitems
+        date_delta_jobitems = []
+        for i in translated_aged_jobitems:
+            delta_row = self.add_date_diff(self.columns,
+                                           i,
+                                           self.delta_time_column,
+                                           ts_now)
+            date_delta_jobitems.append(delta_row)
+        tmp_hdrs_list = self.db.columns()
+        tmp_hdrs_list.append('DELTA_TIME')
+        self.set_columns(tmp_hdrs_list)
+
+        return date_delta_jobitems
 
     def _cleanse(self, header, row):
         """Generic modififications to the raw query result.

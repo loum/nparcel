@@ -79,7 +79,8 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
                      'Testville',
                      'VIC',
                      '1234',
-                     '0431602145'),
+                     '0431602145',
+                     0),
                     (16,
                      'Toll Priority',
                      'aged_item_match',
@@ -98,7 +99,8 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
                      'Testville',
                      'VIC',
                      '1234',
-                     '0431602145'),
+                     '0431602145',
+                     0),
                     (19,
                      'Toll Priority',
                      'ARTZ061184',
@@ -117,7 +119,8 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
                      'Testville',
                      'VIC',
                      '1234',
-                     '0431602145'),
+                     '0431602145',
+                     0),
                     (20,
                      'Toll Priority',
                      'TEST_REF_NOT_PROC',
@@ -136,7 +139,8 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
                      'Testville',
                      'VIC',
                      '1234',
-                     '0431602145'),
+                     '0431602145',
+                     0),
                     (22,
                      'Toll Priority',
                      'ARTZ061184',
@@ -155,9 +159,34 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
                      'Testville',
                      'VIC',
                      '1234',
-                     '0431602145')]
+                     '0431602145',
+                     0)]
         msg = 'List of uncollected job_item IDs incorrect'
         self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        received = self._u.columns
+        expected = ['JOB_ITEM_ID',
+                    'JOB_BU_ID',
+                    'CONNOTE_NBR',
+                    'BARCODE',
+                    'ITEM_NBR',
+                    'JOB_TS',
+                    'CREATED_TS',
+                    'NOTIFY_TS',
+                    'PICKUP_TS',
+                    'PIECES',
+                    'CONSUMER_NAME',
+                    'DP_CODE',
+                    'AGENT_CODE',
+                    'AGENT_NAME',
+                    'AGENT_ADDRESS',
+                    'AGENT_SUBURB',
+                    'AGENT_STATE',
+                    'AGENT_POSTCODE',
+                    'AGENT_PHONE_NBR',
+                    'DELTA_TIME']
+        msg = 'Headers after DELTA_TIME addition error'
+        self.assertListEqual(received, expected, msg)
 
     def test_cleanse(self):
         """Cleanse a row.
