@@ -177,12 +177,12 @@ class BaseD(object):
             if len(self.args) != 1:
                 self.parser.error("incorrect number of arguments")
 
-            self.set_command(self.args[0])
+            self.set_command(args.pop(0))
 
             if (self.command != 'start' and
                 (self.options.dry or self.options.batch)):
                 self.parser.error('invalid option(s) with command "%s"' %
-                                self.command)
+                                  self.command)
 
         if self.command == 'start':
             self.set_dry(self.options.dry is not None)

@@ -13,7 +13,8 @@ class TestReporterDaemon(unittest2.TestCase):
     def setUpClass(cls):
         cls._now = datetime.datetime.now()
 
-        cls._ud = nparcel.ReporterDaemon(pidfile=None)
+        cls._ud = nparcel.ReporterDaemon('uncollected',
+                                         pidfile=None)
         db = cls._ud._report.db
         cls._ud.emailer.set_template_base(os.path.join('nparcel',
                                                        'templates'))

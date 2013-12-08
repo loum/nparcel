@@ -99,6 +99,7 @@ class ReporterDaemon(nparcel.DaemonService):
 
     """
     _config = None
+    _report = None
     _bu_ids = {1: 'Toll Priority',
                2: 'Toll Fast',
                3: 'Toll IPEC'}
@@ -117,6 +118,7 @@ class ReporterDaemon(nparcel.DaemonService):
     _recipients = []
 
     def __init__(self,
+                 report,
                  pidfile,
                  dry=False,
                  batch=True,
@@ -126,7 +128,7 @@ class ReporterDaemon(nparcel.DaemonService):
                                              batch=batch)
 
         if config is not None:
-            self.config = nparcel.B2CConfig(file=config)
+            self.set_config(nparcel.B2CConfig(file=config))
             self.config.parse_config()
 
         try:
@@ -169,65 +171,70 @@ class ReporterDaemon(nparcel.DaemonService):
             log.info('Report report_extension not defined in config')
 
         # Uncollected report.
-        rep = 'uncollected'
-
-        methodname = 'report_%s_outfile' % rep
+        methodname = 'report_%s_outfile' % report
         try:
             method = getattr(self.config, methodname)
             if method is not None:
                 self.set_outfile(method)
         except AttributeError, err:
-            log.info('Report (%s) outfile not defined in config' %
-                     rep)
+            log.info('Report (%s) outfile not defined in config' % report)
 
-        methodname = 'report_%s_display_hdrs' % rep
+        methodname = 'report_%s_display_hdrs' % report
         try:
             method = getattr(self.config, methodname)
             if method is not None:
                 self.set_display_hdrs(method)
         except AttributeError, err:
-            log.info('Report (%s) display_hdrs not defined in config' % rep)
+            log.info('Report (%s) display_hdrs not defined in config' %
+                     report)
 
-        methodname = 'report_%s_aliases' % rep
+        methodname = 'report_%s_aliases' % report
         try:
             method = getattr(self.config, methodname)
             if method is not None:
                 self.set_aliases(method)
         except AttributeError, err:
-            log.info('Report (%s) aliases not defined in config' % rep)
+            log.info('Report (%s) aliases not defined in config' % report)
 
-        methodname = 'report_%s_widths' % rep
+        methodname = 'report_%s_widths' % report
         try:
             method = getattr(self.config, methodname)
             if method is not None:
                 self.set_header_widths(method)
         except AttributeError, err:
             log.info('Report (%s) header widths not defined in config' %
-                     rep)
+                     report)
 
-        methodname = 'report_%s_ws' % rep
+        methodname = 'report_%s_ws' % report
         try:
             method = getattr(self.config, methodname)
             if method is not None:
                 self.set_ws(method)
         except AttributeError, err:
-            log.info('Report (%s) worksheet not defined in config' % rep)
+            log.info('Report (%s) worksheet not defined in config' %
+                     report)
 
-        methodname = 'report_%s_recipients' % rep
+        methodname = 'report_%s_recipients' % report
         try:
             method = getattr(self.config, methodname)
             if method is not None:
                 self.set_recipients(method)
         except AttributeError, err:
-            log.info('Report (%s) recipients not defined in config' % rep)
+            log.info('Report (%s) recipients not defined in config' %
+                     report)
 
-        self._report = nparcel.Uncollected(db_kwargs=self.db_kwargs,
-                                           bu_ids=self.bu_ids)
+        if report == 'uncollected':
+            self._report = nparcel.Uncollected(db_kwargs=self.db_kwargs,
+                                            bu_ids=self.bu_ids)
+
         self._emailer = nparcel.Emailer()
 
     @property
     def config(self):
         return self._config
+
+    def set_config(self, value):
+        self._config = value
 
     @property
     def bu_ids(self):
@@ -378,6 +385,11 @@ class ReporterDaemon(nparcel.DaemonService):
         while not event.isSet():
             log.info('Starting stocktake report ...')
             now = datetime.datetime.now().strftime(self.outfile_ts_format)
+
+            if self._report is None:
+                log.error('Reporter is not defined -- aborting')
+                event.set()
+                break
 
             rows = self._report.process(dry=self.dry)
 
