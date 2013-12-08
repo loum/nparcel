@@ -80,7 +80,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
             self.config.parse_config()
 
         try:
-            self.set_loop(self.config.loader_loop)
+            self.set_loop(self.config.ondelivery_loop)
         except AttributeError, err:
             log.info('Daemon loop not defined in config -- default %d sec' %
                      self.loop)
