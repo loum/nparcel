@@ -244,28 +244,102 @@ class TestB2CConfig(unittest2.TestCase):
         expected = {'1': 'Toll Priority',
                     '2': 'Toll Fast',
                     '3': 'Toll IPEC'}
-        msg = 'Config reporter bu_ids value error'
+        msg = 'Config report bu_ids value error'
         self.assertDictEqual(received, expected, msg)
 
         received = self._c.report_outfile
         expected = 'Report_'
-        msg = 'Config reporter outfile value error'
+        msg = 'Config report outfile value error'
         self.assertEqual(received, expected, msg)
 
         received = self._c.report_outfile_ts_format
-        expected = 'YYYYMMDDHHMMSS'
-        msg = 'Config reporter outfile ts format value error'
+        expected = '%Y%m%d-%H:%M'
+        msg = 'Config report outfile ts format value error'
         self.assertEqual(received, expected, msg)
 
         received = self._c.report_outdir
         expected = '/data/nparcel/reports'
-        msg = 'Config reporter outdir value error'
+        msg = 'Config report outdir value error'
         self.assertEqual(received, expected, msg)
 
         received = self._c.report_extension
         expected = 'xlsx'
-        msg = 'Config reporter extension value error'
+        msg = 'Config report extension value error'
         self.assertEqual(received, expected, msg)
+
+    def test_parse_reporter_uncollected(self):
+        """Parse items from the config -- reporter uncollected.
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        received = self._c.report_uncollected_outfile
+        expected = 'Stocktake_uncollected_aged_report_'
+        msg = 'Config uncollected report outfile value error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.report_uncollected_display_hdrs
+        expected = ['DP_CODE',
+                    'AGENT_CODE',
+                    'AGENT_NAME',
+                    'JOB_BU_ID',
+                    'AGENT_ADDRESS',
+                    'AGENT_SUBURB',
+                    'AGENT_POSTCODE',
+                    'AGENT_STATE',
+                    'AGENT_PHONE_NBR',
+                    'CONNOTE_NBR',
+                    'ITEM_NBR',
+                    'CONSUMER_NAME',
+                    'PIECES',
+                    'JOB_TS',
+                    'DELTA_TIME']
+        msg = 'Report uncollected display headers value error'
+        self.assertListEqual(received, expected, msg)
+
+        received = self._c.report_uncollected_aliases
+        expected = {'DP_CODE': 'Agent',
+                    'AGENT_CODE': 'Agent Id',
+                    'AGENT_NAME': 'Agent Name',
+                    'JOB_BU_ID': 'Business Unit',
+                    'AGENT_ADDRESS': 'Agent Address',
+                    'AGENT_SUBURB': 'Suburb',
+                    'AGENT_POSTCODE': 'Postcode',
+                    'AGENT_STATE': 'State',
+                    'AGENT_PHONE_NBR': 'Phone Nbr',
+                    'CONNOTE_NBR': 'Connote',
+                    'ITEM_NBR': 'Item Nbr',
+                    'CONSUMER_NAME': 'To',
+                    'PIECES': 'Pieces',
+                    'JOB_TS': 'Handover',
+                    'DELTA_TIME': 'Days'}
+        msg = 'Report uncollected aliases value error'
+        self.assertDictEqual(received, expected, msg)
+
+        received = self._c.report_uncollected_widths
+        expected = {'agent name': 20,
+                    'agent address': 20,
+                    'phone nbr': 15,
+                    'connote': 25,
+                    'item nbr': 25,
+                    'to': 20,
+                    'handover': 30}
+        msg = 'Report uncollected widths value error'
+        self.assertDictEqual(received, expected, msg)
+
+        received = self._c.report_uncollected_ws
+        title = 'Toll Parcel Portal Stocktake Uncollected (Aged) Report'
+        subtitle = 'ITEMS UNCOLLECTED FOR MORE THAN 7 DAYS'
+        expected = {'title': title,
+                    'subtitle': subtitle,
+                    'sheet_title': 'Uncollected'}
+        msg = 'Report uncollected ws value error'
+        self.assertDictEqual(received, expected, msg)
+
+        received = self._c.report_uncollected_recipients
+        expected = ['loumar@tollgroup.com']
+        msg = 'Config uncollected recipients value error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
 
     def test_condition_flag_item_excp_true(self):
         """Check item_excp flag settings -- True.

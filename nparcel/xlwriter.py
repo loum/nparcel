@@ -132,7 +132,7 @@ class Xlwriter(nparcel.Writer):
         # Column Dimensions.
         for column in range(len(self.headers)):
             hdr = self.headers[column]
-            hdr_length = self.header_widths.get(hdr)
+            hdr_length = self.header_widths.get(hdr.lower())
             column_letter = get_column_letter(column + 1)
             if hdr_length is not None:
                 ws.column_dimensions[column_letter].width = hdr_length

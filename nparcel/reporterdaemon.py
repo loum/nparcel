@@ -29,7 +29,7 @@ class ReporterDaemon(nparcel.DaemonService):
     .. attribute:: outfile_ts_format
 
         timestamp format to append to the *outfile*
-        (default ``YYYYMMDDHHMMSS``)
+        (default ``%Y%m%d-%H%M``)
 
     .. attribute:: outdir
 
@@ -98,12 +98,13 @@ class ReporterDaemon(nparcel.DaemonService):
         list of email recipients
 
     """
+    _config = None
     _bu_ids = {1: 'Toll Priority',
                2: 'Toll Fast',
                3: 'Toll IPEC'}
     _outdir = '/data/nparcel/reports'
     _outfile = 'Stocktake_uncollected_aged_report_'
-    _outfile_ts_format = '%Y%m%d%H%M%S'
+    _outfile_ts_format = '%Y%m%d-%H%M'
     _extension = 'xlsx'
     _db_kwargs = None
     _display_hdrs = []
@@ -155,21 +156,78 @@ class ReporterDaemon(nparcel.DaemonService):
             log.info('Report outfile_ts_format not defined in config')
 
         try:
-            if self.config.report_extension is not None:
-                self.set_extension(self.config.report_extension)
-        except AttributeError, err:
-            log.info('Report report_extension not defined in config')
-
-        try:
             if self.config.report_outdir is not None:
                 self.set_outdir(self.config.report_outdir)
         except AttributeError, err:
             log.info('Report outdir not defined in config')
         create_dir(self.outdir)
 
+        try:
+            if self.config.report_extension is not None:
+                self.set_extension(self.config.report_extension)
+        except AttributeError, err:
+            log.info('Report report_extension not defined in config')
+
+        # Uncollected report.
+        rep = 'uncollected'
+
+        methodname = 'report_%s_outfile' % rep
+        try:
+            method = getattr(self.config, methodname)
+            if method is not None:
+                self.set_outfile(method)
+        except AttributeError, err:
+            log.info('Report (%s) outfile not defined in config' %
+                     rep)
+
+        methodname = 'report_%s_display_hdrs' % rep
+        try:
+            method = getattr(self.config, methodname)
+            if method is not None:
+                self.set_display_hdrs(method)
+        except AttributeError, err:
+            log.info('Report (%s) display_hdrs not defined in config' % rep)
+
+        methodname = 'report_%s_aliases' % rep
+        try:
+            method = getattr(self.config, methodname)
+            if method is not None:
+                self.set_aliases(method)
+        except AttributeError, err:
+            log.info('Report (%s) aliases not defined in config' % rep)
+
+        methodname = 'report_%s_widths' % rep
+        try:
+            method = getattr(self.config, methodname)
+            if method is not None:
+                self.set_header_widths(method)
+        except AttributeError, err:
+            log.info('Report (%s) header widths not defined in config' %
+                     rep)
+
+        methodname = 'report_%s_ws' % rep
+        try:
+            method = getattr(self.config, methodname)
+            if method is not None:
+                self.set_ws(method)
+        except AttributeError, err:
+            log.info('Report (%s) worksheet not defined in config' % rep)
+
+        methodname = 'report_%s_recipients' % rep
+        try:
+            method = getattr(self.config, methodname)
+            if method is not None:
+                self.set_recipients(method)
+        except AttributeError, err:
+            log.info('Report (%s) recipients not defined in config' % rep)
+
         self._report = nparcel.Uncollected(db_kwargs=self.db_kwargs,
                                            bu_ids=self.bu_ids)
         self._emailer = nparcel.Emailer()
+
+    @property
+    def config(self):
+        return self._config
 
     @property
     def bu_ids(self):
@@ -237,7 +295,7 @@ class ReporterDaemon(nparcel.DaemonService):
         if values is not None:
             self._display_hdrs.extend(values)
             log.debug('Setting headers to display to "%s"' %
-                      self._display_hdrs)
+                      self.display_hdrs)
         else:
             log.debug('Clearing headers to display list')
 

@@ -191,6 +191,31 @@ class B2CConfig(nparcel.Config):
 
         report filename extension
 
+    .. attribute:: report_outfile (uncollected)
+
+        basename that is used to generate the uncollected report file
+
+    .. attribute:: report_uncollected_display_hdrs
+
+        list of ordered column headers to display in the uncollected report
+
+    .. attribute:: report_uncollected_aliases
+
+        map of raw header names and the preferred name to display in
+        report
+
+    .. attribute:: report_uncollected_widths
+
+        map of aliased header names and prefered column width
+
+    .. attribute:: report_uncollected_ws
+
+        map of worksheet related items
+
+    .. attribute:: report_uncollected_recipients
+
+        list of email recipients
+
     """
     _dirs_to_check = []
     _pe_dirs_to_check = []
@@ -230,10 +255,16 @@ class B2CConfig(nparcel.Config):
     _delivered_header = 'latest_scan_event_action'
     _delivered_event_key = 'delivered'
     _report_bu_ids = {}
-    _report_outfile = 'Report'
-    _report_outfile_ts_format = 'YYYYMMDDHHMMSS'
+    _report_outfile = 'Report_'
+    _report_outfile_ts_format = '%Y%m%d-%H:%M'
     _report_outdir = '/data/nparcel/reports'
     _report_extension = 'xlsx'
+    _report_uncollected_outfile = 'Stocktake_uncollected_aged_report_'
+    _report_uncollected_display_hdrs = []
+    _report_uncollected_aliases = {}
+    _report_uncollected_widths = {}
+    _report_uncollected_ws = {}
+    _report_uncollected_recipients = []
 
     def __init__(self, file=None):
         """Nparcel Config initialisation.
@@ -738,42 +769,100 @@ class B2CConfig(nparcel.Config):
 
         # Reporter.
         try:
-            self._report_bu_ids = dict(self.items('report_bu_ids'))
-            log.debug('Report BU IDs %s' % str(self._report_bu_ids))
+            self.set_report_bu_ids(dict(self.items('report_bu_ids')))
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
             log.debug('Using default report_bu_ids: %s' %
                       self.report_bu_ids)
 
         try:
-            self._report_outfile = self.get('report_base',
-                                            'outfile')
+            self.set_report_outfile(self.get('report_base', 'outfile'))
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
             log.debug('Using default report outfile: %s' %
                       self.report_outfile)
 
         try:
-            self._report_outfile_ts_format = self.get('report_base',
-                                                      'outfile_ts_format')
+            self.set_report_outfile_ts_format(self.get('report_base',
+                                                       'outfile_ts_format'))
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
             log.debug('Using default report outfile_ts_format: %s' %
                       self.report_outfile_ts_format)
 
         try:
-            self._report_outdir = self.get('report_base', 'outdir')
+            self.set_report_outdir(self.get('report_base', 'outdir'))
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
             log.debug('Using default report outdir: %s' %
                       self.report_outdir)
 
         try:
-            self._report_extension = self.get('report_base', 'extension')
+            self.set_report_extension(self.get('report_base', 'extension'))
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
             log.debug('Using default report extension: %s' %
                       self.report_extension)
+
+        try:
+            display_hdrs = self.get('report_uncollected', 'display_hdrs')
+            display_hdrs_list = display_hdrs.split(',')
+            self.set_report_uncollected_display_hdrs(display_hdrs_list)
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            msg = ('Using default report (uncollected) display hdrs: %s' %
+                    self.report_extension)
+            log.debug(msg)
+
+        try:
+            tmp_outfile = self.get('report_uncollected', 'outfile')
+            self.set_report_uncollected_outfile(tmp_outfile)
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default report (uncollected) outfile: %s' %
+                      self.report_uncollected_outfile)
+
+        try:
+            aliases = dict(self.items('report_uncollected_aliases'))
+            tmp_aliases = {}
+            for k, v in aliases.iteritems():
+                tmp_aliases[k.upper()] = v
+            aliases = tmp_aliases
+            self.set_report_uncollected_aliases(aliases)
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default report uncollected aliases: %s' %
+                      self.report_uncollected_aliases)
+
+        try:
+            widths = dict(self.items('report_uncollected_widths'))
+            tmp_widths = {}
+            for k, v in widths.iteritems():
+                tmp_widths[k] = int(v)
+            widths = tmp_widths
+            self.set_report_uncollected_widths(widths)
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default report uncollected widths: %s' %
+                      self.report_uncollected_widths)
+
+        try:
+            ws = dict(self.items('report_uncollected_ws'))
+            self.set_report_uncollected_ws(ws)
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default report uncollected worksheets: %s' %
+                      self.report_uncollected_ws)
+
+        try:
+            recipients = self.get('report_uncollected', 'recipients')
+            recipients = recipients.split(',')
+            self.set_report_uncollected_recipients(recipients)
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            msg = ('Using default report (uncollected) recipients: %s' %
+                    self.report_extension)
+            log.debug(msg)
 
     def condition(self, bu, flag):
         """Return the *bu* condition *flag* value.
@@ -1271,8 +1360,8 @@ class B2CConfig(nparcel.Config):
         return self._report_outfile
 
     def set_report_outfile(self, value):
-        self._outfile = value
-        log.debug('Set report outfile to "%s"' % self._outfile)
+        self._report_outfile = value
+        log.debug('Set report outfile to "%s"' % self._report_outfile)
 
     @property
     def report_outfile_ts_format(self):
@@ -1299,3 +1388,84 @@ class B2CConfig(nparcel.Config):
     def set_report_extension(self, value):
         self._report_extension = value
         log.debug('Set report extension to "%s"' % self.report_extension)
+
+    @property
+    def report_uncollected_outfile(self):
+        return self._report_uncollected_outfile
+
+    def set_report_uncollected_outfile(self, value):
+        self._report_uncollected_outfile = value
+        log.debug('Set report (uncollected) outfile to "%s"' %
+                  self.report_uncollected_outfile)
+
+    @property
+    def report_uncollected_display_hdrs(self):
+        return self._report_uncollected_display_hdrs
+
+    def set_report_uncollected_display_hdrs(self, values=None):
+        del self.report_uncollected_display_hdrs[:]
+        self._report_uncollected_display_hdrs
+
+        if values is not None:
+            self._report_uncollected_display_hdrs.extend(values)
+            log.debug('Setting (uncollected) headers to display to "%s"' %
+                      self.report_uncollected_display_hdrs)
+        else:
+            log.debug('Clearing (uncollected) headers to display list')
+
+    @property
+    def report_uncollected_aliases(self):
+        return self._report_uncollected_aliases
+
+    def set_report_uncollected_aliases(self, values=None):
+        self._report_uncollected_aliases.clear()
+
+        if values is not None:
+            self._report_uncollected_aliases = values
+            log.debug('Set report uncollected aliases to "%s"' %
+                      self.report_uncollected_aliases)
+        else:
+            log.debug('Cleared report uncollected aliases')
+
+    @property
+    def report_uncollected_widths(self):
+        return self._report_uncollected_widths
+
+    def set_report_uncollected_widths(self, values=None):
+        self._report_uncollected_widths.clear()
+
+        if values is not None:
+            self._report_uncollected_widths = values
+            log.debug('Set report uncollected widths to "%s"' %
+                      self.report_uncollected_widths)
+        else:
+            log.debug('Cleared report uncollected widths')
+
+    @property
+    def report_uncollected_ws(self):
+        return self._report_uncollected_ws
+
+    def set_report_uncollected_ws(self, values=None):
+        self._report_uncollected_ws.clear()
+
+        if values is not None:
+            self._report_uncollected_ws = values
+            log.debug('Set report uncollected ws to "%s"' %
+                      self.report_uncollected_ws)
+        else:
+            log.debug('Cleared report uncollected worksheet')
+
+    @property
+    def report_uncollected_recipients(self):
+        return self._report_uncollected_recipients
+
+    def set_report_uncollected_recipients(self, values=None):
+        del self._report_uncollected_recipients[:]
+        self._report_uncollected_recipients
+
+        if values is not None:
+            self._report_uncollected_recipients.extend(values)
+            log.debug('Setting report uncollected recipients to "%s"' %
+                      self.report_uncollected_recipients)
+        else:
+            log.debug('Clearing uncollected recipients list')
