@@ -99,3 +99,36 @@ class Service(object):
             status = False
 
         return status
+
+    def flag_comms_previous(self, action, id, service, dry=False):
+        """Check if the comms file flag has already been set.
+
+        Additionally, if the comms has errored (``*.err`` file exists)
+        then comms event file should not be created.
+
+        **Args:**
+            *action*: type of communication (either ``sms`` or ``email``)
+
+            *id*: the ``job_item.id`` for comms
+
+            *service*: the comms service template
+
+        **Returns:**
+            ``True`` comms flag file has previously been set
+
+            ``False`` comms flag has not been previously set
+
+        """
+        status = False
+
+        comms_file = "%s.%d.%s" % (action, id, service)
+        abs_comms_file = os.path.join(self.comms_dir, comms_file)
+        log.debug('Checking if comms file "%s" set previously' %
+                  abs_comms_file)
+
+        if (os.path.exists(abs_comms_file + '.err') or
+            os.path.exists(abs_comms_file)):
+            status = True
+            log.debug('Comms file "%s" previously set' % abs_comms_file)
+
+        return status

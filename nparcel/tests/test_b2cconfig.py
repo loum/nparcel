@@ -61,41 +61,6 @@ class TestB2CConfig(unittest2.TestCase):
         expected = ['/data/nparcel/aggregate']
         self.assertListEqual(received, expected, msg)
 
-        msg = 'Loader loop not as expected'
-        received = self._c.loader_loop
-        expected = 30
-        self.assertEqual(received, expected, msg)
-
-        msg = 'Primary elect loop not as expected'
-        received = self._c.pe_loop
-        expected = 30
-        self.assertEqual(received, expected, msg)
-
-        msg = 'Reminder loop not as expected'
-        received = self._c.reminder_loop
-        expected = 3600
-        self.assertEqual(received, expected, msg)
-
-        msg = 'Notifications loop not as expected'
-        received = self._c.comms_loop
-        expected = 30
-        self.assertEqual(received, expected, msg)
-
-        msg = 'Exporter loop not as expected'
-        received = self._c.exporter_loop
-        expected = 300
-        self.assertEqual(received, expected, msg)
-
-        msg = 'Mapper loop not as expected'
-        received = self._c.mapper_loop
-        expected = 30
-        self.assertEqual(received, expected, msg)
-
-        msg = 'Filter loop not as expected'
-        received = self._c.filter_loop
-        expected = 30
-        self.assertEqual(received, expected, msg)
-
         msg = 'Business units not as expected'
         received = self._c.business_units
         expected = {'priority': '1', 'fast': '2', 'ipec': '3'}
@@ -216,6 +181,44 @@ class TestB2CConfig(unittest2.TestCase):
         received = self._c.comms_q_error
         expected = 1000
         msg = 'Comms message queue error error'
+        self.assertEqual(received, expected, msg)
+
+    def test_parse_config_timeout(self):
+        """Parse items from the config -- timeout.
+        """
+        msg = 'Loader loop not as expected'
+        received = self._c.loader_loop
+        expected = 30
+        self.assertEqual(received, expected, msg)
+
+        msg = 'On delivery loop not as expected'
+        received = self._c.ondelivery_loop
+        expected = 30
+        self.assertEqual(received, expected, msg)
+
+        msg = 'Reminder loop not as expected'
+        received = self._c.reminder_loop
+        expected = 3600
+        self.assertEqual(received, expected, msg)
+
+        msg = 'Notifications loop not as expected'
+        received = self._c.comms_loop
+        expected = 30
+        self.assertEqual(received, expected, msg)
+
+        msg = 'Exporter loop not as expected'
+        received = self._c.exporter_loop
+        expected = 300
+        self.assertEqual(received, expected, msg)
+
+        msg = 'Mapper loop not as expected'
+        received = self._c.mapper_loop
+        expected = 30
+        self.assertEqual(received, expected, msg)
+
+        msg = 'Filter loop not as expected'
+        received = self._c.filter_loop
+        expected = 30
         self.assertEqual(received, expected, msg)
 
     def test_parse_config_transsend(self):

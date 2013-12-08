@@ -62,9 +62,9 @@ class B2CConfig(nparcel.Config):
 
         time (seconds) between loader processing iterations.
 
-    .. attribute pe_loop (primary elect)
+    .. attribute onleilvery_loop (on delivery)
 
-        time (seconds) between primary elect processing iterations.
+        time (seconds) between on delivery processing iterations.
 
     .. attribute reminder_loop (reminder)
 
@@ -225,10 +225,10 @@ class B2CConfig(nparcel.Config):
     _comms = None
     _aggregator_dirs = []
     _loader_loop = 30
-    _pe_loop = 30
-    _reminder_loop = 30
+    _ondelivery_loop = 30
+    _reminder_loop = 3600
     _comms_loop = 30
-    _exporter_loop = 900
+    _exporter_loop = 300
     _mapper_loop = 30
     _filter_loop = 30
     _proxy_scheme = 'https'
@@ -337,11 +337,11 @@ class B2CConfig(nparcel.Config):
 
     @property
     def loader_loop(self):
-        return self.loader_loop
+        return self._loader_loop
 
     @property
-    def pe_loop(self):
-        return self._pe_loop
+    def ondelivery_loop(self):
+        return self._ondelivery_loop
 
     @property
     def reminder_loop(self):
@@ -614,10 +614,11 @@ class B2CConfig(nparcel.Config):
                       self.loader_loop)
 
         try:
-            self._pe_loop = int(self.get('timeout', 'pe_loop'))
+            self._ondelivery_loop = int(self.get('timeout',
+                                                 'ondelivery_loop'))
         except ConfigParser.NoOptionError, err:
-            log.debug('Using default Primary Elect loop: %d (sec)' %
-                      self.pe_loop)
+            log.debug('Using default On Delivery loop: %d (sec)' %
+                      self.ondelivery_loop)
 
         try:
             self._reminder_loop = int(self.get('timeout', 'reminder_loop'))

@@ -173,16 +173,18 @@ class OnDelivery(nparcel.Service):
                      (id, connote, item_nbr))
 
             delivered_status = False
-            if (self.parser.connote_delivered(connote) or
-                self.connote_delivered(connote, item_nbr)):
-                delivered_status = True
+            if (not self.flag_comms_previous('email', id, template) and
+                not self.flag_comms_previous('sms', id, template)):
+                if (self.parser.connote_delivered(connote) or
+                    self.connote_delivered(connote, item_nbr)):
+                    delivered_status = True
 
-            if delivered_status:
-                log.info('Preparing comms flag for job_item.id: %d' % id)
-                if not dry:
-                    if (self.flag_comms('email', id, template) and
-                        self.flag_comms('sms', id, template)):
-                        processed_ids.append(id)
+                if delivered_status:
+                    log.info('Preparing comms for job_item.id: %d' % id)
+                    if not dry:
+                        if (self.flag_comms('email', id, template) and
+                            self.flag_comms('sms', id, template)):
+                            processed_ids.append(id)
 
             log.info('On Del id|connote|item: "%s|%s|%s" check complete' %
                      (id, connote, item_nbr))

@@ -199,6 +199,78 @@ class TestOnDelivery(unittest2.TestCase):
         # Cleanup.
         remove_files(received)
 
+    def test_process_erred_comms(self):
+        """Check processing -- error comms already exists.
+        """
+        dry = False
+
+        comms_err_file = os.path.join(self._comms_dir,
+                                      'email.%d.pe.err' % self._id_001)
+        fh = open(comms_err_file, 'w')
+        fh.close()
+
+        service_code = 3
+        bu_ids = (1, 2, 3)
+        received = self._on.process(template='pe',
+                                    service_code=service_code,
+                                    bu_ids=bu_ids,
+                                    mts_file=self._test_file,
+                                    dry=dry)
+        expected = [self._id_004]
+        msg = 'List of processed primary elect items incorrect'
+        self.assertListEqual(received, expected, msg)
+
+        # Check that the comms files were written out.
+        received = [os.path.join(self._comms_dir,
+                                 x) for x in os.listdir(self._comms_dir)]
+        received = [x for x in received if x != comms_err_file]
+        expected = [os.path.join(self._comms_dir, '%s.%d.%s') %
+                    ('email', self._id_004, 'pe'),
+                    os.path.join(self._comms_dir, '%s.%d.%s') %
+                    ('sms', self._id_004, 'pe')]
+        msg = 'Comms directory file list error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Cleanup.
+        remove_files(received)
+        remove_files(comms_err_file)
+
+    def test_process_comms_exists(self):
+        """Check processing -- comms already exists.
+        """
+        dry = False
+
+        comms_err_file = os.path.join(self._comms_dir,
+                                      'email.%d.pe' % self._id_004)
+        fh = open(comms_err_file, 'w')
+        fh.close()
+
+        service_code = 3
+        bu_ids = (1, 2, 3)
+        received = self._on.process(template='pe',
+                                    service_code=service_code,
+                                    bu_ids=bu_ids,
+                                    mts_file=self._test_file,
+                                    dry=dry)
+        expected = [self._id_001]
+        msg = 'List of processed primary elect items incorrect'
+        self.assertListEqual(received, expected, msg)
+
+        # Check that the comms files were written out.
+        received = [os.path.join(self._comms_dir,
+                                 x) for x in os.listdir(self._comms_dir)]
+        received = [x for x in received if x != comms_err_file]
+        expected = [os.path.join(self._comms_dir, '%s.%d.%s') %
+                    ('email', self._id_001, 'pe'),
+                    os.path.join(self._comms_dir, '%s.%d.%s') %
+                    ('sms', self._id_001, 'pe')]
+        msg = 'Comms directory file list error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Cleanup.
+        remove_files(received)
+        remove_files(comms_err_file)
+
     def test_process_inline(self):
         """Check processing.
         """
