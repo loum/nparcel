@@ -340,12 +340,61 @@ class TestB2CConfig(unittest2.TestCase):
         self.assertDictEqual(received, expected, msg)
 
         received = self._c.report_uncollected_recipients
-        expected = ['loumar@tollgroup.com']
+        expected = []
         msg = 'Config uncollected recipients value error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
         received = self._c.report_uncollected_bu_based
         msg = 'Config uncollected bu_based value error'
+        self.assertTrue(received, msg)
+
+    def test_parse_reporter_compliance(self):
+        """Parse items from the config -- reporter compliance.
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        received = self._c.report_compliance_outfile
+        expected = 'Stocktake_compliance_'
+        msg = 'Config compliance report outfile value error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.report_compliance_display_hdrs
+        expected = ['DP_CODE',
+                    'AGENT_CODE',
+                    'AGENT_NAME',
+                    'CREATED_TS']
+        msg = 'Report compliance display headers value error'
+        self.assertListEqual(received, expected, msg)
+
+        received = self._c.report_compliance_aliases
+        expected = {'DP_CODE': 'Agent',
+                    'AGENT_CODE': 'Agent Id',
+                    'AGENT_NAME': 'Agent Name',
+                    'CREATED_TS': 'Last completed stocktake'}
+        msg = 'Report compliance aliases value error'
+        self.assertDictEqual(received, expected, msg)
+
+        received = self._c.report_compliance_widths
+        expected = {'agent name': 40,
+                    'last completed stocktake': 30}
+        msg = 'Report compliance widths value error'
+        self.assertDictEqual(received, expected, msg)
+
+        received = self._c.report_compliance_ws
+        title = 'Toll Parcel Portal Stocktake Compliance Report'
+        expected = {'title': title,
+                    'sheet_title': 'Compliance'}
+        msg = 'Report compliance ws value error'
+        self.assertDictEqual(received, expected, msg)
+
+        received = self._c.report_compliance_recipients
+        expected = []
+        msg = 'Config compliance recipients value error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        received = self._c.report_compliance_bu_based
+        msg = 'Config compliance bu_based value error'
         self.assertFalse(received, msg)
 
     def test_parse_report_bu_id_recipients(self):

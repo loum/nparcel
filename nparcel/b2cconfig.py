@@ -191,11 +191,13 @@ class B2CConfig(nparcel.Config):
 
         report filename extension
 
-    .. attribute:: report_outfile (uncollected)
+    .. attribute:: report_uncollected_outfile (uncollected)
+    .. attribute:: report_compliance_outfile (uncollected)
 
         basename that is used to generate the uncollected report file
 
     .. attribute:: report_uncollected_display_hdrs
+    .. attribute:: report_compliance_display_hdrs
 
         list of ordered column headers to display in the uncollected report
 
@@ -205,18 +207,22 @@ class B2CConfig(nparcel.Config):
         report
 
     .. attribute:: report_uncollected_widths
+    .. attribute:: report_compliance_widths
 
         map of aliased header names and prefered column width
 
     .. attribute:: report_uncollected_ws
+    .. attribute:: report_compliance_ws
 
         map of worksheet related items
 
     .. attribute:: report_uncollected_recipients
+    .. attribute:: report_compliance_recipients
 
         list of email recipients
 
     .. attribute:: report_uncollected_bu_based
+    .. attribute:: report_compliance_bu_based
 
         flag to denote if the reports are to be based on Business Unit
 
@@ -273,7 +279,14 @@ class B2CConfig(nparcel.Config):
     _report_uncollected_widths = {}
     _report_uncollected_ws = {}
     _report_uncollected_recipients = []
-    _report_uncollected_bu_based = False
+    _report_uncollected_bu_based = True
+    _report_compliance_outfile = 'Stocktake_compliance_'
+    _report_compliance_display_hdrs = []
+    _report_compliance_aliases = {}
+    _report_compliance_widths = {}
+    _report_compliance_ws = {}
+    _report_compliance_recipients = []
+    _report_compliance_bu_based = False
     _report_bu_id_recipients = {}
 
     def __init__(self, file=None):
@@ -819,65 +832,97 @@ class B2CConfig(nparcel.Config):
             log.debug('Using default report extension: %s' %
                       self.report_extension)
 
-        try:
-            display_hdrs = self.get('report_uncollected', 'display_hdrs')
-            display_hdrs_list = display_hdrs.split(',')
-            self.set_report_uncollected_display_hdrs(display_hdrs_list)
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            msg = ('Using default report (uncollected) display hdrs: %s' %
-                    self.report_extension)
-            log.debug(msg)
+        for r in ['uncollected', 'compliance']:
+            report_opt = 'report_%s' % r
 
-        try:
-            tmp_outfile = self.get('report_uncollected', 'outfile')
-            self.set_report_uncollected_outfile(tmp_outfile)
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default report (uncollected) outfile: %s' %
-                      self.report_uncollected_outfile)
+            # Report headers to display.
+            getter = '%s_display_hdrs' % report_opt
+            setter = 'set_%s' % getter
+            try:
+                val = self.get(report_opt, 'display_hdrs')
+                val_list = val.split(',')
+                set_method = getattr(self, setter)
+                set_method(val_list)
+            except (ConfigParser.NoOptionError,
+                    ConfigParser.NoSectionError), err:
+                get_method = getattr(self, getter)
+                log.debug('Using default report (%s) display hdrs: %s' %
+                          (r, get_method))
 
-        try:
-            aliases = dict(self.items('report_uncollected_aliases'))
-            tmp_aliases = {}
-            for k, v in aliases.iteritems():
-                tmp_aliases[k.upper()] = v
-            aliases = tmp_aliases
-            self.set_report_uncollected_aliases(aliases)
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default report uncollected aliases: %s' %
-                      self.report_uncollected_aliases)
+            # Report outfile.
+            getter = '%s_outfile' % report_opt
+            setter = 'set_%s' % getter
+            set_method = getattr(self, setter)
+            get_method = getattr(self, getter)
+            try:
+                val = self.get(report_opt, 'outfile')
+                set_method(val)
+            except (ConfigParser.NoOptionError,
+                    ConfigParser.NoSectionError), err:
+                log.debug('Using default report (%s) outfile: %s' %
+                          (r, get_method))
 
-        try:
-            widths = dict(self.items('report_uncollected_widths'))
-            tmp_widths = {}
-            for k, v in widths.iteritems():
-                tmp_widths[k] = int(v)
-            widths = tmp_widths
-            self.set_report_uncollected_widths(widths)
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default report uncollected widths: %s' %
-                      self.report_uncollected_widths)
+            # Report header aliases.
+            getter = '%s_aliases' % report_opt
+            setter = 'set_%s' % getter
+            set_method = getattr(self, setter)
+            get_method = getattr(self, getter)
+            section = '%s_aliases' % report_opt
+            try:
+                val = dict(self.items(section))
+                tmp_val = {}
+                for k, v in val.iteritems():
+                    tmp_val[k.upper()] = v
+                set_method(tmp_val)
+            except (ConfigParser.NoOptionError,
+                    ConfigParser.NoSectionError), err:
+                log.debug('Using default report (%s) aliases: %s' %
+                          (r, get_method))
 
-        try:
-            ws = dict(self.items('report_uncollected_ws'))
-            self.set_report_uncollected_ws(ws)
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default report uncollected worksheets: %s' %
-                      self.report_uncollected_ws)
+            # Report widths.
+            getter = '%s_widths' % report_opt
+            setter = 'set_%s' % getter
+            set_method = getattr(self, setter)
+            get_method = getattr(self, getter)
+            section = '%s_widths' % report_opt
+            try:
+                val = dict(self.items(section))
+                tmp_val = {}
+                for k, v in val.iteritems():
+                    tmp_val[k] = int(v)
+                set_method(tmp_val)
+            except (ConfigParser.NoOptionError,
+                    ConfigParser.NoSectionError), err:
+                log.debug('Using default report (%s) widths: %s' %
+                          (r, get_method))
 
-        try:
-            recipients = self.get('report_uncollected', 'recipients')
-            recipients = recipients.split(',')
-            self.set_report_uncollected_recipients(recipients)
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            msg = ('Using default report (uncollected) recipients: %s' %
-                    self.report_uncollected_recipients)
-            log.debug(msg)
+            # Report worksheet.
+            getter = '%s_ws' % report_opt
+            setter = 'set_%s' % getter
+            set_method = getattr(self, setter)
+            get_method = getattr(self, getter)
+            section = '%s_ws' % report_opt
+            try:
+                ws = dict(self.items(section))
+                set_method(ws)
+            except (ConfigParser.NoOptionError,
+                    ConfigParser.NoSectionError), err:
+                log.debug('Using default report (%s) worksheets: %s' %
+                          (r, get_method))
+
+            # Report recipients.
+            getter = '%s_recipients' % report_opt
+            setter = 'set_%s' % getter
+            set_method = getattr(self, setter)
+            get_method = getattr(self, getter)
+            try:
+                val = self.get(report_opt, 'recipients')
+                val_list = val.split(',')
+                set_method(val_list)
+            except (ConfigParser.NoOptionError,
+                    ConfigParser.NoSectionError), err:
+                log.debug('Using default report (%s) recipients: %s' %
+                          (r, get_method))
 
         try:
             tmp_bu_based = self.get('report_uncollected', 'bu_based')
@@ -1423,7 +1468,7 @@ class B2CConfig(nparcel.Config):
 
     def set_report_extension(self, value):
         self._report_extension = value
-        log.debug('Set report extension to "%s"' % self.report_extension)
+        log.debug('Config report extension "%s"' % self.report_extension)
 
     @property
     def report_uncollected_outfile(self):
@@ -1431,7 +1476,7 @@ class B2CConfig(nparcel.Config):
 
     def set_report_uncollected_outfile(self, value):
         self._report_uncollected_outfile = value
-        log.debug('Set report (uncollected) outfile to "%s"' %
+        log.debug('Config report (uncollected) outfile "%s"' %
                   self.report_uncollected_outfile)
 
     @property
@@ -1444,10 +1489,10 @@ class B2CConfig(nparcel.Config):
 
         if values is not None:
             self._report_uncollected_display_hdrs.extend(values)
-            log.debug('Setting (uncollected) headers to display to "%s"' %
+            log.debug('Config report (uncollected) displayed hdrs "%s"' %
                       self.report_uncollected_display_hdrs)
         else:
-            log.debug('Clearing (uncollected) headers to display list')
+            log.debug('Cleared (uncollected) headers to display list')
 
     @property
     def report_uncollected_aliases(self):
@@ -1458,10 +1503,10 @@ class B2CConfig(nparcel.Config):
 
         if values is not None:
             self._report_uncollected_aliases = values
-            log.debug('Set report uncollected aliases to "%s"' %
+            log.debug('Config report (uncollected) aliases "%s"' %
                       self.report_uncollected_aliases)
         else:
-            log.debug('Cleared report uncollected aliases')
+            log.debug('Cleared report (uncollected) aliases')
 
     @property
     def report_uncollected_widths(self):
@@ -1472,10 +1517,10 @@ class B2CConfig(nparcel.Config):
 
         if values is not None:
             self._report_uncollected_widths = values
-            log.debug('Set report uncollected widths to "%s"' %
+            log.debug('Config report (uncollected) widths "%s"' %
                       self.report_uncollected_widths)
         else:
-            log.debug('Cleared report uncollected widths')
+            log.debug('Cleared report (uncollected) widths')
 
     @property
     def report_uncollected_ws(self):
@@ -1486,10 +1531,10 @@ class B2CConfig(nparcel.Config):
 
         if values is not None:
             self._report_uncollected_ws = values
-            log.debug('Set report uncollected ws to "%s"' %
+            log.debug('Config report (uncollected) worksheet "%s"' %
                       self.report_uncollected_ws)
         else:
-            log.debug('Cleared report uncollected worksheet')
+            log.debug('Cleared report (uncollected) worksheet')
 
     @property
     def report_uncollected_recipients(self):
@@ -1501,18 +1546,18 @@ class B2CConfig(nparcel.Config):
 
         if values is not None:
             self._report_uncollected_recipients.extend(values)
-            log.debug('Setting report uncollected recipients to "%s"' %
+            log.debug('Config report (uncollected) recipients "%s"' %
                       self.report_uncollected_recipients)
         else:
-            log.debug('Clearing uncollected recipients list')
+            log.debug('Cleared report (uncollected) recipients list')
 
     @property
     def report_uncollected_bu_based(self):
         return self._report_uncollected_bu_based
 
     def set_report_uncollected_bu_based(self, value=False):
-        self.report_uncollected_bu_based = (value == True)
-        log.debug('Setting report uncollected BU-based flag to "%s"' %
+        self.report_uncollected_bu_based = (value.lower() == 'yes')
+        log.debug('Config report (uncollected) BU-based flag to "%s"' %
                   self.report_uncollected_bu_based)
 
     @property
@@ -1524,7 +1569,97 @@ class B2CConfig(nparcel.Config):
 
         if values is not None:
             self._report_bu_id_recipients = values
-            log.debug('Set report BU ID recipients to "%s"' %
+            log.debug('Config report BU ID recipients "%s"' %
                       self.report_bu_id_recipients)
         else:
-            log.debug('Cleared report BU ID recipients')
+            log.debug('Cleared report (BU ID recipients')
+
+    @property
+    def report_compliance_display_hdrs(self):
+        return self._report_compliance_display_hdrs
+
+    def set_report_compliance_display_hdrs(self, values=None):
+        del self.report_compliance_display_hdrs[:]
+        self._report_compliance_display_hdrs
+
+        if values is not None:
+            self._report_compliance_display_hdrs.extend(values)
+            log.debug('Config report (compliance) displayed hdrs "%s"' %
+                      self.report_compliance_display_hdrs)
+        else:
+            log.debug('Cleared (compliance) headers to display list')
+
+    @property
+    def report_compliance_outfile(self):
+        return self._report_compliance_outfile
+
+    def set_report_compliance_outfile(self, value):
+        self._report_compliance_outfile = value
+        log.debug('Config report (compliance) outfile "%s"' %
+                  self.report_compliance_outfile)
+
+    @property
+    def report_compliance_aliases(self):
+        return self._report_compliance_aliases
+
+    def set_report_compliance_aliases(self, values=None):
+        self._report_compliance_aliases.clear()
+
+        if values is not None:
+            self._report_compliance_aliases = values
+            log.debug('Config report (compliance) aliases "%s"' %
+                      self.report_compliance_aliases)
+        else:
+            log.debug('Cleared report (compliance) aliases')
+
+    @property
+    def report_compliance_widths(self):
+        return self._report_compliance_widths
+
+    def set_report_compliance_widths(self, values=None):
+        self._report_compliance_widths.clear()
+
+        if values is not None:
+            self._report_compliance_widths = values
+            log.debug('Config report (compliance) widths "%s"' %
+                      self.report_compliance_widths)
+        else:
+            log.debug('Cleared report (compliance) widths')
+
+    @property
+    def report_compliance_ws(self):
+        return self._report_compliance_ws
+
+    def set_report_compliance_ws(self, values=None):
+        self._report_compliance_ws.clear()
+
+        if values is not None:
+            self._report_compliance_ws = values
+            log.debug('Config report (compliance) worksheet "%s"' %
+                      self.report_compliance_ws)
+        else:
+            log.debug('Cleared report (compliance) worksheet')
+
+    @property
+    def report_compliance_recipients(self):
+        return self._report_compliance_recipients
+
+    def set_report_compliance_recipients(self, values=None):
+        del self._report_compliance_recipients[:]
+        self._report_compliance_recipients
+
+        if values is not None:
+            self._report_compliance_recipients.extend(values)
+            log.debug('Config report (compliance) recipients "%s"' %
+                      self.report_compliance_recipients)
+        else:
+            log.debug('Cleared report (compliance) recipients list')
+
+    @property
+    def report_compliance_bu_based(self):
+        return self._report_compliance_bu_based
+
+    def set_report_compliance_bu_based(self, value=False):
+        self.report_compliance_bu_based = (value.lower() == 'yes')
+        log.debug('Config report (compliance) BU-based flag to "%s"' %
+                  self.report_compliance_bu_based)
