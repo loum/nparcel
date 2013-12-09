@@ -96,10 +96,13 @@ class Writer(object):
         new_row_list = []
         for i in headers_displayed:
             log.debug('Extracting header "%s" value' % i)
-            index = headers.index(i)
-            value = row[index]
-            log.debug('Header "%s" value is "%s"' % (i, value))
-            new_row_list.append(value)
+            try:
+                index = headers.index(i)
+                value = row[index]
+                log.debug('Header "%s" value is "%s"' % (i, value))
+                new_row_list.append(value)
+            except ValueError:
+                log.warn('Header to display "%s" not in column list' % i)
 
         return tuple(new_row_list)
 

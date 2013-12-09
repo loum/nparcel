@@ -8,14 +8,15 @@ from nparcel.utils.files import (remove_files,
                                  get_directory_files_list)
 
 
-class TestReporterDaemon(unittest2.TestCase):
+class TestReporterDaemonCompliance(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
         cls._now = datetime.datetime.now()
 
-        cls._ud = nparcel.ReporterDaemon('uncollected',
+        cls._ud = nparcel.ReporterDaemon('compliance',
                                          pidfile=None)
+        cls._ud.set_outfile('Stocktake_compliance_')
         db = cls._ud._report.db
         cls._ud.emailer.set_template_base(os.path.join('nparcel',
                                                        'templates'))
@@ -51,16 +52,23 @@ SET created_ts = '%s'
 WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
         db(sql)
 
+        old_date = cls._now - datetime.timedelta(8)
+        older_date = cls._now - datetime.timedelta(10)
+ 
+        sql = """UPDATE agent_stocktake
+SET created_ts = '%s'
+WHERE id IN (6)""" % old_date
+        db(sql)
+
+        sql = """UPDATE agent_stocktake
+SET created_ts = '%s'
+WHERE id IN (7, 8)""" % older_date
+        db(sql)
+
         db.commit()
 
-    def test_init(self):
-        """Intialise a ReporterDaemon object.
-        """
-        msg = 'Not a nparcel.ReporterDaemon object'
-        self.assertIsInstance(self._ud, nparcel.ReporterDaemon, msg)
-
     def test_start(self):
-        """ReporterDaemon _start processing loop.
+        """ReporterDaemon _start processing loop -- compliance.
         """
         dry = True
 
@@ -69,67 +77,28 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
         display_hdrs = ['DP_CODE',
                         'AGENT_CODE',
                         'AGENT_NAME',
-                        'JOB_BU_ID',
-                        'AGENT_ADDRESS',
-                        'AGENT_SUBURB',
-                        'AGENT_POSTCODE',
-                        'AGENT_STATE',
-                        'AGENT_PHONE_NBR',
-                        'CONNOTE_NBR',
-                        'ITEM_NBR',
-                        'CONSUMER_NAME',
-                        'PIECES',
-                        'JOB_TS',
-                        'DELTA_TIME']
+                        'CREATED_TS']
         self._ud.set_display_hdrs(display_hdrs)
         old_aliases = self._ud.aliases
         aliases = {'DP_CODE': 'Agent',
                    'AGENT_CODE': 'Agent Id',
                    'AGENT_NAME': 'Agent Name',
-                   'JOB_BU_ID': 'Business Unit',
-                   'AGENT_ADDRESS': 'Agent Address',
-                   'AGENT_SUBURB': 'Suburb',
-                   'AGENT_POSTCODE': 'Postcode',
-                   'AGENT_STATE': 'State',
-                   'AGENT_PHONE_NBR': 'Phone Nbr',
-                   'CONNOTE_NBR': 'Connote',
-                   'ITEM_NBR': 'Item Nbr',
-                   'CONSUMER_NAME': 'To',
-                   'PIECES': 'Pieces',
-                   'JOB_TS': 'Handover',
-                   'DELTA_TIME': 'Days'}
+                   'CREATED_TS': 'Last completed stocktake'}
         self._ud.set_aliases(aliases)
 
         old_widths = self._ud.header_widths
         # Make these lower case to compensate for ConfigParser
-        widths = {'agent name': 20,
-                  'agent address': 20,
-                  'phone nbr': 15,
-                  'connote': 25,
-                  'item nbr': 25,
-                  'to': 20,
-                  'handover': 30}
+        widths = {'agent name': 40,
+                  'last completed stocktake': 30}
         self._ud.set_header_widths(widths)
-
         old_ws = self._ud.ws
-        title = 'Toll Parcel Portal Stocktake Uncollected (Aged) Report'
+        title = 'Toll Parcel Portal Stocktake Compliance Report'
         ws = {'title': title,
-              'subtitle': 'ITEMS UNCOLLECTED FOR MORE THAN 7 DAYS',
-              'sheet_title': 'Uncollected'}
+              'sheet_title': 'Compliance'}
         self._ud.set_ws(ws)
 
         old_recipients = self._ud.recipients
         self._ud.set_recipients(['loumar@tollgroup.com'])
-
-        old_bu_id_recipients = self._ud.bu_id_recipients
-        bu_id_recipients = {1: ['loumar@tollgroup.com',
-                                'lou.markovski@gmail.com'],
-                            2: ['loumar@tollgroup.com'],
-                            3: ['loumar@tollgroup.com']}
-        self._ud.set_bu_id_recipients(bu_id_recipients)
-
-        old_bu_based = self._ud.bu_based
-        self._ud.set_bu_based(True)
 
         self._ud.set_dry(dry)
         self._ud._start(self._ud.exit_event)
@@ -141,8 +110,6 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
         self._ud.set_header_widths(old_widths)
         self._ud.set_ws(old_ws)
         self._ud.set_recipients(old_recipients)
-        self._ud.set_bu_id_recipients(old_bu_id_recipients)
-        self._ud.set_bu_based(old_bu_based)
         self._ud.exit_event.clear()
         remove_files(get_directory_files_list(self._dir))
 

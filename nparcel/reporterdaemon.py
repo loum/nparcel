@@ -25,6 +25,7 @@ class ReporterDaemon(nparcel.DaemonService):
     .. attribute:: outfile
 
         output filename base
+        (default ``Stocktake_uncollected_aged_report_``)
 
     .. attribute:: outfile_ts_format
 
@@ -103,6 +104,10 @@ class ReporterDaemon(nparcel.DaemonService):
         finer-grained controlled of reporting query.  For example,
         uncollected reports are run on a per-BU basis
 
+    .. attribute:: bu_based
+
+        boolean flag to run the report query on a per-Business Unit basis
+
     """
     _config = None
     _report = None
@@ -111,7 +116,7 @@ class ReporterDaemon(nparcel.DaemonService):
                3: 'Toll IPEC'}
     _outdir = '/data/nparcel/reports'
     _outfile = 'Stocktake_uncollected_aged_report_'
-    _outfile_ts_format = '%Y%m%d-%H%M'
+    _outfile_ts_format = '%Y%m%d-%H:%M'
     _extension = 'xlsx'
     _db_kwargs = None
     _display_hdrs = []
@@ -123,6 +128,7 @@ class ReporterDaemon(nparcel.DaemonService):
     _report_filename = None
     _recipients = []
     _bu_id_recipients = {}
+    _bu_based = False
 
     def __init__(self,
                  report,
@@ -230,6 +236,15 @@ class ReporterDaemon(nparcel.DaemonService):
             log.info('Report (%s) recipients not defined in config' %
                      report)
 
+        methodname = 'report_%s_bu_based' % report
+        try:
+            method = getattr(self.config, methodname)
+            if method is not None:
+                self.set_bu_based(method)
+        except AttributeError, err:
+            log.info('Report (%s) BU-based not defined in config' %
+                     report)
+
         try:
             if self.config.report_bu_id_recipients.keys() > 0:
                 tmp_bu_ids = self.config.report_bu_id_recipients
@@ -240,6 +255,8 @@ class ReporterDaemon(nparcel.DaemonService):
         if report == 'uncollected':
             self._report = nparcel.Uncollected(db_kwargs=self.db_kwargs,
                                                bu_ids=self.bu_ids)
+        elif report == 'compliance':
+            self._report = nparcel.Compliance(db_kwargs=self.db_kwargs)
 
         self._emailer = nparcel.Emailer()
 
@@ -413,6 +430,14 @@ class ReporterDaemon(nparcel.DaemonService):
         else:
             log.debug('Cleared BU ID recipients')
 
+    @property
+    def bu_based(self):
+        return self._bu_based
+
+    def set_bu_based(self, value):
+        self._bu_based = (value == True)
+        log.debug('Set BU-based processing flag to "%s"' % self.bu_based)
+
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
 
@@ -433,13 +458,18 @@ class ReporterDaemon(nparcel.DaemonService):
                 event.set()
                 break
 
-            for id in self.bu_id_recipients:
+            if not self._bu_based:
+                self.set_bu_id_recipients({None: []})
+            for id in self.bu_id_recipients.keys():
                 rows = self._report.process(id=id, dry=self.dry)
 
                 # Write out the export file.
+                file_bu_id = str(id)
+                if not self.bu_based:
+                    file_bu_id = 'all'
                 outfile = '%s%s-%s.%s' % (self.outfile,
                                           now,
-                                          str(id),
+                                          file_bu_id,
                                           self.extension)
                 if self.outdir is not None:
                     outfile = os.path.join(self.outdir, outfile)
@@ -462,13 +492,17 @@ class ReporterDaemon(nparcel.DaemonService):
                 writer.set_header_widths(self.header_widths)
                 writer(filtered_rows)
 
-                # Override the recipients
-                tmp_recipients = self.bu_id_recipients.get(id)
-                if tmp_recipients is None:
-                    tmp_recipients = []
-                subject_bu = self.bu_ids.get(id)
-                self.set_recipients(tmp_recipients)
-                self.send_email(bu=subject_bu)
+                if self.bu_based:
+                    # Override the recipients
+                    tmp_recipients = self.bu_id_recipients.get(id)
+                    if tmp_recipients is None:
+                        tmp_recipients = []
+                    subject_bu = self.bu_ids.get(id)
+                    self.set_recipients(tmp_recipients)
+                    self.send_email(bu=subject_bu)
+                else:
+                    self.send_email(bu='all')
+                    break
 
             if not event.isSet():
                 if self.dry:

@@ -344,6 +344,10 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Config uncollected recipients value error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
+        received = self._c.report_uncollected_bu_based
+        msg = 'Config uncollected bu_based value error'
+        self.assertFalse(received, msg)
+
     def test_parse_report_bu_id_recipients(self):
         """Parse items from the config -- reporter BU ID recipients.
         """

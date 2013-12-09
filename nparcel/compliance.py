@@ -46,6 +46,7 @@ class Compliance(nparcel.Auditer):
 
         sql = self.db.agent_stocktake.compliance_sql(period=self.period)
         self.db(sql)
+        self.set_columns(self.db.columns())
         agents = list(self.db.rows())
 
         log.info('Agent compliance query complete')

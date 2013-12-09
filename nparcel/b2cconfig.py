@@ -216,6 +216,10 @@ class B2CConfig(nparcel.Config):
 
         list of email recipients
 
+    .. attribute:: report_uncollected_bu_based
+
+        flag to denote if the reports are to be based on Business Unit
+
     .. attribute:: report_bu_id_recipients
 
         list of Business Unit specific recipients
@@ -269,6 +273,7 @@ class B2CConfig(nparcel.Config):
     _report_uncollected_widths = {}
     _report_uncollected_ws = {}
     _report_uncollected_recipients = []
+    _report_uncollected_bu_based = False
     _report_bu_id_recipients = {}
 
     def __init__(self, file=None):
@@ -871,7 +876,16 @@ class B2CConfig(nparcel.Config):
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
             msg = ('Using default report (uncollected) recipients: %s' %
-                    self.report_extension)
+                    self.report_uncollected_recipients)
+            log.debug(msg)
+
+        try:
+            tmp_bu_based = self.get('report_uncollected', 'bu_based')
+            self.set_report_uncollected_bu_based(tmp_bu_based)
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            msg = ('Using default report (uncollected) BU-based flag: %s' %
+                    self.report_uncollected_bu_based)
             log.debug(msg)
 
         try:
@@ -1491,6 +1505,15 @@ class B2CConfig(nparcel.Config):
                       self.report_uncollected_recipients)
         else:
             log.debug('Clearing uncollected recipients list')
+
+    @property
+    def report_uncollected_bu_based(self):
+        return self._report_uncollected_bu_based
+
+    def set_report_uncollected_bu_based(self, value=False):
+        self.report_uncollected_bu_based = (value == True)
+        log.debug('Setting report uncollected BU-based flag to "%s"' %
+                  self.report_uncollected_bu_based)
 
     @property
     def report_bu_id_recipients(self):
