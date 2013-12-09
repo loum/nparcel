@@ -72,3 +72,37 @@ WHERE processed_ts IS NULL""" % {'name': self.name,
                                  'ts': ts_string}
 
         return sql
+
+    def compliance_sql(self, period=7, alias='st'):
+        """Select agent information of agents that have not performed
+        a stocktake since *period* days prior.
+
+        **Kwargs:**
+            *period*: time (in days) from now that is the cut off for
+            agent compliance (default 7 days)
+
+            *alias*: table alias (default ``st``)
+
+        **Returns:**
+            the SQL string
+
+        """
+        now = datetime.datetime.now()
+        compliance_ts = now - datetime.timedelta(days=period)
+        compliance_date = compliance_ts.strftime('%Y-%m-%d %H:%M:%S')
+
+        sql = """SELECT ag.dp_code as DP_CODE,
+ag.code as AGENT_CODE,
+ag.name as AGENT_NAME,
+MAX(%(alias)s.created_ts) as CREATED_TS
+FROM %(name)s as %(alias)s, agent as ag
+WHERE %(alias)s.created_ts < '%(date)s'
+AND ag.code = %(alias)s.agent_id
+AND %(alias)s.agent_id NOT IN (
+    SELECT DISTINCT %(alias)s.agent_id
+    FROM %(name)s as %(alias)s
+    WHERE created_ts >= '%(date)s')""" % {'alias': alias,
+                                          'name': self.name,
+                                          'date': compliance_date}
+
+        return sql

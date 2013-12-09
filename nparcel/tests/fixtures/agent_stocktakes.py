@@ -29,4 +29,23 @@
         'created_ts': str(datetime.datetime.now() - datetime.timedelta(8)),
         'reference_nbr': 'TEST_REF_OLD_DATE',
     },
+    {
+        'id': 6,
+        'agent_id': 'N031',
+        'created_ts': str(datetime.datetime.now() - datetime.timedelta(8)),
+        'reference_nbr': 'AGENT_COMPLIANCE',
+    },
+    {
+        'id': 7,
+        'agent_id': 'N031',
+        'created_ts': str(datetime.datetime.now() - datetime.timedelta(10)),
+        'reference_nbr': 'AGENT_COMPLIANCE_OLDER',
+    },
+    {
+        # Duplicate.
+        'id': 8,
+        'agent_id': 'N031',
+        'created_ts': str(datetime.datetime.now() - datetime.timedelta(10)),
+        'reference_nbr': 'AGENT_COMPLIANCE_OLDER',
+    },
 ]

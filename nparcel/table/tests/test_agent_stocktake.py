@@ -1,5 +1,6 @@
 import unittest2
 import os
+import datetime
 
 import nparcel
 
@@ -8,15 +9,25 @@ class TestAgentStocktake(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls._now = datetime.datetime.now()
+
         cls._st = nparcel.AgentStocktake()
         cls._db = nparcel.DbSession()
         cls._db.connect()
 
-        fixture_file = os.path.join('nparcel',
-                                    'tests',
-                                    'fixtures',
-                                    'agent_stocktakes.py')
-        cls._db.load_fixture(cls._db.agent_stocktake, fixture_file)
+        db = cls._db
+        fixture_dir = os.path.join('nparcel',
+                                   'tests',
+                                   'fixtures')
+        fixtures = [{'db': db.agent_stocktake,
+                     'fixture': 'agent_stocktakes.py'},
+                    {'db': db.agent,
+                     'fixture': 'agents.py'}]
+        for i in fixtures:
+            fixture_file = os.path.join(fixture_dir, i['fixture'])
+            db.load_fixture(i['db'], fixture_file)
+
+        db.commit()
 
     def test_init(self):
         """AgentStocktake table creation.
@@ -58,6 +69,34 @@ class TestAgentStocktake(unittest2.TestCase):
         now = self._db.date_now()
         sql = self._st.update_processed_ts_sql(now)
         self._db(sql)
+
+    def test_compliance_sql(self):
+        """Verify the compliance SQL.
+        """
+        old_date = self._now - datetime.timedelta(8)
+        older_date = self._now - datetime.timedelta(10)
+        oldest = self._now - datetime.timedelta(12)
+
+        sql = """UPDATE agent_stocktake
+SET created_ts = '%s'
+WHERE id IN (6)""" % old_date
+        self._db(sql)
+
+        sql = """UPDATE agent_stocktake
+SET created_ts = '%s'
+WHERE id IN (7, 8)""" % older_date
+        self._db(sql)
+
+        sql = self._st.compliance_sql()
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [('NROS010', 'N031', 'N031 Name', '%s' % str(old_date))]
+        msg = 'Compliance agent_stocktake query error'
+        self.assertListEqual(received, expected, msg)
+
+        # Clean up.
+        self._db.rollback()
 
     @classmethod
     def tearDownClass(cls):
