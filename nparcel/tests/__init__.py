@@ -38,3 +38,4 @@ from test_xlwriter import TestXlwriter
 from test_auditer import TestAuditer
 from test_uncollected import TestUncollected
 from test_compliance import TestCompliance
+from test_noncompliance import TestNonCompliance
