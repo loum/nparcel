@@ -28,7 +28,7 @@ class Compliance(nparcel.Auditer):
 
     def set_period(self, value):
         self._period = value
-        log.debug('Set compliance period to "%s"' % self.period)
+        log.debug('Compliance period set to "%s"' % self.period)
 
     def process(self, id=None, dry=False):
         """Checks ``agent_stocktake`` table for agents that have not

@@ -108,6 +108,11 @@ class ReporterDaemon(nparcel.DaemonService):
 
         boolean flag to run the report query on a per-Business Unit basis
 
+    .. attribute:: compliance_period
+
+        time (in days) from now that is the cut off for agent compliance
+        (default 7 days)
+
     """
     _config = None
     _report = None
@@ -129,6 +134,7 @@ class ReporterDaemon(nparcel.DaemonService):
     _recipients = []
     _bu_id_recipients = {}
     _bu_based = False
+    _compliance_period = 7
 
     def __init__(self,
                  report,
@@ -183,7 +189,7 @@ class ReporterDaemon(nparcel.DaemonService):
         except AttributeError, err:
             log.info('Report report_extension not defined in config')
 
-        # Uncollected report.
+        # Generic report overrides.
         methodname = 'report_%s_outfile' % report
         try:
             method = getattr(self.config, methodname)
@@ -252,11 +258,21 @@ class ReporterDaemon(nparcel.DaemonService):
         except AttributeError, err:
             log.info('Report BU ID recipients not defined in config')
 
+        # Initialise our report objects.
         if report == 'uncollected':
             self._report = nparcel.Uncollected(db_kwargs=self.db_kwargs,
                                                bu_ids=self.bu_ids)
         elif report == 'compliance':
+            # Parse "compliance" specific config items.
+            try:
+                if self.config.report_compliance_period is not None:
+                    tmp_period = self.config.report_compliance_period
+                    self.set_compliance_period(tmp_period)
+            except AttributeError, err:
+                log.info('Report (compliance) period not defined in config')
+
             self._report = nparcel.Compliance(db_kwargs=self.db_kwargs)
+            self._report.set_period(self.compliance_period)
 
         self._emailer = nparcel.Emailer()
 
@@ -437,6 +453,15 @@ class ReporterDaemon(nparcel.DaemonService):
     def set_bu_based(self, value):
         self._bu_based = (value == True)
         log.debug('Set BU-based processing flag to "%s"' % self.bu_based)
+
+    @property
+    def compliance_period(self):
+        return self._compliance_period
+
+    def set_compliance_period(self, value):
+        self._compliance_period = value
+        log.debug('Set compliance period to %s (days)' %
+                  self.compliance_period)
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.

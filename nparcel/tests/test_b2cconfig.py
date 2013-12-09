@@ -397,6 +397,11 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Config compliance bu_based value error'
         self.assertFalse(received, msg)
 
+        received = self._c.report_compliance_period
+        expected = 7
+        msg = 'Config compliance period value error'
+        self.assertEqual(received, expected, msg)
+
     def test_parse_report_bu_id_recipients(self):
         """Parse items from the config -- reporter BU ID recipients.
         """

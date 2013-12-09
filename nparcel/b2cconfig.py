@@ -230,6 +230,11 @@ class B2CConfig(nparcel.Config):
 
         list of Business Unit specific recipients
 
+    .. attribute:: report_compliance_period
+
+        time (in days) from now that is the cut off for agent compliance
+        (default 7 days)
+
     """
     _dirs_to_check = []
     _pe_dirs_to_check = []
@@ -287,6 +292,7 @@ class B2CConfig(nparcel.Config):
     _report_compliance_ws = {}
     _report_compliance_recipients = []
     _report_compliance_bu_based = False
+    _report_compliance_period = 7
     _report_bu_id_recipients = {}
 
     def __init__(self, file=None):
@@ -924,13 +930,26 @@ class B2CConfig(nparcel.Config):
                 log.debug('Using default report (%s) recipients: %s' %
                           (r, get_method))
 
+            # Report BU-based flag.
+            getter = '%s_bu_based' % report_opt
+            setter = 'set_%s' % getter
+            set_method = getattr(self, setter)
+            get_method = getattr(self, getter)
+            try:
+                val = self.get('report_opt', 'bu_based')
+                set_method(val)
+            except (ConfigParser.NoOptionError,
+                    ConfigParser.NoSectionError), err:
+                log.debug('Using default report (%s) BU-based flag: %s' %
+                          (r, get_method))
+
         try:
-            tmp_bu_based = self.get('report_uncollected', 'bu_based')
-            self.set_report_uncollected_bu_based(tmp_bu_based)
+            tmp_period = self.get('report_compliance', 'period')
+            self.set_report_compliance_period(int(tmp_period))
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
-            msg = ('Using default report (uncollected) BU-based flag: %s' %
-                    self.report_uncollected_bu_based)
+            msg = ('Using default report (compliance) period: %s' %
+                    self.report_compliance_period)
             log.debug(msg)
 
         try:
@@ -1584,7 +1603,7 @@ class B2CConfig(nparcel.Config):
 
         if values is not None:
             self._report_compliance_display_hdrs.extend(values)
-            log.debug('Config report (compliance) displayed hdrs "%s"' %
+            log.debug('Config report (compliance) displayed hdrs: "%s"' %
                       self.report_compliance_display_hdrs)
         else:
             log.debug('Cleared (compliance) headers to display list')
@@ -1595,7 +1614,7 @@ class B2CConfig(nparcel.Config):
 
     def set_report_compliance_outfile(self, value):
         self._report_compliance_outfile = value
-        log.debug('Config report (compliance) outfile "%s"' %
+        log.debug('Config report (compliance) outfile: "%s"' %
                   self.report_compliance_outfile)
 
     @property
@@ -1607,7 +1626,7 @@ class B2CConfig(nparcel.Config):
 
         if values is not None:
             self._report_compliance_aliases = values
-            log.debug('Config report (compliance) aliases "%s"' %
+            log.debug('Config report (compliance) aliases: "%s"' %
                       self.report_compliance_aliases)
         else:
             log.debug('Cleared report (compliance) aliases')
@@ -1621,7 +1640,7 @@ class B2CConfig(nparcel.Config):
 
         if values is not None:
             self._report_compliance_widths = values
-            log.debug('Config report (compliance) widths "%s"' %
+            log.debug('Config report (compliance) widths: "%s"' %
                       self.report_compliance_widths)
         else:
             log.debug('Cleared report (compliance) widths')
@@ -1635,7 +1654,7 @@ class B2CConfig(nparcel.Config):
 
         if values is not None:
             self._report_compliance_ws = values
-            log.debug('Config report (compliance) worksheet "%s"' %
+            log.debug('Config report (compliance) worksheet: "%s"' %
                       self.report_compliance_ws)
         else:
             log.debug('Cleared report (compliance) worksheet')
@@ -1650,7 +1669,7 @@ class B2CConfig(nparcel.Config):
 
         if values is not None:
             self._report_compliance_recipients.extend(values)
-            log.debug('Config report (compliance) recipients "%s"' %
+            log.debug('Config report (compliance) recipients: "%s"' %
                       self.report_compliance_recipients)
         else:
             log.debug('Cleared report (compliance) recipients list')
@@ -1661,5 +1680,14 @@ class B2CConfig(nparcel.Config):
 
     def set_report_compliance_bu_based(self, value=False):
         self.report_compliance_bu_based = (value.lower() == 'yes')
-        log.debug('Config report (compliance) BU-based flag to "%s"' %
+        log.debug('Config report (compliance) BU-based flag: "%s"' %
                   self.report_compliance_bu_based)
+
+    @property
+    def report_compliance_period(self):
+        return self._report_compliance_period
+
+    def set_report_compliance_period(self, value):
+        self.report_compliance_period = value
+        log.debug('Config report (compliance) period: %s' %
+                  self.report_compliance_period)
