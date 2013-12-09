@@ -48,6 +48,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestMts \
 	 nparcel.tests:TestAuditer \
 	 nparcel.tests:TestUncollected \
+	 nparcel.tests:TestCompliance \
 	 nparcel.tests:TestWriter \
 	 nparcel.tests:TestXlwriter \
 	 nparcel.table.tests:TestAgent \

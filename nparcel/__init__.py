@@ -32,6 +32,7 @@ from nparcel.writer import Writer
 from nparcel.xlwriter import Xlwriter
 from nparcel.auditer import Auditer
 from nparcel.uncollected import Uncollected
+from nparcel.compliance import Compliance
 from table import Table
 from table.job import Job
 from table.agent_stocktake import AgentStocktake

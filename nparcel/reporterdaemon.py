@@ -230,7 +230,6 @@ class ReporterDaemon(nparcel.DaemonService):
             log.info('Report (%s) recipients not defined in config' %
                      report)
 
-        log.debug('lupco: %s' % str(self.config.report_bu_id_recipients))
         try:
             if self.config.report_bu_id_recipients.keys() > 0:
                 tmp_bu_ids = self.config.report_bu_id_recipients

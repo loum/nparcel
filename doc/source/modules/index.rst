@@ -57,6 +57,7 @@ Modules
     auditer.rst
 
     uncollected.rst
+    compliance.rst
     reporterdeamon.rst
 
     writer.rst
