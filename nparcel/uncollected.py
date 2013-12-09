@@ -9,14 +9,10 @@ class Uncollected(nparcel.Auditer):
     """Toll Parcel Portal base Uncollected class.
 
     .. attribute::
-        *columns*: list of names of the query columns
-
-    .. attribute::
         *delta_time_column*: raw column name to use for time delta
         (default ``JOB_TS`` which relates to the ``job.job_ts`` column)
 
     """
-    _columns = []
     _delta_time_column = 'JOB_TS'
 
     def __init__(self, db_kwargs=None, bu_ids=None):
@@ -27,26 +23,12 @@ class Uncollected(nparcel.Auditer):
                                                   bu_ids=bu_ids)
 
     @property
-    def columns(self):
-        return self._columns
-
-    def set_columns(self, values=None):
-        del self._columns[:]
-        self._columns = []
-
-        if values is not None:
-            log.debug('Setting columns to "%s"' % values)
-            self._columns.extend(values)
-        else:
-            log.debug('Cleared columns list')
-
-    @property
     def delta_time_column(self):
         return self._delta_time_column
 
     def set_delta_time_column(self, value):
         self._delta_time_column = value
-        log.debug('Set delta time column to "%s"' % self._delta_time_column)
+        log.debug('Set delta time column to "%s"' % self.delta_time_column)
 
     def process(self, id, dry=False):
         """Checks ``agent_stocktake`` table for items that exist

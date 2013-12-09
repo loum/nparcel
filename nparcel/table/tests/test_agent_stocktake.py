@@ -75,7 +75,6 @@ class TestAgentStocktake(unittest2.TestCase):
         """
         old_date = self._now - datetime.timedelta(8)
         older_date = self._now - datetime.timedelta(10)
-        oldest = self._now - datetime.timedelta(12)
 
         sql = """UPDATE agent_stocktake
 SET created_ts = '%s'

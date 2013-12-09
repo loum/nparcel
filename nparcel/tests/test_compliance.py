@@ -43,6 +43,19 @@ SET created_ts = '%s'
 WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
         db(sql)
 
+        cls._old_date = cls._now - datetime.timedelta(8)
+        cls._older_date = cls._now - datetime.timedelta(10)
+
+        sql = """UPDATE agent_stocktake
+SET created_ts = '%s'
+WHERE id IN (6)""" % cls._old_date
+        db(sql)
+
+        sql = """UPDATE agent_stocktake
+SET created_ts = '%s'
+WHERE id IN (7, 8)""" % cls._older_date
+        db(sql)
+
         db.commit()
 
     def test_init(self):
@@ -55,7 +68,10 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
         """Check compliance processing.
         """
         received = self._c.process()
-        expected = []
+        expected = [('NROS010',
+                     'N031',
+                     'N031 Name',
+                     '%s' % str(self._old_date))]
         msg = 'List of compliance agents incorrect'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -65,3 +81,7 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
         del cls._c
         cls._now = None
         del cls._now
+        cls._old_date = None
+        del cls._old_date
+        cls._older_date = None
+        del cls._older_date

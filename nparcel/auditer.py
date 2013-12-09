@@ -11,16 +11,22 @@ from nparcel.utils import date_diff
 class Auditer(nparcel.Service):
     """Toll Parcel Portal base Auditer class.
 
-    .. attribute::
-        *bu_id*: dictionary mapping between Business Unit ID (``job.bu_id``
+    .. attribute:: bu_id
+
+        dictionary mapping between Business Unit ID (``job.bu_id``
         column) and a human-readable format.  The default is::
 
             {1: 'Toll Priority',
              2: 'Toll Fast',
              3: 'Toll IPEC'}
 
+    .. attribute:: columns
+
+        list of names of the query columns
+
     """
     _bu_ids = {}
+    _columns = []
 
     def __init__(self, db_kwargs=None, bu_ids=None):
         """Auditer initialiser.
@@ -43,6 +49,20 @@ class Auditer(nparcel.Service):
             log.debug('Set bu_ids to "%s"' % self._bu_ids)
         else:
             log.debug('Cleared bu_ids')
+
+    @property
+    def columns(self):
+        return self._columns
+
+    def set_columns(self, values=None):
+        del self._columns[:]
+        self._columns = []
+
+        if values is not None:
+            log.debug('Setting columns to "%s"' % values)
+            self._columns.extend(values)
+        else:
+            log.debug('Cleared columns list')
 
     def _translate_bu(self, headers, row, bu_ids):
         """Translate the BU ID to the Business Unit name string.
