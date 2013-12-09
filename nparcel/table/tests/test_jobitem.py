@@ -453,8 +453,10 @@ AND j.service_code = 1"""
     def test_reference_sql(self):
         """Verify the reference_sql SQL.
         """
+        bu_ids = (1, 2, 3)
         ref = "'TEST_REF_001'"
-        sql = self._db.jobitem.reference_sql(ref)
+        sql = self._db.jobitem.reference_sql(bu_ids=bu_ids,
+                                             reference_nbr=ref)
 
         self._db(sql)
 
@@ -522,7 +524,8 @@ AND j.service_code = 1"""
     def test_reference_sql_refs_from_agent_stocktake(self):
         """Verify the reference_sql SQL -- refs from AgentStocktake.
         """
-        sql = self._db.jobitem.reference_sql()
+        bu_ids = (1, 2, 3)
+        sql = self._db.jobitem.reference_sql(bu_ids=bu_ids)
 
         self._db(sql)
 
@@ -628,7 +631,9 @@ AND j.service_code = 1"""
     def test_reference_sql_refs_from_agent_stocktake_picked_up(self):
         """Verify the reference_sql SQL -- picked refs from AgentStocktake.
         """
-        sql = self._db.jobitem.reference_sql(picked_up=True)
+        bu_ids = (1, 2, 3)
+        sql = self._db.jobitem.reference_sql(bu_ids=bu_ids,
+                                             picked_up=True)
 
         self._db(sql)
 
@@ -659,7 +664,8 @@ AND j.service_code = 1"""
         """Verify the job_based_reference_sql SQL.
         """
         ref = "'TEST_REF_001'"
-        sql = self._db.jobitem.job_based_reference_sql(ref)
+        bu_ids = (1, 2, 3)
+        sql = self._db.jobitem.job_based_reference_sql(bu_ids, ref)
 
         self._db(sql)
 
@@ -689,8 +695,10 @@ AND j.service_code = 1"""
     def test_job_based_reference_sql_picked_up(self):
         """Verify the job_based_reference_sql SQL -- picked_up.
         """
+        bu_ids = (1, 2, 3)
         ref = "'JOB_TEST_REF_NOT_PROC_PCKD_UP'"
-        sql = self._db.jobitem.job_based_reference_sql(ref,
+        sql = self._db.jobitem.job_based_reference_sql(bu_ids,
+                                                       ref,
                                                        picked_up=False)
 
         self._db(sql)

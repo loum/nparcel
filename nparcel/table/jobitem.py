@@ -307,6 +307,7 @@ AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
         return sql
 
     def reference_sql(self,
+                      bu_ids,
                       reference_nbr=None,
                       picked_up=False,
                       alias='ji'):
@@ -334,6 +335,9 @@ AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
         else:
             pickup_sql = 'IS NOT NULL'
 
+        if len(bu_ids) == 1:
+            bu_ids = '(%d)' % bu_ids[0]
+
         ref = reference_nbr
         if reference_nbr is None:
             ref = self._agent_stocktake.reference_sql()
@@ -341,22 +345,26 @@ AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
         sql = """SELECT DISTINCT %(columns)s
 FROM %(name)s as %(alias)s, job as j, agent as ag
 WHERE %(alias)s.job_id = j.id
+AND j.bu_id IN %(bu_ids)s
 AND j.agent_id = ag.id
 AND (%(alias)s.connote_nbr IN (%(ref)s)
      OR %(alias)s.item_nbr IN (%(ref)s))
 AND %(alias)s.pickup_ts %(pickup_sql)s
 UNION
 %(union)s""" % {'columns': self._select_columns(alias),
+                'bu_ids': str(bu_ids),
                 'name': self.name,
                 'ref': ref,
                 'alias': alias,
-                'union': self.job_based_reference_sql(ref,
+                'union': self.job_based_reference_sql(bu_ids=bu_ids,
+                                                      reference_nbr=ref,
                                                       picked_up=picked_up),
                 'pickup_sql': pickup_sql}
 
         return sql
 
     def job_based_reference_sql(self,
+                                bu_ids,
                                 reference_nbr,
                                 picked_up=False,
                                 alias='ji'):
@@ -388,12 +396,14 @@ UNION
         sql = """SELECT DISTINCT %(columns)s
 FROM %(name)s as %(alias)s, job as j, agent as ag
 WHERE %(alias)s.job_id = j.id
+AND j.bu_id IN %(bu_ids)s
 AND j.agent_id = ag.id
 AND %(alias)s.job_id IN
 (
 %(sql)s
 )
 %(pickup_sql)s""" % {'columns': self._select_columns(alias),
+                     'bu_ids': bu_ids,
                      'name': self.name,
                      'sql': self._job.reference_sql(reference_nbr),
                      'alias': alias,

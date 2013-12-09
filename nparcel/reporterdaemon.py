@@ -97,6 +97,12 @@ class ReporterDaemon(nparcel.DaemonService):
 
         list of email recipients
 
+    .. attribute:: bu_id_recipients
+
+        dictionary of Business Unit IDs and their email recipeints for
+        finer-grained controlled of reporting query.  For example,
+        uncollected reports are run on a per-BU basis
+
     """
     _config = None
     _report = None
@@ -116,6 +122,7 @@ class ReporterDaemon(nparcel.DaemonService):
            'sheet_title': str()}
     _report_filename = None
     _recipients = []
+    _bu_id_recipients = {}
 
     def __init__(self,
                  report,
@@ -223,9 +230,17 @@ class ReporterDaemon(nparcel.DaemonService):
             log.info('Report (%s) recipients not defined in config' %
                      report)
 
+        log.debug('lupco: %s' % str(self.config.report_bu_id_recipients))
+        try:
+            if self.config.report_bu_id_recipients.keys() > 0:
+                tmp_bu_ids = self.config.report_bu_id_recipients
+                self.set_bu_id_recipients(tmp_bu_ids)
+        except AttributeError, err:
+            log.info('Report BU ID recipients not defined in config')
+
         if report == 'uncollected':
             self._report = nparcel.Uncollected(db_kwargs=self.db_kwargs,
-                                            bu_ids=self.bu_ids)
+                                               bu_ids=self.bu_ids)
 
         self._emailer = nparcel.Emailer()
 
@@ -371,6 +386,34 @@ class ReporterDaemon(nparcel.DaemonService):
         else:
             log.debug('Clearing headers to display list')
 
+    @property
+    def bu_id_recipients(self):
+        return self._bu_id_recipients
+
+    def set_bu_id_recipient(self, values):
+        self._bu_id_recipients.clear()
+
+        if values is not None:
+            self._bu_id_recipients = values
+            log.debug('Set BU ID recipients to "%s"' %
+                      self.bu_id_recipients)
+        else:
+            log.debug('Cleared BU ID recipients')
+
+    @property
+    def bu_id_recipients(self):
+        return self._bu_id_recipients
+
+    def set_bu_id_recipients(self, values=None):
+        self._bu_id_recipients.clear()
+
+        if values is not None:
+            self._bu_id_recipients = values
+            log.debug('Set BU ID recipients to "%s"' %
+                      self.bu_id_recipients)
+        else:
+            log.debug('Cleared BU ID recipients')
+
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
 
@@ -391,32 +434,42 @@ class ReporterDaemon(nparcel.DaemonService):
                 event.set()
                 break
 
-            rows = self._report.process(dry=self.dry)
+            for id in self.bu_id_recipients:
+                rows = self._report.process(id=id, dry=self.dry)
 
-            # Write out the export file.
-            outfile = '%s%s.%s' % (self.outfile, now, self.extension)
-            if self.outdir is not None:
-                outfile = os.path.join(self.outdir, outfile)
-            self.set_report_filename(outfile)
-            writer = nparcel.Xlwriter(outfile)
+                # Write out the export file.
+                outfile = '%s%s-%s.%s' % (self.outfile,
+                                          now,
+                                          str(id),
+                                          self.extension)
+                if self.outdir is not None:
+                    outfile = os.path.join(self.outdir, outfile)
+                self.set_report_filename(outfile)
+                writer = nparcel.Xlwriter(outfile)
 
-            writer.set_title(self.ws.get('title'))
-            writer.set_subtitle(self.ws.get('subtitle'))
-            writer.set_worksheet_title(self.ws.get('sheet_title'))
+                writer.set_title(self.ws.get('title'))
+                writer.set_subtitle(self.ws.get('subtitle'))
+                writer.set_worksheet_title(self.ws.get('sheet_title'))
 
-            filtered_rows = []
-            for row in rows:
-                filtered_row = writer.filter(self._report.columns,
-                                             self.display_hdrs,
-                                             row)
-                filtered_rows.append(filtered_row)
-            aliased_hdrs = writer.header_aliases(self.display_hdrs,
-                                                 self.aliases)
-            writer.set_headers(aliased_hdrs)
-            writer.set_header_widths(self.header_widths)
-            writer(filtered_rows)
+                filtered_rows = []
+                for row in rows:
+                    filtered_row = writer.filter(self._report.columns,
+                                                 self.display_hdrs,
+                                                 row)
+                    filtered_rows.append(filtered_row)
+                aliased_hdrs = writer.header_aliases(self.display_hdrs,
+                                                     self.aliases)
+                writer.set_headers(aliased_hdrs)
+                writer.set_header_widths(self.header_widths)
+                writer(filtered_rows)
 
-            self.send_email()
+                # Override the recipients
+                tmp_recipients = self.bu_id_recipients.get(id)
+                if tmp_recipients is None:
+                    tmp_recipients = []
+                subject_bu = self.bu_ids.get(id)
+                self.set_recipients(tmp_recipients)
+                self.send_email(bu=subject_bu)
 
             if not event.isSet():
                 if self.dry:

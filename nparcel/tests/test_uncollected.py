@@ -58,7 +58,8 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
     def test_process(self):
         """Check uncollected aged parcel processing.
         """
-        received = self._u.process()
+        id = 1
+        received = self._u.process(id=id)
         expected = [(15,
                      'Toll Priority',
                      'TEST_REF_001',

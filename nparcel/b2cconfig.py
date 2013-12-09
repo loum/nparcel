@@ -216,6 +216,10 @@ class B2CConfig(nparcel.Config):
 
         list of email recipients
 
+    .. attribute:: report_bu_id_recipients
+
+        list of Business Unit specific recipients
+
     """
     _dirs_to_check = []
     _pe_dirs_to_check = []
@@ -265,6 +269,7 @@ class B2CConfig(nparcel.Config):
     _report_uncollected_widths = {}
     _report_uncollected_ws = {}
     _report_uncollected_recipients = []
+    _report_bu_id_recipients = {}
 
     def __init__(self, file=None):
         """Nparcel Config initialisation.
@@ -770,7 +775,11 @@ class B2CConfig(nparcel.Config):
 
         # Reporter.
         try:
-            self.set_report_bu_ids(dict(self.items('report_bu_ids')))
+            bu_ids = dict(self.items('report_bu_ids'))
+            tmp_bu_ids = {}
+            for k, v in bu_ids.iteritems():
+                tmp_bu_ids[int(k)] = v
+            self.set_report_bu_ids(tmp_bu_ids)
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
             log.debug('Using default report_bu_ids: %s' %
@@ -864,6 +873,18 @@ class B2CConfig(nparcel.Config):
             msg = ('Using default report (uncollected) recipients: %s' %
                     self.report_extension)
             log.debug(msg)
+
+        try:
+            bu_recipients = dict(self.items('report_bu_id_recipients'))
+            tmp_recipients = {}
+            for k, v in bu_recipients.iteritems():
+                tmp_recipients[int(k)] = v.split(',')
+            bu_recipients = tmp_recipients
+            self.set_report_bu_id_recipients(bu_recipients)
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default report BU ID recipients: %s' %
+                      self.report_bu_id_recipients)
 
     def condition(self, bu, flag):
         """Return the *bu* condition *flag* value.
@@ -1470,3 +1491,17 @@ class B2CConfig(nparcel.Config):
                       self.report_uncollected_recipients)
         else:
             log.debug('Clearing uncollected recipients list')
+
+    @property
+    def report_bu_id_recipients(self):
+        return self._report_bu_id_recipients
+
+    def set_report_bu_id_recipients(self, values=None):
+        self._report_bu_id_recipients.clear()
+
+        if values is not None:
+            self._report_bu_id_recipients = values
+            log.debug('Set report BU ID recipients to "%s"' %
+                      self.report_bu_id_recipients)
+        else:
+            log.debug('Cleared report BU ID recipients')

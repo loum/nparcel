@@ -244,9 +244,9 @@ class TestB2CConfig(unittest2.TestCase):
         self._c.parse_config()
 
         received = self._c.report_bu_ids
-        expected = {'1': 'Toll Priority',
-                    '2': 'Toll Fast',
-                    '3': 'Toll IPEC'}
+        expected = {1: 'Toll Priority',
+                    2: 'Toll Fast',
+                    3: 'Toll IPEC'}
         msg = 'Config report bu_ids value error'
         self.assertDictEqual(received, expected, msg)
 
@@ -343,6 +343,19 @@ class TestB2CConfig(unittest2.TestCase):
         expected = ['loumar@tollgroup.com']
         msg = 'Config uncollected recipients value error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_parse_report_bu_id_recipients(self):
+        """Parse items from the config -- reporter BU ID recipients.
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        received = self._c.report_bu_id_recipients
+        expected = {1: ['loumar@tollgroup.com', 'lou.markovski@gmail.com'],
+                    2: ['lou.markovski@gmail.com'],
+                    3: ['lou@triple20.com.au']}
+        msg = 'Config BU ID recipients value error'
+        self.assertDictEqual(received, expected, msg)
 
     def test_condition_flag_item_excp_true(self):
         """Check item_excp flag settings -- True.

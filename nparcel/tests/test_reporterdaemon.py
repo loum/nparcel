@@ -4,7 +4,8 @@ import datetime
 import tempfile
 
 import nparcel
-from nparcel.utils.files import remove_files
+from nparcel.utils.files import (remove_files,
+                                 get_directory_files_list)
 
 
 class TestReporterDaemon(unittest2.TestCase):
@@ -117,6 +118,13 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
         old_recipients = self._ud.recipients
         self._ud.set_recipients(['loumar@tollgroup.com'])
 
+        old_bu_id_recipients = self._ud.bu_id_recipients
+        bu_id_recipients = {1: ['loumar@tollgroup.com',
+                                'lou.markovski@gmail.com'],
+                            2: ['loumar@tollgroup.com'],
+                            3: ['loumar@tollgroup.com']}
+        self._ud.set_bu_id_recipients(bu_id_recipients)
+
         self._ud.set_dry(dry)
         self._ud._start(self._ud.exit_event)
 
@@ -127,8 +135,9 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
         self._ud.set_header_widths(old_widths)
         self._ud.set_ws(old_ws)
         self._ud.set_recipients(old_recipients)
+        self._ud.set_bu_id_recipients(old_bu_id_recipients)
         self._ud.exit_event.clear()
-        remove_files(self._ud.report_filename)
+        remove_files(get_directory_files_list(self._dir))
 
     def test_send(self):
         """Send the report to the recipients list'
