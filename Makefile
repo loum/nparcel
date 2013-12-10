@@ -50,6 +50,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestUncollected \
 	 nparcel.tests:TestCompliance \
 	 nparcel.tests:TestNonCompliance \
+	 nparcel.tests:TestException \
 	 nparcel.tests:TestWriter \
 	 nparcel.tests:TestXlwriter \
 	 nparcel.table.tests:TestAgent \
