@@ -19,6 +19,7 @@ from test_mapperdaemon import TestMapperDaemon
 from test_filterdaemon import TestFilterDaemon
 from test_reporterdaemon import TestReporterDaemon
 from test_reporterdaemon_compliance import TestReporterDaemonCompliance
+from test_reporterdaemon_noncompliance import TestReporterDaemonNonCompliance
 from test_exporter import TestExporter
 from test_exporter_ipec import TestExporterIpec
 from test_exporter_fast import TestExporterFast

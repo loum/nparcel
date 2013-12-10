@@ -8,15 +8,13 @@ from nparcel.utils.files import (remove_files,
                                  get_directory_files_list)
 
 
-class TestReporterDaemonCompliance(unittest2.TestCase):
+class TestReporterDaemonNonCompliance(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
         cls._now = datetime.datetime.now()
 
-        cls._ud = nparcel.ReporterDaemon('compliance',
-                                         pidfile=None)
-        cls._ud.set_outfile('Stocktake_compliance_')
+        cls._ud = nparcel.ReporterDaemon('noncompliance', pidfile=None)
         db = cls._ud._report.db
         cls._ud.emailer.set_template_base(os.path.join('nparcel',
                                                        'templates'))
@@ -52,49 +50,76 @@ SET created_ts = '%s'
 WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
         db(sql)
 
-        old_date = cls._now - datetime.timedelta(8)
-        older_date = cls._now - datetime.timedelta(10)
- 
-        sql = """UPDATE agent_stocktake
-SET created_ts = '%s'
-WHERE id IN (6)""" % old_date
-        db(sql)
-
-        sql = """UPDATE agent_stocktake
-SET created_ts = '%s'
-WHERE id IN (7, 8)""" % older_date
-        db(sql)
-
         db.commit()
 
+    def test_init(self):
+        """Intialise a ReporterDaemon object.
+        """
+        msg = 'Not a nparcel.ReporterDaemon object'
+        self.assertIsInstance(self._ud, nparcel.ReporterDaemon, msg)
+
     def test_start(self):
-        """ReporterDaemon _start processing loop -- compliance.
+        """ReporterDaemon _start processing loop.
         """
         dry = True
 
         old_dry = self._ud.dry
+
+        old_outfile = self._ud.outfile
+        self._ud.set_outfile('Stocktake_non-compliance_')
+
         old_display_hrds = self._ud.display_hdrs
         display_hdrs = ['DP_CODE',
                         'AGENT_CODE',
                         'AGENT_NAME',
-                        'CREATED_TS']
+                        'JOB_BU_ID',
+                        'AGENT_ADDRESS',
+                        'AGENT_SUBURB',
+                        'AGENT_POSTCODE',
+                        'AGENT_STATE',
+                        'AGENT_PHONE_NBR',
+                        'CONNOTE_NBR',
+                        'ITEM_NBR',
+                        'CONSUMER_NAME',
+                        'PIECES',
+                        'JOB_TS',
+                        'DELTA_TIME']
         self._ud.set_display_hdrs(display_hdrs)
         old_aliases = self._ud.aliases
         aliases = {'DP_CODE': 'Agent',
                    'AGENT_CODE': 'Agent Id',
                    'AGENT_NAME': 'Agent Name',
-                   'CREATED_TS': 'Last completed stocktake'}
+                   'JOB_BU_ID': 'Business Unit',
+                   'AGENT_ADDRESS': 'Agent Address',
+                   'AGENT_SUBURB': 'Suburb',
+                   'AGENT_POSTCODE': 'Postcode',
+                   'AGENT_STATE': 'State',
+                   'AGENT_PHONE_NBR': 'Phone Nbr',
+                   'CONNOTE_NBR': 'Connote',
+                   'ITEM_NBR': 'Item Nbr',
+                   'CONSUMER_NAME': 'To',
+                   'PIECES': 'Pieces',
+                   'JOB_TS': 'Handover',
+                   'DELTA_TIME': 'Days'}
         self._ud.set_aliases(aliases)
 
         old_widths = self._ud.header_widths
         # Make these lower case to compensate for ConfigParser
-        widths = {'agent name': 40,
-                  'last completed stocktake': 30}
+        widths = {'agent name': 20,
+                  'business unit': 20,
+                  'agent address': 20,
+                  'phone nbr': 15,
+                  'connote': 25,
+                  'item nbr': 25,
+                  'to': 20,
+                  'handover': 30}
         self._ud.set_header_widths(widths)
+
         old_ws = self._ud.ws
-        title = 'Toll Parcel Portal Stocktake Compliance Report'
+        title = 'Toll Parcel Portal Stocktake Non-Compliance Report'
         ws = {'title': title,
-              'sheet_title': 'Compliance'}
+              'subtitle': 'ITEMS IN TPP SYSTEM, NOT SCANNED BY AGENT',
+              'sheet_title': 'Non-compliance'}
         self._ud.set_ws(ws)
 
         old_recipients = self._ud.recipients
@@ -105,11 +130,11 @@ WHERE id IN (7, 8)""" % older_date
 
         # Clean up.
         self._ud.set_dry(old_dry)
+        self._ud.set_outfile(old_outfile)
         self._ud.set_display_hdrs(old_display_hrds)
         self._ud.set_aliases(old_aliases)
         self._ud.set_header_widths(old_widths)
         self._ud.set_ws(old_ws)
-        self._ud.set_recipients(old_recipients)
         self._ud.exit_event.clear()
         remove_files(get_directory_files_list(self._dir))
 
@@ -122,12 +147,12 @@ WHERE id IN (7, 8)""" % older_date
         self._ud.set_dry(dry)
 
         old_report_filename = self._ud.report_filename
-        file = 'Stocktake_uncollected_aged_report_20131206122050.xlsx'
+        file = 'Stocktake_non-compliance_20131210-16:23-all.xlsx'
         attach_file = os.path.join('nparcel', 'tests', 'files', file)
         self._ud.set_report_filename(attach_file)
 
         old_ws = self._ud.ws
-        title = 'Toll Parcel Portal Compliance Report'
+        title = 'Toll Parcel Portal Stocktake Non-Compliance Report'
         now = self._now.strftime('%d/%m/%Y')
         self._ud.set_ws({'title': title})
 
@@ -135,7 +160,7 @@ WHERE id IN (7, 8)""" % older_date
         self._ud.set_recipients(['loumar@tollgroup.com'])
 
         now = self._now.strftime('%d/%m/%Y %H:%M')
-        self._ud.send_email(date_ts=self._now)
+        self._ud.send_email(bu='all', date_ts=self._now)
 
         # Clean up.
         self._ud.set_dry(old_dry)

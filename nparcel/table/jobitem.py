@@ -488,6 +488,12 @@ AND %(alias)s.job_id IN
             the SQL string
 
         """
+        if bu_ids is None:
+            bu_ids = tuple()
+
+        if len(bu_ids) == 1:
+            bu_ids = '(%d)' % bu_ids[0]
+
         columns = self._select_columns(alias)
         col = 'ji.id'
 
