@@ -42,7 +42,10 @@ class TestAgentStocktake(unittest2.TestCase):
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [('TEST_REF_001',),
+        expected = [('AGENT_COMPLIANCE',),
+                    ('AGENT_COMPLIANCE_OLDER',),
+                    ('TEST_REF_001',),
+                    ('TEST_REF_OLD_DATE',),
                     ('TEST_REF_NOT_PROC',),
                     ('JOB_TEST_REF_NOT_PROC_PCKD_UP',),
                     ('TEST_REF_NOT_PROC_PCKD_UP',)]
@@ -56,7 +59,10 @@ class TestAgentStocktake(unittest2.TestCase):
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [('TEST_REF_001',),
+        expected = [('AGENT_COMPLIANCE',),
+                    ('AGENT_COMPLIANCE_OLDER',),
+                    ('TEST_REF_001',),
+                    ('TEST_REF_OLD_DATE',),
                     ('TEST_REF_NOT_PROC',),
                     ('JOB_TEST_REF_NOT_PROC_PCKD_UP',),
                     ('TEST_REF_NOT_PROC_PCKD_UP',)]

@@ -628,6 +628,21 @@ AND j.service_code = 1"""
         msg = 'AgentStocktake-based job_item (not processed) query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
+    def test_reference_sql_refs_from_agent_stocktake_columns(self):
+        """Verify the reference_sql SQL -- refs from AgentStocktake (cols).
+        """
+        bu_ids = (1, 2, 3)
+        columns = 'ji.id'
+        sql = self._db.jobitem.reference_sql(bu_ids=bu_ids,
+                                             columns=columns)
+
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [(15,), (16,), (19,), (20,), (22,)]
+        msg = 'AgentStocktake-based job_item (not processed) query error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
     def test_reference_sql_refs_from_agent_stocktake_picked_up(self):
         """Verify the reference_sql SQL -- picked refs from AgentStocktake.
         """
@@ -692,6 +707,23 @@ AND j.service_code = 1"""
         msg = 'Job table based reference query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
+    def test_job_based_reference_sql_set_columns(self):
+        """Verify the job_based_reference_sql SQL.
+        """
+        ref = "'TEST_REF_001'"
+        bu_ids = (1, 2, 3)
+        columns = 'ji.id'
+        sql = self._db.jobitem.job_based_reference_sql(bu_ids,
+                                                       ref,
+                                                       columns=columns)
+
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [(19,)]
+        msg = 'Job table based reference query error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
     def test_job_based_reference_sql_picked_up(self):
         """Verify the job_based_reference_sql SQL -- picked_up.
         """
@@ -725,6 +757,29 @@ AND j.service_code = 1"""
                      '0431602145')]
         msg = 'Job table based reference query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_non_compliance_sql_uncollected(self):
+        """Verify the non_compliance_sql SQL -- uncollected.
+        """
+        bu_ids = (1, 2, 3)
+        sql = self._db.jobitem.non_compliance_sql(bu_ids)
+        self._db(sql)
+        received = [x[0] for x in list(self._db.rows())]
+        expected = [2, 3, 4, 6, 8, 9, 10, 11, 12, 13, 14, 17, 18]
+        msg = 'All uncollected job_items query error'
+        self.assertListEqual(received, expected, msg)
+
+    def test_non_compliance_sql_collected(self):
+        """Verify the all_job_items_sql SQL -- collected.
+        """
+        bu_ids = (1, 2, 3)
+        sql = self._db.jobitem.non_compliance_sql(bu_ids,
+                                                  picked_up=True)
+        self._db(sql)
+        received = [x[0] for x in list(self._db.rows())]
+        expected = [1, 5, 7]
+        msg = 'All collected job_items query error'
+        self.assertListEqual(received, expected, msg)
 
     @classmethod
     def tearDownClass(cls):

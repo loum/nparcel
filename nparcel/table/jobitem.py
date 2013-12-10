@@ -310,10 +310,15 @@ AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
                       bu_ids,
                       reference_nbr=None,
                       picked_up=False,
+                      columns=None,
                       alias='ji'):
         """Extract connote_nbr/item_nbr against *reference_nbr*.
 
         Query is an ``OR`` against both ``connote_nbr`` and ``item_nbr``.
+
+        **Args:**
+            *bu_ids*: integer based tuple of Business Unit ID's to search
+            against (default ``None`` ignores all Business Units)
 
         **Kwargs:**
             *reference_nbr*: parcel ID number as scanned by the agent.  If
@@ -324,12 +329,18 @@ AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
             that have been picked up if ``True``. Otherwise, will extract
             ``job_items`` that have not been picked up if ``False``.
 
+            *columns*: string prepresentation of the columns to query
+            against
+
             *alias*: table alias (default ``ji``)
 
         **Returns:**
             the SQL string
 
         """
+        if columns is None:
+            columns = self._select_columns(alias)
+
         if not picked_up:
             pickup_sql = 'IS NULL'
         else:
@@ -351,14 +362,15 @@ AND (%(alias)s.connote_nbr IN (%(ref)s)
      OR %(alias)s.item_nbr IN (%(ref)s))
 AND %(alias)s.pickup_ts %(pickup_sql)s
 UNION
-%(union)s""" % {'columns': self._select_columns(alias),
+%(union)s""" % {'columns': columns,
                 'bu_ids': str(bu_ids),
                 'name': self.name,
                 'ref': ref,
                 'alias': alias,
                 'union': self.job_based_reference_sql(bu_ids=bu_ids,
                                                       reference_nbr=ref,
-                                                      picked_up=picked_up),
+                                                      picked_up=picked_up,
+                                                      columns=columns),
                 'pickup_sql': pickup_sql}
 
         return sql
@@ -367,6 +379,7 @@ UNION
                                 bu_ids,
                                 reference_nbr,
                                 picked_up=False,
+                                columns=None,
                                 alias='ji'):
         """Extract connote_nbr/item_nbr against *reference_nbr* matched
         to the ``job.card_ref_nbr``.
@@ -374,6 +387,9 @@ UNION
         Query is an ``OR`` against both ``connote_nbr`` and ``item_nbr``.
 
         **Args:**
+            *bu_ids*: integer based tuple of Business Unit ID's to search
+            against (default ``None`` ignores all Business Units)
+
             *reference_nbr*: parcel ID number as scanned by the agent
 
         **Kwargs:**
@@ -381,12 +397,18 @@ UNION
             that have been picked up if ``True``. Otherwise, will extract
             ``job_items`` that have not been picked up if ``False``.
 
+            *columns*: string prepresentation of the columns to query
+            against
+
             *alias*: table alias
 
         **Returns:**
             the SQL string
 
         """
+        if columns is None:
+            columns = self._select_columns(alias)
+
         pickup_sql = 'AND %s.pickup_ts ' % alias
         if not picked_up:
             pickup_sql += 'IS NULL'
@@ -402,7 +424,7 @@ AND %(alias)s.job_id IN
 (
 %(sql)s
 )
-%(pickup_sql)s""" % {'columns': self._select_columns(alias),
+%(pickup_sql)s""" % {'columns': columns,
                      'bu_ids': bu_ids,
                      'name': self.name,
                      'sql': self._job.reference_sql(reference_nbr),
@@ -443,3 +465,49 @@ AND %(alias)s.job_id IN
        ag.phone_nbr as AGENT_PHONE_NBR""" % {'alias': alias}
 
         return columns
+
+    def non_compliance_sql(self, bu_ids, picked_up=False, alias='ji'):
+        """Extract ``job_item`` detail of all items in the ``job_item``
+        table that do not exist in the ``agent_stocktake`` table.
+
+        Senarios are based on the *picked_up* flag.  For example, all
+        parcels that *have* been picked up or *have not* been picked up.
+
+        **Args:**
+            *bu_ids*: integer based tuple of Business Unit ID's to search
+            against (default ``None`` ignores all Business Units)
+
+        **Kwargs:**
+            *picked_up*: boolean flag that will extract ``job_items``
+            that have been picked up if ``True``. Otherwise, will extract
+            ``job_items`` that have not been picked up if ``False``.
+
+            *alias*: table alias (default ``ji``)
+
+        **Returns:**
+            the SQL string
+
+        """
+        columns = self._select_columns(alias)
+        col = 'ji.id'
+
+        if not picked_up:
+            pickup_sql = 'IS NULL'
+        else:
+            pickup_sql = 'IS NOT NULL'
+
+        sql = """SELECT %(columns)s
+FROM %(name)s as %(alias)s, job as j, agent as ag
+WHERE %(alias)s.job_id = j.id
+AND j.agent_id = ag.id
+AND %(alias)s.pickup_ts %(pickup_sql)s
+AND ji.id NOT IN
+(%(sql)s)""" % {'columns': columns,
+                'alias': alias,
+                'name': self.name,
+                'pickup_sql': pickup_sql,
+                'sql': self.reference_sql(bu_ids=bu_ids,
+                                          picked_up=picked_up,
+                                          columns=col)}
+
+        return sql

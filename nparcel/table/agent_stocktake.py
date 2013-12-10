@@ -43,7 +43,7 @@ class AgentStocktake(nparcel.Table):
 
         sql = """SELECT DISTINCT %(alias)s.reference_nbr
 FROM %(name)s as %(alias)s
-WHERE created_ts > '%(start_date)s'""" % {'name': self.name,
+WHERE created_ts < '%(start_date)s'""" % {'name': self.name,
                                           'alias': alias,
                                           'start_date': start_date}
 
