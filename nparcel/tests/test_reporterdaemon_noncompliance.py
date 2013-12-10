@@ -141,13 +141,13 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
     def test_send(self):
         """Send the report to the recipients list'
         """
-        dry = True
+        dry = False
 
         old_dry = self._ud.dry
         self._ud.set_dry(dry)
 
         old_report_filename = self._ud.report_filename
-        file = 'Stocktake_non-compliance_20131210-16:23-all.xlsx'
+        file = 'Stocktake_non-compliance_20131210-17:33-all.xlsx'
         attach_file = os.path.join('nparcel', 'tests', 'files', file)
         self._ud.set_report_filename(attach_file)
 

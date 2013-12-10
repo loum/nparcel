@@ -31,8 +31,11 @@ class NonCompliance(nparcel.Auditer):
         """
         log.info('Stocktake non-compliance query ...')
 
+        ts_now = self.db.date_now()
+
         jobitems = []
         xlated_jobitems = []
+        date_delta_jobitems = []
 
         bu_ids = tuple(self.bu_ids.keys())
         if len(bu_ids):
@@ -41,14 +44,22 @@ class NonCompliance(nparcel.Auditer):
             self.set_columns(self.db.columns())
             jobitems = list(self.db.rows())
 
-            xlated_jobitems = []
             for i in jobitems:
                 xlated_jobitems.append(self._translate_bu(self.columns,
                                                           i,
                                                           self.bu_ids))
+            for i in xlated_jobitems:
+                delta_row = self.add_date_diff(self.columns,
+                                               i,
+                                               self.delta_time_column,
+                                               ts_now)
+                date_delta_jobitems.append(delta_row)
+            tmp_hdrs_list = self.db.columns()
+            tmp_hdrs_list.append('DELTA_TIME')
+            self.set_columns(tmp_hdrs_list)
         else:
             log.warn('No BU IDs specified')
 
         log.info('Stocktake non-compliance query complete')
 
-        return xlated_jobitems
+        return date_delta_jobitems

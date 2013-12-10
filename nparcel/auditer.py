@@ -24,9 +24,14 @@ class Auditer(nparcel.Service):
 
         list of names of the query columns
 
+    .. attribute::
+        *delta_time_column*: raw column name to use for time delta
+        (default ``JOB_TS`` which relates to the ``job.job_ts`` column)
+
     """
     _bu_ids = {}
     _columns = []
+    _delta_time_column = 'JOB_TS'
 
     def __init__(self, db_kwargs=None, bu_ids=None):
         """Auditer initialiser.
@@ -63,6 +68,14 @@ class Auditer(nparcel.Service):
             self._columns.extend(values)
         else:
             log.debug('Cleared columns list')
+
+    @property
+    def delta_time_column(self):
+        return self._delta_time_column
+
+    def set_delta_time_column(self, value):
+        self._delta_time_column = value
+        log.debug('Set delta time column to "%s"' % self.delta_time_column)
 
     def _translate_bu(self, headers, row, bu_ids):
         """Translate the BU ID to the Business Unit name string.

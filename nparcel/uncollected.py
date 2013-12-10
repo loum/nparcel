@@ -8,27 +8,13 @@ from nparcel.utils.log import log
 class Uncollected(nparcel.Auditer):
     """Toll Parcel Portal base Uncollected class.
 
-    .. attribute::
-        *delta_time_column*: raw column name to use for time delta
-        (default ``JOB_TS`` which relates to the ``job.job_ts`` column)
-
     """
-    _delta_time_column = 'JOB_TS'
-
     def __init__(self, db_kwargs=None, bu_ids=None):
         """Uncollected initialiser.
 
         """
         super(nparcel.Uncollected, self).__init__(db_kwargs=db_kwargs,
                                                   bu_ids=bu_ids)
-
-    @property
-    def delta_time_column(self):
-        return self._delta_time_column
-
-    def set_delta_time_column(self, value):
-        self._delta_time_column = value
-        log.debug('Set delta time column to "%s"' % self.delta_time_column)
 
     def process(self, id, dry=False):
         """Checks ``agent_stocktake`` table for items that exist

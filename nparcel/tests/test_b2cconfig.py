@@ -322,6 +322,7 @@ class TestB2CConfig(unittest2.TestCase):
         received = self._c.report_uncollected_widths
         expected = {'agent name': 20,
                     'agent address': 20,
+                    'suburb': 20,
                     'phone nbr': 15,
                     'connote': 25,
                     'item nbr': 25,
@@ -401,6 +402,85 @@ class TestB2CConfig(unittest2.TestCase):
         expected = 7
         msg = 'Config compliance period value error'
         self.assertEqual(received, expected, msg)
+
+    def test_parse_reporter_noncompliance(self):
+        """Parse items from the config -- reporter noncompliance.
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        received = self._c.report_noncompliance_outfile
+        expected = 'Stocktake_noncompliance_'
+        msg = 'Config noncompliance report outfile value error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.report_noncompliance_display_hdrs
+        expected = ['DP_CODE',
+                    'AGENT_CODE',
+                    'AGENT_NAME',
+                    'JOB_BU_ID',
+                    'AGENT_ADDRESS',
+                    'AGENT_SUBURB',
+                    'AGENT_POSTCODE',
+                    'AGENT_STATE',
+                    'AGENT_PHONE_NBR',
+                    'CONNOTE_NBR',
+                    'ITEM_NBR',
+                    'CONSUMER_NAME',
+                    'PIECES',
+                    'JOB_TS',
+                    'DELTA_TIME']
+        msg = 'Report noncompliance display headers value error'
+        self.assertListEqual(received, expected, msg)
+
+        received = self._c.report_noncompliance_aliases
+        expected = {'DP_CODE': 'Agent',
+                    'AGENT_CODE': 'Agent Id',
+                    'AGENT_NAME': 'Agent Name',
+                    'JOB_BU_ID': 'Business Unit',
+                    'AGENT_ADDRESS': 'Agent Address',
+                    'AGENT_SUBURB': 'Suburb',
+                    'AGENT_POSTCODE': 'Postcode',
+                    'AGENT_STATE': 'State',
+                    'AGENT_PHONE_NBR': 'Phone Nbr',
+                    'CONNOTE_NBR': 'Connote',
+                    'ITEM_NBR': 'Item Nbr',
+                    'CONSUMER_NAME': 'To',
+                    'PIECES': 'Pieces',
+                    'JOB_TS': 'Handover',
+                    'DELTA_TIME': 'Days'}
+        msg = 'Report noncompliance aliases value error'
+        self.assertDictEqual(received, expected, msg)
+
+        received = self._c.report_noncompliance_widths
+        expected = {'agent name': 20,
+                    'agent address': 20,
+                    'suburb': 20,
+                    'phone nbr': 15,
+                    'connote': 25,
+                    'item nbr': 25,
+                    'to': 20,
+                    'handover': 30}
+        msg = 'Report noncompliance widths value error'
+        self.assertDictEqual(received, expected, msg)
+
+        received = self._c.report_noncompliance_ws
+        title = 'Toll Parcel Portal Stocktake Non-Compliance Report'
+        subtitle = 'ITEMS IN TPP SYSTEM, NOT SCANNED BY AGENT'
+        expected = {'title': title,
+                    'subtitle': subtitle,
+                    'sheet_title': 'Non-Compliance'}
+        msg = 'Report noncompliance ws value error'
+        self.assertDictEqual(received, expected, msg)
+
+        received = self._c.report_noncompliance_recipients
+        expected = ['loumar@tollgroup.com']
+        msg = 'Config noncompliance recipients value error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        received = self._c.report_noncompliance_bu_based
+        msg = 'Config noncompliance bu_based value error'
+        self.assertFalse(received, msg)
 
     def test_parse_report_bu_id_recipients(self):
         """Parse items from the config -- reporter BU ID recipients.

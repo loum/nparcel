@@ -193,11 +193,13 @@ class B2CConfig(nparcel.Config):
 
     .. attribute:: report_uncollected_outfile (uncollected)
     .. attribute:: report_compliance_outfile (uncollected)
+    .. attribute:: report_noncompliance_outfile (uncollected)
 
         basename that is used to generate the uncollected report file
 
     .. attribute:: report_uncollected_display_hdrs
     .. attribute:: report_compliance_display_hdrs
+    .. attribute:: report_noncompliance_display_hdrs
 
         list of ordered column headers to display in the uncollected report
 
@@ -208,21 +210,25 @@ class B2CConfig(nparcel.Config):
 
     .. attribute:: report_uncollected_widths
     .. attribute:: report_compliance_widths
+    .. attribute:: report_noncompliance_widths
 
         map of aliased header names and prefered column width
 
     .. attribute:: report_uncollected_ws
     .. attribute:: report_compliance_ws
+    .. attribute:: report_noncompliance_ws
 
         map of worksheet related items
 
     .. attribute:: report_uncollected_recipients
     .. attribute:: report_compliance_recipients
+    .. attribute:: report_noncompliance_recipients
 
         list of email recipients
 
     .. attribute:: report_uncollected_bu_based
     .. attribute:: report_compliance_bu_based
+    .. attribute:: report_noncompliance_bu_based
 
         flag to denote if the reports are to be based on Business Unit
 
@@ -293,6 +299,13 @@ class B2CConfig(nparcel.Config):
     _report_compliance_recipients = []
     _report_compliance_bu_based = False
     _report_compliance_period = 7
+    _report_noncompliance_outfile = 'Stocktake_noncompliance_'
+    _report_noncompliance_display_hdrs = []
+    _report_noncompliance_aliases = {}
+    _report_noncompliance_widths = {}
+    _report_noncompliance_ws = {}
+    _report_noncompliance_recipients = []
+    _report_noncompliance_bu_based = False
     _report_bu_id_recipients = {}
 
     def __init__(self, file=None):
@@ -838,7 +851,7 @@ class B2CConfig(nparcel.Config):
             log.debug('Using default report extension: %s' %
                       self.report_extension)
 
-        for r in ['uncollected', 'compliance']:
+        for r in ['uncollected', 'compliance', 'noncompliance']:
             report_opt = 'report_%s' % r
 
             # Report headers to display.
@@ -1691,3 +1704,93 @@ class B2CConfig(nparcel.Config):
         self.report_compliance_period = value
         log.debug('Config report (compliance) period: %s' %
                   self.report_compliance_period)
+
+    @property
+    def report_noncompliance_display_hdrs(self):
+        return self._report_noncompliance_display_hdrs
+
+    def set_report_noncompliance_display_hdrs(self, values=None):
+        del self.report_noncompliance_display_hdrs[:]
+        self._report_noncompliance_display_hdrs
+
+        if values is not None:
+            self._report_noncompliance_display_hdrs.extend(values)
+            log.debug('Config report (noncompliance) displayed hdrs: "%s"' %
+                      self.report_noncompliance_display_hdrs)
+        else:
+            log.debug('Cleared (noncompliance) headers to display list')
+
+    @property
+    def report_noncompliance_outfile(self):
+        return self._report_noncompliance_outfile
+
+    def set_report_noncompliance_outfile(self, value):
+        self._report_noncompliance_outfile = value
+        log.debug('Config report (noncompliance) outfile: "%s"' %
+                  self.report_noncompliance_outfile)
+
+    @property
+    def report_noncompliance_aliases(self):
+        return self._report_noncompliance_aliases
+
+    def set_report_noncompliance_aliases(self, values=None):
+        self._report_noncompliance_aliases.clear()
+
+        if values is not None:
+            self._report_noncompliance_aliases = values
+            log.debug('Config report (noncompliance) aliases: "%s"' %
+                      self.report_noncompliance_aliases)
+        else:
+            log.debug('Cleared report (noncompliance) aliases')
+
+    @property
+    def report_noncompliance_widths(self):
+        return self._report_noncompliance_widths
+
+    def set_report_noncompliance_widths(self, values=None):
+        self._report_noncompliance_widths.clear()
+
+        if values is not None:
+            self._report_noncompliance_widths = values
+            log.debug('Config report (noncompliance) widths: "%s"' %
+                      self.report_noncompliance_widths)
+        else:
+            log.debug('Cleared report (noncompliance) widths')
+
+    @property
+    def report_noncompliance_ws(self):
+        return self._report_noncompliance_ws
+
+    def set_report_noncompliance_ws(self, values=None):
+        self._report_noncompliance_ws.clear()
+
+        if values is not None:
+            self._report_noncompliance_ws = values
+            log.debug('Config report (noncompliance) worksheet: "%s"' %
+                      self.report_noncompliance_ws)
+        else:
+            log.debug('Cleared report (noncompliance) worksheet')
+
+    @property
+    def report_noncompliance_recipients(self):
+        return self._report_noncompliance_recipients
+
+    def set_report_noncompliance_recipients(self, values=None):
+        del self._report_noncompliance_recipients[:]
+        self._report_noncompliance_recipients
+
+        if values is not None:
+            self._report_noncompliance_recipients.extend(values)
+            log.debug('Config report (noncompliance) recipients: "%s"' %
+                      self.report_noncompliance_recipients)
+        else:
+            log.debug('Cleared report (noncompliance) recipients list')
+
+    @property
+    def report_noncompliance_bu_based(self):
+        return self._report_noncompliance_bu_based
+
+    def set_report_noncompliance_bu_based(self, value=False):
+        self.report_noncompliance_bu_based = (value.lower() == 'yes')
+        log.debug('Config report (noncompliance) BU-based flag: "%s"' %
+                  self.report_noncompliance_bu_based)
