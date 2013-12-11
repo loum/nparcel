@@ -54,7 +54,7 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
 
         old_date = cls._now - datetime.timedelta(8)
         older_date = cls._now - datetime.timedelta(10)
- 
+
         sql = """UPDATE agent_stocktake
 SET created_ts = '%s'
 WHERE id IN (6)""" % old_date
@@ -115,7 +115,7 @@ WHERE id IN (7, 8)""" % older_date
         self._ud.set_ws(old_ws)
         self._ud.set_recipients(old_recipients)
         self._ud.exit_event.clear()
-        #remove_files(get_directory_files_list(self._dir))
+        remove_files(get_directory_files_list(self._dir))
 
     def test_send(self):
         """Send the report to the recipients list'

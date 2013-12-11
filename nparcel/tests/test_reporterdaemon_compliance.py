@@ -122,7 +122,7 @@ WHERE id IN (7, 8)""" % older_date
         self._ud.set_dry(dry)
 
         old_report_filename = self._ud.report_filename
-        file = 'Stocktake_uncollected_aged_report_20131206122050.xlsx'
+        file = 'Stocktake_compliance_20131211-20:37-all.xlsx'
         attach_file = os.path.join('nparcel', 'tests', 'files', file)
         self._ud.set_report_filename(attach_file)
 

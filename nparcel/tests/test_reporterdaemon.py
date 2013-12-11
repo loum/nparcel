@@ -16,6 +16,9 @@ class TestReporterDaemon(unittest2.TestCase):
 
         cls._ud = nparcel.ReporterDaemon('uncollected',
                                          pidfile=None)
+        cls._ud.set_bu_id_recipient({1: ['loumar@tollgroup.com'],
+                                     2: ['lou.markovski@gmail.com'],
+                                     3: ['lou@triple20.com.au']})
         db = cls._ud._report.db
         cls._ud.emailer.set_template_base(os.path.join('nparcel',
                                                        'templates'))
@@ -155,7 +158,7 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
         self._ud.set_dry(dry)
 
         old_report_filename = self._ud.report_filename
-        file = 'Stocktake_uncollected_aged_report_20131206122050.xlsx'
+        file = 'Stocktake_uncollected_aged_report_20131211-20:43-1.xlsx'
         attach_file = os.path.join('nparcel', 'tests', 'files', file)
         self._ud.set_report_filename(attach_file)
 
@@ -164,11 +167,14 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
         now = self._now.strftime('%d/%m/%Y')
         self._ud.set_ws({'title': title})
 
+        tmp_recipients = self._ud.bu_id_recipients.get(1)
+        if tmp_recipients is None:
+            tmp_recipients = []
+        subject_bu = self._ud.bu_ids.get(1)
         old_recipients = self._ud.recipients
-        self._ud.set_recipients(['loumar@tollgroup.com'])
-
+        self._ud.set_recipients(tmp_recipients)
         now = self._now.strftime('%d/%m/%Y %H:%M')
-        self._ud.send_email(date_ts=self._now)
+        self._ud.send_email(date_ts=self._now, bu=subject_bu)
 
         # Clean up.
         self._ud.set_dry(old_dry)
