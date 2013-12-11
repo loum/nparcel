@@ -276,6 +276,8 @@ class ReporterDaemon(nparcel.DaemonService):
         elif report == 'noncompliance':
             self._report = nparcel.NonCompliance(db_kwargs=self.db_kwargs,
                                                  bu_ids=self.bu_ids)
+        elif report == 'exception':
+            self._report = nparcel.Exception(db_kwargs=self.db_kwargs)
 
         self._emailer = nparcel.Emailer()
 
