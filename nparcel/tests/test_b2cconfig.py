@@ -482,6 +482,59 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Config noncompliance bu_based value error'
         self.assertFalse(received, msg)
 
+    def test_parse_reporter_exception(self):
+        """Parse items from the config -- reporter exception.
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        received = self._c.report_exception_outfile
+        expected = 'Stocktake_exception_'
+        msg = 'Config exception report outfile value error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.report_exception_display_hdrs
+        expected = ['DP_CODE',
+                    'AGENT_CODE',
+                    'AGENT_NAME',
+                    'REFERENCE_NBR']
+        msg = 'Report exception display headers value error'
+        self.assertListEqual(received, expected, msg)
+
+        received = self._c.report_exception_aliases
+        expected = {'DP_CODE': 'Agent',
+                    'AGENT_CODE': 'Agent Id',
+                    'AGENT_NAME': 'Agent Name',
+                    'REFERENCE_NBR': 'Connote / Item Nbr'}
+        msg = 'Report exception aliases value error'
+        self.assertDictEqual(received, expected, msg)
+
+        received = self._c.report_exception_widths
+        expected = {'agent': 25,
+                    'agent id': 20,
+                    'agent name': 40,
+                    'connote / item nbr': 40}
+        msg = 'Report exception widths value error'
+        self.assertDictEqual(received, expected, msg)
+
+        received = self._c.report_exception_ws
+        title = 'Toll Parcel Portal Stocktake Exception Report'
+        subtitle = 'ITEMS SCANNED BY AGENT, NOT FOUND IN TPP'
+        expected = {'title': title,
+                    'subtitle': subtitle,
+                    'sheet_title': 'Exception'}
+        msg = 'Report exception ws value error'
+        self.assertDictEqual(received, expected, msg)
+
+        received = self._c.report_exception_recipients
+        expected = ['loumar@tollgroup.com']
+        msg = 'Config exception recipients value error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        received = self._c.report_exception_bu_based
+        msg = 'Config exception bu_based value error'
+        self.assertFalse(received, msg)
+
     def test_parse_report_bu_id_recipients(self):
         """Parse items from the config -- reporter BU ID recipients.
         """

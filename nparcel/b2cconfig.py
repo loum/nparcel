@@ -192,14 +192,16 @@ class B2CConfig(nparcel.Config):
         report filename extension
 
     .. attribute:: report_uncollected_outfile (uncollected)
-    .. attribute:: report_compliance_outfile (uncollected)
-    .. attribute:: report_noncompliance_outfile (uncollected)
+    .. attribute:: report_compliance_outfile (compliance)
+    .. attribute:: report_noncompliance_outfile (non-compliance)
+    .. attribute:: report_exception_outfile (exception)
 
         basename that is used to generate the uncollected report file
 
-    .. attribute:: report_uncollected_display_hdrs
-    .. attribute:: report_compliance_display_hdrs
-    .. attribute:: report_noncompliance_display_hdrs
+    .. attribute:: report_uncollected_display_hdrs (uncollected)
+    .. attribute:: report_compliance_display_hdrs (compliance)
+    .. attribute:: report_noncompliance_display_hdrs (non-compliance)
+    .. attribute:: report_exception_display_hdrs (exception)
 
         list of ordered column headers to display in the uncollected report
 
@@ -208,27 +210,31 @@ class B2CConfig(nparcel.Config):
         map of raw header names and the preferred name to display in
         report
 
-    .. attribute:: report_uncollected_widths
-    .. attribute:: report_compliance_widths
-    .. attribute:: report_noncompliance_widths
+    .. attribute:: report_uncollected_widths (uncollected)
+    .. attribute:: report_compliance_widths (compliance)
+    .. attribute:: report_noncompliance_widths (non-compliance)
+    .. attribute:: report_exception_widths (exception)
 
         map of aliased header names and prefered column width
 
-    .. attribute:: report_uncollected_ws
-    .. attribute:: report_compliance_ws
-    .. attribute:: report_noncompliance_ws
+    .. attribute:: report_uncollected_ws (uncollected)
+    .. attribute:: report_compliance_ws (compliance)
+    .. attribute:: report_noncompliance_ws (non-compliance)
+    .. attribute:: report_exception_ws (exception)
 
         map of worksheet related items
 
-    .. attribute:: report_uncollected_recipients
-    .. attribute:: report_compliance_recipients
-    .. attribute:: report_noncompliance_recipients
+    .. attribute:: report_uncollected_recipients (uncollected)
+    .. attribute:: report_compliance_recipients (compliance)
+    .. attribute:: report_noncompliance_recipients (noncompliance)
+    .. attribute:: report_exception_recipients (exception)
 
         list of email recipients
 
-    .. attribute:: report_uncollected_bu_based
-    .. attribute:: report_compliance_bu_based
-    .. attribute:: report_noncompliance_bu_based
+    .. attribute:: report_uncollected_bu_based (uncollected)
+    .. attribute:: report_compliance_bu_based (compliance)
+    .. attribute:: report_noncompliance_bu_based (noncompliance)
+    .. attribute:: report_exception_bu_based (exception)
 
         flag to denote if the reports are to be based on Business Unit
 
@@ -306,6 +312,13 @@ class B2CConfig(nparcel.Config):
     _report_noncompliance_ws = {}
     _report_noncompliance_recipients = []
     _report_noncompliance_bu_based = False
+    _report_exception_outfile = 'Stocktake_exception_'
+    _report_exception_display_hdrs = []
+    _report_exception_aliases = {}
+    _report_exception_widths = {}
+    _report_exception_ws = {}
+    _report_exception_recipients = []
+    _report_exception_bu_based = False
     _report_bu_id_recipients = {}
 
     def __init__(self, file=None):
@@ -851,7 +864,10 @@ class B2CConfig(nparcel.Config):
             log.debug('Using default report extension: %s' %
                       self.report_extension)
 
-        for r in ['uncollected', 'compliance', 'noncompliance']:
+        for r in ['uncollected',
+                  'compliance',
+                  'noncompliance',
+                  'exception']:
             report_opt = 'report_%s' % r
 
             # Report headers to display.
@@ -1794,3 +1810,93 @@ class B2CConfig(nparcel.Config):
         self.report_noncompliance_bu_based = (value.lower() == 'yes')
         log.debug('Config report (noncompliance) BU-based flag: "%s"' %
                   self.report_noncompliance_bu_based)
+
+    @property
+    def report_exception_display_hdrs(self):
+        return self._report_exception_display_hdrs
+
+    def set_report_exception_display_hdrs(self, values=None):
+        del self.report_exception_display_hdrs[:]
+        self._report_exception_display_hdrs
+
+        if values is not None:
+            self._report_exception_display_hdrs.extend(values)
+            log.debug('Config report (exception) displayed hdrs: "%s"' %
+                      self.report_exception_display_hdrs)
+        else:
+            log.debug('Cleared (exception) headers to display list')
+
+    @property
+    def report_exception_outfile(self):
+        return self._report_exception_outfile
+
+    def set_report_exception_outfile(self, value):
+        self._report_exception_outfile = value
+        log.debug('Config report (exception) outfile: "%s"' %
+                  self.report_exception_outfile)
+
+    @property
+    def report_exception_aliases(self):
+        return self._report_exception_aliases
+
+    def set_report_exception_aliases(self, values=None):
+        self._report_exception_aliases.clear()
+
+        if values is not None:
+            self._report_exception_aliases = values
+            log.debug('Config report (exception) aliases: "%s"' %
+                      self.report_exception_aliases)
+        else:
+            log.debug('Cleared report (exception) aliases')
+
+    @property
+    def report_exception_widths(self):
+        return self._report_exception_widths
+
+    def set_report_exception_widths(self, values=None):
+        self._report_exception_widths.clear()
+
+        if values is not None:
+            self._report_exception_widths = values
+            log.debug('Config report (exception) widths: "%s"' %
+                      self.report_exception_widths)
+        else:
+            log.debug('Cleared report (exception) widths')
+
+    @property
+    def report_exception_ws(self):
+        return self._report_exception_ws
+
+    def set_report_exception_ws(self, values=None):
+        self._report_exception_ws.clear()
+
+        if values is not None:
+            self._report_exception_ws = values
+            log.debug('Config report (exception) worksheet: "%s"' %
+                      self.report_exception_ws)
+        else:
+            log.debug('Cleared report (exception) worksheet')
+
+    @property
+    def report_exception_recipients(self):
+        return self._report_exception_recipients
+
+    def set_report_exception_recipients(self, values=None):
+        del self._report_exception_recipients[:]
+        self._report_exception_recipients
+
+        if values is not None:
+            self._report_exception_recipients.extend(values)
+            log.debug('Config report (exception) recipients: "%s"' %
+                      self.report_exception_recipients)
+        else:
+            log.debug('Cleared report (exception) recipients list')
+
+    @property
+    def report_exception_bu_based(self):
+        return self._report_exception_bu_based
+
+    def set_report_exception_bu_based(self, value=False):
+        self.report_exception_bu_based = (value.lower() == 'yes')
+        log.debug('Config report (exception) BU-based flag: "%s"' %
+                  self.report_exception_bu_based)
