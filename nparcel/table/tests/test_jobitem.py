@@ -517,7 +517,7 @@ AND j.service_code = 1"""
                      'Testville',
                      'VIC',
                      '1234',
-                     '0431602145')]
+                     '0431602145'),]
         msg = 'Reference-based job_item query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -609,7 +609,7 @@ AND j.service_code = 1"""
                     (22,
                      1,
                      'ARTZ061184',
-                     'JOB_TEST_REF_NOT_PROC_PCKD_UP',
+                     'JOB_TEST_REF_NOT_PCKD_UP',
                      '00393403250082030048',
                      '%s' % self._now,
                      '%s' % self._now,
@@ -724,11 +724,11 @@ AND j.service_code = 1"""
         msg = 'Job table based reference query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
-    def test_job_based_reference_sql_picked_up(self):
-        """Verify the job_based_reference_sql SQL -- picked_up.
+    def test_job_based_reference_sql_not_picked_up(self):
+        """Verify the job_based_reference_sql SQL -- not picked_up.
         """
         bu_ids = (1, 2, 3)
-        ref = "'JOB_TEST_REF_NOT_PROC_PCKD_UP'"
+        ref = "'JOB_TEST_REF_NOT_PCKD_UP'"
         sql = self._db.jobitem.job_based_reference_sql(bu_ids,
                                                        ref,
                                                        picked_up=False)
@@ -739,7 +739,7 @@ AND j.service_code = 1"""
         expected = [(22,
                      1,
                      'ARTZ061184',
-                     'JOB_TEST_REF_NOT_PROC_PCKD_UP',
+                     'JOB_TEST_REF_NOT_PCKD_UP',
                      '00393403250082030048',
                      '%s' % self._now,
                      '%s' % self._now,
@@ -766,7 +766,7 @@ AND j.service_code = 1"""
         self._db(sql)
         received = [x[0] for x in list(self._db.rows())]
         expected = [2, 3, 4, 6, 8, 9, 10, 11, 12, 13, 14, 17, 18]
-        msg = 'All uncollected job_items query error'
+        msg = 'All non compliance job_items query error'
         self.assertListEqual(received, expected, msg)
 
     def test_non_compliance_sql_collected(self):

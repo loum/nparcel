@@ -18,7 +18,7 @@ class AgentStocktake(nparcel.Table):
     @property
     def schema(self):
         return ["id INTEGER PRIMARY KEY",
-                "agent_id INTEGER",
+                "agent_id TEXT(6)",
                 "created_ts TIMESTAMP",
                 "reference_nbr TEXT(32)",
                 "processed_ts CHAR(6)"]
@@ -43,7 +43,7 @@ class AgentStocktake(nparcel.Table):
 
         sql = """SELECT DISTINCT %(alias)s.reference_nbr
 FROM %(name)s as %(alias)s
-WHERE created_ts < '%(start_date)s'""" % {'name': self.name,
+WHERE created_ts > '%(start_date)s'""" % {'name': self.name,
                                           'alias': alias,
                                           'start_date': start_date}
 
@@ -101,8 +101,46 @@ AND ag.code = %(alias)s.agent_id
 AND %(alias)s.agent_id NOT IN (
     SELECT DISTINCT %(alias)s.agent_id
     FROM %(name)s as %(alias)s
-    WHERE created_ts >= '%(date)s')""" % {'alias': alias,
+    WHERE created_ts >= '%(date)s')
+GROUP BY ag.dp_code""" % {'alias': alias,
                                           'name': self.name,
                                           'date': compliance_date}
+
+        return sql
+
+    def reference_exception_sql(self, alias='st'):
+        """Items in ``agent_stocktake`` table not found Toll Parcel Portal.
+
+        **Kwargs:**
+            *alias*: table alias (default ``st``)
+
+        **Returns:**
+            the SQL string
+
+        """
+        sql = """SELECT DISTINCT %(alias)s.id as AG_ID,
+       %(alias)s.agent_id as AGENT_CODE,
+       %(alias)s.reference_nbr REFERENCE_NBR,
+       (SELECT ag.dp_code
+        FROM agent as ag
+        WHERE ag.code = %(alias)s.agent_id) as DP_CODE,
+       (SELECT ag.name
+        FROM agent as ag
+        WHERE ag.code = %(alias)s.agent_id) as AGENT_NAME
+FROM %(name)s as %(alias)s, agent as ag
+WHERE %(alias)s.reference_nbr NOT IN
+(SELECT ji.connote_nbr
+ FROM job_item as ji
+ WHERE ji.pickup_ts IS NULL)
+AND %(alias)s.reference_nbr NOT IN
+(SELECT ji.item_nbr
+ FROM job_item as ji
+ WHERE ji.pickup_ts IS NULL)
+AND %(alias)s.reference_nbr NOT IN
+(SELECT j.card_ref_nbr
+ FROM job as j, job_item as ji
+ WHERE ji.job_id = j.id
+ AND ji.pickup_ts IS NULL)""" % {'name': self.name,
+                                 'alias': alias}
 
         return sql

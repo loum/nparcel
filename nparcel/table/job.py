@@ -145,7 +145,7 @@ WHERE id = %d""" % (self.name, state, id)
 
         return sql
 
-    def reference_sql(self, reference_nbr, alias='j'):
+    def reference_sql(self, reference_nbr, period=7, alias='j'):
         """Extract card_ref_nbr number against *reference_nbr*.
 
         **Args:**

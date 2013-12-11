@@ -143,7 +143,7 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
                     (22,
                      'Toll Priority',
                      'ARTZ061184',
-                     'JOB_TEST_REF_NOT_PROC_PCKD_UP',
+                     'JOB_TEST_REF_NOT_PCKD_UP',
                      '00393403250082030048',
                      '%s' % self._now,
                      '%s' % self._now,

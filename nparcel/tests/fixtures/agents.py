@@ -12,6 +12,7 @@
     {
         'id': 2,
         'code': 'BAD1',
+        'dp_code': 'BAD1000',
         'state': 'NSW',
         'name': 'BAD1 Name',
         'address': 'BAD1 Address',
@@ -28,5 +29,15 @@
         'suburb': 'Testville',
         'postcode': '1234',
         'phone_nbr': '0431602145',
+    },
+    {
+        'id': 4,
+        'code': 'Q013',
+        'dp_code': 'QBRI005',
+        'state': 'QLD',
+        'name': 'George Street News',
+        'address': '370 George Street',
+        'postcode': '4000',
+        'suburb': 'Brisbane',
     },
 ]
