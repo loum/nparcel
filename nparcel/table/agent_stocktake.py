@@ -101,9 +101,9 @@ AND %(alias)s.agent_id NOT IN (
     SELECT DISTINCT %(alias)s.agent_id
     FROM %(name)s AS %(alias)s
     WHERE created_ts >= '%(date)s')
-GROUP BY ag.dp_code, ag.code""" % {'alias': alias,
-                                   'name': self.name,
-                                   'date': compliance_date}
+GROUP BY ag.dp_code,ag.code,ag.name""" % {'alias': alias,
+                                          'name': self.name,
+                                          'date': compliance_date}
 
         return sql
 

@@ -41,6 +41,12 @@ def date_diff(start_date, end_date, precision='days'):
     delta = None
 
     start_t = end_t = None
+
+    if isinstance(start_date, datetime.datetime):
+        start_date = start_date.strftime("%Y-%m-%d %H:%M:%S")
+    if isinstance(end_date, datetime.datetime):
+        end_date = end_date.strftime("%Y-%m-%d %H:%M:%S")
+
     try:
         start_usec_stripped = start_date.split('.', 1)[0]
         start_t = time.strptime(start_usec_stripped, '%Y-%m-%d %H:%M:%S')

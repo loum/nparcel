@@ -114,6 +114,7 @@ class ReporterDaemon(nparcel.DaemonService):
         (default 7 days)
 
     """
+    _report_type = None
     _config = None
     _report = None
     _bu_ids = {1: 'Toll Priority',
@@ -135,6 +136,7 @@ class ReporterDaemon(nparcel.DaemonService):
     _bu_id_recipients = {}
     _bu_based = False
     _compliance_period = 7
+    _emailer = nparcel.Emailer()
 
     def __init__(self,
                  report,
@@ -145,6 +147,8 @@ class ReporterDaemon(nparcel.DaemonService):
         super(ReporterDaemon, self).__init__(pidfile=pidfile,
                                              dry=dry,
                                              batch=batch)
+
+        self._report_type = report
 
         if config is not None:
             self.set_config(nparcel.B2CConfig(file=config))
@@ -257,29 +261,6 @@ class ReporterDaemon(nparcel.DaemonService):
                 self.set_bu_id_recipients(tmp_bu_ids)
         except AttributeError, err:
             log.info('Report BU ID recipients not defined in config')
-
-        # Initialise our report objects.
-        if report == 'uncollected':
-            self._report = nparcel.Uncollected(db_kwargs=self.db_kwargs,
-                                               bu_ids=self.bu_ids)
-        elif report == 'compliance':
-            # Parse "compliance" specific config items.
-            try:
-                if self.config.report_compliance_period is not None:
-                    tmp_period = self.config.report_compliance_period
-                    self.set_compliance_period(tmp_period)
-            except AttributeError, err:
-                log.info('Report (compliance) period not defined in config')
-
-            self._report = nparcel.Compliance(db_kwargs=self.db_kwargs)
-            self._report.set_period(self.compliance_period)
-        elif report == 'noncompliance':
-            self._report = nparcel.NonCompliance(db_kwargs=self.db_kwargs,
-                                                 bu_ids=self.bu_ids)
-        elif report == 'exception':
-            self._report = nparcel.Exception(db_kwargs=self.db_kwargs)
-
-        self._emailer = nparcel.Emailer()
 
     @property
     def config(self):
@@ -478,6 +459,27 @@ class ReporterDaemon(nparcel.DaemonService):
 
         """
         signal.signal(signal.SIGTERM, self._exit_handler)
+
+        # Initialise our report objects.
+        if self._report_type == 'uncollected':
+            self._report = nparcel.Uncollected(db_kwargs=self.db_kwargs,
+                                               bu_ids=self.bu_ids)
+        elif self._report_type == 'compliance':
+            # Parse "compliance" specific config items.
+            try:
+                if self.config.report_compliance_period is not None:
+                    tmp_period = self.config.report_compliance_period
+                    self.set_compliance_period(tmp_period)
+            except AttributeError, err:
+                log.info('Report (compliance) period not defined in config')
+
+            self._report = nparcel.Compliance(db_kwargs=self.db_kwargs)
+            self._report.set_period(self.compliance_period)
+        elif self._report_type == 'noncompliance':
+            self._report = nparcel.NonCompliance(db_kwargs=self.db_kwargs,
+                                                 bu_ids=self.bu_ids)
+        elif self._report_type == 'exception':
+            self._report = nparcel.Exception(db_kwargs=self.db_kwargs)
 
         while not event.isSet():
             log.info('Starting stocktake report ...')

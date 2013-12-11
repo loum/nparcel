@@ -32,7 +32,10 @@ class DbSession(object):
         if sql is not None:
             try:
                 log.debug('Executing SQL:\n%s' % sql)
-                self.cursor.execute(sql)
+                try:
+                    self.cursor.execute(sql)
+                except Exception, err:
+                    log.error('%s' % err)
             except pyodbc.ProgrammingError, e:
                 if self.connection is not None:
                     log.error('ODBC error: %s' % str(e))
@@ -227,7 +230,11 @@ class DbSession(object):
     def columns(self):
         """Return a list of column names within the current cursor context.
         """
-        return list(map(lambda x: x[0], self.cursor.description))
+        cols = []
+        if self.cursor.description is not None:
+            cols = list(map(lambda x: x[0], self.cursor.description))
+
+        return cols
 
     def load_fixture(self, table, fixture):
         """Load a *fixture* file into a *table*
