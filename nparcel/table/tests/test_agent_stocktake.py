@@ -146,12 +146,7 @@ WHERE id IN (7, 8)""" % older_date
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [(3,
-                     'V999',
-                     'TEST_REF_NOT_PROC_PCKD_UP',
-                     'VIC999',
-                     'VIC Test Newsagent 999'),
-                    (5,
+        expected = [(5,
                      'V999',
                      'TEST_REF_OLD_DATE',
                      'VIC999',

@@ -9,7 +9,6 @@ import nparcel
 class AgentStocktake(nparcel.Table):
     """AgentStocktake DB table ORM.
     """
-
     def __init__(self):
         """
         """
@@ -130,17 +129,14 @@ GROUP BY ag.dp_code""" % {'alias': alias,
 FROM %(name)s as %(alias)s, agent as ag
 WHERE %(alias)s.reference_nbr NOT IN
 (SELECT ji.connote_nbr
- FROM job_item as ji
- WHERE ji.pickup_ts IS NULL)
+ FROM job_item as ji)
 AND %(alias)s.reference_nbr NOT IN
 (SELECT ji.item_nbr
- FROM job_item as ji
- WHERE ji.pickup_ts IS NULL)
+ FROM job_item as ji)
 AND %(alias)s.reference_nbr NOT IN
 (SELECT j.card_ref_nbr
  FROM job as j, job_item as ji
- WHERE ji.job_id = j.id
- AND ji.pickup_ts IS NULL)""" % {'name': self.name,
-                                 'alias': alias}
+ WHERE ji.job_id = j.id)""" % {'name': self.name,
+                               'alias': alias}
 
         return sql

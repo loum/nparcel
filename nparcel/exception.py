@@ -29,11 +29,10 @@ class Exception(nparcel.Auditer):
         """
         log.info('Stocktake exception query ...')
 
-        #sql = self.db.agent_stocktake.compliance_sql(period=self.period)
-        #self.db(sql)
-        #self.set_columns(self.db.columns())
-        #agents = list(self.db.rows())
-        items = []
+        sql = self.db.agent_stocktake.reference_exception_sql()
+        self.db(sql)
+        self.set_columns(self.db.columns())
+        items = list(self.db.rows())
 
         log.info('Stocktake exception query complete')
 
