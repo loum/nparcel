@@ -144,7 +144,7 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
     def test_send(self):
         """Send the report to the recipients list'
         """
-        dry = False
+        dry = True
 
         old_dry = self._ud.dry
         self._ud.set_dry(dry)
