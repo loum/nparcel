@@ -113,7 +113,7 @@ WHERE id = 2""" % {'dt': delayed_dt}
 
         sql = """UPDATE agent_stocktake
 SET created_ts = '%s'
-WHERE id IN (6, 9)""" % old_date
+WHERE id IN (6)""" % old_date
         self._db(sql)
 
         sql = """UPDATE agent_stocktake
@@ -125,10 +125,12 @@ WHERE id IN (7, 8)""" % older_date
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [('QBRI005',
-                     'Q013',
-                     'George Street News',
-                     '%s' % str(old_date)),
+        # Agent BAD1 does not have a reference in the agent_stocktake table.
+        # Agent N031 has aged agent_stocktake table entries.
+        expected = [('BAD1000',
+                     'BAD1',
+                     'BAD1 Name',
+                     None),
                     ('NROS010',
                      'N031',
                      'N031 Name',

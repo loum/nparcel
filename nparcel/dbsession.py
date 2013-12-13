@@ -29,20 +29,38 @@ class DbSession(object):
         self._port = kwargs.get('port')
 
     def __call__(self, sql=None):
+        """Class callable that can execute *sql* or perform a simple
+        connection check if *sql* is ``None``.
+
+        **Kwargs:**
+            *sql*: the SQL string to execute
+
+        **Returns:**
+            boolean ``True`` if the connection is alive
+
+            boolean ``False`` otherwise
+
+        """
+        is_alive = False
+
         if sql is not None:
             try:
                 log.debug('Executing SQL:\n%s' % sql)
                 try:
                     self.cursor.execute(sql)
+                    is_alive = True
                 except Exception, err:
-                    log.error('%s' % err)
+                    log.error('SQL "%s" failed: %s' % (sql, err))
             except pyodbc.ProgrammingError, e:
                 if self.connection is not None:
                     log.error('ODBC error: %s' % str(e))
                 pass
         else:
             # This is a link check.
-            return self.connection is not None
+            is_alive = self.connection is not None
+            log.info('DB connection alive? %s' % is_alive)
+
+        return is_alive
 
     @property
     def driver(self):

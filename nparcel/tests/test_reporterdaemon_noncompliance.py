@@ -15,14 +15,17 @@ class TestReporterDaemonNonCompliance(unittest2.TestCase):
         cls._now = datetime.datetime.now()
 
         cls._ud = nparcel.ReporterDaemon('noncompliance', pidfile=None)
-        db = cls._ud._report.db
+
         cls._ud.emailer.set_template_base(os.path.join('nparcel',
                                                        'templates'))
-
+        cls._ud.set_outfile('Stocktake_noncompliance_')
         cls._dir = tempfile.mkdtemp()
         cls._ud.set_outdir(cls._dir)
 
+        cls._ud._report = nparcel.NonCompliance(db_kwargs={})
+
         # Prepare some sample data.
+        db = cls._ud._report.db
         fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
         fixtures = [{'db': db.agent_stocktake,
                      'fixture': 'agent_stocktakes.py'},

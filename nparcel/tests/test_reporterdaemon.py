@@ -14,14 +14,20 @@ class TestReporterDaemon(unittest2.TestCase):
     def setUpClass(cls):
         cls._now = datetime.datetime.now()
 
-        cls._ud = nparcel.ReporterDaemon('uncollected',
-                                         pidfile=None)
+        cls._ud = nparcel.ReporterDaemon('uncollected', pidfile=None)
+
+        cls._ud.emailer.set_template_base(os.path.join('nparcel',
+                                                       'templates'))
         cls._ud.set_bu_id_recipient({1: ['loumar@tollgroup.com'],
                                      2: ['lou.markovski@gmail.com'],
                                      3: ['lou@triple20.com.au']})
+        bu_ids = {1: 'Toll Priority',
+                  2: 'Toll Fast',
+                  3: 'Toll IPEC'}
+        cls._ud._report = nparcel.Uncollected(db_kwargs={},
+                                              bu_ids=bu_ids)
+
         db = cls._ud._report.db
-        cls._ud.emailer.set_template_base(os.path.join('nparcel',
-                                                       'templates'))
 
         cls._dir = tempfile.mkdtemp()
         cls._ud.set_outdir(cls._dir)

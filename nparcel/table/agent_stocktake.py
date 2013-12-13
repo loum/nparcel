@@ -91,19 +91,16 @@ WHERE processed_ts IS NULL""" % {'name': self.name,
         compliance_date = compliance_ts.strftime('%Y-%m-%d %H:%M:%S')
 
         sql = """SELECT ag.dp_code AS DP_CODE,
-ag.code AS AGENT_CODE,
-ag.name AS AGENT_NAME,
-MAX(%(alias)s.created_ts) AS CREATED_TS
-FROM %(name)s AS %(alias)s, agent AS ag
-WHERE %(alias)s.created_ts < '%(date)s'
-AND ag.code = %(alias)s.agent_id
-AND %(alias)s.agent_id NOT IN (
-    SELECT DISTINCT %(alias)s.agent_id
-    FROM %(name)s AS %(alias)s
-    WHERE created_ts >= '%(date)s')
-GROUP BY ag.dp_code,ag.code,ag.name""" % {'alias': alias,
-                                          'name': self.name,
-                                          'date': compliance_date}
+       ag.code AS AGENT_CODE,
+       ag.name AS AGENT_NAME,
+       (SELECT MAX(st.created_ts)
+        FROM agent_stocktake AS st
+        WHERE st.agent_id = ag.id) AS CREATED_TS
+FROM agent as ag
+WHERE ag.id NOT IN
+(SELECT st.agent_id
+ FROM agent_stocktake AS st
+ WHERE st.created_ts > '%(date)s')""" % {'date': compliance_date}
 
         return sql
 
@@ -118,16 +115,13 @@ GROUP BY ag.dp_code,ag.code,ag.name""" % {'alias': alias,
 
         """
         sql = """SELECT DISTINCT %(alias)s.id AS AG_ID,
-       %(alias)s.agent_id AS AGENT_CODE,
-       %(alias)s.reference_nbr REFERENCE_NBR,
-       (SELECT ag.dp_code
-        FROM agent AS ag
-        WHERE ag.code = %(alias)s.agent_id) AS DP_CODE,
-       (SELECT ag.name
-        FROM agent AS ag
-        WHERE ag.code = %(alias)s.agent_id) AS AGENT_NAME
+       ag.code AS AGENT_CODE,
+       %(alias)s.reference_nbr AS REFERENCE_NBR,
+       ag.dp_code AS DP_CODE,
+       ag.name AS AGENT_NAME
 FROM %(name)s AS %(alias)s, agent AS ag
-WHERE %(alias)s.reference_nbr NOT IN
+WHERE  ag.id = %(alias)s.agent_id
+AND %(alias)s.reference_nbr NOT IN
 (SELECT ji.connote_nbr
  FROM job_item AS ji)
 AND %(alias)s.reference_nbr NOT IN

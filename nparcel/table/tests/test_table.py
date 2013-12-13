@@ -17,15 +17,6 @@ class TestTable(unittest2.TestCase):
         cls._db.connect()
         cls._db.create_table(name="dummy", schema=SCHEMA)
 
-    def test_insert_unknown_field(self):
-        """Insert an unknown column.
-        """
-        kwargs = {'dummy': 'dummy value'}
-        self.assertRaisesRegexp(sqlite.DatabaseError,
-                                'table dummy has no column named dummy',
-                                self._db,
-                                self._table.insert_sql(kwargs))
-
     def test_insert_valid_fields(self):
         """Insert valid fields into DB.
         """

@@ -313,6 +313,53 @@ class TestAuditer(unittest2.TestCase):
         msg = 'Date delta (time provided) tuple error'
         self.assertTupleEqual(received, expected, msg)
 
+    def test_cleanse(self):
+        """Cleanse a row.
+        """
+        headers = ['JOB_ITEM_ID',
+                   'JOB_BU_ID',
+                   'CONNOTE_NBR',
+                   'BARCODE',
+                   'ITEM_NBR',
+                   'JOB_TS',
+                   'CREATED_TS',
+                   'NOTIFY_TS',
+                   'PICKUP_TS',
+                   'PIECES',
+                   'CONSUMER_NAME',
+                   'DP_CODE',
+                   'AGENT_NAME']
+        row = (22,
+               1,
+               'ARTZ061184',
+               'JOB_TEST_REF_NOT_PROC_PCKD_UP',
+               '00393403250082030048',
+               '%s' % self._now,
+               '%s' % self._now,
+               None,
+               None,
+               22,
+               'Con Sumertwentytwo',
+               'VIC999',
+               'VIC Test Newsagent 999')
+        received = self._a._cleanse(headers, row)
+        expected = (22,
+                    1,
+                    '="ARTZ061184"',
+                    '="JOB_TEST_REF_NOT_PROC_PCKD_UP"',
+                    '="00393403250082030048"',
+                    '="%s"' % self._now,
+                    '="%s"' % self._now,
+                    '',
+                    '',
+                    22,
+                    'Con Sumertwentytwo',
+                    'VIC999',
+                    'VIC Test Newsagent 999')
+
+        msg = 'Cleansed tuple error'
+        self.assertTupleEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._now = None

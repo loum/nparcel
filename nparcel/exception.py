@@ -34,6 +34,10 @@ class Exception(nparcel.Auditer):
         self.set_columns(self.db.columns())
         items = list(self.db.rows())
 
+        cleansed_items = []
+        for i in items:
+            cleansed_items.append(self._cleanse(self.columns, i))
+
         log.info('Stocktake exception query complete')
 
-        return items
+        return cleansed_items

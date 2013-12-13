@@ -14,17 +14,18 @@ class TestReporterDaemonCompliance(unittest2.TestCase):
     def setUpClass(cls):
         cls._now = datetime.datetime.now()
 
-        cls._ud = nparcel.ReporterDaemon('compliance',
-                                         pidfile=None)
-        cls._ud.set_outfile('Stocktake_compliance_')
-        db = cls._ud._report.db
+        cls._ud = nparcel.ReporterDaemon('compliance', pidfile=None)
+
         cls._ud.emailer.set_template_base(os.path.join('nparcel',
                                                        'templates'))
-
+        cls._ud.set_outfile('Stocktake_compliance_')
         cls._dir = tempfile.mkdtemp()
         cls._ud.set_outdir(cls._dir)
 
+        cls._ud._report = nparcel.Compliance(db_kwargs={})
+
         # Prepare some sample data.
+        db = cls._ud._report.db
         fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
         fixtures = [{'db': db.agent_stocktake,
                      'fixture': 'agent_stocktakes.py'},
@@ -54,7 +55,7 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
 
         old_date = cls._now - datetime.timedelta(8)
         older_date = cls._now - datetime.timedelta(10)
- 
+
         sql = """UPDATE agent_stocktake
 SET created_ts = '%s'
 WHERE id IN (6)""" % old_date

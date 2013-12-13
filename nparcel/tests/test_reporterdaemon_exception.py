@@ -14,17 +14,18 @@ class TestReporterDaemonException(unittest2.TestCase):
     def setUpClass(cls):
         cls._now = datetime.datetime.now()
 
-        cls._ud = nparcel.ReporterDaemon('exception',
-                                         pidfile=None)
-        cls._ud.set_outfile('Stocktake_exception_')
-        db = cls._ud._report.db
+        cls._ud = nparcel.ReporterDaemon('exception', pidfile=None)
+
         cls._ud.emailer.set_template_base(os.path.join('nparcel',
                                                        'templates'))
-
+        cls._ud.set_outfile('Stocktake_exception_')
         cls._dir = tempfile.mkdtemp()
         cls._ud.set_outdir(cls._dir)
 
+        cls._ud._report = nparcel.Exception(db_kwargs={})
+
         # Prepare some sample data.
+        db = cls._ud._report.db
         fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
         fixtures = [{'db': db.agent_stocktake,
                      'fixture': 'agent_stocktakes.py'},

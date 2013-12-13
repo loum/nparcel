@@ -34,6 +34,7 @@ class NonCompliance(nparcel.Auditer):
         ts_now = self.db.date_now()
 
         jobitems = []
+        cleansed_jobitems = []
         xlated_jobitems = []
         date_delta_jobitems = []
 
@@ -45,6 +46,9 @@ class NonCompliance(nparcel.Auditer):
             jobitems = list(self.db.rows())
 
             for i in jobitems:
+                cleansed_jobitems.append(self._cleanse(self.columns, i))
+
+            for i in cleansed_jobitems:
                 xlated_jobitems.append(self._translate_bu(self.columns,
                                                           i,
                                                           self.bu_ids))
@@ -54,6 +58,7 @@ class NonCompliance(nparcel.Auditer):
                                                self.delta_time_column,
                                                ts_now)
                 date_delta_jobitems.append(delta_row)
+
             tmp_hdrs_list = self.db.columns()
             tmp_hdrs_list.append('DELTA_TIME')
             self.set_columns(tmp_hdrs_list)

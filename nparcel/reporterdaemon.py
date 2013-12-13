@@ -462,9 +462,13 @@ class ReporterDaemon(nparcel.DaemonService):
 
         # Initialise our report objects.
         if self._report_type == 'uncollected':
-            self._report = nparcel.Uncollected(db_kwargs=self.db_kwargs,
-                                               bu_ids=self.bu_ids)
+            if self._report is None:
+                self._report = nparcel.Uncollected(self.db_kwargs,
+                                                   self.bu_ids)
         elif self._report_type == 'compliance':
+            if self._report is None:
+                self._report = nparcel.Compliance(self.db_kwargs)
+
             # Parse "compliance" specific config items.
             try:
                 if self.config.report_compliance_period is not None:
@@ -472,14 +476,14 @@ class ReporterDaemon(nparcel.DaemonService):
                     self.set_compliance_period(tmp_period)
             except AttributeError, err:
                 log.info('Report (compliance) period not defined in config')
-
-            self._report = nparcel.Compliance(db_kwargs=self.db_kwargs)
             self._report.set_period(self.compliance_period)
         elif self._report_type == 'noncompliance':
-            self._report = nparcel.NonCompliance(db_kwargs=self.db_kwargs,
-                                                 bu_ids=self.bu_ids)
+            if self._report is None:
+                self._report = nparcel.NonCompliance(self.db_kwargs,
+                                                     self.bu_ids)
         elif self._report_type == 'exception':
-            self._report = nparcel.Exception(db_kwargs=self.db_kwargs)
+            if self._report is None:
+                self._report = nparcel.Exception(self.db_kwargs)
 
         while not event.isSet():
             log.info('Starting stocktake report ...')

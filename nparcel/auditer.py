@@ -163,3 +163,44 @@ class Auditer(nparcel.Service):
         tmp_row_list.append(delta)
 
         return tuple(tmp_row_list)
+
+    def _cleanse(self, header, row):
+        """Generic modififications to the raw query result.
+
+        Mods include:
+        * prepend ``=`` to the ``CONNOTE_NBR``, ``BARCODE`` and ``ITEM_NBR``
+        columns
+
+        **Args:**
+            *header*: list of column headers
+
+            *row*: tuple structure that represents the raw row result
+
+        **Returns:**
+            the altered *row* tuple structure
+
+        """
+        log.debug('Cleansing row "%s"' % str(row))
+
+        tmp_row_list = list(row)
+
+        for i in ['CONNOTE_NBR',
+                  'BARCODE',
+                  'ITEM_NBR',
+                  'JOB_TS',
+                  'CREATED_TS',
+                  'REFERENCE_NBR',
+                  'NOTIFY_TS',
+                  'PICKUP_TS']:
+            try:
+                index = header.index(i)
+                log.debug('Prepending "=" to column|value "%s|%s"' %
+                          (i, str(tmp_row_list[index])))
+                if tmp_row_list[index] is None:
+                    tmp_row_list[index] = str()
+                else:
+                    tmp_row_list[index] = '="%s"' % tmp_row_list[index]
+            except ValueError, err:
+                pass
+
+        return tuple(tmp_row_list)

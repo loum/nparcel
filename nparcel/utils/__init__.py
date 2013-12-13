@@ -47,13 +47,23 @@ def date_diff(start_date, end_date, precision='days'):
     if isinstance(end_date, datetime.datetime):
         end_date = end_date.strftime("%Y-%m-%d %H:%M:%S")
 
+    # For Excel presentation, we need to strip of the special formula
+    # characters.
+    log.debug('Date diff start|end: "%s|%s"' % (start_date, end_date))
+    start_date = start_date.lstrip('="')
+    start_date = start_date.rstrip('"')
+
     try:
         start_usec_stripped = start_date.split('.', 1)[0]
         start_t = time.strptime(start_usec_stripped, '%Y-%m-%d %H:%M:%S')
+    except ValueError, err:
+        log.warn('Unable to parse date "%s": "%s"' % (start_date, err))
+
+    try:
         end_usec_stripped = end_date.split('.', 1)[0]
         end_t = time.strptime(end_usec_stripped, '%Y-%m-%d %H:%M:%S')
     except ValueError, err:
-        log.warn('Unable to parse date: "%s"' % err)
+        log.warn('Unable to parse date "%s": "%s"' % (end_date, err))
 
     if start_t is not None and end_t is not None:
         start_dt = datetime.datetime.fromtimestamp(time.mktime(start_t))
