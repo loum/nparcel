@@ -212,7 +212,7 @@ class TestAuditer(unittest2.TestCase):
         msg = 'Date delta tuple error'
         self.assertTupleEqual(received, expected, msg)
 
-    def test_add_date_diff(self):
+    def test_add_date_diff_missing_time_column(self):
         """Add date delta to row tuple -- missing time column.
         """
         headers = ['JOB_ITEM_ID',
@@ -359,6 +359,43 @@ class TestAuditer(unittest2.TestCase):
 
         msg = 'Cleansed tuple error'
         self.assertTupleEqual(received, expected, msg)
+
+    def test_aged_items(self):
+        """Test Aged item.
+        """
+        headers = ['JOB_ITEM_ID',
+                   'JOB_BU_ID',
+                   'CONNOTE_NBR',
+                   'BARCODE',
+                   'ITEM_NBR',
+                   'JOB_TS',
+                   'CREATED_TS',
+                   'NOTIFY_TS',
+                   'PICKUP_TS',
+                   'PIECES',
+                   'CONSUMER_NAME',
+                   'DP_CODE',
+                   'AGENT_NAME']
+        row = (22,
+               1,
+               'ARTZ061184',
+               'JOB_TEST_REF_NOT_PROC_PCKD_UP',
+               '00393403250082030048',
+               '%s' % self._now,
+               '%s' % (self._now - datetime.timedelta(10)),
+               None,
+               None,
+               22,
+               'Con Sumertwentytwo',
+               'VIC999',
+               'VIC Test Newsagent 999')
+        received = self._a.aged_item(headers, row, 'CREATED_TS')
+        msg = 'Aged item check (against CREATED_TS) should return True'
+        self.assertTrue(received, msg)
+
+        received = self._a.aged_item(headers, row, 'JOB_TS')
+        msg = 'Aged item check (against JOB_TS) should return False'
+        self.assertFalse(received, msg)
 
     @classmethod
     def tearDownClass(cls):

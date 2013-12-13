@@ -204,3 +204,107 @@ class Auditer(nparcel.Service):
                 pass
 
         return tuple(tmp_row_list)
+
+    def aged_item(self,
+                  headers,
+                  row,
+                  time_column='CREATED_TS',
+                  time_to_compare=None,
+                  age=7):
+        """Calculate the date delta between the value in the *time_column*
+        and *time_to_compare* and compare against *age* (in days).
+
+        Time delta will eventually be appended to the *row* tuple and
+        returned to the caller.
+
+        **Args:**
+            *header*: list of column headers
+
+            *row*: tuple structure that represents the raw row result
+
+            *time_column*: column header to use in the time
+            comparison
+
+        **Kwargs:**
+            *time_to_compare*: time to compare against (default ``None``
+            in which time current time is used)
+
+            *age*: the period in days to compare the time delta against
+
+        **Returns:**
+            boolean ``True`` if the delta between the dates is
+            greater than *age*
+
+            ``False`` otherwise
+
+        """
+        is_aged = False
+
+        index = None
+        try:
+            index = headers.index(time_column)
+        except ValueError, err:
+            log.warn('No "%s" column in headers' % time_column)
+
+        item_nbr = None
+        try:
+            item_nbr_index = headers.index('ITEM_NBR')
+            item_nbr = row[item_nbr_index]
+        except ValueError, err:
+            log.warn('No "%s" column in headers' % item_nbr_index)
+
+        delta = None
+        if index is not None:
+            start_time = row[index]
+            if time_to_compare is None:
+                fmt = '%Y-%m-%d %H:%M:%S'
+                time_to_compare = datetime.datetime.now().strftime(fmt)
+            delta = date_diff(start_time, time_to_compare)
+
+        if delta > age:
+            is_aged = True
+
+        log.debug('ITEM_NBR "%s" is aged?: %s' % (item_nbr, str(is_aged)))
+
+        return is_aged
+
+    def _cleanse(self, header, row):
+        """Generic modififications to the raw query result.
+
+        Mods include:
+        * prepend ``=`` to the ``CONNOTE_NBR``, ``BARCODE`` and ``ITEM_NBR``
+        columns
+
+        **Args:**
+            *header*: list of column headers
+
+            *row*: tuple structure that represents the raw row result
+
+        **Returns:**
+            the altered *row* tuple structure
+
+        """
+        log.debug('Cleansing row "%s"' % str(row))
+
+        tmp_row_list = list(row)
+
+        for i in ['CONNOTE_NBR',
+                  'BARCODE',
+                  'ITEM_NBR',
+                  'JOB_TS',
+                  'CREATED_TS',
+                  'REFERENCE_NBR',
+                  'NOTIFY_TS',
+                  'PICKUP_TS']:
+            try:
+                index = header.index(i)
+                log.debug('Prepending "=" to column|value "%s|%s"' %
+                          (i, str(tmp_row_list[index])))
+                if tmp_row_list[index] is None:
+                    tmp_row_list[index] = str()
+                else:
+                    tmp_row_list[index] = '="%s"' % tmp_row_list[index]
+            except ValueError, err:
+                pass
+
+        return tuple(tmp_row_list)

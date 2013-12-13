@@ -38,36 +38,38 @@ class Uncollected(nparcel.Auditer):
             self.db(sql)
             self.db.commit()
 
-        aged_jobitems = []
-
         sql = self.db.jobitem.reference_sql(bu_ids=(id,))
         self.db(sql)
 
         self.set_columns(self.db.columns())
-        for i in self.db.rows():
-            log.debug('Found job_item: %s' % str(i))
-            aged_jobitems.append(i)
+        items = list(self.db.rows())
 
-        cleansed_jobitems = []
-        for i in aged_jobitems:
-            cleansed_jobitems.append(self._cleanse(self.columns, i))
+        cleansed_items = []
+        for i in items:
+            cleansed_items.append(self._cleanse(self.columns, i))
 
-        translated_aged_jobitems = []
-        for i in cleansed_jobitems:
-            translated_aged_jobitems.append(self._translate_bu(self.columns,
+        # Filter out aged items.
+        filtered_items = []
+        for i in cleansed_items:
+            if self.aged_item(self.columns, i):
+                filtered_items.append(i)
+
+        translated_aged_items = []
+        for i in filtered_items:
+            translated_aged_items.append(self._translate_bu(self.columns,
                                                                i,
                                                                self.bu_ids))
 
-        date_delta_jobitems = []
-        for i in translated_aged_jobitems:
+        date_delta_items = []
+        for i in translated_aged_items:
             delta_row = self.add_date_diff(self.columns,
                                            i,
                                            self.delta_time_column,
                                            ts_now)
-            date_delta_jobitems.append(delta_row)
+            date_delta_items.append(delta_row)
 
         tmp_hdrs_list = self.db.columns()
         tmp_hdrs_list.append('DELTA_TIME')
         self.set_columns(tmp_hdrs_list)
 
-        return date_delta_jobitems
+        return date_delta_items

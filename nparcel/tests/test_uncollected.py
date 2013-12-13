@@ -44,7 +44,13 @@ SET job_ts = '%s'""" % cls._now
         # "job_item" table timestamp updates.
         sql = """UPDATE job_item
 SET created_ts = '%s'
-WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
+WHERE id IN (20, 22)""" % cls._now
+        db(sql)
+
+        # "job_item" table timestamp updates.
+        sql = """UPDATE job_item
+SET created_ts = '%s'
+WHERE id IN (15, 16, 19)""" % (cls._now - datetime.timedelta(99))
         db(sql)
 
         db.commit()
@@ -66,7 +72,7 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
                      '="aged_parcel_unmatched"',
                      '="aged_connote_match"',
                      '="%s"' % self._now,
-                     '="%s"' % self._now,
+                     '="%s"' % str(self._now - datetime.timedelta(99)),
                      '',
                      '',
                      15,
@@ -86,7 +92,7 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
                      '="aged_parcel_unmatched"',
                      '="TEST_REF_001"',
                      '="%s"' % self._now,
-                     '="%s"' % self._now,
+                     '="%s"' % str(self._now - datetime.timedelta(99)),
                      '',
                      '',
                      16,
@@ -106,51 +112,11 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
                      '="TEST_REF_001"',
                      '="00393403250082030046"',
                      '="%s"' % self._now,
-                     '="%s"' % self._now,
+                     '="%s"' % str(self._now - datetime.timedelta(99)),
                      '',
                      '',
                      19,
                      'Con Sumernineteen',
-                     'VIC999',
-                     'V999',
-                     'VIC Test Newsagent 999',
-                     '13 Test Street',
-                     'Testville',
-                     'VIC',
-                     '1234',
-                     '0431602145',
-                     0),
-                    (20,
-                     'Toll Priority',
-                     '="TEST_REF_NOT_PROC"',
-                     '="aged_parcel_unmatched"',
-                     '="00393403250082030047"',
-                     '="%s"' % self._now,
-                     '="%s"' % self._now,
-                     '',
-                     '',
-                     20,
-                     'Con Sumertwenty',
-                     'VIC999',
-                     'V999',
-                     'VIC Test Newsagent 999',
-                     '13 Test Street',
-                     'Testville',
-                     'VIC',
-                     '1234',
-                     '0431602145',
-                     0),
-                    (22,
-                     'Toll Priority',
-                     '="ARTZ061184"',
-                     '="JOB_TEST_REF_NOT_PCKD_UP"',
-                     '="00393403250082030048"',
-                     '="%s"' % self._now,
-                     '="%s"' % self._now,
-                     '',
-                     '',
-                     22,
-                     'Con Sumertwentytwo',
                      'VIC999',
                      'V999',
                      'VIC Test Newsagent 999',
