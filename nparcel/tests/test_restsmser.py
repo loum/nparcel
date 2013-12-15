@@ -76,6 +76,22 @@ class TestRestSmser(unittest2.TestCase):
         received = self._rsms.validate(mobile)
         self.assertFalse(received, msg)
 
+        mobile = '431602145'
+        received = self._rsms.validate(mobile)
+        self.assertTrue(received, msg)
+
+        mobile = '4316021455'
+        received = self._rsms.validate(mobile)
+        self.assertFalse(received, msg)
+
+        mobile = '531602145'
+        received = self._rsms.validate(mobile)
+        self.assertFalse(received, msg)
+
+        mobile = '5316021455'
+        received = self._rsms.validate(mobile)
+        self.assertFalse(received, msg)
+
     def test_mobile_does_not_start_with_04(self):
         """Validate mobile number -- does not start with 04.
         """
@@ -97,6 +113,48 @@ class TestRestSmser(unittest2.TestCase):
         mobile = ''
         received = self._rsms.validate(mobile)
         self.assertFalse(received, msg)
+
+    def test_check_mobile_missing_leading_zero(self):
+        """Mobile with missing leading zero.
+        """
+        mobile = '431602145'
+        received = self._rsms.check_mobile_missing_leading_zero(mobile)
+        expected = '0431602145'
+        msg = 'Mobile with missing leading zero should be transposed'
+        self.assertEqual(received, expected, msg)
+
+        mobile = '531602145'
+        received = self._rsms.check_mobile_missing_leading_zero(mobile)
+        expected = '531602145'
+        msg = 'Mobile with missing leading zero and leading "5" error'
+        self.assertEqual(received, expected, msg)
+
+        mobile = '43160214'
+        received = self._rsms.check_mobile_missing_leading_zero(mobile)
+        expected = '43160214'
+        msg = 'Mobile with missing leading zero, < 9 digits error'
+        self.assertEqual(received, expected, msg)
+
+        mobile = '4316021455'
+        received = self._rsms.check_mobile_missing_leading_zero(mobile)
+        expected = '4316021455'
+        msg = 'Mobile with missing leading zero, > 9 digits error'
+        self.assertEqual(received, expected, msg)
+
+        mobile = '5316021455'
+        received = self._rsms.check_mobile_missing_leading_zero(mobile)
+        expected = '5316021455'
+        msg = 'Mobile with leading 5, > 9 digits error'
+        self.assertEqual(received, expected, msg)
+
+    def test_check_mobile_missing_leading_zero_already_valid(self):
+        """Mobile with missing leading zero.
+        """
+        mobile = '0431602145'
+        received = self._rsms.check_mobile_missing_leading_zero(mobile)
+        expected = '0431602145'
+        msg = 'Valid mobile pass through'
+        self.assertEqual(received, expected, msg)
 
     def test_create_comms_missing_xml_input_file(self):
         """Create SMS comms with missing XML input file.

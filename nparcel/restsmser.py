@@ -143,6 +143,9 @@ class RestSmser(nparcel.Rest):
 
         * starts with '04'
 
+        .. note:: a 9-digit number with leading ``4`` will have a ``0``
+        prepended to complete a valid mobile number construct.
+
         **Args:**
             mobile_number: the mobile number to validate
 
@@ -154,18 +157,48 @@ class RestSmser(nparcel.Rest):
         """
         status = True
 
-        err = 'Mobile "%s" validation failed: ' % mobile_number
+        tmp_mobile = self.check_mobile_missing_leading_zero(mobile_number)
+
+        err = 'Mobile "%s" validation failed: ' % tmp_mobile
         regex = re.compile("\d{10}$")
-        m = regex.match(mobile_number)
+        m = regex.match(tmp_mobile)
         if m is None:
             status = False
             err += "not 10 digits"
             log.info(err)
 
         if status:
-            if mobile_number[0:2] != '04':
+            if tmp_mobile[0:2] != '04':
                 status = False
                 err += 'does not start with "04"'
                 log.info(err)
 
         return status
+
+    def check_mobile_missing_leading_zero(self, mobile_number):
+        """Checks for a special case where the *mobile_number* number could
+        have the leading ``0`` missing.
+
+        The general algorithm is that a 9-digit *mobile_number*  with
+        leading ``4`` will have a ``0`` prepended to complete a valid
+        mobile number construct.
+
+        **Args:**
+            mobile_number: the mobile number to validate
+
+        **Returns:**
+            The transposed mobile number if the leading ``0`` scenario is
+            encounterd.  Otherwise, the original value of *mobile_number*.
+
+        """
+        tmp_mobile_number = mobile_number
+
+        regex = re.compile("\d{9}$")
+        m = regex.match(mobile_number)
+        if m is not None:
+            if mobile_number[0] == '4':
+                tmp_mobile_number = '0%s' % mobile_number
+                log.info('Prepended "0" to mobile "%s" to produce "%s"' %
+                         (mobile_number, tmp_mobile_number))
+
+        return tmp_mobile_number
