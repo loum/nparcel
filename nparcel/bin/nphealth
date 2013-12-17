@@ -1,0 +1,277 @@
+#!/usr/bin/python
+
+import os
+import subprocess
+import inspect
+import signal
+import datetime
+import socket
+
+import nparcel
+from nparcel.utils.log import (log,
+                               set_log_level,
+                               set_console,
+                               rollover)
+
+
+class Pids(object):
+    """Identify and kill process.
+    """
+
+    def __init__(self, process_name=None):
+        self._process_name = process_name
+        self._procs = []
+
+    @property
+    def process_name(self):
+        return self._process_name
+
+    @property
+    def procs(self):
+        return self._procs
+
+    def set_procs(self, value):
+        """Set the procs attribute.
+        """
+        process = self._process_name
+
+        if value is not None:
+            process = value
+
+        log.debug('Obtaining process list for "%s"', process)
+        procs = subprocess.Popen(["pgrep", "-x", process],
+                                 stdout=subprocess.PIPE)
+
+        for proc in procs.stdout:
+            self._procs.append(int(proc.rstrip()))
+
+    def check_process(self, name=None):
+        """Given a process name, will return its PIDs.
+
+        **Kwargs:**
+            *name*: the name of the process to check (overriding the
+            :attr:`process_name`
+
+        **Return:**
+            list of PIDs associated with process *name* or
+            :attr:`process_name`
+
+        """
+        process_name_to_check = self.process_name
+
+        if name is not None:
+            log.debug('Process name "%s" provided as an argument', name)
+            process_name_to_check = name
+
+        pids = []
+        if process_name_to_check is None:
+            log.error('No process name provided')
+        else:
+            log.info('Checking process "%s" status ...',
+                     process_name_to_check)
+            self.set_procs(process_name_to_check)
+            pids = None
+            if self.procs is not None:
+                pids = ', '.join(map(str, self.procs))
+
+            log.info('PIDs for process "%s": %s' % (process_name_to_check,
+                                                    pids))
+
+        return pids
+
+    def kill_process(self, pid):
+        """Kill process identified by pid.
+        """
+
+        log.info('Terminating PID %i', pid)
+        os.kill(int(pid), signal.SIGTERM)
+
+        # Check if the process was terminated.
+        # If the process does not exist, then os.kill with throw exception.
+        try:
+            os.kill(int(pid), 0)
+            excp_msg = 'Process with PID: %i was not terminated' % pid
+            raise Exception(excp_msg)
+        except:
+            pass
+
+
+class HealthDaemon(nparcel.DaemonService):
+    """Daemoniser facility for the Health() class.
+
+    """
+    _config = None
+    _emailer = nparcel.Emailer()
+    _recipients = []
+    _pid_table = {}
+    _headers = ['Process Name', 'PIDs']
+    _hostname = socket.gethostname()
+    _processes = []
+
+    @property
+    def config(self):
+        return self._config
+
+    def set_config(self, value):
+        self._config = value
+
+    @property
+    def processes(self):
+         return self._processes
+
+    def set_processes(self, values=None):
+        del self._processes[:]
+        self._processes
+
+        if values is not None:
+            self._processes.extend(values)
+            log.debug('Health check process list: "%s"' % self.processes)
+        else:
+            log.debug('Cleared processes list')
+
+    def __init__(self, pidfile, dry=False, config=None):
+        """HealtDaemon initialiser.
+        """
+        super(HealthDaemon, self).__init__(pidfile=pidfile, dry=dry)
+
+        if config is not None:
+            self.set_config(nparcel.B2CConfig(file=config))
+            self.config.parse_config()
+
+        try:
+            if len(self.config.support_emails):
+                self.set_recipients(self.config.support_emails)
+        except AttributeError, err:
+            log.info('Health recipient list not defined in config')
+
+        try:
+            if len(self.config.health_processes):
+                self.set_processes(self.config.health_processes)
+        except AttributeError, err:
+            log.info('Health process list not defined in config')
+
+    @property
+    def recipients(self):
+        return self._recipients
+
+    def set_recipients(self, values=None):
+        del self._recipients[:]
+        self._recipients = []
+
+        if values is not None:
+            self._recipients.extend(values)
+            log.debug('Setting report recipients to "%s"' %
+                      self.recipients)
+        else:
+            log.debug('Clearing headers to display list')
+
+    def _start(self, event):
+        signal.signal(signal.SIGTERM, self._exit_handler)
+
+        for process_name in self.processes:
+            p = Pids(process_name)
+            p.check_process()
+            self._pid_table[process_name] = p.procs
+
+        self.send_email()
+
+    def send_email(self, date_ts=None):
+        """Send the health check via email.
+
+        **Kwargs:**
+            *date_ts*: :mod:`datetime` object that can override the
+            report date and time.
+
+        """
+        if date_ts is None:
+            now = datetime.datetime.now().strftime('%d/%m/%Y %H:%M')
+        else:
+            now = date_ts.strftime('%d/%m/%Y')
+        subject_data = {'date': now,
+                        'host': self._hostname}
+        subject = self._emailer.get_subject_line(data=subject_data,
+                                                 template='health')
+        subject = subject.rstrip()
+
+        data = {'pid_table': self.create_table(self._pid_table,
+                                               self._headers),
+                'date': now}
+        self._emailer.send_comms(template='health',
+                                 subject_data=subject,
+                                 data=data,
+                                 recipients=self.recipients,
+                                 dry=self.dry)
+
+    def create_table(self, items, headers=None):
+        """Takes a list of *items* and generates string based, variable
+        table content that can feed into a static string template.
+
+        **Args:**
+            *items*: dictionary of items to present in the table
+
+        **Returns:**
+            string-based HTML table construct
+
+        """
+        table_str = []
+        tr = '<tr style="border:1px solid white">'
+        tr_err = '<tr style="border:1px solid white;background-color:#FF8282">'
+        th = '<th style="background-color:#D6EBFF">'
+        td = '<td style="white-space:nowrap">'
+
+        if headers is not None:
+            td_str = ('%s\n    %s%s%s\n    %s%s%s\n%s\n' %
+                      (tr,
+                       th, '<b>%s</b>' % headers[0], '</th>',
+                       th, '<b>%s</b>' % headers[1], '</th>',
+                       '</tr>'))
+            table_str.append(td_str)
+
+        for process, pids in items.iteritems():
+            row = tr
+            if not pids:
+                row = tr_err
+            td_str = ('%s\n    %s%s%s\n    %s%s%s\n%s\n' %
+                      (row,
+                       td, '<b>%s</b>' % process, '</td>',
+                       td, ', '.join(map(str, pids)), '</td>',
+                       '</tr>'))
+            table_str.append(td_str)
+
+        return "\n".join(table_str)
+
+
+def main():
+    config_file = os.path.join(os.path.expanduser('~'),
+                               '.nparceld',
+                               'nparceld.conf')
+
+    based = nparcel.BaseD(config=config_file)
+    based.set_command('start')
+    script_name = inspect.getfile(inspect.currentframe())
+    script_name = os.path.basename(script_name)
+    based.set_script_name(script_name)
+    based.check_args()
+
+    if based.options.dry is not None:
+        set_console()
+    else:
+        rollover()
+
+    # Enable detailed logging if required.
+    if based.options.verbose == 0:
+        set_log_level('INFO')
+    else:
+        log.info('Logging verbosity set to "INFO" level')
+
+    # OK, start processing.
+    healthd = HealthDaemon(pidfile=based.pidfile,
+                           dry=based.dry,
+                           config=based.options.config)
+
+    based.set_batch(True)
+    based.launch_command(healthd, script_name)
+
+
+if __name__ == '__main__':
+    main()

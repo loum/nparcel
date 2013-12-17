@@ -548,6 +548,23 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Config BU ID recipients value error'
         self.assertDictEqual(received, expected, msg)
 
+    def test_parse_health(self):
+        """Parse items from the config -- health.
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        received = self._c.health_processes
+        expected = ['npcommsd',
+                    'npexporterd',
+                    'npfilterd',
+                    'nploaderd',
+                    'npmapperd',
+                    'npondeliveryd',
+                    'npreminderd']
+        msg = 'Health process list error'
+        self.assertListEqual(received, expected, msg)
+
     def test_condition_flag_item_excp_true(self):
         """Check item_excp flag settings -- True.
         """

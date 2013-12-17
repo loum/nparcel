@@ -27,9 +27,9 @@ This arrangement is analogous to "rc" files.  for example, "bashrc",
 """
 
 locations = [
+    os.environ.get("LOG_CONF"),
     os.curdir,
     os.path.expanduser("~"),
-    os.environ.get("LOG_CONF"),
     os.path.join(os.path.expanduser("~"), '.nparceld'),
 ]
 
@@ -41,7 +41,7 @@ for loc in locations:
         source.close()
         found_log_config = True
         break
-    except:
+    except Exception, err:
         pass
 
 # Holy crap!  Some black magic to identify logger handlers ...

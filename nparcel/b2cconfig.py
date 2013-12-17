@@ -247,6 +247,10 @@ class B2CConfig(nparcel.Config):
         time (in days) from now that is the cut off for agent compliance
         (default 7 days)
 
+    .. attribute:: health_processes
+
+        the names of the processes to include in the health check
+
     """
     _dirs_to_check = []
     _pe_dirs_to_check = []
@@ -320,6 +324,7 @@ class B2CConfig(nparcel.Config):
     _report_exception_recipients = []
     _report_exception_bu_based = False
     _report_bu_id_recipients = {}
+    _health_processes = []
 
     def __init__(self, file=None):
         """Nparcel Config initialisation.
@@ -992,6 +997,17 @@ class B2CConfig(nparcel.Config):
                 ConfigParser.NoSectionError), err:
             log.debug('Using default report BU ID recipients: %s' %
                       self.report_bu_id_recipients)
+
+        # Health.
+        try:
+            health_procs = self.get('health', 'processes')
+            log.debug('Config parsed health processes: "%s"' %
+                      health_procs)
+            self.set_health_processes(health_procs.split(','))
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
+            log.debug('Using default health process list: %s' %
+                      str(self.health_processes))
 
     def condition(self, bu, flag):
         """Return the *bu* condition *flag* value.
@@ -1900,3 +1916,18 @@ class B2CConfig(nparcel.Config):
         self.report_exception_bu_based = (value.lower() == 'yes')
         log.debug('Config report (exception) BU-based flag: "%s"' %
                   self.report_exception_bu_based)
+
+    @property
+    def health_processes(self):
+        return self._health_processes
+
+    def set_health_processes(self, values=None):
+        del self._health_processes[:]
+        self._health_processes
+
+        if values is not None:
+            self._health_processes.extend(values)
+            log.debug('Config health check process list: "%s"' %
+                      self.health_processes)
+        else:
+            log.debug('Cleared health check process list')
