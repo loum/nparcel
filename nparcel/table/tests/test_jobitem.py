@@ -784,19 +784,35 @@ AND j.service_code = 1"""
     def test_total_agent_stocktake_parcel_count_sql_not_picked_up(self):
         """Verify the total_agent_stocktake_parcel_count_sql SQL.
         """
+        sql = """SELECT MAX(created_ts)
+FROM agent_stocktake
+WHERE agent_id = 3"""
+        self._db(sql)
+        ts = list(self._db.rows())
+
         ids = (1, 2, 3)
         sql = self._db.jobitem.total_agent_stocktake_parcel_count_sql(ids)
-
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [('VIC999', 'V999', 'VIC Test Newsagent 999', 92, 127)]
+        expected = [('VIC999',
+                     'V999',
+                     'VIC Test Newsagent 999',
+                     '%s' % ts[0][0],
+                     92,
+                     127)]
         msg = 'AgentStocktake-based parcel totals count error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
     def test_total_agent_stocktake_parcel_count_sql_picked_up(self):
         """The total_agent_stocktake_parcel_count_sql SQL -- picked up.
         """
+        date_sql = """SELECT MAX(created_ts)
+       FROM agent_stocktake
+       WHERE agent_id = 3"""
+        self._db(date_sql)
+        max_date = list(self._db.rows())[0][0]
+
         ids = (1, 2, 3)
         table = self._db.jobitem
         sql = table.total_agent_stocktake_parcel_count_sql(ids,
@@ -804,7 +820,7 @@ AND j.service_code = 1"""
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [('VIC999', 'V999', 'VIC Test Newsagent 999', 21, 13)]
+        expected = [('VIC999', 'V999', 'VIC Test Newsagent 999', '%s' % max_date, 21, 13)]
         msg = 'AgentStocktake-based parcel totals count error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 

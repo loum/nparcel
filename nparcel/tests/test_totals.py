@@ -12,7 +12,10 @@ class TestTotals(unittest2.TestCase):
         cls._now = datetime.datetime.now()
         cls.maxDiff = None
 
-        cls._c = nparcel.Totals()
+        bu_ids = {1: 'Toll Priority',
+                  2: 'Toll Fast',
+                  3: 'Toll IPEC'}
+        cls._c = nparcel.Totals(bu_ids=bu_ids)
         db = cls._c.db
 
         # Prepare some sample data.
@@ -67,9 +70,20 @@ WHERE id IN (7, 8)""" % cls._older_date
     def test_process(self):
         """Check totals processing.
         """
+        date_sql = """SELECT MAX(created_ts)
+       FROM agent_stocktake
+       WHERE agent_id = 3"""
+        self._c.db(date_sql)
+        max_date = list(self._c.db.rows())[0][0]
+
         ids = (1, 2, 3)
         received = self._c.process(id=ids)
-        expected = [('VIC999', 'V999', 'VIC Test Newsagent 999', 92, 127)]
+        expected = [('VIC999',
+                     'V999',
+                     'VIC Test Newsagent 999',
+                     '%s' % max_date,
+                     92,
+                     127)]
         msg = 'List of parcel counts incorrect'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 

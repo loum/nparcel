@@ -20,6 +20,10 @@ class Uncollected(nparcel.Auditer):
         """Checks ``agent_stocktake`` table for items that exist
         in the Toll Parcel Portal and are uncollected and aged.
 
+        **Args:**
+            *id*: tuple of integer based values relating to the
+            ``job.bu_id`` column
+
         **Kwargs:**
             *dry*: do not execute, only report
 

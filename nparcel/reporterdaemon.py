@@ -484,9 +484,11 @@ class ReporterDaemon(nparcel.DaemonService):
         elif self._report_type == 'exception':
             if self._report is None:
                 self._report = nparcel.Exception(self.db_kwargs)
+        elif self._report_type == 'totals':
+            if self._report is None:
+                self._report = nparcel.Totals(self.db_kwargs, self.bu_ids)
 
         while not event.isSet():
-            log.info('Starting stocktake report ...')
             now = datetime.datetime.now().strftime(self.outfile_ts_format)
 
             if self._report is None:

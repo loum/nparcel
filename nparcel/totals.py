@@ -16,11 +16,12 @@ class Totals(nparcel.Auditer):
     """
     _period = 7
 
-    def __init__(self, db_kwargs=None):
+    def __init__(self, db_kwargs=None, bu_ids=None):
         """Totals initialiser.
 
         """
-        super(nparcel.Totals, self).__init__(db_kwargs=db_kwargs)
+        super(nparcel.Totals, self).__init__(db_kwargs=db_kwargs,
+                                             bu_ids=bu_ids)
 
     @property
     def period(self):
@@ -44,7 +45,9 @@ class Totals(nparcel.Auditer):
         """
         log.info('Parcel totals query ...')
 
-        sql = self.db.jobitem.total_agent_stocktake_parcel_count_sql(id)
+        ids = tuple(self.bu_ids.keys())
+
+        sql = self.db.jobitem.total_agent_stocktake_parcel_count_sql(ids)
         self.db(sql)
         self.set_columns(self.db.columns())
         agents = list(self.db.rows())

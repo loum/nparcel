@@ -17,7 +17,7 @@ class AgentStocktake(nparcel.Table):
     @property
     def schema(self):
         return ["id INTEGER PRIMARY KEY",
-                "agent_id TEXT(6)",
+                "agent_id INTEGER",
                 "created_ts TIMESTAMP",
                 "reference_nbr TEXT(32)",
                 "processed_ts CHAR(6)"]

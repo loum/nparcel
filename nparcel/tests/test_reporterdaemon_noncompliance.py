@@ -55,12 +55,6 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
 
         db.commit()
 
-    def test_init(self):
-        """Intialise a ReporterDaemon object.
-        """
-        msg = 'Not a nparcel.ReporterDaemon object'
-        self.assertIsInstance(self._ud, nparcel.ReporterDaemon, msg)
-
     def test_start(self):
         """ReporterDaemon _start processing loop.
         """
@@ -124,9 +118,6 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
               'subtitle': 'ITEMS IN TPP SYSTEM, NOT SCANNED BY AGENT',
               'sheet_title': 'Non-compliance'}
         self._ud.set_ws(ws)
-
-        old_recipients = self._ud.recipients
-        self._ud.set_recipients(['loumar@tollgroup.com'])
 
         self._ud.set_dry(dry)
         self._ud._start(self._ud.exit_event)

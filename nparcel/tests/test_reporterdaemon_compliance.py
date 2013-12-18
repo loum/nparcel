@@ -98,9 +98,6 @@ WHERE id IN (7, 8)""" % older_date
               'sheet_title': 'Compliance'}
         self._ud.set_ws(ws)
 
-        old_recipients = self._ud.recipients
-        self._ud.set_recipients(['loumar@tollgroup.com'])
-
         self._ud.set_dry(dry)
         self._ud._start(self._ud.exit_event)
 
@@ -110,7 +107,6 @@ WHERE id IN (7, 8)""" % older_date
         self._ud.set_aliases(old_aliases)
         self._ud.set_header_widths(old_widths)
         self._ud.set_ws(old_ws)
-        self._ud.set_recipients(old_recipients)
         self._ud.exit_event.clear()
         remove_files(get_directory_files_list(self._dir))
 
@@ -136,7 +132,7 @@ WHERE id IN (7, 8)""" % older_date
         self._ud.set_recipients(['loumar@tollgroup.com'])
 
         now = self._now.strftime('%d/%m/%Y %H:%M')
-        self._ud.send_email(date_ts=self._now)
+        self._ud.send_email(bu='all', date_ts=self._now)
 
         # Clean up.
         self._ud.set_dry(old_dry)

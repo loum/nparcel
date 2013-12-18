@@ -35,6 +35,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestReporterDaemonCompliance \
 	 nparcel.tests:TestReporterDaemonNonCompliance \
 	 nparcel.tests:TestReporterDaemonException \
+	 nparcel.tests:TestReporterDaemonTotals \
 	 nparcel.tests:TestExporter \
 	 nparcel.tests:TestExporterIpec \
 	 nparcel.tests:TestExporterFast \

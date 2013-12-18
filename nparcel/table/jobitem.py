@@ -524,7 +524,7 @@ AND ji.id NOT IN
                                                picked_up=False,
                                                columns=None,
                                                alias='ji'):
-        """Sum ``agent_stocktake``-based parcel counts per ADP based on
+        """Sum ``agent_stocktake`` based parcel counts per ADP based on
         *picked_up*.
 
         Query is an ``OR`` against both ``connote_nbr`` and ``item_nbr``.
@@ -566,8 +566,7 @@ AND ji.id NOT IN
         if reference_nbr is None:
             ref = self._agent_stocktake.reference_sql()
 
-        columns = """%(alias)s.created_ts as CREATED_TS,
-       %(alias)s.pieces as PIECES,
+        columns = """%(alias)s.pieces as PIECES,
        ag.dp_code as DP_CODE,
        ag.code as AGENT_CODE,
        ag.name as AGENT_NAME""" % {'alias': alias}
@@ -575,8 +574,12 @@ AND ji.id NOT IN
         sql = """SELECT DP_CODE,
        AGENT_CODE,
        AGENT_NAME,
-       SUM(PIECES),
-       (%(job_item_count)s)
+       (SELECT MAX(st.created_ts)
+        FROM agent_stocktake AS st, agent AS ag
+        WHERE st.agent_id = ag.id
+        AND ag.code = AGENT_CODE) AS STOCKTAKE_CREATED_TS,
+       SUM(PIECES) AS AGENT_PIECES,
+       (%(job_item_count)s) AS TPP_PIECES
 FROM (SELECT %(columns)s
  FROM %(name)s as %(alias)s, job as j, agent as ag
  WHERE %(alias)s.job_id = j.id
