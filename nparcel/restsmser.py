@@ -143,11 +143,13 @@ class RestSmser(nparcel.Rest):
 
         * starts with '04'
 
-        .. note:: a 9-digit number with leading ``4`` will have a ``0``
-        prepended to complete a valid mobile number construct.
+        .. note::
+
+            a 9-digit number with leading ``4`` will have a ``0``
+            prepended to complete a valid mobile number construct.
 
         **Args:**
-            mobile_number: the mobile number to validate
+            *mobile_number*: the mobile number to validate
 
         **Returns:**
             boolean ``True`` if the number validates

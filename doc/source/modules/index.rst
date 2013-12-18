@@ -59,7 +59,9 @@ Modules
     uncollected.rst
     compliance.rst
     noncompliance.rst
-    reporterdeamon.rst
+    exception.rst
+    totals.rst
+    reporterdaemon.rst
 
     writer.rst
     xlwriter.rst

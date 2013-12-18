@@ -35,6 +35,7 @@ from nparcel.uncollected import Uncollected
 from nparcel.compliance import Compliance
 from nparcel.noncompliance import NonCompliance
 from nparcel.exception import Exception
+from nparcel.totals import Totals
 from table import Table
 from table.job import Job
 from table.agent_stocktake import AgentStocktake
