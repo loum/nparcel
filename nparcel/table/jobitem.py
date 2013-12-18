@@ -517,3 +517,115 @@ AND ji.id NOT IN
                                           columns=col)}
 
         return sql
+
+    def total_agent_stocktake_parcel_count_sql(self,
+                                               bu_ids,
+                                               reference_nbr=None,
+                                               picked_up=False,
+                                               columns=None,
+                                               alias='ji'):
+        """Sum ``agent_stocktake``-based parcel counts per ADP based on
+        *picked_up*.
+
+        Query is an ``OR`` against both ``connote_nbr`` and ``item_nbr``.
+
+        **Args:**
+            *bu_ids*: integer based tuple of Business Unit ID's to search
+            against (default ``None`` ignores all Business Units)
+
+        **Kwargs:**
+            *reference_nbr*: parcel ID number as scanned by the agent.  If
+            ``None``, then the values from the ``agent_stocktake`` table
+            will be used.
+
+            *picked_up*: boolean flag that will extract ``job_items``
+            that have been picked up if ``True``. Otherwise, will extract
+            ``job_items`` that have not been picked up if ``False``.
+
+            *columns*: string prepresentation of the columns to query
+            against
+
+            *alias*: table alias (default ``ji``)
+
+        **Returns:**
+            the SQL string
+
+        """
+        if columns is None:
+            columns = self._select_columns(alias)
+
+        if not picked_up:
+            pickup_sql = 'IS NULL'
+        else:
+            pickup_sql = 'IS NOT NULL'
+
+        if len(bu_ids) == 1:
+            bu_ids = '(%d)' % bu_ids[0]
+
+        ref = reference_nbr
+        if reference_nbr is None:
+            ref = self._agent_stocktake.reference_sql()
+
+        columns = """%(alias)s.created_ts as CREATED_TS,
+       %(alias)s.pieces as PIECES,
+       ag.dp_code as DP_CODE,
+       ag.code as AGENT_CODE,
+       ag.name as AGENT_NAME""" % {'alias': alias}
+
+        sql = """SELECT DP_CODE,
+       AGENT_CODE,
+       AGENT_NAME,
+       SUM(PIECES),
+       (%(job_item_count)s)
+FROM (SELECT %(columns)s
+ FROM %(name)s as %(alias)s, job as j, agent as ag
+ WHERE %(alias)s.job_id = j.id
+ AND j.bu_id IN %(bu_ids)s
+ AND j.agent_id = ag.id
+ AND (%(alias)s.connote_nbr IN (%(ref)s)
+      OR %(alias)s.item_nbr IN (%(ref)s))
+ AND %(alias)s.pickup_ts %(pickup_sql)s
+ UNION
+ %(union)s)""" % {'columns': columns,
+                  'bu_ids': str(bu_ids),
+                  'name': self.name,
+                  'ref': ref,
+                  'alias': alias,
+                  'union': self.job_based_reference_sql(bu_ids=bu_ids,
+                                                        reference_nbr=ref,
+                                                        picked_up=picked_up,
+                                                        columns=columns),
+                  'job_item_count': self.total_parcel_count_sql(picked_up),
+                  'pickup_sql': pickup_sql}
+
+        return sql
+
+    def total_parcel_count_sql(self, picked_up=False, alias='ji'):
+        """Sum parcel counts per ADP based on *picked_up*.
+
+        **Kwargs:**
+            *picked_up*: boolean flag that will extract ``job_items``
+            that have been picked up if ``True``. Otherwise, will extract
+            ``job_items`` that have not been picked up if ``False``.
+
+            *alias*: table alias (default ``ji``)
+
+        **Returns:**
+            the SQL string
+
+        """
+        if not picked_up:
+            pickup_sql = 'IS NULL'
+        else:
+            pickup_sql = 'IS NOT NULL'
+
+        sql = """SELECT SUM(%(alias)s.pieces)
+FROM %(name)s as %(alias)s, job as j, agent as ag
+WHERE %(alias)s.job_id = j.id
+AND j.agent_id = ag.id
+AND %(alias)s.pickup_ts %(pickup_sql)s
+GROUP BY ag.id""" % {'name': self.name,
+                     'pickup_sql': pickup_sql,
+                     'alias': alias}
+
+        return sql

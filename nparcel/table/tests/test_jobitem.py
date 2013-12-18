@@ -517,7 +517,7 @@ AND j.service_code = 1"""
                      'Testville',
                      'VIC',
                      '1234',
-                     '0431602145'),]
+                     '0431602145')]
         msg = 'Reference-based job_item query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -780,6 +780,55 @@ AND j.service_code = 1"""
         expected = [1, 5, 7]
         msg = 'All collected job_items query error'
         self.assertListEqual(received, expected, msg)
+
+    def test_total_agent_stocktake_parcel_count_sql_not_picked_up(self):
+        """Verify the total_agent_stocktake_parcel_count_sql SQL.
+        """
+        ids = (1, 2, 3)
+        sql = self._db.jobitem.total_agent_stocktake_parcel_count_sql(ids)
+
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [('VIC999', 'V999', 'VIC Test Newsagent 999', 92, 127)]
+        msg = 'AgentStocktake-based parcel totals count error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_total_agent_stocktake_parcel_count_sql_picked_up(self):
+        """The total_agent_stocktake_parcel_count_sql SQL -- picked up.
+        """
+        ids = (1, 2, 3)
+        table = self._db.jobitem
+        sql = table.total_agent_stocktake_parcel_count_sql(ids,
+                                                           picked_up=True)
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [('VIC999', 'V999', 'VIC Test Newsagent 999', 21, 13)]
+        msg = 'AgentStocktake-based parcel totals count error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_total_parcel_count_sql_not_picked_up(self):
+        """Verify the total_parcel_count_sql SQL -- not picked up.
+        """
+        sql = self._db.jobitem.total_parcel_count_sql()
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [(92,), (127,)]
+        msg = 'Jobitem-based parcel (not picked up) totals count error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_total_parcel_count_sql_picked_up(self):
+        """Verify the total_parcel_count_sql SQL -- pickup up.
+        """
+        sql = self._db.jobitem.total_parcel_count_sql(picked_up=True)
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [(13,), (21,)]
+        msg = 'Jobitem-based parcel (picked up) totals count error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
 
     @classmethod
     def tearDownClass(cls):
