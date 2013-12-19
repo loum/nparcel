@@ -91,7 +91,7 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
         old_ws = self._ud.ws
         title = 'Toll Parcel Portal Stocktake - Total Parcels at agent'
         ws = {'title': title,
-              'sheet_title': 'Agent Totals'}
+              'sheet_title': 'Parcel Totals'}
         self._ud.set_ws(ws)
 
         self._ud.set_dry(dry)

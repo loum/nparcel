@@ -195,6 +195,7 @@ class B2CConfig(nparcel.Config):
     .. attribute:: report_compliance_outfile (compliance)
     .. attribute:: report_noncompliance_outfile (non-compliance)
     .. attribute:: report_exception_outfile (exception)
+    .. attribute:: report_totals_outfile (totals)
 
         basename that is used to generate the uncollected report file
 
@@ -202,6 +203,7 @@ class B2CConfig(nparcel.Config):
     .. attribute:: report_compliance_display_hdrs (compliance)
     .. attribute:: report_noncompliance_display_hdrs (non-compliance)
     .. attribute:: report_exception_display_hdrs (exception)
+    .. attribute:: report_totals_display_hdrs (totals)
 
         list of ordered column headers to display in the uncollected report
 
@@ -214,6 +216,7 @@ class B2CConfig(nparcel.Config):
     .. attribute:: report_compliance_widths (compliance)
     .. attribute:: report_noncompliance_widths (non-compliance)
     .. attribute:: report_exception_widths (exception)
+    .. attribute:: report_totals_widths (totals)
 
         map of aliased header names and prefered column width
 
@@ -221,6 +224,7 @@ class B2CConfig(nparcel.Config):
     .. attribute:: report_compliance_ws (compliance)
     .. attribute:: report_noncompliance_ws (non-compliance)
     .. attribute:: report_exception_ws (exception)
+    .. attribute:: report_totals_ws (totals)
 
         map of worksheet related items
 
@@ -228,6 +232,7 @@ class B2CConfig(nparcel.Config):
     .. attribute:: report_compliance_recipients (compliance)
     .. attribute:: report_noncompliance_recipients (noncompliance)
     .. attribute:: report_exception_recipients (exception)
+    .. attribute:: report_totals_recipients (totals)
 
         list of email recipients
 
@@ -235,6 +240,7 @@ class B2CConfig(nparcel.Config):
     .. attribute:: report_compliance_bu_based (compliance)
     .. attribute:: report_noncompliance_bu_based (noncompliance)
     .. attribute:: report_exception_bu_based (exception)
+    .. attribute:: report_totals_bu_based (totals)
 
         flag to denote if the reports are to be based on Business Unit
 
@@ -323,6 +329,13 @@ class B2CConfig(nparcel.Config):
     _report_exception_ws = {}
     _report_exception_recipients = []
     _report_exception_bu_based = False
+    _report_totals_outfile = 'Stocktake_totals_'
+    _report_totals_display_hdrs = []
+    _report_totals_aliases = {}
+    _report_totals_widths = {}
+    _report_totals_ws = {}
+    _report_totals_recipients = []
+    _report_totals_bu_based = False
     _report_bu_id_recipients = {}
     _health_processes = []
 
@@ -872,7 +885,8 @@ class B2CConfig(nparcel.Config):
         for r in ['uncollected',
                   'compliance',
                   'noncompliance',
-                  'exception']:
+                  'exception',
+                  'totals']:
             report_opt = 'report_%s' % r
 
             # Report headers to display.
@@ -1916,6 +1930,96 @@ class B2CConfig(nparcel.Config):
         self.report_exception_bu_based = (value.lower() == 'yes')
         log.debug('Config report (exception) BU-based flag: "%s"' %
                   self.report_exception_bu_based)
+
+    @property
+    def report_totals_display_hdrs(self):
+        return self._report_totals_display_hdrs
+
+    def set_report_totals_display_hdrs(self, values=None):
+        del self.report_totals_display_hdrs[:]
+        self._report_totals_display_hdrs
+
+        if values is not None:
+            self._report_totals_display_hdrs.extend(values)
+            log.debug('Config report (totals) displayed hdrs: "%s"' %
+                      self.report_totals_display_hdrs)
+        else:
+            log.debug('Cleared (totals) headers to display list')
+
+    @property
+    def report_totals_outfile(self):
+        return self._report_totals_outfile
+
+    def set_report_totals_outfile(self, value):
+        self._report_totals_outfile = value
+        log.debug('Config report (totals) outfile: "%s"' %
+                  self.report_totals_outfile)
+
+    @property
+    def report_totals_aliases(self):
+        return self._report_totals_aliases
+
+    def set_report_totals_aliases(self, values=None):
+        self._report_totals_aliases.clear()
+
+        if values is not None:
+            self._report_totals_aliases = values
+            log.debug('Config report (totals) aliases: "%s"' %
+                      self.report_totals_aliases)
+        else:
+            log.debug('Cleared report (totals) aliases')
+
+    @property
+    def report_totals_widths(self):
+        return self._report_totals_widths
+
+    def set_report_totals_widths(self, values=None):
+        self._report_totals_widths.clear()
+
+        if values is not None:
+            self._report_totals_widths = values
+            log.debug('Config report (totals) widths: "%s"' %
+                      self.report_totals_widths)
+        else:
+            log.debug('Cleared report (totals) widths')
+
+    @property
+    def report_totals_ws(self):
+        return self._report_totals_ws
+
+    def set_report_totals_ws(self, values=None):
+        self._report_totals_ws.clear()
+
+        if values is not None:
+            self._report_totals_ws = values
+            log.debug('Config report (totals) worksheet: "%s"' %
+                      self.report_totals_ws)
+        else:
+            log.debug('Cleared report (totals) worksheet')
+
+    @property
+    def report_totals_recipients(self):
+        return self._report_totals_recipients
+
+    def set_report_totals_recipients(self, values=None):
+        del self._report_totals_recipients[:]
+        self._report_totals_recipients
+
+        if values is not None:
+            self._report_totals_recipients.extend(values)
+            log.debug('Config report (totals) recipients: "%s"' %
+                      self.report_totals_recipients)
+        else:
+            log.debug('Cleared report (totals) recipients list')
+
+    @property
+    def report_totals_bu_based(self):
+        return self._report_totals_bu_based
+
+    def set_report_totals_bu_based(self, value=False):
+        self.report_totals_bu_based = (value.lower() == 'yes')
+        log.debug('Config report (totals) BU-based flag: "%s"' %
+                  self.report_totals_bu_based)
 
     @property
     def health_processes(self):

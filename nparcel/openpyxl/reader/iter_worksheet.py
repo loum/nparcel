@@ -69,7 +69,7 @@ try:
     BaseRawCell = namedtuple('RawCell', RAW_ATTRIBUTES)
 except ImportError:
 
-    warnings.warn("""Unable to import 'namedtuple' module, this may cause  memory issues when using optimized reader. Please upgrade your Python installation to 2.6+""")
+    #warnings.warn("""Unable to import 'namedtuple' module, this may cause  memory issues when using optimized reader. Please upgrade your Python installation to 2.6+""")
 
     class BaseRawCell(object):
 

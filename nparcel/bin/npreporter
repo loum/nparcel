@@ -32,7 +32,11 @@ def main():
     except IndexError, err:
         based.parser.error('No report defined')
 
-    reports = ['uncollected', 'compliance', 'noncompliance', 'exception']
+    reports = ['uncollected',
+               'compliance',
+               'noncompliance',
+               'exception',
+               'totals']
     if report not in reports:
         based.parser.error('Report "%s" not supported' % report)
 

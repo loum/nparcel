@@ -30,4 +30,4 @@ try:
         warnings.warn("""Unable to import 'xml.etree.cElementree'. Falling back on 'xml.etree.Elementree'""")
 except ImportError:
     from cElementTree import iterparse
-    warnings.warn("""Unable to import 'xml.etree.Elementree'. Falling back on 'cElementree'""")
+    #warnings.warn("""Unable to import 'xml.etree.Elementree'. Falling back on 'cElementree'""")
