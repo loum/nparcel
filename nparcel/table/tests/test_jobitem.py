@@ -800,7 +800,7 @@ WHERE agent_id = 3"""
                      'VIC Test Newsagent 999',
                      '%s' % ts[0][0],
                      92,
-                     127)]
+                     92)]
         msg = 'AgentStocktake-based parcel totals count error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -820,7 +820,12 @@ WHERE agent_id = 3"""
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [('VIC999', 'V999', 'VIC Test Newsagent 999', '%s' % max_date, 21, 13)]
+        expected = [('VIC999',
+                     'V999',
+                     'VIC Test Newsagent 999',
+                     '%s' % max_date,
+                     21,
+                     21)]
         msg = 'AgentStocktake-based parcel totals count error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -831,7 +836,7 @@ WHERE agent_id = 3"""
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [(92,), (127,)]
+        expected = [(219,)]
         msg = 'Jobitem-based parcel (not picked up) totals count error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -842,7 +847,7 @@ WHERE agent_id = 3"""
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [(13,), (21,)]
+        expected = [(34,)]
         msg = 'Jobitem-based parcel (picked up) totals count error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 

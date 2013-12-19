@@ -576,30 +576,38 @@ AND ji.id NOT IN
        AGENT_NAME,
        (SELECT MAX(st.created_ts)
         FROM agent_stocktake AS st, agent AS ag
-        WHERE st.agent_id = ag.id
-        AND ag.code = AGENT_CODE) AS STOCKTAKE_CREATED_TS,
+        WHERE ag.code = AGENT_CODE
+        AND ag.id = st.agent_id) AS STOCKTAKE_CREATED_TS,
        SUM(PIECES) AS AGENT_PIECES,
-       (%(job_item_count)s) AS TPP_PIECES
+       (SELECT SUM(%(alias)s.pieces)
+        FROM %(name)s as %(alias)s, job as j, agent as ag
+        WHERE %(alias)s.job_id = j.id
+        AND j.agent_id = ag.id
+        AND ag.code = AGENT_CODE
+        AND %(alias)s.pickup_ts %(pickup_sql)s) AS TPP_PIECES
 FROM (SELECT %(columns)s
  FROM %(name)s as %(alias)s, job as j, agent as ag
  WHERE %(alias)s.job_id = j.id
  AND j.bu_id IN %(bu_ids)s
  AND j.agent_id = ag.id
  AND (%(alias)s.connote_nbr IN (%(ref)s)
-      OR %(alias)s.item_nbr IN (%(ref)s))
+      OR (%(alias)s.item_nbr IN (%(ref)s)))
  AND %(alias)s.pickup_ts %(pickup_sql)s
  UNION
- %(union)s)""" % {'columns': columns,
-                  'bu_ids': str(bu_ids),
-                  'name': self.name,
-                  'ref': ref,
-                  'alias': alias,
-                  'union': self.job_based_reference_sql(bu_ids=bu_ids,
-                                                        reference_nbr=ref,
-                                                        picked_up=picked_up,
-                                                        columns=columns),
-                  'job_item_count': self.total_parcel_count_sql(picked_up),
-                  'pickup_sql': pickup_sql}
+ %(union)s) AS A
+GROUP BY A.DP_CODE,
+A.AGENT_NAME,
+A.AGENT_CODE""" % {'columns': columns,
+                   'bu_ids': str(bu_ids),
+                   'name': self.name,
+                   'ref': ref,
+                   'alias': alias,
+                   'union': self.job_based_reference_sql(bu_ids,
+                                                         ref,
+                                                         picked_up,
+                                                         columns),
+                   'job_item_count': self.total_parcel_count_sql(picked_up),
+                   'pickup_sql': pickup_sql}
 
         return sql
 
@@ -626,9 +634,8 @@ FROM (SELECT %(columns)s
 FROM %(name)s as %(alias)s, job as j, agent as ag
 WHERE %(alias)s.job_id = j.id
 AND j.agent_id = ag.id
-AND %(alias)s.pickup_ts %(pickup_sql)s
-GROUP BY ag.id""" % {'name': self.name,
-                     'pickup_sql': pickup_sql,
-                     'alias': alias}
+AND %(alias)s.pickup_ts %(pickup_sql)s""" % {'name': self.name,
+                                             'pickup_sql': pickup_sql,
+                                             'alias': alias}
 
         return sql

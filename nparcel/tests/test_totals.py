@@ -83,7 +83,7 @@ WHERE id IN (7, 8)""" % cls._older_date
                      'VIC Test Newsagent 999',
                      '%s' % max_date,
                      92,
-                     127)]
+                     92)]
         msg = 'List of parcel counts incorrect'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
