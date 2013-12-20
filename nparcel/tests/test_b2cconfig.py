@@ -568,6 +568,7 @@ class TestB2CConfig(unittest2.TestCase):
 
         received = self._c.report_totals_widths
         expected = {'agent name': 20,
+                    'number of parcels scanned': 22,
                     'tpp - number of parcels at agency': 27,
                     'stocktake date': 30}
         msg = 'Report totals widths value error'

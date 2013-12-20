@@ -31,11 +31,11 @@ from nparcel.mts import Mts
 from nparcel.writer import Writer
 from nparcel.xlwriter import Xlwriter
 from nparcel.auditer import Auditer
-from nparcel.uncollected import Uncollected
-from nparcel.compliance import Compliance
-from nparcel.noncompliance import NonCompliance
-from nparcel.exception import Exception
-from nparcel.totals import Totals
+from nparcel.report.uncollected import Uncollected
+from nparcel.report.compliance import Compliance
+from nparcel.report.noncompliance import NonCompliance
+from nparcel.report.exception import Exception
+from nparcel.report.totals import Totals
 from table import Table
 from table.job import Job
 from table.agent_stocktake import AgentStocktake
