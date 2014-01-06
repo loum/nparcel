@@ -51,11 +51,12 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestFilter \
 	 nparcel.tests:TestMts \
 	 nparcel.tests:TestAuditer \
-	 nparcel.tests:TestUncollected \
-	 nparcel.tests:TestCompliance \
-	 nparcel.tests:TestNonCompliance \
-	 nparcel.tests:TestException \
-	 nparcel.tests:TestTotals \
+	 nparcel.report.tests:TestUncollected \
+	 nparcel.report.tests:TestCompliance \
+	 nparcel.report.tests:TestNonCompliance \
+	 nparcel.report.tests:TestException \
+	 nparcel.report.tests:TestTotals \
+	 nparcel.report.tests:TestCollected \
 	 nparcel.tests:TestWriter \
 	 nparcel.tests:TestXlwriter \
 	 nparcel.table.tests:TestAgent \
