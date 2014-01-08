@@ -60,6 +60,13 @@ SET created_ts = '%(dt)s', notify_ts = '%(dt)s'
 WHERE id = 2""" % {'dt': delayed_dt}
         db(sql)
 
+        cls._agent_stocktake_created_ts = cls._now - datetime.timedelta(6)
+        sql = """UPDATE agent_stocktake
+SET created_ts = '%s'
+WHERE reference_nbr = '%s'""" % (cls._agent_stocktake_created_ts,
+                                 'TEST_REF_NOT_PROC_PCKD_UP')
+        db(sql)
+
         db.commit()
 
     def test_init(self):
@@ -174,6 +181,29 @@ WHERE id IN (7, 8)""" % older_date
                      'QBRI005',
                      'George Street News')]
         msg = 'Reference exception query error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_stocktake_created_date_single_search_key(self):
+        """Verify the stocktake_created_date SQL -- single search key.
+        """
+        sql = self._st.stocktake_created_date('TEST_REF_NOT_PROC_PCKD_UP')
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [('%s' % self._agent_stocktake_created_ts,)]
+        msg = 'Created date query error - single search key'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_stocktake_created_date_multiple_search_keys(self):
+        """Verify the stocktake_created_date SQL - multiple search key.
+        """
+        sql = self._st.stocktake_created_date('ARTZ061184',
+                                              'TEST_REF_NOT_PROC_PCKD_UP')
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [('%s' % self._agent_stocktake_created_ts,)]
+        msg = 'Created date query error - multiple search keys'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
     @classmethod

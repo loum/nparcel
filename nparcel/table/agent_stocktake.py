@@ -4,6 +4,7 @@ __all__ = [
 import datetime
 
 import nparcel
+from nparcel.utils.log import log
 
 
 class AgentStocktake(nparcel.Table):
@@ -132,5 +133,33 @@ AND %(alias)s.reference_nbr NOT IN
  FROM job AS j, job_item AS ji
  WHERE ji.job_id = j.id)""" % {'name': self.name,
                                'alias': alias}
+
+        return sql
+
+    def stocktake_created_date(self, *args):
+        """Return the most current ``agent_stocktake.created_ts`` of an
+        agent_stocktake record against ``agent_stocktake.reference_nbr``
+        on either *connote_nbr*, *barcode* or item_nbr.
+
+        **Args:**
+            *args*: list of search keys to use against the
+            ``agent_stocktake.reference_nbr`` column.  Typcially, these
+            are the ``job_item.connote_nbr``, ``job.barcode`` and
+            ``job_item.item_nbr``.
+
+        **Returns:**
+            the SQL string
+
+        """
+        if len(args) == 1:
+            refs = "('%s')" % args[0]
+        else:
+            refs = tuple('%s' % x for x in args)
+
+        log.debug('refs: %s' % str(refs))
+
+        sql = """SELECT MAX(created_ts)
+FROM %(name)s
+WHERE reference_nbr IN %(refs)s""" % {'name': self.name, 'refs': refs}
 
         return sql
