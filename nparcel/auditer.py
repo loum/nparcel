@@ -2,6 +2,7 @@ __all__ = [
     "Auditer",
 ]
 import datetime
+import time
 
 import nparcel
 from nparcel.utils.log import log
@@ -77,7 +78,7 @@ class Auditer(nparcel.Service):
         self._delta_time_column = value
         log.debug('Set delta time column to "%s"' % self.delta_time_column)
 
-    def _translate_bu(self, headers, row, bu_ids):
+    def translate_bu(self, headers, row, bu_ids):
         """Translate the BU ID to the Business Unit name string.
 
         **Args:**
@@ -308,3 +309,49 @@ class Auditer(nparcel.Service):
                 pass
 
         return tuple(tmp_row_list)
+
+    def filter_collected_parcels(self, headers, row):
+        """Filter out items that have not been not been collected.
+
+        **Args:**
+            *header*: list of column headers
+
+            *row*: tuple structure that represents the raw row result
+
+        **Returns:**
+            boolean ``True`` if the collected filtering criteria is met
+
+            boolean ``False`` otherwise
+
+        """
+        picked_up = False
+
+        pickup_ts_index = None
+        try:
+            pickup_ts_index = headers.index('PICKUP_TS')
+        except ValueError, err:
+            log.warn('No "PICKUP_TS" column in headers')
+
+        if pickup_ts_index is not None:
+            pickup_ts = row[pickup_ts_index]
+            if pickup_ts is not None:
+                picked_up = True
+
+        if picked_up == True:
+            refs = []
+            try:
+                connote_index = headers.index('CONNOTE_NBR')
+                if row[connote_index] is not None:
+                    refs.append(row[connote_index])
+                barcode_index = headers.index('BARCODE')
+                if row[barcode_index] is not None:
+                    refs.append(row[barcode_index])
+                item_index = headers.index('ITEM_NBR')
+                if row[item_index] is not None:
+                    refs.append(row[item_index])
+            except ValueError, err:
+                log.warn('Unmatched column in headers: %s' % err)
+
+        log.debug('Row filter is collected?: %s' % picked_up)
+
+        return picked_up

@@ -45,10 +45,10 @@ class Collected(nparcel.Auditer):
         for i in items:
             cleansed_items.append(self._cleanse(self.columns, i))
 
-        translated_aged_items = []
+        translated_bus = []
         for i in cleansed_items:
-            translated_aged_items.append(self._translate_bu(self.columns,
-                                                            i,
-                                                            self.bu_ids))
+            translated_bus.append(self.translate_bu(self.columns,
+                                                    i,
+                                                    self.bu_ids))
 
-        return translated_aged_items
+        return translated_bus

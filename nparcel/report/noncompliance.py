@@ -49,9 +49,9 @@ class NonCompliance(nparcel.Auditer):
                 cleansed_jobitems.append(self._cleanse(self.columns, i))
 
             for i in cleansed_jobitems:
-                xlated_jobitems.append(self._translate_bu(self.columns,
-                                                          i,
-                                                          self.bu_ids))
+                xlated_jobitems.append(self.translate_bu(self.columns,
+                                                         i,
+                                                         self.bu_ids))
             for i in xlated_jobitems:
                 delta_row = self.add_date_diff(self.columns,
                                                i,

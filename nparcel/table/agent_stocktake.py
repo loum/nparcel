@@ -156,8 +156,6 @@ AND %(alias)s.reference_nbr NOT IN
         else:
             refs = tuple('%s' % x for x in args)
 
-        log.debug('refs: %s' % str(refs))
-
         sql = """SELECT MAX(created_ts)
 FROM %(name)s
 WHERE reference_nbr IN %(refs)s""" % {'name': self.name, 'refs': refs}

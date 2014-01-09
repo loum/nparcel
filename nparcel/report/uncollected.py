@@ -60,9 +60,9 @@ class Uncollected(nparcel.Auditer):
 
         translated_aged_items = []
         for i in filtered_items:
-            translated_aged_items.append(self._translate_bu(self.columns,
-                                                            i,
-                                                            self.bu_ids))
+            translated_aged_items.append(self.translate_bu(self.columns,
+                                                           i,
+                                                           self.bu_ids))
 
         date_delta_items = []
         for i in translated_aged_items:

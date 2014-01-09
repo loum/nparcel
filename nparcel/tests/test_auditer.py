@@ -1,5 +1,6 @@
 import unittest2
 import datetime
+import os
 
 import nparcel
 
@@ -13,6 +14,25 @@ class TestAuditer(unittest2.TestCase):
                   2: 'Toll Fast',
                   3: 'Toll IPEC'}
         cls._a = nparcel.Auditer(bu_ids=bu_ids)
+        db = cls._a.db
+
+        # Prepare some sample data.
+        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixtures = [{'db': db.agent_stocktake,
+                     'fixture': 'agent_stocktakes.py'}]
+
+        for i in fixtures:
+            fixture_file = os.path.join(fixture_dir, i['fixture'])
+            db.load_fixture(i['db'], fixture_file)
+
+        cls._agent_stocktake_created_ts = cls._now - datetime.timedelta(6)
+        sql = """UPDATE agent_stocktake
+ SET created_ts = '%s'
+ WHERE reference_nbr = '%s'""" % (cls._agent_stocktake_created_ts,
+                                  'TEST_REF_NOT_PROC_PCKD_UP')
+        db(sql)
+
+        db.commit()
 
     def test_init(self):
         """Initialise a Auditer object.
@@ -49,7 +69,7 @@ class TestAuditer(unittest2.TestCase):
                'Con Sumertwentytwo',
                'VIC999',
                'VIC Test Newsagent 999')
-        received = self._a._translate_bu(headers, row, self._a.bu_ids)
+        received = self._a.translate_bu(headers, row, self._a.bu_ids)
         expected = (22,
                     'Toll Priority',
                     'ARTZ061184',
@@ -99,7 +119,7 @@ class TestAuditer(unittest2.TestCase):
                'Con Sumertwentytwo',
                'VIC999',
                'VIC Test Newsagent 999')
-        received = self._a._translate_bu(headers, row, self._a.bu_ids)
+        received = self._a.translate_bu(headers, row, self._a.bu_ids)
         expected = (22,
                     1,
                     'ARTZ061184',
@@ -147,7 +167,7 @@ class TestAuditer(unittest2.TestCase):
                'Con Sumertwentytwo',
                'VIC999',
                'VIC Test Newsagent 999')
-        received = self._a._translate_bu(headers, row, self._a.bu_ids)
+        received = self._a.translate_bu(headers, row, self._a.bu_ids)
         expected = (22,
                     'ARTZ061184',
                     'JOB_TEST_REF_NOT_PROC_PCKD_UP',
@@ -396,6 +416,72 @@ class TestAuditer(unittest2.TestCase):
         received = self._a.aged_item(headers, row, 'JOB_TS')
         msg = 'Aged item check (against JOB_TS) should return False'
         self.assertFalse(received, msg)
+
+    def test_filter_collected_parcels_not_collected(self):
+        """Filter out collected parcels -- not collected.
+        """
+        headers = ['JOB_ITEM_ID',
+                   'JOB_BU_ID',
+                   'CONNOTE_NBR',
+                   'BARCODE',
+                   'ITEM_NBR',
+                   'JOB_TS',
+                   'CREATED_TS',
+                   'NOTIFY_TS',
+                   'PICKUP_TS',
+                   'PIECES',
+                   'CONSUMER_NAME',
+                   'DP_CODE',
+                   'AGENT_NAME']
+        row = (22,
+               1,
+               'ARTZ061184',
+               'JOB_TEST_REF_NOT_PROC_PCKD_UP',
+               '00393403250082030048',
+               '%s' % self._now,
+               '%s' % self._now,
+               None,
+               None,
+               22,
+               'Con Sumertwentytwo',
+               'VIC999',
+               'VIC Test Newsagent 999')
+        received = self._a.filter_collected_parcels(headers, row)
+        msg = 'Collected parcels filter error -- parcel not collected'
+        self.assertFalse(received, msg)
+
+    def test_filter_collected_parcels_collected(self):
+        """Filter out collected parcels -- collected.
+        """
+        headers = ['JOB_ITEM_ID',
+                   'JOB_BU_ID',
+                   'CONNOTE_NBR',
+                   'BARCODE',
+                   'ITEM_NBR',
+                   'JOB_TS',
+                   'CREATED_TS',
+                   'NOTIFY_TS',
+                   'PICKUP_TS',
+                   'PIECES',
+                   'CONSUMER_NAME',
+                   'DP_CODE',
+                   'AGENT_NAME']
+        row = (21,
+               1,
+               'ARTZ061184',
+               'aged_parcel_unmatched',
+               'TEST_REF_NOT_PROC_PCKD_UP',
+               '%s' % self._now,
+               '%s' % self._now,
+               '%s' % self._now,
+               '%s' % self._now,
+               21,
+               'Con Sumertwentyone',
+               'VIC999',
+               'VIC Test Newsagent 999')
+        received = self._a.filter_collected_parcels(headers, row)
+        msg = 'Collected parcels filter error -- parcel collected'
+        self.assertTrue(received, msg)
 
     @classmethod
     def tearDownClass(cls):
