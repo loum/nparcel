@@ -319,24 +319,25 @@ class Auditer(nparcel.Service):
             *row*: tuple structure that represents the raw row result
 
         **Returns:**
-            boolean ``True`` if the collected filtering criteria is met
+            boolean ``True`` if the parcel has been picked up prior to
+            the stocktake
 
             boolean ``False`` otherwise
 
         """
-        picked_up = False
-
         pickup_ts_index = None
         try:
             pickup_ts_index = headers.index('PICKUP_TS')
         except ValueError, err:
             log.warn('No "PICKUP_TS" column in headers')
 
+        picked_up = False
         if pickup_ts_index is not None:
             pickup_ts = row[pickup_ts_index]
             if pickup_ts is not None:
                 picked_up = True
 
+        picked_up_prior = False
         if picked_up == True:
             refs = []
             try:
@@ -352,6 +353,26 @@ class Auditer(nparcel.Service):
             except ValueError, err:
                 log.warn('Unmatched column in headers: %s' % err)
 
-        log.debug('Row filter is collected?: %s' % picked_up)
+            sql = self.db.agent_stocktake.stocktake_created_date(*refs)
+            self.db(sql)
+            agent_stocktake_created_ts = self.db.row[0]
 
-        return picked_up
+            if agent_stocktake_created_ts is not None:
+                # Remove microseconds from agent_stocktake.
+                ts = agent_stocktake_created_ts.split('.', 1)[0]
+                t = end_t = time.strptime(ts, '%Y-%m-%d %H:%M:%S')
+                as_dt = datetime.datetime.fromtimestamp(time.mktime(t))
+
+                # Remove microseconds from pickup_ts.
+                ts = pickup_ts.split('.', 1)[0]
+                t = end_t = time.strptime(ts, '%Y-%m-%d %H:%M:%S')
+                pickup_dt = datetime.datetime.fromtimestamp(time.mktime(t))
+
+                log.debug('pickup_dt: %s | as_dt: %s' % (str(pickup_dt),
+                                                         str(as_dt)))
+                if pickup_dt < as_dt:
+                    picked_up_prior = True
+
+        log.debug('Row filter is collected?: %s' % picked_up_prior)
+
+        return picked_up_prior

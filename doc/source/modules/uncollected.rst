@@ -6,5 +6,5 @@
 Uncollected
 ===========
 
-.. automodule:: nparcel.uncollected
+.. automodule:: nparcel.report.uncollected
     :members:

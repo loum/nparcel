@@ -6,5 +6,5 @@
 Non Compliance
 ==============
 
-.. automodule:: nparcel.noncompliance
+.. automodule:: nparcel.report.noncompliance
     :members:

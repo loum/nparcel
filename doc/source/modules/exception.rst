@@ -6,5 +6,5 @@
 Exception
 =========
 
-.. automodule:: nparcel.exception
+.. automodule:: nparcel.report.exception
     :members:

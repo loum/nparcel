@@ -61,6 +61,7 @@ Modules
     noncompliance.rst
     exception.rst
     totals.rst
+    collected.rst
     reporterdaemon.rst
 
     writer.rst

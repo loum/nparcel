@@ -42,9 +42,11 @@ SET job_ts = '%s'""" % cls._now
         db(sql)
 
         # "job_item" table timestamp updates.
+        cls._early_pickup_ts = cls._now - datetime.timedelta(100)
         sql = """UPDATE job_item
-SET created_ts = '%(now)s', pickup_ts = '%(now)s'
-WHERE id IN (21)""" % {'now': cls._now}
+SET created_ts = '%(now)s', pickup_ts = '%(dt)s'
+WHERE id IN (21)""" % {'now': cls._now,
+                       'dt': cls._early_pickup_ts}
         db(sql)
 
         db.commit()
@@ -56,7 +58,7 @@ WHERE id IN (21)""" % {'now': cls._now}
         self.assertIsInstance(self._u, nparcel.Collected, msg)
 
     def test_process(self):
-        """Check uncollected aged parcel processing.
+        """Check collected aged parcel processing.
         """
         id = tuple(self._bu_ids.keys())
         received = self._u.process(id=id)
@@ -68,7 +70,7 @@ WHERE id IN (21)""" % {'now': cls._now}
                      '="%s"' % self._now,
                      '="%s"' % self._now,
                      '',
-                     '="%s"' % self._now,
+                     '="%s"' % self._early_pickup_ts,
                      21,
                      'Con Sumertwentyone',
                      'VIC999',
@@ -111,3 +113,5 @@ WHERE id IN (21)""" % {'now': cls._now}
         del cls._u
         cls._now = None
         del cls._now
+        cls._early_pickup_ts = None
+        del cls._early_pickup_ts

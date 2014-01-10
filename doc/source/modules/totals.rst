@@ -6,5 +6,5 @@
 Totals
 ======
 
-.. automodule:: nparcel.totals
+.. automodule:: nparcel.report.totals
     :members:

@@ -450,8 +450,8 @@ class TestAuditer(unittest2.TestCase):
         msg = 'Collected parcels filter error -- parcel not collected'
         self.assertFalse(received, msg)
 
-    def test_filter_collected_parcels_collected(self):
-        """Filter out collected parcels -- collected.
+    def test_filter_collected_parcels_collected_after_stocktake(self):
+        """Filter out collected parcels -- collected after stocktake.
         """
         headers = ['JOB_ITEM_ID',
                    'JOB_BU_ID',
@@ -480,8 +480,74 @@ class TestAuditer(unittest2.TestCase):
                'VIC999',
                'VIC Test Newsagent 999')
         received = self._a.filter_collected_parcels(headers, row)
-        msg = 'Collected parcels filter error -- parcel collected'
+        msg = 'Collected parcels filter error -- parcel collected after ST'
+        self.assertFalse(received, msg)
+
+    def test_filter_collected_parcels_collected_before_stocktake(self):
+        """Filter out collected parcels -- collected before stocktake.
+        """
+        headers = ['JOB_ITEM_ID',
+                   'JOB_BU_ID',
+                   'CONNOTE_NBR',
+                   'BARCODE',
+                   'ITEM_NBR',
+                   'JOB_TS',
+                   'CREATED_TS',
+                   'NOTIFY_TS',
+                   'PICKUP_TS',
+                   'PIECES',
+                   'CONSUMER_NAME',
+                   'DP_CODE',
+                   'AGENT_NAME']
+        row = (21,
+               1,
+               'ARTZ061184',
+               'aged_parcel_unmatched',
+               'TEST_REF_NOT_PROC_PCKD_UP',
+               '%s' % self._now,
+               '%s' % self._now,
+               '%s' % self._now,
+               '%s' % (self._now - datetime.timedelta(100)),
+               21,
+               'Con Sumertwentyone',
+               'VIC999',
+               'VIC Test Newsagent 999')
+        received = self._a.filter_collected_parcels(headers, row)
+        msg = 'Collected parcels filter error -- parcel collected before ST'
         self.assertTrue(received, msg)
+
+    def test_filter_collected_parcels_no_stocktake(self):
+        """Filter out collected parcels -- not in stocktake.
+        """
+        headers = ['JOB_ITEM_ID',
+                   'JOB_BU_ID',
+                   'CONNOTE_NBR',
+                   'BARCODE',
+                   'ITEM_NBR',
+                   'JOB_TS',
+                   'CREATED_TS',
+                   'NOTIFY_TS',
+                   'PICKUP_TS',
+                   'PIECES',
+                   'CONSUMER_NAME',
+                   'DP_CODE',
+                   'AGENT_NAME']
+        row = (21,
+               1,
+               'banana',
+               '',
+               '',
+               '%s' % self._now,
+               '%s' % self._now,
+               '%s' % self._now,
+               '%s' % (self._now - datetime.timedelta(100)),
+               21,
+               'Con Sumertwentyone',
+               'VIC999',
+               'VIC Test Newsagent 999')
+        received = self._a.filter_collected_parcels(headers, row)
+        msg = 'Collected parcels filter error -- not in stocktake'
+        self.assertFalse(received, msg)
 
     @classmethod
     def tearDownClass(cls):

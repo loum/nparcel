@@ -41,8 +41,13 @@ class Collected(nparcel.Auditer):
         self.set_columns(self.db.columns())
         items = list(self.db.rows())
 
-        cleansed_items = []
+        collected_parcels = []
         for i in items:
+            if self.filter_collected_parcels(self.columns, i):
+                collected_parcels.append(i)
+
+        cleansed_items = []
+        for i in collected_parcels:
             cleansed_items.append(self._cleanse(self.columns, i))
 
         translated_bus = []

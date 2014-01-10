@@ -1,4 +1,4 @@
-.. Nparcel B2C Environment Initialisation
+.. Toll Parcel Portal B2C Environment Initialisation
 
 .. toctree::
     :maxdepth: 2
