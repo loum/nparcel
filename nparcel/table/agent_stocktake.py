@@ -4,7 +4,6 @@ __all__ = [
 import datetime
 
 import nparcel
-from nparcel.utils.log import log
 
 
 class AgentStocktake(nparcel.Table):
@@ -105,16 +104,23 @@ WHERE ag.id NOT IN
 
         return sql
 
-    def reference_exception_sql(self, alias='st'):
+    def reference_exception_sql(self, day_range=7, alias='st'):
         """Items in ``agent_stocktake`` table not found Toll Parcel Portal.
 
         **Kwargs:**
+            *day_range*: number of days from current time to include
+            in search (default 7.0 days)
+
             *alias*: table alias (default ``st``)
 
         **Returns:**
             the SQL string
 
         """
+        now = datetime.datetime.now()
+        start_ts = now - datetime.timedelta(days=day_range)
+        start_date = start_ts.strftime('%Y-%m-%d %H:%M:%S')
+
         sql = """SELECT DISTINCT %(alias)s.id AS AG_ID,
        ag.code AS AGENT_CODE,
        %(alias)s.reference_nbr AS REFERENCE_NBR,
@@ -122,6 +128,7 @@ WHERE ag.id NOT IN
        ag.name AS AGENT_NAME
 FROM %(name)s AS %(alias)s, agent AS ag
 WHERE  ag.id = %(alias)s.agent_id
+AND %(alias)s.created_ts > '%(start_date)s'
 AND %(alias)s.reference_nbr NOT IN
 (SELECT ji.connote_nbr
  FROM job_item AS ji)
@@ -132,7 +139,8 @@ AND %(alias)s.reference_nbr NOT IN
 (SELECT j.card_ref_nbr
  FROM job AS j, job_item AS ji
  WHERE ji.job_id = j.id)""" % {'name': self.name,
-                               'alias': alias}
+                               'alias': alias,
+                               'start_date': start_date}
 
         return sql
 
