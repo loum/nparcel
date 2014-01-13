@@ -16,7 +16,7 @@ class Collected(nparcel.Auditer):
         super(nparcel.Collected, self).__init__(db_kwargs=db_kwargs,
                                                 bu_ids=bu_ids)
 
-    def process(self, id, dry=False):
+    def process(self, id=None, dry=False):
         """Checks ``agent_stocktake`` table for items that have already
         have been flagged as collected in Toll Parcel Portal.
 
@@ -34,6 +34,9 @@ class Collected(nparcel.Auditer):
 
         """
         log.info('Collected Agent Stocktake query ...')
+
+        if id is None:
+            id = tuple(self.bu_ids.keys())
 
         sql = self.db.jobitem.reference_sql(bu_ids=id, picked_up=True)
         self.db(sql)

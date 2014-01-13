@@ -36,7 +36,8 @@ def main():
                'compliance',
                'noncompliance',
                'exception',
-               'totals']
+               'totals',
+               'collected']
     if report not in reports:
         based.parser.error('Report "%s" not supported' % report)
 

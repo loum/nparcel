@@ -9,12 +9,12 @@ class TestCollected(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls.maxDiff = None
         cls._now = datetime.datetime.now()
+
         cls._bu_ids = {1: 'Toll Priority',
                        2: 'Toll Fast',
                        3: 'Toll IPEC'}
-
-        cls.maxDiff = None
 
         cls._u = nparcel.Collected(bu_ids=cls._bu_ids)
         db = cls._u.db
@@ -81,7 +81,7 @@ WHERE id IN (21)""" % {'now': cls._now,
                      'VIC',
                      '1234',
                      '0431602145')]
-        msg = 'List of uncollected job_item IDs incorrect'
+        msg = 'List of collected job_item IDs incorrect'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
         received = self._u.columns

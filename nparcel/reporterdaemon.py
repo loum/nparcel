@@ -487,6 +487,10 @@ class ReporterDaemon(nparcel.DaemonService):
         elif self._report_type == 'totals':
             if self._report is None:
                 self._report = nparcel.Totals(self.db_kwargs, self.bu_ids)
+        elif self._report_type == 'collected':
+            if self._report is None:
+                self._report = nparcel.Collected(self.db_kwargs,
+                                                 self.bu_ids)
 
         while not event.isSet():
             now = datetime.datetime.now().strftime(self.outfile_ts_format)
