@@ -567,7 +567,7 @@ class TestB2CConfig(unittest2.TestCase):
         self.assertDictEqual(received, expected, msg)
 
         received = self._c.report_totals_widths
-        expected = {'agent name': 20,
+        expected = {'agent name': 30,
                     'number of parcels scanned': 22,
                     'tpp - number of parcels at agency': 27,
                     'stocktake date': 30}
@@ -580,6 +580,74 @@ class TestB2CConfig(unittest2.TestCase):
         expected = {'title': title,
                     'subtitle': subtitle,
                     'sheet_title': 'Parcel Totals'}
+        msg = 'Report exception ws value error'
+        self.assertDictEqual(received, expected, msg)
+
+        received = self._c.report_exception_recipients
+        expected = ['loumar@tollgroup.com']
+        msg = 'Config exception recipients value error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        received = self._c.report_exception_bu_based
+        msg = 'Config exception bu_based value error'
+        self.assertFalse(received, msg)
+
+    def test_parse_reporter_collected(self):
+        """Parse items from the config -- reporter collected.
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        received = self._c.report_collected_outfile
+        expected = 'Stocktake_collected_'
+        msg = 'Config collected report outfile value error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.report_collected_display_hdrs
+        expected = ['DP_CODE',
+                    'AGENT_CODE',
+                    'AGENT_NAME',
+                    'JOB_BU_ID',
+                    'CONNOTE_NBR',
+                    'ITEM_NBR',
+                    'CONSUMER_NAME',
+                    'PIECES',
+                    'JOB_TS',
+                    'PICKUP_TS']
+        msg = 'Report collected display headers value error'
+        self.assertListEqual(received, expected, msg)
+
+        received = self._c.report_collected_aliases
+        expected = {'DP_CODE': 'Agent',
+                    'AGENT_CODE': 'Agent Id',
+                    'AGENT_NAME': 'Agent Name',
+                    'JOB_BU_ID': 'Business Unit',
+                    'CONNOTE_NBR': 'Connote',
+                    'ITEM_NBR': 'Item Nbr',
+                    'CONSUMER_NAME': 'To',
+                    'PIECES': 'Pieces',
+                    'JOB_TS': 'Handover',
+                    'PICKUP_TS': 'Collected'}
+        msg = 'Report collected aliases value error'
+        self.assertDictEqual(received, expected, msg)
+
+        received = self._c.report_collected_widths
+        expected = {'agent name': 30,
+                    'business unit': 20,
+                    'connote': 25,
+                    'item nbr': 25,
+                    'to': 20,
+                    'handover': 30,
+                    'collected': 30}
+        msg = 'Report collected widths value error'
+        self.assertDictEqual(received, expected, msg)
+
+        received = self._c.report_collected_ws
+        title = 'Toll Parcel Portal Stocktake Collected Exception Report'
+        subtitle = 'ITEMS SCANNED BY AGENT, STATUS IS COLLECTED'
+        expected = {'title': title,
+                    'subtitle': subtitle,
+                    'sheet_title': 'Scanned but collected'}
         msg = 'Report exception ws value error'
         self.assertDictEqual(received, expected, msg)
 

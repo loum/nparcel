@@ -196,6 +196,7 @@ class B2CConfig(nparcel.Config):
     .. attribute:: report_noncompliance_outfile (non-compliance)
     .. attribute:: report_exception_outfile (exception)
     .. attribute:: report_totals_outfile (totals)
+    .. attribute:: report_collected_outfile (collected)
 
         basename that is used to generate the uncollected report file
 
@@ -204,6 +205,7 @@ class B2CConfig(nparcel.Config):
     .. attribute:: report_noncompliance_display_hdrs (non-compliance)
     .. attribute:: report_exception_display_hdrs (exception)
     .. attribute:: report_totals_display_hdrs (totals)
+    .. attribute:: report_collected_display_hdrs (collected)
 
         list of ordered column headers to display in the uncollected report
 
@@ -217,6 +219,7 @@ class B2CConfig(nparcel.Config):
     .. attribute:: report_noncompliance_widths (non-compliance)
     .. attribute:: report_exception_widths (exception)
     .. attribute:: report_totals_widths (totals)
+    .. attribute:: report_collected_widths (collected)
 
         map of aliased header names and prefered column width
 
@@ -225,6 +228,7 @@ class B2CConfig(nparcel.Config):
     .. attribute:: report_noncompliance_ws (non-compliance)
     .. attribute:: report_exception_ws (exception)
     .. attribute:: report_totals_ws (totals)
+    .. attribute:: report_collected_ws (collected)
 
         map of worksheet related items
 
@@ -233,6 +237,7 @@ class B2CConfig(nparcel.Config):
     .. attribute:: report_noncompliance_recipients (noncompliance)
     .. attribute:: report_exception_recipients (exception)
     .. attribute:: report_totals_recipients (totals)
+    .. attribute:: report_collected_recipients (collected)
 
         list of email recipients
 
@@ -241,6 +246,7 @@ class B2CConfig(nparcel.Config):
     .. attribute:: report_noncompliance_bu_based (noncompliance)
     .. attribute:: report_exception_bu_based (exception)
     .. attribute:: report_totals_bu_based (totals)
+    .. attribute:: report_collected_bu_based (collected)
 
         flag to denote if the reports are to be based on Business Unit
 
@@ -336,6 +342,13 @@ class B2CConfig(nparcel.Config):
     _report_totals_ws = {}
     _report_totals_recipients = []
     _report_totals_bu_based = False
+    _report_collected_outfile = 'Stocktake_collected_'
+    _report_collected_display_hdrs = []
+    _report_collected_aliases = {}
+    _report_collected_widths = {}
+    _report_collected_ws = {}
+    _report_collected_recipients = []
+    _report_collected_bu_based = False
     _report_bu_id_recipients = {}
     _health_processes = []
 
@@ -886,7 +899,8 @@ class B2CConfig(nparcel.Config):
                   'compliance',
                   'noncompliance',
                   'exception',
-                  'totals']:
+                  'totals',
+                  'collected']:
             report_opt = 'report_%s' % r
 
             # Report headers to display.
@@ -2020,6 +2034,96 @@ class B2CConfig(nparcel.Config):
         self.report_totals_bu_based = (value.lower() == 'yes')
         log.debug('Config report (totals) BU-based flag: "%s"' %
                   self.report_totals_bu_based)
+
+    @property
+    def report_collected_display_hdrs(self):
+        return self._report_collected_display_hdrs
+
+    def set_report_collected_display_hdrs(self, values=None):
+        del self.report_collected_display_hdrs[:]
+        self._report_collected_display_hdrs
+
+        if values is not None:
+            self._report_collected_display_hdrs.extend(values)
+            log.debug('Config report (collected) displayed hdrs: "%s"' %
+                      self.report_collected_display_hdrs)
+        else:
+            log.debug('Cleared (collected) headers to display list')
+
+    @property
+    def report_collected_outfile(self):
+        return self._report_collected_outfile
+
+    def set_report_collected_outfile(self, value):
+        self._report_collected_outfile = value
+        log.debug('Config report (collected) outfile: "%s"' %
+                  self.report_collected_outfile)
+
+    @property
+    def report_collected_aliases(self):
+        return self._report_collected_aliases
+
+    def set_report_collected_aliases(self, values=None):
+        self._report_collected_aliases.clear()
+
+        if values is not None:
+            self._report_collected_aliases = values
+            log.debug('Config report (collected) aliases: "%s"' %
+                      self.report_collected_aliases)
+        else:
+            log.debug('Cleared report (collected) aliases')
+
+    @property
+    def report_collected_widths(self):
+        return self._report_collected_widths
+
+    def set_report_collected_widths(self, values=None):
+        self._report_collected_widths.clear()
+
+        if values is not None:
+            self._report_collected_widths = values
+            log.debug('Config report (collected) widths: "%s"' %
+                      self.report_collected_widths)
+        else:
+            log.debug('Cleared report (collected) widths')
+
+    @property
+    def report_collected_ws(self):
+        return self._report_collected_ws
+
+    def set_report_collected_ws(self, values=None):
+        self._report_collected_ws.clear()
+
+        if values is not None:
+            self._report_collected_ws = values
+            log.debug('Config report (collected) worksheet: "%s"' %
+                      self.report_collected_ws)
+        else:
+            log.debug('Cleared report (collected) worksheet')
+
+    @property
+    def report_collected_recipients(self):
+        return self._report_collected_recipients
+
+    def set_report_collected_recipients(self, values=None):
+        del self._report_collected_recipients[:]
+        self._report_collected_recipients
+
+        if values is not None:
+            self._report_collected_recipients.extend(values)
+            log.debug('Config report (collected) recipients: "%s"' %
+                      self.report_collected_recipients)
+        else:
+            log.debug('Cleared report (collected) recipients list')
+
+    @property
+    def report_collected_bu_based(self):
+        return self._report_collected_bu_based
+
+    def set_report_collected_bu_based(self, value=False):
+        self.report_collected_bu_based = (value.lower() == 'yes')
+        log.debug('Config report (collected) BU-based flag: "%s"' %
+                  self.report_collected_bu_based)
 
     @property
     def health_processes(self):
