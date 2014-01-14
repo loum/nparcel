@@ -8,7 +8,7 @@ from nparcel.utils.files import (remove_files,
                                  get_directory_files_list)
 
 
-class TestReporterDaemon(unittest2.TestCase):
+class TestReporterDaemonUncollected(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
