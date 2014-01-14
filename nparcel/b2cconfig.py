@@ -158,6 +158,12 @@ class B2CConfig(nparcel.Config):
         reports inbound filenames
         (default ``mts_delivery_report_\d{14}\.csv``)
 
+    .. attribute:: uncollected_day_range
+
+        limit uncollected parcel search to within nominated day range
+        (default 14.0 days)
+
+
     .. attribute:: filter_customer
 
         downstream recipient of filtered T1250 files
@@ -298,6 +304,7 @@ class B2CConfig(nparcel.Config):
     _pe_customer = 'gis'
     _pe_inbound_mts = ['/data/nparcel/mts']
     _pe_mts_filename_format = 'mts_delivery_report_\d{14}\.csv'
+    _uncollected_day_range = 14.0
     _filter_customer = 'parcelpoint'
     _delivered_header = 'latest_scan_event_action'
     _delivered_event_key = 'delivered'
@@ -514,6 +521,10 @@ class B2CConfig(nparcel.Config):
         return self._pe_mts_filename_format
 
     @property
+    def uncollected_day_range(self):
+        return self._uncollected_day_range
+
+    @property
     def filter_customer(self):
         return self._filter_customer
 
@@ -673,6 +684,15 @@ class B2CConfig(nparcel.Config):
                 ConfigParser.NoSectionError), err:
             log.debug('Using default Primary Elect MTS file format: %s' %
                       self.pe_mts_filename_format)
+
+        try:
+            uncollected_day_range = self.get('primary_elect',
+                                             'uncollected_day_range')
+            self._uncollected_day_range = float(uncollected_day_range)
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default On Delivery day range: %s' %
+                      self.uncollected_day_range)
 
         # Aggregator.
         try:

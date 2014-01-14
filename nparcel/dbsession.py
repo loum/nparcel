@@ -58,7 +58,7 @@ class DbSession(object):
         else:
             # This is a link check.
             is_alive = self.connection is not None
-            log.info('DB connection alive? %s' % is_alive)
+            log.debug('DB connection alive? %s' % is_alive)
 
         return is_alive
 

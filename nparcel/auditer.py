@@ -355,17 +355,23 @@ class Auditer(nparcel.Service):
 
             sql = self.db.agent_stocktake.stocktake_created_date(*refs)
             self.db(sql)
-            agent_stocktake_created_ts = self.db.row[0]
+            agent_stocktake_ts = self.db.row[0]
 
-            if agent_stocktake_created_ts is not None:
-                # Remove microseconds from agent_stocktake.
-                ts = agent_stocktake_created_ts.split('.', 1)[0]
-                t = end_t = time.strptime(ts, '%Y-%m-%d %H:%M:%S')
+            if agent_stocktake_ts is not None:
+                if isinstance(agent_stocktake_ts, str):
+                    # Remove microseconds from agent_stocktake.
+                    ts = agent_stocktake_ts.split('.', 1)[0]
+                else:
+                    ts = agent_stocktake_ts.strftime('%Y-%m-%d %H:%M:%S')
+                t = time.strptime(ts, '%Y-%m-%d %H:%M:%S')
                 as_dt = datetime.datetime.fromtimestamp(time.mktime(t))
 
                 # Remove microseconds from pickup_ts.
-                ts = pickup_ts.split('.', 1)[0]
-                t = end_t = time.strptime(ts, '%Y-%m-%d %H:%M:%S')
+                if isinstance(pickup_ts, str):
+                    ts = pickup_ts.split('.', 1)[0]
+                else:
+                    ts = pickup_ts.strftime('%Y-%m-%d %H:%M:%S')
+                t = time.strptime(ts, '%Y-%m-%d %H:%M:%S')
                 pickup_dt = datetime.datetime.fromtimestamp(time.mktime(t))
 
                 log.debug('pickup_dt: %s | as_dt: %s' % (str(pickup_dt),

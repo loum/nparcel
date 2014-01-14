@@ -54,6 +54,11 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         Business Unit IDs to use in the Service Code 4 on delivery
         ``job_items`` table extraction
 
+    .. attribute:: day_range
+
+        Limit uncollected parcel search to within nominated day range
+        (default 14.0 days)
+
     """
     _config = None
     _report_in_dirs = ['/data/nparcel/mts']
@@ -63,6 +68,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
     _od = None
     _pe_bu_ids = ()
     _sc4_bu_ids = ()
+    _day_range = 14
 
     def __init__(self,
                  pidfile,
@@ -82,29 +88,29 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         try:
             self.set_loop(self.config.ondelivery_loop)
         except AttributeError, err:
-            log.info('Daemon loop not defined in config -- default %d sec' %
-                     self.loop)
+            log.debug('Daemon loop not in config -- default %d sec' %
+                      self.loop)
 
         try:
             self.set_in_dirs(self.config.pe_in_dir)
         except AttributeError, err:
-            msg = ('Inbound directory not defined in config -- using %s' %
+            msg = ('Inbound directory not in config -- using %s' %
                    self.in_dirs)
-            log.info(msg)
+            log.debug(msg)
 
         try:
             self.set_report_in_dirs(self.config.pe_inbound_mts)
         except AttributeError, err:
-            msg = ('Report inbound dir not defined in config -- using %s' %
+            msg = ('Report inbound dir not in config -- using %s' %
                    self.report_in_dirs)
-            log.info(msg)
+            log.debug(msg)
 
         try:
             self.set_report_file_format(self.config.pe_mts_filename_format)
         except AttributeError, err:
-            msg = ('Report file format not defined in config -- using %s' %
+            msg = ('Report file format not in config -- using %s' %
                    self.report_file_format)
-            log.info(msg)
+            log.debug(msg)
 
         try:
             if self.config.comms_dir is not None:
@@ -112,28 +118,34 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         except AttributeError, err:
             msg = ('Comms dir not defined in config -- using %s' %
                    self.comms_dir)
-            log.info(msg)
+            log.debug(msg)
 
         try:
             if self.config.db_kwargs() is not None:
                 self.set_db_kwargs(self.config.db_kwargs())
         except AttributeError, err:
-            msg = ('DB kwargs not defined in config')
-            log.info(msg)
+            log.debug('DB kwargs not defined in config')
 
         try:
             self.set_pe_bu_ids(self.config.pe_comms_ids)
         except AttributeError, err:
-            msg = ('PE comms IDs not defined in config -- using %s' %
+            msg = ('PE comms IDs not in config -- using %s' %
                    str(self.pe_bu_ids))
-            log.info(msg)
+            log.debug(msg)
 
         try:
             self.set_sc4_bu_ids(self.config.sc4_comms_ids)
         except AttributeError, err:
-            msg = ('SC 4 comms IDs not defined in config -- using %s' %
+            msg = ('SC 4 comms IDs not in config -- using %s' %
                    str(self.sc4_bu_ids))
-            log.info(msg)
+            log.debug(msg)
+
+        try:
+            self.set_day_range(self.config.uncollected_day_range)
+        except AttributeError, err:
+            msg = ('Day range not in config -- using %s' %
+                   str(self.day_range))
+            log.debug(msg)
 
     @property
     def report_in_dirs(self):
@@ -144,7 +156,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         self._report_in_dirs = []
 
         if values is not None:
-            log.info('Setting inbound report directory to "%s"' % values)
+            log.debug('Setting inbound report directory to "%s"' % values)
             self._report_in_dirs.extend(values)
 
     @property
@@ -152,7 +164,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         return self._report_file_format
 
     def set_report_file_format(self, value):
-        log.info('Setting report file format to "%s"' % value)
+        log.debug('Setting report file format to "%s"' % value)
         self._report_file_format = value
 
     @property
@@ -160,7 +172,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         return self._comms_dir
 
     def set_comms_dir(self, value):
-        log.info('Setting comms dir to "%s"' % value)
+        log.debug('Setting comms dir to "%s"' % value)
         self._comms_dir = value
 
     @property
@@ -189,6 +201,13 @@ class OnDeliveryDaemon(nparcel.DaemonService):
     def set_sc4_bu_ids(self, values):
         self._sc4_bu_ids = values
 
+    @property
+    def day_range(self):
+        return self._day_range
+
+    def set_day_range(self, value):
+        self._day_range = value
+
     def set_on_delivery(self, db=None, ts_db_kwargs=None, comms_dir=None):
         """Create a OnDelivery object,
 
@@ -210,7 +229,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
             try:
                 ts_db_kwargs = self.config.ts_db_kwargs()
             except AttributeError, err:
-                log.info('TransSend DB kwargs not defined in config')
+                log.debug('TransSend DB kwargs not defined in config')
 
         if comms_dir is None:
             comms_dir = self.comms_dir
@@ -223,15 +242,15 @@ class OnDeliveryDaemon(nparcel.DaemonService):
             try:
                 self._od.set_delivered_header(self.config.delivered_header)
             except AttributeError, err:
-                log.info('Using default PE delivered_header: "%s"' %
-                         self._od.delivered_header)
+                log.debug('Using default PE delivered_header: "%s"' %
+                          self._od.delivered_header)
 
             try:
                 event_key = self.config.delivered_event_key
                 self._od.set_delivered_event_key(event_key)
             except AttributeError, err:
-                log.info('Using default PE delivered_event_key: "%s"' %
-                         self._od.delivered_event_key)
+                log.debug('Using default PE delivered_event_key: "%s"' %
+                          self._od.delivered_event_key)
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
@@ -267,33 +286,31 @@ class OnDeliveryDaemon(nparcel.DaemonService):
             if len(mts_files):
                 mts_file = mts_files[0]
 
-            msg = 'On Delivery Primary Elect check ...'
-            log.info(msg)
+            log.debug('Attempting On Delivery Primary Elect check ...')
             if len(self.pe_bu_ids):
                 processed_ids = self.od.process(template='pe',
                                                 service_code=3,
                                                 bu_ids=self.pe_bu_ids,
                                                 mts_file=mts_file,
+                                                day_range=self.day_range,
                                                 dry=self.dry)
-                msg = ('PE job_items.id comms files created: "%s"' %
-                       processed_ids)
-                log.info(msg)
+                log.debug('PE job_items.id comms files created: "%s"' %
+                          processed_ids)
             else:
-                log.info("No Primary Elect BU ID's defined -- skipping")
+                log.debug("No Primary Elect BU ID's defined -- skipping")
 
-            msg = 'Starting Service Code 4 On Delivery check ...'
-            log.info(msg)
+            log.debug('Attempting Service Code 4 On Delivery check ...')
             if len(self.sc4_bu_ids):
                 processed_ids = self.od.process(template='body',
                                                 service_code=4,
                                                 bu_ids=self.sc4_bu_ids,
                                                 mts_file=mts_file,
+                                                day_range=self.day_range,
                                                 dry=self.dry)
-                msg = ('SC 4 job_items.id comms files created: "%s"' %
-                       processed_ids)
-                log.info(msg)
+                log.debug('SC 4 job_items.id comms files created: "%s"' %
+                          processed_ids)
             else:
-                log.info("No Service Code 4 BU ID's defined -- skipping")
+                log.debug("No Service Code 4 BU ID's defined -- skipping")
 
             if not event.isSet():
                 if self.dry:
@@ -320,8 +337,8 @@ class OnDeliveryDaemon(nparcel.DaemonService):
             boolean ``False`` otherwise
 
         """
-        log.info('Validating filename "%s" against "%s"' %
-                 (file, self.report_file_format))
+        log.debug('Validating filename "%s" against "%s"' %
+                  (file, self.report_file_format))
         status = False
 
         filename = os.path.basename(file)
@@ -330,7 +347,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         if m:
             status = True
 
-        log.info('"%s" filename validation: %s' % (file, status))
+        log.debug('"%s" filename validation: %s' % (file, status))
 
         return status
 
@@ -348,7 +365,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         """
         report_files = []
         for report_in_dir in self.report_in_dirs:
-            log.info('Searching "%s" for report files' % report_in_dir)
+            log.debug('Searching "%s" for report files' % report_in_dir)
             files = get_directory_files_list(report_in_dir,
                                              filter=self.report_file_format)
 
@@ -362,6 +379,6 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         report_file = []
         if len(report_files):
             report_file.append(report_files[-1])
-            log.info('Using report file "%s"' % report_file)
+            log.debug('Using report file "%s"' % report_file)
 
         return report_file

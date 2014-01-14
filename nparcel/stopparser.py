@@ -59,7 +59,6 @@ class StopParser(object):
         self._connotes[dict[self.connote_header]] = dict
 
     def connote_lookup(self, connote):
-        log.info('Connote lookup: "%s"' % connote)
         return self.connotes.get(connote)
 
     def connote_delivered(self, connote):
@@ -79,7 +78,7 @@ class StopParser(object):
             boolean ``False`` otherwise
 
         """
-        log.info('MTS checking connote "%s" delivery status' % connote)
+        log.debug('MTS checking connote "%s" delivery status' % connote)
 
         delivered = False
         item = self.connote_lookup(connote)
@@ -87,7 +86,9 @@ class StopParser(object):
             if item[self.arrival_header]:
                 delivered = True
 
-        log.info('connote "%s" delivery status: %s' % (connote, delivered))
+        if delivered:
+            log.info('Connote "%s" delivery status: %s' % (connote,
+                                                           delivered))
 
         return delivered
 
@@ -99,7 +100,7 @@ class StopParser(object):
             try:
                 fh = open(self.in_file, 'rb')
                 reader = csv.DictReader(fh)
-                log.info('Parsing connotes in "%s"' % fh.name)
+                log.debug('Parsing connotes in "%s"' % fh.name)
                 for rowdict in reader:
                     self.set_connotes(rowdict)
 

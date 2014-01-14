@@ -142,6 +142,11 @@ class TestB2CConfig(unittest2.TestCase):
         expected = 'mts_delivery_report_\d{14}\.csv'
         self.assertEqual(received, expected, msg)
 
+        msg = 'On Delivery uncollected day range error'
+        received = self._c.uncollected_day_range
+        expected = 14.0
+        self.assertEqual(received, expected, msg)
+
         msg = 'Filter customer not as expected'
         received = self._c.filter_customer
         expected = 'parcelpoint'

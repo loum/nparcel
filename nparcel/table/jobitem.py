@@ -267,7 +267,10 @@ AND j.service_code = 3""" % (self.name, connote)
 
         return sql
 
-    def uncollected_jobitems_sql(self, service_code=3, bu_ids=None):
+    def uncollected_jobitems_sql(self,
+                                 service_code=3,
+                                 bu_ids=None,
+                                 day_range=14):
         """SQL wrapper to extract uncollected Service Code-based jobs.
 
         Service Code jobs are identified by a integer value in the
@@ -278,12 +281,15 @@ AND j.service_code = 3""" % (self.name, connote)
 
         The *bu_ids* relate to the ``job.bu_id`` column.
 
-        **Args:**
+        **Kwargs:**
             *service_code*: value relating to the ``job.service_code``
             column (default ``3`` for Primary Elect)
 
             *bu_ids*: integer based tuple of Business Unit ID's to search
             against (default ``None`` ignores all Business Units)
+
+            *day_range*: number of days from current time to include
+            in search (default 14.0 days)
 
         **Returns:**
             the SQL string
@@ -295,6 +301,10 @@ AND j.service_code = 3""" % (self.name, connote)
         if len(bu_ids) == 1:
             bu_ids = '(%d)' % bu_ids[0]
 
+        now = datetime.datetime.now()
+        start_ts = now - datetime.timedelta(days=day_range)
+        start_date = start_ts.strftime('%Y-%m-%d %H:%M:%S')
+
         sql = """SELECT ji.id, ji.connote_nbr, ji.item_nbr
 FROM job as j, %s as ji
 WHERE ji.job_id = j.id
@@ -302,7 +312,11 @@ AND ji.pickup_ts is NULL
 AND ji.notify_ts is NULL
 AND (ji.email_addr NOT IN ('', '.') OR ji.phone_nbr NOT IN ('', '.'))
 AND j.bu_id IN %s
-AND j.service_code = %d""" % (self.name, str(bu_ids), service_code)
+AND j.service_code = %d
+AND ji.created_ts > '%s'""" % (self.name,
+                               str(bu_ids),
+                               service_code,
+                               start_date)
 
         return sql
 

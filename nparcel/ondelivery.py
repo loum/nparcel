@@ -88,6 +88,13 @@ class OnDelivery(nparcel.Service):
         """Return ``jobitem.id`` whose connote is associated with a
         ``job`` that is defined *Primary Elect* (``job.service_code`` = 3).
 
+        **Args:**
+            *connote*: search key value relating to the ``job.card_ref_nbr``
+            column.
+
+        **Returns:*
+            list of ids that match the search criteria
+
         """
         ids = []
         sql = self.db.jobitem.connote_base_primary_elect_job(connote)
@@ -97,7 +104,10 @@ class OnDelivery(nparcel.Service):
 
         return ids
 
-    def get_uncollected_job_items(self, service_code=3, bu_ids=None):
+    def get_uncollected_job_items(self,
+                                  service_code=3,
+                                  bu_ids=None,
+                                  day_range=14):
         """Generator that returns the ``jobitem.id``,
         ``jobitem.connote_nbr`` and ``jobitem.item_nbr`` of uncollected
         Primary Elect job items.
@@ -106,6 +116,9 @@ class OnDelivery(nparcel.Service):
             *service_code*: integer of ``job.service_code`` columns
 
             *bu_ids*: tuple of Business Unit ID integers to search against
+
+            *day_range*: number of days from current time to include
+            in search (default 14.0 days)
 
         **Returns:**
             generator object which represents an uncollected job item
@@ -118,7 +131,8 @@ class OnDelivery(nparcel.Service):
             bu_ids = (1, 2, 3)
 
         sql = self.db.jobitem.uncollected_jobitems_sql(service_code,
-                                                       bu_ids=bu_ids)
+                                                       bu_ids,
+                                                       day_range)
         self.db(sql)
         for row in self.db.rows():
             yield row
@@ -129,6 +143,7 @@ class OnDelivery(nparcel.Service):
                 bu_ids,
                 job_items=None,
                 mts_file=None,
+                day_range=14,
                 dry=False):
         """Checks whether a Primary Elect job item has had comms sent.
 
@@ -148,6 +163,9 @@ class OnDelivery(nparcel.Service):
 
             *mts_file*: path to the MTS delivery report file
 
+            *day_range*: imit uncollected parcel search to within nominated
+            value
+
             *dry*: only report, do not execute
 
         **Returns:**
@@ -164,13 +182,14 @@ class OnDelivery(nparcel.Service):
 
         if job_items is None:
             job_items = self.get_uncollected_job_items(service_code,
-                                                       bu_ids)
+                                                       bu_ids,
+                                                       day_range)
         else:
-            log.info('Received job_items list inline')
+            log.debug('Received job_items list inline')
 
         for (id, connote, item_nbr) in job_items:
-            log.info('Processing On Del id|connote|item: "%s|%s|%s ..."' %
-                     (id, connote, item_nbr))
+            log.debug('Processing On Del id|connote|item: "%s|%s|%s ..."' %
+                      (id, connote, item_nbr))
 
             delivered_status = False
             if (not self.flag_comms_previous('email', id, template) and
@@ -180,14 +199,14 @@ class OnDelivery(nparcel.Service):
                     delivered_status = True
 
                 if delivered_status:
-                    log.info('Preparing comms for job_item.id: %d' % id)
+                    log.debug('Preparing comms for job_item.id: %d' % id)
                     if not dry:
                         if (self.flag_comms('email', id, template) and
                             self.flag_comms('sms', id, template)):
                             processed_ids.append(id)
 
-            log.info('On Del id|connote|item: "%s|%s|%s" check complete' %
-                     (id, connote, item_nbr))
+            log.debug('On Del id|connote|item: "%s|%s|%s" check complete' %
+                      (id, connote, item_nbr))
 
         if mts_file is not None:
             self.parser.purge()
@@ -211,8 +230,8 @@ class OnDelivery(nparcel.Service):
             has been delivered
 
         """
-        log.info('TransSend checking connote|item "%s|%s" delivery status' %
-                 (connote_nbr, item_nbr))
+        log.debug('TransSend check connote|item "%s|%s" delivery status' %
+                  (connote_nbr, item_nbr))
 
         delivered = False
         if self.ts_db is not None:
@@ -232,7 +251,8 @@ class OnDelivery(nparcel.Service):
                     delivered = True
                     break
 
-        log.info('TransSend connote|item "%s|%s" delivery status: %s' %
-                 (connote_nbr, item_nbr, delivered))
+        if delivered:
+            log.info('TransSend connote|item "%s|%s" delivery status: %s' %
+                    (connote_nbr, item_nbr, delivered))
 
         return delivered
