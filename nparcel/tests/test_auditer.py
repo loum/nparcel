@@ -498,7 +498,8 @@ class TestAuditer(unittest2.TestCase):
                    'PIECES',
                    'CONSUMER_NAME',
                    'DP_CODE',
-                   'AGENT_NAME']
+                   'AGENT_NAME',
+                   'STOCKTAKE_CREATED_TS']
         row = (21,
                1,
                'ARTZ061184',
@@ -511,7 +512,8 @@ class TestAuditer(unittest2.TestCase):
                21,
                'Con Sumertwentyone',
                'VIC999',
-               'VIC Test Newsagent 999')
+               'VIC Test Newsagent 999',
+               '%s' % self._agent_stocktake_created_ts)
         received = self._a.filter_collected_parcels(headers, row)
         msg = 'Collected parcels filter error -- parcel collected before ST'
         self.assertTrue(received, msg)

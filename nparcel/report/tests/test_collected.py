@@ -80,7 +80,8 @@ WHERE id IN (21)""" % {'now': cls._now,
                      'Testville',
                      'VIC',
                      '1234',
-                     '0431602145')]
+                     '0431602145',
+                     '="%s"' % self._now)]
         msg = 'List of collected job_item IDs incorrect'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
