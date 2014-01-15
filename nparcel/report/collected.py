@@ -44,10 +44,34 @@ class Collected(nparcel.Auditer):
         self.set_columns(self.db.columns())
         items = list(self.db.rows())
 
+        tmp_hdrs_list = self.db.columns()
+        tmp_hdrs_list.append('STOCKTAKE_CREATED_TS')
+        self.set_columns(tmp_hdrs_list)
+
         collected_parcels = []
         for i in items:
-            if self.filter_collected_parcels(self.columns, i):
-                collected_parcels.append(i)
+            refs = []
+            try:
+                connote_index = self.columns.index('CONNOTE_NBR')
+                if i[connote_index] is not None:
+                    refs.append(i[connote_index])
+                barcode_index = self.columns.index('BARCODE')
+                if i[barcode_index] is not None:
+                    refs.append(i[barcode_index])
+                item_index = self.columns.index('ITEM_NBR')
+                if i[item_index] is not None:
+                    refs.append(i[item_index])
+            except ValueError, err:
+                    log.warn('Unmatched column in headers: %s' % err)
+
+            sql = self.db.agent_stocktake.stocktake_created_date(*refs)
+            self.db(sql)
+            agent_stocktake_created_ts = self.db.row[0]
+            tmp_row = list(i)
+            tmp_row.append(str(agent_stocktake_created_ts))
+
+            if self.filter_collected_parcels(self.columns, tmp_row):
+                collected_parcels.append(tmp_row)
 
         cleansed_items = []
         for i in collected_parcels:

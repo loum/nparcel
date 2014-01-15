@@ -85,7 +85,8 @@ SET job_ts = '%s'""" % cls._now
                         'CONSUMER_NAME',
                         'PIECES',
                         'JOB_TS',
-                        'PICKUP_TS']
+                        'PICKUP_TS',
+                        'STOCKTAKE_CREATED_TS']
         self._rd.set_display_hdrs(display_hdrs)
         old_aliases = self._rd.aliases
         aliases = {'DP_CODE': 'Agent',
@@ -97,7 +98,8 @@ SET job_ts = '%s'""" % cls._now
                    'CONSUMER_NAME': 'To',
                    'PIECES': 'Pieces',
                    'JOB_TS': 'Handover',
-                   'PICKUP_TS': 'Collected'}
+                   'PICKUP_TS': 'Collected',
+                   'STOCKTAKE_CREATED_TS': 'Stocktake Date'}
         self._rd.set_aliases(aliases)
 
         old_widths = self._rd.header_widths
@@ -108,7 +110,8 @@ SET job_ts = '%s'""" % cls._now
                   'item nbr': 25,
                   'to': 20,
                   'handover': 30,
-                  'collected': 30}
+                  'collected': 30,
+                  'stocktake date': 30}
         self._rd.set_header_widths(widths)
 
         old_ws = self._rd.ws
@@ -139,7 +142,7 @@ SET job_ts = '%s'""" % cls._now
         self._rd.set_dry(dry)
 
         old_report_filename = self._rd.report_filename
-        file = 'Stocktake_collected_20140113-10:38-all.xlsx'
+        file = 'Stocktake_collected_20140115-10:20-all.xlsx'
         attach_file = os.path.join('nparcel', 'tests', 'files', file)
         self._rd.set_report_filename(attach_file)
 
