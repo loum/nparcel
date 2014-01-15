@@ -192,7 +192,8 @@ class Auditer(nparcel.Service):
                   'CREATED_TS',
                   'REFERENCE_NBR',
                   'NOTIFY_TS',
-                  'PICKUP_TS']:
+                  'PICKUP_TS',
+                  'STOCKTAKE_CREATED_TS']:
             try:
                 index = header.index(i)
                 log.debug('Prepending "=" to column|value "%s|%s"' %
@@ -339,40 +340,24 @@ class Auditer(nparcel.Service):
 
         picked_up_prior = False
         if picked_up == True:
-            refs = []
+            created_ts_index = None
             try:
-                connote_index = headers.index('CONNOTE_NBR')
-                if row[connote_index] is not None:
-                    refs.append(row[connote_index])
-                barcode_index = headers.index('BARCODE')
-                if row[barcode_index] is not None:
-                    refs.append(row[barcode_index])
-                item_index = headers.index('ITEM_NBR')
-                if row[item_index] is not None:
-                    refs.append(row[item_index])
+                created_ts_index = headers.index('STOCKTAKE_CREATED_TS')
             except ValueError, err:
-                log.warn('Unmatched column in headers: %s' % err)
+                log.warn('No "STOCKTAKE_CREATED_TS" column in headers')
 
-            sql = self.db.agent_stocktake.stocktake_created_date(*refs)
-            self.db(sql)
-            agent_stocktake_ts = self.db.row[0]
-
-            if agent_stocktake_ts is not None:
-                if isinstance(agent_stocktake_ts, str):
+            if created_ts_index is not None:
+                agent_stocktake_created_ts = row[created_ts_index]
+                if agent_stocktake_created_ts is not None:
                     # Remove microseconds from agent_stocktake.
-                    ts = agent_stocktake_ts.split('.', 1)[0]
-                else:
-                    ts = agent_stocktake_ts.strftime('%Y-%m-%d %H:%M:%S')
-                t = time.strptime(ts, '%Y-%m-%d %H:%M:%S')
-                as_dt = datetime.datetime.fromtimestamp(time.mktime(t))
+                    ts = agent_stocktake_created_ts.split('.', 1)[0]
+                    t = end_t = time.strptime(ts, '%Y-%m-%d %H:%M:%S')
+                    as_dt = datetime.datetime.fromtimestamp(time.mktime(t))
 
-                # Remove microseconds from pickup_ts.
-                if isinstance(pickup_ts, str):
-                    ts = pickup_ts.split('.', 1)[0]
-                else:
-                    ts = pickup_ts.strftime('%Y-%m-%d %H:%M:%S')
-                t = time.strptime(ts, '%Y-%m-%d %H:%M:%S')
-                pickup_dt = datetime.datetime.fromtimestamp(time.mktime(t))
+                    # Remove microseconds from pickup_ts.
+                    ts = str(pickup_ts).split('.', 1)[0]
+                    t = end_t = time.strptime(ts, '%Y-%m-%d %H:%M:%S')
+                    pickup_dt = datetime.datetime.fromtimestamp(time.mktime(t))
 
                 log.debug('pickup_dt: %s | as_dt: %s' % (str(pickup_dt),
                                                          str(as_dt)))
