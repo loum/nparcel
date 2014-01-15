@@ -618,7 +618,8 @@ class TestB2CConfig(unittest2.TestCase):
                     'CONSUMER_NAME',
                     'PIECES',
                     'JOB_TS',
-                    'PICKUP_TS']
+                    'PICKUP_TS',
+                    'STOCKTAKE_CREATED_TS']
         msg = 'Report collected display headers value error'
         self.assertListEqual(received, expected, msg)
 
@@ -632,7 +633,8 @@ class TestB2CConfig(unittest2.TestCase):
                     'CONSUMER_NAME': 'To',
                     'PIECES': 'Pieces',
                     'JOB_TS': 'Handover',
-                    'PICKUP_TS': 'Collected'}
+                    'PICKUP_TS': 'Collected',
+                    'STOCKTAKE_CREATED_TS': 'Stocktake Date'}
         msg = 'Report collected aliases value error'
         self.assertDictEqual(received, expected, msg)
 
@@ -643,7 +645,8 @@ class TestB2CConfig(unittest2.TestCase):
                     'item nbr': 25,
                     'to': 20,
                     'handover': 30,
-                    'collected': 30}
+                    'collected': 30,
+                    'stocktake date': 30}
         msg = 'Report collected widths value error'
         self.assertDictEqual(received, expected, msg)
 

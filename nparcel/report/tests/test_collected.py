@@ -41,6 +41,11 @@ class TestCollected(unittest2.TestCase):
 SET job_ts = '%s'""" % cls._now
         db(sql)
 
+        # "agent_stocktake" table timestamp updates.
+        sql = """UPDATE agent_stocktake
+SET created_ts = '%s'""" % cls._now
+        db(sql)
+
         # "job_item" table timestamp updates.
         cls._early_pickup_ts = cls._now - datetime.timedelta(100)
         sql = """UPDATE job_item
@@ -104,7 +109,8 @@ WHERE id IN (21)""" % {'now': cls._now,
                     'AGENT_SUBURB',
                     'AGENT_STATE',
                     'AGENT_POSTCODE',
-                    'AGENT_PHONE_NBR']
+                    'AGENT_PHONE_NBR',
+                    'STOCKTAKE_CREATED_TS']
         msg = 'Headers after DELTA_TIME addition error'
         self.assertListEqual(received, expected, msg)
 

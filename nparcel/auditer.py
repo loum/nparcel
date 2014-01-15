@@ -297,7 +297,8 @@ class Auditer(nparcel.Service):
                   'CREATED_TS',
                   'REFERENCE_NBR',
                   'NOTIFY_TS',
-                  'PICKUP_TS']:
+                  'PICKUP_TS',
+                  'STOCKTAKE_CREATED_TS']:
             try:
                 index = header.index(i)
                 log.debug('Prepending "=" to column|value "%s|%s"' %
