@@ -68,14 +68,10 @@ WHERE id IN (7, 8)""" % cls._older_date
         """Check compliance processing.
         """
         received = self._c.process()
-        expected = [('BAD1000',
-                     'BAD1',
-                     'BAD1 Name',
-                     None),
-                    ('NROS010',
-                     'N031',
-                     'N031 Name',
-                     '%s' % str(self._old_date))]
+        expected = [('WVIC005',
+                     'W049',
+                     'Bunters We Never Sleep News + Deli',
+                     '')]
         msg = 'List of compliance agents incorrect'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 

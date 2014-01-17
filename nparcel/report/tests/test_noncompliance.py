@@ -72,7 +72,7 @@ WHERE id IN (7, 8)""" % cls._older_date
         """Check compliance processing.
         """
         received = [x[0] for x in list(self._c.process())]
-        expected = [2, 3, 4, 6, 8, 9, 10, 11, 12, 13, 14, 17, 18]
+        expected = [2, 3, 4, 6, 8, 9, 10, 11, 12, 13, 14, 17, 18, 23]
         msg = 'List of non-compliant job_items incorrect'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 

@@ -747,7 +747,7 @@ AND notify_ts IS NOT NULL""" % job_item_id
         sql = self._db.jobitem.non_compliance_sql(bu_ids)
         self._db(sql)
         received = [x[0] for x in list(self._db.rows())]
-        expected = [2, 3, 4, 6, 8, 9, 10, 11, 12, 13, 14, 17, 18]
+        expected = [2, 3, 4, 6, 8, 9, 10, 11, 12, 13, 14, 17, 18, 23]
         msg = 'All non compliance job_items query error'
         self.assertListEqual(received, expected, msg)
 
@@ -818,7 +818,7 @@ WHERE agent_id = 3"""
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [(219,)]
+        expected = [(242,)]
         msg = 'Jobitem-based parcel (not picked up) totals count error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -832,6 +832,28 @@ WHERE agent_id = 3"""
         expected = [(34,)]
         msg = 'Jobitem-based parcel (picked up) totals count error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_agent_id_of_aged_parcels(self):
+        """Verify the agent_id_of_aged_parcels SQL.
+        """
+        # "Age" a few job_items.
+        sql = """UPDATE job_item
+SET created_ts = '%s'
+WHERE id IN (16, 19, 20, 21, 22)""" % (self._now - datetime.timedelta(20))
+        self._db(sql)
+
+        sql = self._db.jobitem.agent_id_of_aged_parcels()
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [('WVIC005',
+                     'W049',
+                     'Bunters We Never Sleep News + Deli',
+                     None)]
+        msg = 'Jobitem-based aged parcel agent ID list error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        self._db.rollback()
 
     @classmethod
     def tearDownClass(cls):

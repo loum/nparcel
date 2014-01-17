@@ -40,4 +40,14 @@
         'postcode': '4000',
         'suburb': 'Brisbane',
     },
+    {
+        'id': 5,
+        'code': 'W049',
+        'dp_code': 'WVIC005',
+        'state': 'WA',
+        'name': 'Bunters We Never Sleep News + Deli',
+        'address': '693 Albany Hwy',
+        'postcode': '6101',
+        'suburb': 'Victoria Park',
+    },
 ]

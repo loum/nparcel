@@ -270,4 +270,16 @@
         'pieces': 22,
         'consumer_name': 'Con Sumertwentytwo',
     },
+    {
+        # Uncollected, aged job_item -- not in agent_stocktake.
+        'id': 23,
+        'connote_nbr': 'AGED_CONNOTE_NOT_IN_STOCKTAKE',
+        'item_nbr': '00393403250082030049',
+        'job_id': 9,
+        'created_ts': str(datetime.datetime.now() - datetime.timedelta(99)),
+        'email_addr': 'loumar@tollgroup.com',
+        'phone_nbr': '0431602145',
+        'pieces': 23,
+        'consumer_name': 'Con Sumertwentythree',
+    },
 ]

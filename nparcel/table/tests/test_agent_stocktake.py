@@ -141,7 +141,11 @@ WHERE id IN (7, 8)""" % older_date
                     ('NROS010',
                      'N031',
                      'N031 Name',
-                     '%s' % str(old_date))]
+                     '%s' % str(old_date)),
+                    ('WVIC005',
+                     'W049',
+                     'Bunters We Never Sleep News + Deli',
+                     None)]
         msg = 'Compliance agent_stocktake query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 

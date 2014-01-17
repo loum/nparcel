@@ -653,3 +653,36 @@ AND %(alias)s.pickup_ts %(pickup_sql)s""" % {'name': self.name,
                                              'alias': alias}
 
         return sql
+
+    def agent_id_of_aged_parcels(self, period=7, alias='ji'):
+        """SQL to provide a distinct list of agents that have an
+        aged parcel.
+
+        **Kwargs:**
+            *period*: time (in days) from now that is the cut off for
+            agent compliance (default 7 days)
+
+            *alias*: table alias (default ``ji``)
+
+        **Returns:**
+            the SQL string
+
+        """
+        now = datetime.datetime.now()
+        ts = now - datetime.timedelta(days=period)
+        date = ts.strftime('%Y-%m-%d %H:%M:%S')
+
+        compliance_sql = self._agent_stocktake.compliance_sql(period=period)
+
+        sql = """%(compliance_sql)s
+AND ag.id IN
+(SELECT DISTINCT(j.agent_id)
+ FROM job as j, %(name)s AS %(alias)s, agent AS ag
+ WHERE %(alias)s.job_id = j.id
+ AND %(alias)s.created_ts < '%(date)s'
+ AND %(alias)s.pickup_ts IS NULL)""" % {'compliance_sql': compliance_sql,
+                                        'name': self.name,
+                                        'alias': alias,
+                                        'date': date}
+
+        return sql

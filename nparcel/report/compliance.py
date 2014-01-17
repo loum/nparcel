@@ -44,11 +44,15 @@ class Compliance(nparcel.Auditer):
         """
         log.info('Agent compliance query ...')
 
-        sql = self.db.agent_stocktake.compliance_sql(period=self.period)
+        sql = self.db.jobitem.agent_id_of_aged_parcels(period=self.period)
         self.db(sql)
         self.set_columns(self.db.columns())
         agents = list(self.db.rows())
 
+        cleansed_agents = []
+        for i in agents:
+            cleansed_agents.append(self._cleanse(self.columns, i))
+
         log.info('Agent compliance query complete')
 
-        return agents
+        return cleansed_agents

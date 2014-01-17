@@ -299,16 +299,33 @@ class Auditer(nparcel.Service):
                   'NOTIFY_TS',
                   'PICKUP_TS',
                   'STOCKTAKE_CREATED_TS']:
+            index = None
             try:
                 index = header.index(i)
-                log.debug('Prepending "=" to column|value "%s|%s"' %
-                          (i, str(tmp_row_list[index])))
-                if tmp_row_list[index] is None:
-                    tmp_row_list[index] = str()
-                else:
-                    tmp_row_list[index] = '="%s"' % tmp_row_list[index]
             except ValueError, err:
                 pass
+
+            if index is not None:
+                tmp_val = tmp_row_list[index]
+
+                if (tmp_val is not None and
+                    i in ['JOB_TS',
+                          'CREATED_TS',
+                          'REFERENCE_NBR',
+                          'NOTIFY_TS',
+                          'PICKUP_TS',
+                          'STOCKTAKE_CREATED_TS']):
+                    if tmp_val is not None:
+                        tmp_val = str(tmp_val).split('.', 1)[0]
+
+                log.debug('Prepending "=" to column|value "%s|%s"' %
+                          (i, str(tmp_val)))
+                if tmp_val is None:
+                    tmp_val = str()
+                else:
+                    tmp_val = '="%s"' % tmp_val
+
+                tmp_row_list[index] = tmp_val
 
         return tuple(tmp_row_list)
 
