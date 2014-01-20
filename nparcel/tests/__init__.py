@@ -5,6 +5,7 @@ from test_oradbsession import TestOraDbSession
 from test_loader import TestLoader
 from test_loader_ipec import TestLoaderIpec
 from test_reporter import TestReporter
+from test_emailerbase import TestEmailerBase
 from test_emailer import TestEmailer
 from test_rest import TestRest
 from test_restemailer import TestRestEmailer

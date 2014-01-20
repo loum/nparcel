@@ -15,7 +15,7 @@ import nparcel.urllib2 as urllib2
 from nparcel.utils.log import log
 
 
-class RestEmailer(nparcel.Rest):
+class RestEmailer(nparcel.Rest, nparcel.EmailerBase):
     """Nparcel RestEmailer.
 
     .. attribute:: recipients
@@ -307,34 +307,6 @@ class RestEmailer(nparcel.Rest):
                 except urllib2.URLError, e:
                     status = False
                     log.error('Email failure: %s' % e)
-
-        return status
-
-    def validate(self, email):
-        """Validate the *email* address.
-
-        Runs a simple regex validation across the *email* address is
-
-        **Args:**
-            email: the email address to validate
-
-        **Returns:**
-            boolean ``True`` if the email validates
-
-            boolean ``False`` if the email does not validate
-
-        """
-        status = True
-
-        err = 'Email "%s" validation:' % email
-        ex = '^[a-zA-Z0-9._%\-+]+@[a-zA-Z0-9._%-]+\.[a-zA-Z]{2,6}$'
-        r = re.compile(ex)
-        m = r.match(email)
-        if m is None:
-            status = False
-            log.error('%s Failed' % err)
-        else:
-            log.info('%s OK' % err)
 
         return status
 

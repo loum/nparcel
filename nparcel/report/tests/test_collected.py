@@ -72,10 +72,10 @@ WHERE id IN (21)""" % {'now': cls._now,
                      '="ARTZ061184"',
                      '="aged_parcel_unmatched"',
                      '="TEST_REF_NOT_PROC_PCKD_UP"',
-                     '="%s"' % self._now,
-                     '="%s"' % self._now,
+                     '="%s"' % str(self._now).split('.', 1)[0],
+                     '="%s"' % str(self._now).split('.', 1)[0],
                      '',
-                     '="%s"' % self._early_pickup_ts,
+                     '="%s"' % str(self._early_pickup_ts).split('.', 1)[0],
                      21,
                      'Con Sumertwentyone',
                      'VIC999',
@@ -86,7 +86,7 @@ WHERE id IN (21)""" % {'now': cls._now,
                      'VIC',
                      '1234',
                      '0431602145',
-                     '="%s"' % self._now)]
+                     '="%s"' % str(self._now).split('.', 1)[0])]
         msg = 'List of collected job_item IDs incorrect'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 

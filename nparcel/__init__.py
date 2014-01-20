@@ -3,6 +3,7 @@ from nparcel.stopparser import StopParser
 from nparcel.service import Service
 from nparcel.loader import Loader
 from nparcel.reporter import Reporter
+from nparcel.emailerbase import EmailerBase
 from nparcel.emailer import Emailer
 from nparcel.daemonservice import DaemonService
 from nparcel.loaderdaemon import LoaderDaemon

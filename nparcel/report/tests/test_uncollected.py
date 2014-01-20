@@ -48,9 +48,10 @@ WHERE id IN (20, 22)""" % cls._now
         db(sql)
 
         # "job_item" table timestamp updates.
+        cls._old_created_ts = cls._now - datetime.timedelta(99)
         sql = """UPDATE job_item
 SET created_ts = '%s'
-WHERE id IN (15, 16, 19)""" % (cls._now - datetime.timedelta(99))
+WHERE id IN (15, 16, 19)""" % cls._old_created_ts
         db(sql)
 
         db.commit()
@@ -71,8 +72,8 @@ WHERE id IN (15, 16, 19)""" % (cls._now - datetime.timedelta(99))
                      '="TEST_REF_001"',
                      '="aged_parcel_unmatched"',
                      '="aged_connote_match"',
-                     '="%s"' % self._now,
-                     '="%s"' % str(self._now - datetime.timedelta(99)),
+                     '="%s"' % str(self._now).split('.', 1)[0],
+                     '="%s"' % str(self._old_created_ts).split('.', 1)[0],
                      '',
                      '',
                      15,
@@ -91,8 +92,8 @@ WHERE id IN (15, 16, 19)""" % (cls._now - datetime.timedelta(99))
                      '="aged_item_match"',
                      '="aged_parcel_unmatched"',
                      '="TEST_REF_001"',
-                     '="%s"' % self._now,
-                     '="%s"' % str(self._now - datetime.timedelta(99)),
+                     '="%s"' % str(self._now).split('.', 1)[0],
+                     '="%s"' % str(self._old_created_ts).split('.', 1)[0],
                      '',
                      '',
                      16,
@@ -111,8 +112,8 @@ WHERE id IN (15, 16, 19)""" % (cls._now - datetime.timedelta(99))
                      '="ARTZ061184"',
                      '="TEST_REF_001"',
                      '="00393403250082030046"',
-                     '="%s"' % self._now,
-                     '="%s"' % str(self._now - datetime.timedelta(99)),
+                     '="%s"' % str(self._now).split('.', 1)[0],
+                     '="%s"' % str(self._old_created_ts).split('.', 1)[0],
                      '',
                      '',
                      19,
@@ -159,3 +160,5 @@ WHERE id IN (15, 16, 19)""" % (cls._now - datetime.timedelta(99))
         del cls._u
         cls._now = None
         del cls._now
+        cls._old_created_ts = None
+        del cls._old_created_ts

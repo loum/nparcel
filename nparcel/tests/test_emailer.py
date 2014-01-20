@@ -48,28 +48,6 @@ class TestEmailer(unittest2.TestCase):
         # Clean up.
         self._e.set_recipients(None)
 
-    def test_email_validator_empty(self):
-        """Validate email address -- empty.
-        """
-        msg = 'Empty email should not validate'
-
-        email = ''
-        received = self._e.validate(email)
-        self.assertFalse(received, msg)
-
-        email = 'banana'
-        received = self._e.validate(email)
-        self.assertFalse(received, msg)
-
-    def test_email_validator(self):
-        """Validate valid email.
-        """
-        msg = 'Email should validate'
-
-        email = 'loumar@tollgroup.com'
-        received = self._e.validate(email)
-        self.assertTrue(email)
-
     def test_send(self):
         """Send an email.
         """
