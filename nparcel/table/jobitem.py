@@ -368,8 +368,9 @@ AND ji.created_ts > '%s'""" % (self.name,
             ref = self._agent_stocktake.reference_sql()
 
         sql = """SELECT DISTINCT %(columns)s
-FROM %(name)s as %(alias)s, job as j, agent as ag
+FROM %(name)s as %(alias)s, job as j, agent as ag, agent_stocktake as st
 WHERE %(alias)s.job_id = j.id
+AND ag.id = st.agent_id
 AND j.bu_id IN %(bu_ids)s
 AND j.agent_id = ag.id
 AND (%(alias)s.connote_nbr IN (%(ref)s)
@@ -476,7 +477,25 @@ AND %(alias)s.job_id IN
        ag.suburb as AGENT_SUBURB,
        ag.state as AGENT_STATE,
        ag.postcode as AGENT_POSTCODE,
-       ag.phone_nbr as AGENT_PHONE_NBR""" % {'alias': alias}
+       ag.phone_nbr as AGENT_PHONE_NBR,
+       (SELECT ag.dp_code
+        FROM agent_stocktake AS st, agent AS ag
+        WHERE (%(alias)s.connote_nbr = st.reference_nbr
+               OR j.card_ref_nbr = st.reference_nbr
+               OR %(alias)s.item_nbr = st.reference_nbr)
+        AND st.agent_id = ag.id) AS ST_DP_CODE,
+       (SELECT ag.code
+        FROM agent_stocktake AS st, agent AS ag
+        WHERE (%(alias)s.connote_nbr = st.reference_nbr
+               OR j.card_ref_nbr = st.reference_nbr
+               OR %(alias)s.item_nbr = st.reference_nbr)
+        AND st.agent_id = ag.id) AS ST_AGENT_CODE,
+       (SELECT ag.name
+        FROM agent_stocktake AS st, agent AS ag
+        WHERE (%(alias)s.connote_nbr = st.reference_nbr
+               OR j.card_ref_nbr = st.reference_nbr
+               OR %(alias)s.item_nbr = st.reference_nbr)
+        AND st.agent_id = ag.id) AS ST_AGENT_NAME""" % {'alias': alias}
 
         return columns
 

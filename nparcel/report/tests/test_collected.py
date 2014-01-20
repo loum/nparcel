@@ -86,6 +86,9 @@ WHERE id IN (21)""" % {'now': cls._now,
                      'VIC',
                      '1234',
                      '0431602145',
+                     'VIC999',
+                     'V999',
+                     'VIC Test Newsagent 999',
                      '="%s"' % str(self._now).split('.', 1)[0])]
         msg = 'List of collected job_item IDs incorrect'
         self.assertListEqual(sorted(received), sorted(expected), msg)
@@ -110,6 +113,9 @@ WHERE id IN (21)""" % {'now': cls._now,
                     'AGENT_STATE',
                     'AGENT_POSTCODE',
                     'AGENT_PHONE_NBR',
+                    'ST_DP_CODE',
+                    'ST_AGENT_CODE',
+                    'ST_AGENT_NAME',
                     'STOCKTAKE_CREATED_TS']
         msg = 'Headers after DELTA_TIME addition error'
         self.assertListEqual(received, expected, msg)

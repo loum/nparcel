@@ -86,6 +86,9 @@ WHERE id IN (15, 16, 19)""" % cls._old_created_ts
                      'VIC',
                      '1234',
                      '0431602145',
+                     'VIC999',
+                     'V999',
+                     'VIC Test Newsagent 999',
                      0),
                     (16,
                      'Toll Priority',
@@ -106,6 +109,9 @@ WHERE id IN (15, 16, 19)""" % cls._old_created_ts
                      'VIC',
                      '1234',
                      '0431602145',
+                     'VIC999',
+                     'V999',
+                     'VIC Test Newsagent 999',
                      0),
                     (19,
                      'Toll Priority',
@@ -126,6 +132,9 @@ WHERE id IN (15, 16, 19)""" % cls._old_created_ts
                      'VIC',
                      '1234',
                      '0431602145',
+                     'VIC999',
+                     'V999',
+                     'VIC Test Newsagent 999',
                      0)]
         msg = 'List of uncollected job_item IDs incorrect'
         self.assertListEqual(sorted(received), sorted(expected), msg)
@@ -150,6 +159,9 @@ WHERE id IN (15, 16, 19)""" % cls._old_created_ts
                     'AGENT_STATE',
                     'AGENT_POSTCODE',
                     'AGENT_PHONE_NBR',
+                    'ST_DP_CODE',
+                    'ST_AGENT_CODE',
+                    'ST_AGENT_NAME',
                     'DELTA_TIME']
         msg = 'Headers after DELTA_TIME addition error'
         self.assertListEqual(received, expected, msg)

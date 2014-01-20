@@ -461,7 +461,10 @@ AND notify_ts IS NOT NULL""" % job_item_id
                      'Testville',
                      'VIC',
                      '1234',
-                     '0431602145'),
+                     '0431602145',
+                     'VIC999',
+                     'V999',
+                     'VIC Test Newsagent 999'),
                     (16,
                      1,
                      'aged_item_match',
@@ -480,7 +483,10 @@ AND notify_ts IS NOT NULL""" % job_item_id
                      'Testville',
                      'VIC',
                      '1234',
-                     '0431602145'),
+                     '0431602145',
+                     'VIC999',
+                     'V999',
+                     'VIC Test Newsagent 999'),
                     (19,
                      1,
                      'ARTZ061184',
@@ -499,7 +505,10 @@ AND notify_ts IS NOT NULL""" % job_item_id
                      'Testville',
                      'VIC',
                      '1234',
-                     '0431602145')]
+                     '0431602145',
+                     'VIC999',
+                     'V999',
+                     'VIC Test Newsagent 999')]
         msg = 'Reference-based job_item query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -530,7 +539,10 @@ AND notify_ts IS NOT NULL""" % job_item_id
                      'Testville',
                      'VIC',
                      '1234',
-                     '0431602145'),
+                     '0431602145',
+                     'VIC999',
+                     'V999',
+                     'VIC Test Newsagent 999'),
                     (16,
                      1,
                      'aged_item_match',
@@ -549,7 +561,10 @@ AND notify_ts IS NOT NULL""" % job_item_id
                      'Testville',
                      'VIC',
                      '1234',
-                     '0431602145'),
+                     '0431602145',
+                     'VIC999',
+                     'V999',
+                     'VIC Test Newsagent 999'),
                     (19,
                      1,
                      'ARTZ061184',
@@ -568,7 +583,10 @@ AND notify_ts IS NOT NULL""" % job_item_id
                      'Testville',
                      'VIC',
                      '1234',
-                     '0431602145'),
+                     '0431602145',
+                     'VIC999',
+                     'V999',
+                     'VIC Test Newsagent 999'),
                     (20,
                      1,
                      'TEST_REF_NOT_PROC',
@@ -587,7 +605,10 @@ AND notify_ts IS NOT NULL""" % job_item_id
                      'Testville',
                      'VIC',
                      '1234',
-                     '0431602145'),
+                     '0431602145',
+                     'VIC999',
+                     'V999',
+                     'VIC Test Newsagent 999'),
                     (22,
                      1,
                      'ARTZ061184',
@@ -606,7 +627,10 @@ AND notify_ts IS NOT NULL""" % job_item_id
                      'Testville',
                      'VIC',
                      '1234',
-                     '0431602145')]
+                     '0431602145',
+                     'VIC999',
+                     'V999',
+                     'VIC Test Newsagent 999')]
         msg = 'AgentStocktake-based job_item (not processed) query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -653,7 +677,10 @@ AND notify_ts IS NOT NULL""" % job_item_id
                      'Testville',
                      'VIC',
                      '1234',
-                     '0431602145')]
+                     '0431602145',
+                     'VIC999',
+                     'V999',
+                     'VIC Test Newsagent 999')]
         msg = 'AgentStocktake-based job_item (not processed) query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -685,7 +712,10 @@ AND notify_ts IS NOT NULL""" % job_item_id
                      'Testville',
                      'VIC',
                      '1234',
-                     '0431602145')]
+                     '0431602145',
+                     'VIC999',
+                     'V999',
+                     'VIC Test Newsagent 999')]
         msg = 'Job table based reference query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -736,7 +766,10 @@ AND notify_ts IS NOT NULL""" % job_item_id
                      'Testville',
                      'VIC',
                      '1234',
-                     '0431602145')]
+                     '0431602145',
+                     'VIC999',
+                     'V999',
+                     'VIC Test Newsagent 999')]
         msg = 'Job table based reference query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -747,7 +780,7 @@ AND notify_ts IS NOT NULL""" % job_item_id
         sql = self._db.jobitem.non_compliance_sql(bu_ids)
         self._db(sql)
         received = [x[0] for x in list(self._db.rows())]
-        expected = [2, 3, 4, 6, 8, 9, 10, 11, 12, 13, 14, 17, 18, 23]
+        expected = [2, 3, 4, 6, 8, 9, 10, 11, 12, 13, 14, 17, 18, 23, 24]
         msg = 'All non compliance job_items query error'
         self.assertListEqual(received, expected, msg)
 
@@ -818,7 +851,7 @@ WHERE agent_id = 3"""
         self._db(sql)
 
         received = list(self._db.rows())
-        expected = [(242,)]
+        expected = [(266,)]
         msg = 'Jobitem-based parcel (not picked up) totals count error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 

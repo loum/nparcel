@@ -55,4 +55,11 @@
         'created_ts': str(datetime.datetime.now()),
         'reference_nbr': 'banana_reference',
     },
+    {
+        # In agent_stocktake but not in TPP.
+        'id': 10,
+        'agent_id': 4,
+        'created_ts': str(datetime.datetime.now()),
+        'reference_nbr': 'agent_exception_ref',
+    },
 ]

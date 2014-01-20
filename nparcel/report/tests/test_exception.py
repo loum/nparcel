@@ -72,6 +72,11 @@ WHERE id IN (7, 8)""" % cls._older_date
                      'Q013',
                      '="banana_reference"',
                      'QBRI005',
+                     'George Street News'),
+                    (10,
+                     'Q013',
+                     '="agent_exception_ref"',
+                     'QBRI005',
                      'George Street News')]
         msg = 'List of exception items incorrect'
         self.assertListEqual(sorted(received), sorted(expected), msg)

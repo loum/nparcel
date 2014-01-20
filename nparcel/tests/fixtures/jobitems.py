@@ -282,4 +282,16 @@
         'pieces': 23,
         'consumer_name': 'Con Sumertwentythree',
     },
+    {
+        # Uncollected, agent exception.
+        'id': 24,
+        'connote_nbr': 'agent_exception_con',
+        'item_nbr': 'agent_exception_item',
+        'job_id': 9,
+        'created_ts': str(datetime.datetime.now()),
+        'email_addr': 'loumar@tollgroup.com',
+        'phone_nbr': '0431602145',
+        'pieces': 24,
+        'consumer_name': 'Con Sumertwentyfour',
+    },
 ]

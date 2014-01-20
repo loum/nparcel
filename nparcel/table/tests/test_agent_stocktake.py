@@ -86,7 +86,8 @@ WHERE reference_nbr = '%s'""" % (cls._agent_stocktake_created_ts,
                     ('TEST_REF_NOT_PROC',),
                     ('TEST_REF_NOT_PROC_PCKD_UP',),
                     ('JOB_TEST_REF_NOT_PCKD_UP',),
-                    ('banana_reference',)]
+                    ('banana_reference',),
+                    ('agent_exception_ref',)]
         msg = 'Reference-based agent_stocktake query error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -101,7 +102,8 @@ WHERE reference_nbr = '%s'""" % (cls._agent_stocktake_created_ts,
                     ('TEST_REF_NOT_PROC',),
                     ('TEST_REF_NOT_PROC_PCKD_UP',),
                     ('JOB_TEST_REF_NOT_PCKD_UP',),
-                    ('banana_reference',)]
+                    ('banana_reference',),
+                    ('agent_exception_ref',)]
         msg = 'Reference-based agent_stocktake query error (no alias)'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -162,6 +164,11 @@ WHERE id IN (7, 8)""" % older_date
         expected = [(9,
                      'Q013',
                      'banana_reference',
+                     'QBRI005',
+                     'George Street News'),
+                    (10,
+                     'Q013',
+                     'agent_exception_ref',
                      'QBRI005',
                      'George Street News')]
         msg = 'Reference exception query error'
