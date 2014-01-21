@@ -815,7 +815,13 @@ WHERE agent_id = 3"""
                      'VIC Test Newsagent 999',
                      '%s' % ts[0][0],
                      92,
-                     92)]
+                     92),
+                    ('WVIC005',
+                     'W049',
+                     'Bunters We Never Sleep News + Deli',
+                     None,
+                     24,
+                     47)]
         msg = 'AgentStocktake-based parcel totals count error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 

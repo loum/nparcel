@@ -423,6 +423,9 @@ class TestB2CConfig(unittest2.TestCase):
         expected = ['DP_CODE',
                     'AGENT_CODE',
                     'AGENT_NAME',
+                    'ST_DP_CODE',
+                    'ST_AGENT_CODE',
+                    'ST_AGENT_NAME',
                     'JOB_BU_ID',
                     'AGENT_ADDRESS',
                     'AGENT_SUBURB',
@@ -442,6 +445,9 @@ class TestB2CConfig(unittest2.TestCase):
         expected = {'DP_CODE': 'Agent',
                     'AGENT_CODE': 'Agent Id',
                     'AGENT_NAME': 'Agent Name',
+                    'ST_AGENT_CODE': 'Scanning Agent Id',
+                    'ST_AGENT_NAME': 'Scanning Agent Name',
+                    'ST_DP_CODE': 'Scanning Agent',
                     'JOB_BU_ID': 'Business Unit',
                     'AGENT_ADDRESS': 'Agent Address',
                     'AGENT_SUBURB': 'Suburb',
@@ -458,14 +464,20 @@ class TestB2CConfig(unittest2.TestCase):
         self.assertDictEqual(received, expected, msg)
 
         received = self._c.report_noncompliance_widths
-        expected = {'agent name': 20,
-                    'agent address': 20,
+        expected = {'tpp agent': 10,
+                    'tpp agent id': 10,
+                    'tpp agent name': 40,
+                    'scanning agent': 12,
+                    'scanning agent id': 14,
+                    'scanning agent name': 25,
+                    'business unit': 12,
+                    'agent address': 30,
                     'suburb': 20,
                     'phone nbr': 15,
                     'connote': 25,
                     'item nbr': 25,
                     'to': 20,
-                    'handover': 30}
+                    'handover': 20}
         msg = 'Report noncompliance widths value error'
         self.assertDictEqual(received, expected, msg)
 

@@ -285,7 +285,7 @@
     {
         # Uncollected, agent exception.
         'id': 24,
-        'connote_nbr': 'agent_exception_con',
+        'connote_nbr': 'agent_exception_ref',
         'item_nbr': 'agent_exception_item',
         'job_id': 9,
         'created_ts': str(datetime.datetime.now()),
