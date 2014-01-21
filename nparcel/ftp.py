@@ -43,10 +43,15 @@ class Ftp(ftplib.FTP):
         This ``ftp_priority`` section definition will be appended to the
         :attr:`xfer` list
 
+    .. attribute:: connected
+
+        boolean that tracks the FTP connection
+
     """
     _archive_dir = '/data/nparcel/archive/ftp'
     _config = nparcel.Config()
     _xfers = []
+    _connected = False
 
     def __init__(self, config_file=None):
         """Nparcel Ftp initialisation.
@@ -69,6 +74,13 @@ class Ftp(ftplib.FTP):
     @property
     def archive_dir(self):
         return self._archive_dir
+
+    @property
+    def connected(self):
+        return self._connected
+
+    def set_connected(self, value=True):
+        self._connected = value
 
     def reset_config(self):
         del self._xfers[:]
@@ -126,7 +138,10 @@ class Ftp(ftplib.FTP):
 
         """
         log.info('Sourcing files from local directory: "%s"' % dir)
-        return get_directory_files(path=dir, filter=file_filter)
+
+        files = get_directory_files(path=dir, filter=file_filter)
+
+        return files
 
     def get_report_file_ids(self, file):
         """Parse report file and extract a list of JOB_KEY's
@@ -326,6 +341,9 @@ class Ftp(ftplib.FTP):
 
             files_to_xfer.append(report)
 
+        if not len(files_to_xfer):
+            log.info('No files set to be transferred')
+
         return files_to_xfer
 
     def xfer_files(self, xfer, files, dry=False):
@@ -494,17 +512,21 @@ class Ftp(ftplib.FTP):
             log.error('Login failed: %s' % err)
             status = False
 
+        self.set_connected(status)
+
         return status
 
     def disconnect_resource(self):
         """Disconnect from FTP session.
 
         """
-        log.info('Closing FTP session')
-        try:
-            self.quit()
-        except AttributeError, err:
-            log.error('FTP close error: %s' % err)
+        if self.connected:
+            log.info('Closing FTP session')
+            try:
+                self.quit()
+                self.set_connected(False)
+            except AttributeError, err:
+                log.error('FTP close error: %s' % err)
 
     def filter_file_list(self, files, format):
         """Filters list of *files* based on the *filter* regular expression
