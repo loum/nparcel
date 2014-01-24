@@ -14,3 +14,4 @@ the inbound and outbound processing.
     npremind.rst
     primaryelect.rst
     comms.rst
+    pods.rst

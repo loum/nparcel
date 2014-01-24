@@ -6,7 +6,9 @@ from nparcel.utils.files import (load_template,
                                  get_directory_files,
                                  get_directory_files_list,
                                  remove_files,
-                                 check_filename)
+                                 check_filename,
+                                 gen_digest,
+                                 gen_digest_path)
 
 
 class TestFiles(unittest2.TestCase):
@@ -115,3 +117,30 @@ class TestFiles(unittest2.TestCase):
         received = check_filename('T1250_dodgy_20130904061851.txt', format)
         msg = 'Dodgy filename should validate False'
         self.assertFalse(received, msg)
+
+    def test_gen_digest_invalids(self):
+        """Generate digest -- invalid value.
+        """
+        received = gen_digest(None)
+        msg = 'Digest generation error -- None value'
+        self.assertIsNone(received, msg)
+
+        received = gen_digest(1234)
+        msg = 'Digest generation error -- non-string value'
+        self.assertIsNone(received, msg)
+
+    def test_gen_digest(self):
+        """Generate digest -- valid values.
+        """
+        received = gen_digest('193433')
+        expected = '73b0b66e5dfe356782ec56c6fede538f'
+        msg = 'Digest generation error -- valid value'
+        self.assertEqual(received, expected, msg)
+
+    def test_create_digest_dir(self):
+        """Create a digest-based directory.
+        """
+        received = gen_digest_path('193433')
+        expected = ['73b0b66e', '5dfe3567', '82ec56c6', 'fede538f']
+        msg = 'Digest directory path list error'
+        self.assertListEqual(received, expected, msg)

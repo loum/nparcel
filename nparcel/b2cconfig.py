@@ -36,9 +36,9 @@ class B2CConfig(nparcel.Config):
 
         list of directories to look for T1250 files.
 
-    .. attribute:: archive
+    .. attribute:: archive_dir
 
-        directory to place processed T1250 files into.
+        base directory where working files are archived to.
 
     .. attribute:: staging_base (exporter)
 
@@ -640,7 +640,7 @@ class B2CConfig(nparcel.Config):
             log.debug('Primary Elect directories to check %s' %
                       str(self.pe_in_dirs))
         except ConfigParser.NoOptionError:
-            log.warn('No Primary Elect inbound directories in config')
+            log.debug('No Primary Elect inbound directories in config')
 
         try:
             self._pe_in_file_format = self.get('primary_elect',

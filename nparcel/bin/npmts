@@ -65,7 +65,7 @@ def main():
     if based.options.verbose == 0:
         set_log_level('INFO')
     else:
-        log.info('Logging verbosity set to "INFO" level')
+        log.info('Logging verbosity set to "DEBUG" level')
 
     # OK, start processing.
     mts = MtsDaemon(pidfile=based.pidfile,

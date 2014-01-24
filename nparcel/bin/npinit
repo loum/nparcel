@@ -32,7 +32,8 @@ def main():
     # Enable detailed logging if required.
     if options.verbose == 0:
         set_log_level('INFO')
-        log.info('Logging verbosity set to "INFO" level')
+    else:
+        log.info('Logging verbosity set to "DEBUG" level')
 
     # Move files?
     dry = options.dry is not None

@@ -8,11 +8,14 @@ __all__ = [
     "move_file",
     "copy_file",
     "check_filename",
+    "gen_digest",
+    "gen_digest_path",
 ]
 import os
 import re
 import string
 import shutil
+import md5
 
 from nparcel.utils.log import log
 
@@ -286,3 +289,51 @@ def check_filename(file, format):
         log.debug('File "%s" did not match filter "%s"' % (file, format))
 
     return status
+
+
+def gen_digest(value):
+    """Generates a 256-bit checksum against *str*
+
+    **Args:**
+        *value*: the string value to generate digest against
+
+    **Returns:**
+        32 byte digest containing only hexadecimal digits
+
+    """
+    digest = None
+
+    if value is not None and isinstance(value, basestring):
+        m = md5.new()
+        m.update(value)
+        digest = m.hexdigest()
+    else:
+        log.error('Cannot generate digest against value: %s' % str(value))
+
+    return digest
+
+
+def gen_digest_path(value):
+    """Helper funciton that handles the creation of digest-based directory
+    path.  The digest is calculated from *value*.
+
+    For example, the *value* ``193433`` will generate the directory path
+    list::
+
+        ['73b0b66e', '5dfe3567', '82ec56c6', 'fede538f']
+
+    **Args:**
+        *value*: the string value to generate digest against
+
+    **Returns:**
+        list of 8-byte segments that constitite the original 32-byte
+        digest
+
+    """
+    digest = gen_digest(value)
+
+    if digest is not None:
+        n = 8
+        dirs = [digest[i:i + n] for i in range(0, len(digest), n)]
+
+    return dirs

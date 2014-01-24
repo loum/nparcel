@@ -1,0 +1,88 @@
+#!/usr/bin/python
+
+import os
+import inspect
+import signal
+
+import nparcel
+from nparcel.utils.files import (gen_digest,
+                                 gen_digest_path)
+from nparcel.utils.log import (log,
+                               set_log_level,
+                               set_console)
+
+
+class PodDaemon(nparcel.DaemonService):
+    _current_dir = os.curdir
+    _pod = None
+
+    def __init__(self, pidfile, dry=True, config='nparcel.conf'):
+        super(PodDaemon, self).__init__(pidfile=pidfile)
+
+        self.config = nparcel.B2CConfig(file=config)
+        self.config.parse_config()
+
+    @property
+    def current_dir(self):
+        return self._current_dir
+
+    def set_current_dir(self, value):
+        self._current_dir = value
+
+    @property
+    def pod(self):
+        return self._pod
+
+    def set_pod(self, value):
+        self._pod = value
+
+    def _start(self, event):
+        signal.signal(signal.SIGTERM, self._exit_handler)
+
+        try:
+            if self.config.archive_dir is not None:
+                self.set_current_dir(self.config.archive_dir)
+        except AttributeError, err:
+            pass
+
+        digest_path = gen_digest_path(self.pod)
+        path = os.path.join(self.current_dir, 'signature', *digest_path)
+        print('path: %s' % path)
+
+def main():
+    config_file = os.path.join(os.path.expanduser('~'),
+                               '.nparceld',
+                               'nparceld.conf')
+
+    based = nparcel.BaseD(config=config_file)
+    based.set_command('start')
+    script_name = inspect.getfile(inspect.currentframe())
+    script_name = os.path.basename(script_name)
+    based.set_script_name(script_name)
+    based.parser.set_usage('usage: %prog [options] <POD value>')
+    based.check_args()
+
+    pod = None
+    try:
+        pod = based.args.pop(0)
+    except IndexError, err:
+        based.parser.error('No POD value provided')
+
+    set_console()
+
+    # Enable detailed logging if required.
+    if based.options.verbose == 0:
+        set_log_level('INFO')
+    else:
+        log.info('Logging verbosity set to "DEBUG" level')
+
+    pd = PodDaemon(pidfile=based.pidfile, config=based.options.config)
+    pd.set_pod(pod)
+
+    # OK, start processing.
+    based.set_batch(True)
+    based.set_dry(True)
+    based.launch_command(pd, script_name)
+
+if __name__ == '__main__':
+    main()
