@@ -23,7 +23,9 @@ FLAG_MAP = {'item_number_excp': 0,
             'delay_template_sc_4': 11,
             'ignore_sc_4': 12,
             'pe_comms': 13,
-            'on_del_sc_4': 14}
+            'on_del_sc_4': 14,
+            'archive_ps_file': 15,
+            'archive_png_file': 16}
 
 
 class B2CConfig(nparcel.Config):
@@ -1172,12 +1174,23 @@ class B2CConfig(nparcel.Config):
 
         return status
 
-    def get_file_control(self, bu):
-        """Return the *bu* file control settings from the condition map
-        values.
+    def get_pod_control(self, bu, type='xfer'):
+        """Return the *bu* control settings from the condition map
+        values based on *type*.
+
+        Supported values for *type* include:
+
+        * **xfer** - POD files to be sent to the outbound staging area
+          or delete
+
+        * **archive** - send to the archive directory
 
         **Args:**
             *bu*: the name of the Business Unit.
+
+        **Kwargs:**
+            *type*: distinguish between POD file transfer (**xfer**)
+            or archiving (**archive**) (default ``xfer`` or file transfer)
 
         **Returns:**
             dictionary representing all of the file control condition flags
@@ -1188,12 +1201,16 @@ class B2CConfig(nparcel.Config):
                  'png': True}
 
         """
-        file_control = {}
+        pod_control = {}
 
-        file_control['ps'] = self.condition(bu, 'send_ps_file')
-        file_control['png'] = self.condition(bu, 'send_png_file')
+        if type == 'xfer':
+            pod_control['ps'] = self.condition(bu, 'send_ps_file')
+            pod_control['png'] = self.condition(bu, 'send_png_file')
+        elif type == 'archive':
+            pod_control['ps'] = self.condition(bu, 'archive_ps_file')
+            pod_control['png'] = self.condition(bu, 'archive_png_file')
 
-        return file_control
+        return pod_control
 
     def bu_to_file(self, bu):
         """Return the file_bu configuration option of a given *bu*.

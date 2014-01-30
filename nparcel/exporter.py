@@ -10,7 +10,10 @@ import operator
 
 import nparcel
 from nparcel.utils.log import log
-from nparcel.utils.files import create_dir
+from nparcel.utils.files import (create_dir,
+                                 remove_files,
+                                 copy_file,
+                                 gen_digest_path)
 
 STATES = ['NSW', 'VIC', 'QLD', 'SA', 'WA', 'ACT']
 TZ = {'vic': 'Australia/Victoria',
@@ -32,6 +35,9 @@ class Exporter(object):
         Default of ``None`` will not archive files.
 
     """
+    _signature_dir = None
+    _staging_dir = None
+    _archive_dir = None
     _time_fmt = "%Y-%m-%d %H:%M:%S"
     _time_tz_fmt = "%Y-%m-%d %H:%M:%S %Z%z"
     _local_tz = TZ.get('vic')
@@ -73,7 +79,9 @@ class Exporter(object):
     def set_staging_dir(self, value):
         self._staging_dir = value
 
-        create_dir(dir=self._staging_dir)
+        if self._staging_dir is not None:
+            if not create_dir(self._staging_dir):
+                self._staging_dir = None
 
     @property
     def out_dir(self):
@@ -165,7 +173,8 @@ class Exporter(object):
 
     def process(self,
                 business_unit_id,
-                file_control={'ps': True},
+                file_control={'ps': True, 'png': False},
+                archive_control={'ps': True, 'png': True},
                 ignore_pe=False,
                 dry=False):
         """
@@ -187,9 +196,6 @@ class Exporter(object):
                 {'ps': True,
                  'png': False}
 
-            Defaults to ``None`` in which case only ``*.ps`` files are moved
-            to the :attr:`out_dir`.
-
             *dry*: only report what would happen (do not move file)
 
         """
@@ -200,89 +206,84 @@ class Exporter(object):
         for row in self._collected_items:
             job_item_id = row[1]
 
-            # Attempt to move the signature file.
-            for extension, send_to_out_dir in file_control.iteritems():
-                if send_to_out_dir:
-                    target_dir = self.out_dir
-                else:
-                    target_dir = self.archive_dir
+            # First, see if we need to archive the files.
+            self.archive_signature_file(job_item_id,
+                                        archive_control,
+                                        self.signature_dir,
+                                        self.archive_dir,
+                                        dry=dry)
 
-                if target_dir is not None:
-                    if self.move_signature_file(job_item_id,
-                                                target_dir,
-                                                extension,
-                                                file_control,
-                                                dry):
-                        log.info('job_item.id: %d OK' % job_item_id)
-                        # Only tag file sent to out_dir.
-                        if send_to_out_dir:
-                            valid_items.append(row)
-                    else:
-                        log.error('job_item.id: %d failed' % job_item_id)
+            # Check if file extension has been flagged to be
+            # transferred out.  Finally, delete the file.
+            for extension, send_to_out_dir in file_control.iteritems():
+                sig_file = os.path.join(self.signature_dir,
+                                        "%d.%s" % (job_item_id, extension))
+
+                log.debug('Stage file "%s"?: %s' % (sig_file,
+                                                    send_to_out_dir))
+                status = os.path.exists(sig_file)
+                if send_to_out_dir:
+                    target = os.path.join(self.out_dir,
+                                          os.path.basename(sig_file))
+                    if not dry:
+                        status = copy_file(sig_file, target)
+
+                    # Only tag file sent to out_dir.
+                    if status and row not in valid_items:
+                        valid_items.append(row)
+
+                # At this point, we can remove the file
+                log.debug('Remove POD file "%s"?: %s' % (sig_file, status))
+                if status and not dry:
+                    remove_files(sig_file)
 
         return valid_items
 
-    def move_signature_file(self,
-                            id,
-                            out_dir,
-                            extension='ps',
-                            file_control={'ps': True},
-                            dry=False):
-        """Move the Nparcel signature file to the staging directory for
-        further processing.
+    def archive_signature_file(self,
+                               id,
+                               archive_control,
+                               in_dir,
+                               out_dir,
+                               dry=False):
+        """Attempt to archive POD signature files.
 
-        .. note::
-
-            Move will only occur if a a staging directory exists.
-
-        Filename is constructed on the *id* provided.  *id* is typically
-        the record id of the "job_item" table record.
+        Archive directory name is constructed with the
+        :func:`nparcel.utils.files.gen_digest_path` function.
 
         **Args:**
-            *id*: file name identifier of the file to move
+            *id*: the name of the POD signature file that relates to the
+             ``job_item.id`` table column.
 
-            *out_dir*: target directory
+            *archive_control*: hash of file name extensions and boolean
+            value to denote whether the file should be archived or not.
+            Typical example is::
 
-            *extension*: the extension of the filename to move
-            (default '.ps')
+                {'ps': True,
+                 'png': True}
+
+            *in_dir*: directory that contains the source signature POD file
+
+            *out_dir*: directory where signature POD files are archived to
 
         **Kwargs:**
             *dry*: only report what would happen (do not move file)
 
         **Returns:**
-            boolean ``True`` if the signature file is located successfully
-            and moved into the staging *out_dir*
+            boolean ``True`` if the *source_file* file is located
+            and copied into *out_dir*
 
             boolean ``False`` otherwise
 
         """
-        log.info('Moving signature file for job_item.id: %d' % id)
-        status = True
+        digest_path = gen_digest_path(str(id))
+        target_dir = os.path.join(out_dir, *digest_path)
 
-        # Define the signature filename.
-        if self.signature_dir is None:
-            log.error('Signature directory is not defined')
-            status = False
-
-        if status:
-            sig_file = os.path.join(self.signature_dir,
-                                    "%d.%s" % (id, extension))
-
-            if not os.path.exists(sig_file):
-                log.error('Cannot locate signature file: "%s"' % sig_file)
-                status = False
-            else:
-                target = os.path.join(out_dir, "%d.%s" % (id, extension))
-                log.info('Moving signature file "%s" to "%s"' %
-                         (sig_file, target))
-                try:
-                    if not dry:
-                        os.rename(sig_file, target)
-                except OSError, e:
-                    log.error('Signature file move failed: "%s"' % e)
-                    status = False
-
-        return status
+        for extension, archive in archive_control.iteritems():
+            sig_file = "%d.%s" % (id, extension)
+            sig_file_path = os.path.join(in_dir, sig_file)
+            log.debug('Archiving "%s"?: %s' % (sig_file_path, archive))
+            if archive and not dry:
+                copy_file(sig_file_path, os.path.join(target_dir, sig_file))
 
     def _cleanse(self, row):
         """Runs over the "jobitem" record and modifies to suit the

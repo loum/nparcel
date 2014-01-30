@@ -6,7 +6,9 @@ import sys
 import StringIO
 
 import nparcel
-from nparcel.utils.files import remove_files
+from nparcel.utils.files import (remove_files,
+                                 get_directory_files_list,
+                                 gen_digest_path)
 
 # Current business_unit map:
 BU = {'priority': 1,
@@ -243,31 +245,78 @@ class TestExporter(unittest2.TestCase):
         remove_files(outfile)
         os.rmdir(staging)
 
-    def test_staging_file_move(self):
-        """Move signature file.
+    def test_signature_archive(self):
+        """Archive signature file.
         """
-        # Define the staging directory.
+        # Define the archive directory.
+        archive_dir = tempfile.mkdtemp()
         self._e.set_signature_dir(self._dir)
 
-        # Create a dummy signature file.
-        sig_file = os.path.join(self._dir, '1.ps')
-        fh = open(sig_file, 'w')
-        fh.close()
+        # Create a dummy signature files.
+        dummy_files = ['11111.ps', '11111.png']
+        for i in dummy_files:
+            sig_file = os.path.join(self._e.signature_dir, i)
+            fh = open(sig_file, 'w')
+            fh.close()
 
-        msg = 'Signature file move should return True'
-        received = self._e.move_signature_file(id=1,
-                                               out_dir=self._staging_dir)
-        self.assertTrue(received, msg)
+        archive_control = {'ps': True,
+                           'png': True}
+        self._e.archive_signature_file(11111,
+                                       archive_control,
+                                       self._e.signature_dir,
+                                       archive_dir)
 
-        # Check that the file now exists in staging.
-        msg = 'Signature file move to directory should succeed'
-        staging_sig_file = os.path.join(self._staging_dir, '1.ps')
-        self.assertTrue(os.path.exists(staging_sig_file), msg)
+        # Check that the files now exists in archive.
+        digest_path = gen_digest_path('11111')
+        archive_digest_path = os.path.join(archive_dir, *digest_path)
+        received = get_directory_files_list(archive_digest_path)
+        expected = [os.path.join(archive_digest_path, x) for x in dummy_files]
+        msg = 'Signature file archive directory should succeed'
+        self.assertListEqual(received, expected, msg)
 
         # Cleanup
         self._e.reset()
+        remove_files(get_directory_files_list(self._e.signature_dir))
+        archive_digest_path = os.path.join(archive_dir, *digest_path)
+        remove_files(get_directory_files_list(archive_digest_path))
         self._e.set_signature_dir(value=None)
-        remove_files(staging_sig_file)
+        os.removedirs(archive_digest_path)
+
+    def test_signature_archive_selective(self):
+        """Archive signature file -- only *.ps files.
+        """
+        # Define the archive directory.
+        archive_dir = tempfile.mkdtemp()
+        self._e.set_signature_dir(self._dir)
+
+        # Create a dummy signature files.
+        dummy_files = ['22222.ps', '22222.png']
+        for i in dummy_files:
+            sig_file = os.path.join(self._e.signature_dir, i)
+            fh = open(sig_file, 'w')
+            fh.close()
+
+        archive_control = {'ps': True,
+                           'png': False}
+        self._e.archive_signature_file(22222,
+                                       archive_control,
+                                       self._e.signature_dir,
+                                       archive_dir)
+
+        # Check that the file now exists in archive.
+        digest_path = gen_digest_path('22222')
+        archive_digest_path = os.path.join(archive_dir, *digest_path)
+        received = get_directory_files_list(archive_digest_path)
+        expected = [os.path.join(archive_digest_path, '22222.ps')]
+        msg = 'Signature file archive directory should succeed -- ps only'
+        self.assertListEqual(received, expected, msg)
+
+        # Cleanup
+        self._e.reset()
+        remove_files(get_directory_files_list(self._e.signature_dir))
+        remove_files(received)
+        self._e.set_signature_dir(value=None)
+        os.removedirs(archive_digest_path)
 
     def test_update_status(self):
         """Update the collected item extract_ts.
@@ -306,6 +355,8 @@ WHERE id = 1"""
         # Define the staging/signature directory.
         self._e.set_signature_dir(self._dir)
         self._e.set_staging_dir(self._staging_dir)
+        archive_dir = tempfile.mkdtemp()
+        self._e.set_archive_dir(archive_dir)
 
         # Prepare the signature files.
         bu = 'priority'
@@ -325,7 +376,13 @@ WHERE id = 1"""
 
         # Check if we can source a staging directory.
         self._e.set_out_dir(business_unit=bu)
-        valid_items = self._e.process(business_unit_id=BU.get('priority'))
+        file_control = {'ps': True,
+                        'png': False}
+        archive_control = {'ps': True,
+                           'png': True}
+        valid_items = self._e.process(business_unit_id=BU.get('priority'),
+                                      file_control=file_control,
+                                      archive_control=archive_control)
         sequence = '0, 1, 2, 3, 4, 5'
         # Returns a list, but should only get one file in this instance.
         report_files = self._e.report(valid_items, sequence=sequence)
@@ -350,23 +407,35 @@ WHERE id = 1"""
         msg = 'Contents of Priority-based POD report file not as expected'
         self.assertEqual(received, expected, msg)
 
-        # Clean.
+        # Check the staging directory.
+        staging_dir = os.path.join(self._e.staging_dir, 'priority', 'out')
+        received = get_directory_files_list(staging_dir)
+        staging_files = [os.path.join(staging_dir, '1.ps')] + report_files
+        expected = list(staging_files)
+        msg = 'Staged files list error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Did we archive the files?
+        digest_path = gen_digest_path('1')
+        archive_digest_path = os.path.join(self._e.archive_dir,
+                                           *digest_path)
+        received = get_directory_files_list(archive_digest_path)
+        files = ['1.ps', '1.png']
+        expected = [os.path.join(archive_digest_path, x) for x in files]
+        msg = 'Signature file archive directory should succeed'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Clean up.
         self._e.reset()
-        remove_files(report_files)
-
-        # Remove signature files.
-        for item in items:
-            sig_file = os.path.join(self._e._staging_dir,
-                                    'priority',
-                                    'out',
-                                    '%s.ps' % str(item[1]))
-            remove_files(sig_file)
-
-        remove_files(png_files)
+        remove_files(staging_files)
         os.rmdir(os.path.join(self._e.staging_dir, 'priority', 'out'))
         os.rmdir(os.path.join(self._e.staging_dir, 'priority'))
+        remove_files(get_directory_files_list(archive_digest_path))
+        os.removedirs(archive_digest_path)
+
         self._e.set_staging_dir(value=None)
         self._e.set_signature_dir(value=None)
+        self._e.set_archive_dir(value=None)
         self._e.db.rollback()
 
     def test_process_no_items(self):

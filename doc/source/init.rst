@@ -40,7 +40,7 @@ display to the terminal the files and directories that will be required::
     Processing dry run True
     Starting npinit ...
     Preparing environment in "/home/guest/.nparceld"
-    Copying "/usr/lib/python2.4/site-packages/nparcel/conf/init.conf.0.18"
+    Copying "/usr/lib/python2.4/site-packages/nparcel/conf/init.conf.0.26"
     ...
 
 ``npinit`` will create the base directory structure in the ``.nparceld``
@@ -48,17 +48,16 @@ directory off the current user's home directory.
 
 Keys Files at a Glance ...
 ++++++++++++++++++++++++++
-As of release 0.18, the required directory structure is as follows::
+As of release 0.26, the required directory structure is as follows::
 
     $ tree .nparceld
     .nparceld
     |-- conf
-    |   |-- init.conf
-    |   |-- init.conf.0.18
-    |   |-- log.conf.0.18
-    |   |-- nparceld.conf.0.18
-    |   |-- npftp.conf.0.18
-    |   `-- npmts.conf.0.18
+    |   |-- init.conf.0.26
+    |   |-- log.conf.0.26
+    |   |-- nparceld.conf.0.26
+    |   |-- npftp.conf.0.26
+    |   `-- npmts.conf.0.26
     |-- pids
     |-- logs
     `-- templates
@@ -68,12 +67,14 @@ As of release 0.18, the required directory structure is as follows::
         |-- email_err_delay_html.t
         |-- email_err_pe_html.t
         |-- email_err_rem_html.t
+        |-- email_health_html.t
         |-- email_html.t
         |-- email_message_q_err_html.t
         |-- email_message_q_warn_html.t
         |-- email_pe_html.t
         |-- email_proc_err_html.t
         |-- email_rem_html.t
+        |-- email_report_html.t
         |-- email_test_html.t
         |-- mts_sql.t
         |-- sms_body_xml.t
@@ -83,9 +84,11 @@ As of release 0.18, the required directory structure is as follows::
         |-- sms_test_xml.t
         |-- subject_body_html.t
         |-- subject_delay_html.t
+        |-- subject_health_html.t
         |-- subject_pe_html.t
         |-- subject_proc_err_html.t
         |-- subject_rem_html.t
+        |-- subject_report_html.t
         `-- subject_test_html.t
 
 The main directories are:
@@ -98,7 +101,7 @@ Enable the Logger Handlers
 Log handlers manage the log files and need to be confgured::
 
     $ cd ~/.nparceld
-    $ ln -s conf/log.conf.0.18 log.conf
+    $ ln -s conf/log.conf.0.26 log.conf
 
 Set the Default Configuration
 +++++++++++++++++++++++++++++
@@ -109,10 +112,13 @@ components look for the default config at ``~.nparceld/nparceld.conf``::
     2013-10-08 17:26:04,266 CRITICAL:: Unable to locate config file:
     "/home/guest/.nparceld/nparceld.conf"
 
+.. note::
+    The default config settings are explained in the :ref:`config_items`
+
 As a start, we can use the package-provided default::
 
     $ cd ~/.nparceld
-    $ ln -s conf/nparceld.conf.0.18 nparceld.conf
+    $ ln -s conf/nparceld.conf.0.26 nparceld.conf
 
 From here we should get some sane information::
 
@@ -145,14 +151,14 @@ The default configuration mappings are provided as a generalisation of the
 Business Unit requirements during development.  These may have been modified
 during production and should be verified.
 
-The default settings for the condition map in release 0.18 are as follows::
+The default settings for the condition map in release 0.26 are as follows::
 
     [conditions]
-    #      0000000001
-    #      1234567890
-    TOLP = 0001000000
-    TOLF = 0001011000
-    TOLI = 1110100000
+    #      00000000011111111
+    #      12345678901234567
+    TOLP = 00010000000001011
+    TOLF = 00010110000001011
+    TOLI = 10001000000001011
 
 Adjust these to align with your environments requirements.
 
@@ -184,7 +190,7 @@ The outbound FTP service has its own configuration file, ``npftp.conf``.
 be linked to the appropriate lcoation::
 
     $ cd ~/.nparceld
-    $ ln -s conf/npftp.conf.0.18 npftp.conf
+    $ ln -s conf/npftp.conf.0.26 npftp.conf
 
 Connect to the MTS Interface
 ++++++++++++++++++++++++++++
@@ -193,7 +199,7 @@ against the Primary Elect jobs within the Nparcel database as a trigger
 point for sending out consumer comms::
 
     $ cd ~/.nparceld
-    $ ln -s conf/npmts.conf.0.18 npmts.conf
+    $ ln -s conf/npmts.conf.0.26 npmts.conf
 
 Edit the ``npmts.conf`` file and provide the supplied MTS credentials::
 

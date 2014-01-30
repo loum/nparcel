@@ -24,6 +24,7 @@ Contents
     :maxdepth: 2
 
     init.rst
+    configuration.rst
     failover.rst
     interfaces/index.rst
     source_code.rst

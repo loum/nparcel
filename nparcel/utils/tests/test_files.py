@@ -133,7 +133,7 @@ class TestFiles(unittest2.TestCase):
         """Generate digest -- valid values.
         """
         received = gen_digest('193433')
-        expected = '73b0b66e5dfe356782ec56c6fede538f'
+        expected = '73b0b66e'
         msg = 'Digest generation error -- valid value'
         self.assertEqual(received, expected, msg)
 
@@ -141,6 +141,6 @@ class TestFiles(unittest2.TestCase):
         """Create a digest-based directory.
         """
         received = gen_digest_path('193433')
-        expected = ['73b0b66e', '5dfe3567', '82ec56c6', 'fede538f']
+        expected = ['73', '73b0', '73b0b6', '73b0b66e']
         msg = 'Digest directory path list error'
         self.assertListEqual(received, expected, msg)

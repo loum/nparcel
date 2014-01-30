@@ -91,9 +91,9 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'Conditions map not as expected'
         received = self._c.cond
-        expected = {'tolp': '000100000000010',
-                    'tolf': '000101100000010',
-                    'toli': '100010000000010'}
+        expected = {'tolp': '00010000000001011',
+                    'tolf': '00010110000001011',
+                    'toli': '10001000000001011'}
         self.assertDictEqual(received, expected, msg)
 
         msg = 'RESTful API not as expected'
@@ -788,7 +788,9 @@ class TestB2CConfig(unittest2.TestCase):
                     'delay_template_sc_4': False,
                     'ignore_sc_4': False,
                     'pe_comms': False,
-                    'on_del_sc_4': False}
+                    'on_del_sc_4': False,
+                    'archive_ps_file': False,
+                    'archive_png_file': False}
         msg = 'Dodgy Business Unit condition map should be empty dict'
         self.assertDictEqual(received, expected, msg)
 
@@ -847,7 +849,9 @@ class TestB2CConfig(unittest2.TestCase):
                     'delay_template_sc_4': False,
                     'ignore_sc_4': False,
                     'pe_comms': True,
-                    'on_del_sc_4': False}
+                    'on_del_sc_4': False,
+                    'archive_ps_file': True,
+                    'archive_png_file': True}
         msg = 'Valid Business Unit condition map should produce dict values'
         self.assertDictEqual(received, expected, msg)
 
@@ -872,7 +876,9 @@ class TestB2CConfig(unittest2.TestCase):
                     'delay_template_sc_4': False,
                     'ignore_sc_4': False,
                     'pe_comms': True,
-                    'on_del_sc_4': False}
+                    'on_del_sc_4': False,
+                    'archive_ps_file': True,
+                    'archive_png_file': True}
         msg = 'Fast condition map should produce dict values'
         self.assertDictEqual(received, expected, msg)
 
@@ -901,17 +907,17 @@ class TestB2CConfig(unittest2.TestCase):
         self._c.set_config_file(self._file)
         self._c.parse_config()
 
-        received = self._c.get_file_control('tolp')
+        received = self._c.get_pod_control('tolp')
         expected = {'ps': True, 'png': False}
         msg = 'Priority file control dictionary not as expected'
         self.assertDictEqual(received, expected, msg)
 
-        received = self._c.get_file_control('toli')
+        received = self._c.get_pod_control('toli')
         expected = {'ps': False, 'png': True}
         msg = 'Ipec file control dictionary not as expected'
         self.assertDictEqual(received, expected, msg)
 
-        received = self._c.get_file_control('bogus')
+        received = self._c.get_pod_control('bogus')
         expected = {'ps': False, 'png': False}
         msg = 'Bogus file control dictionary not as expected'
         self.assertDictEqual(received, expected, msg)

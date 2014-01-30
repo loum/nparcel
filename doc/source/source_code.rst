@@ -39,8 +39,6 @@ as follows to make your life that much easier ... ::
 
     $ export https_proxy="http://<username>:<password>@itproxy-farm.toll.com.au:8080"
 
-Workflows
-
 **Q.** I tried to commit and received this terribly confusing message::
 
     (gnome-ssh-askpass:12653): Gtk-WARNING **: cannot open display: 

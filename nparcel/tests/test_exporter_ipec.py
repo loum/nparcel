@@ -146,13 +146,17 @@ class TestExporterIpec(unittest2.TestCase):
         self._e.set_out_dir(business_unit=bu)
         file_control = {'ps': False,
                         'png': True}
+        archive_control = {'ps': False,
+                           'png': False}
         self._e.set_out_dir(business_unit='ipec')
         valid_items = self._e.process(business_unit_id=BU.get('ipec'),
-                                      file_control=file_control)
+                                      file_control=file_control,
+                                      archive_control=archive_control)
         sequence = '0, 1, 2, 3, 4, 5, 6, 7'
         # Returns a list, but should only get one file in this instance.
         report_files = self._e.report(valid_items,
                                       sequence=sequence,
+                                      identifier='I',
                                       dry=True)
 
         # Check the contents of the report file.
@@ -192,21 +196,9 @@ class TestExporterIpec(unittest2.TestCase):
         msg = 'POD file list not as expected'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
-        # Check that the '.ps' files are archived.
-        archived_files = []
-        for ps_file in ps_files:
-            archived_files.append(os.path.join(self._archive_dir,
-                                               os.path.basename(ps_file)))
-
-        received = get_directory_files_list(self._archive_dir, '.*\.ps')
-        expected = archived_files
-        msg = 'Archived file list not as expected'
-        self.assertListEqual(sorted(received), sorted(expected), msg)
-
         # Clean.
         self._e.reset()
         remove_files(report_files)
-        remove_files(archived_files)
         remove_files(pod_files)
         os.rmdir(os.path.join(self._e.staging_dir, 'ipec', 'out'))
         os.rmdir(os.path.join(self._e.staging_dir, 'ipec'))

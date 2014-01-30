@@ -188,12 +188,17 @@ def copy_file(source, target):
     log.info('Copying "%s" to "%s"' % (source, target))
     status = False
 
-    if create_dir(os.path.dirname(target)):
-        try:
-            shutil.copyfile(source, target)
-            status = True
-        except OSError, err:
-            log.error('%s copy to %s failed -- %s' % (source, target, err))
+    if os.path.exists(source):
+        if create_dir(os.path.dirname(target)):
+            try:
+                shutil.copyfile(source, target)
+                status = True
+            except (OSError, IOError), err:
+                log.error('%s copy to %s failed -- %s' % (source,
+                                                          target,
+                                                          err))
+    else:
+        log.warn('Source file "%s" does not exist' % str(source))
 
     return status
 
@@ -292,13 +297,18 @@ def check_filename(file, format):
 
 
 def gen_digest(value):
-    """Generates a 256-bit checksum against *str*
+    """Generates a 64-bit checksum against *str*
+
+    .. note::
+
+        The digest is actually the first 8-bytes of the
+        :func:`md5.hexdigest` function.
 
     **Args:**
         *value*: the string value to generate digest against
 
     **Returns:**
-        32 byte digest containing only hexadecimal digits
+        8 byte digest containing only hexadecimal digits
 
     """
     digest = None
@@ -306,7 +316,7 @@ def gen_digest(value):
     if value is not None and isinstance(value, basestring):
         m = md5.new()
         m.update(value)
-        digest = m.hexdigest()
+        digest = m.hexdigest()[0:8]
     else:
         log.error('Cannot generate digest against value: %s' % str(value))
 
@@ -320,7 +330,7 @@ def gen_digest_path(value):
     For example, the *value* ``193433`` will generate the directory path
     list::
 
-        ['73b0b66e', '5dfe3567', '82ec56c6', 'fede538f']
+        ['73', '73b0', '73b0b6', '73b0b66e']
 
     **Args:**
         *value*: the string value to generate digest against
@@ -332,8 +342,9 @@ def gen_digest_path(value):
     """
     digest = gen_digest(value)
 
+    dirs = []
     if digest is not None:
-        n = 8
-        dirs = [digest[i:i + n] for i in range(0, len(digest), n)]
+        n = 2
+        dirs = [digest[0:2 + (i * 2)] for i in range(0, len(digest) / n)]
 
     return dirs
