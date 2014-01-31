@@ -128,7 +128,7 @@ def check_eof_flag(file):
     return status
 
 
-def move_file(source, target, err=False):
+def move_file(source, target, err=False, dry=False):
     """Attempts to move *source* to *target*.
 
     Checks if the *target* directory exists.  If not, will attempt to
@@ -139,8 +139,12 @@ def move_file(source, target, err=False):
 
         *target*: filename of where to move *source* to
 
+    **Kwargs:**
         *err*: boolean flag which will attempt to move *source* aside if
         the move fails.  Target fail name is *source*.err
+
+        *dry*: only report, do not execute (but will create the target
+        direcotry if it is missing)
 
     **Returns:**
         boolean ``True`` if move was successful
@@ -151,12 +155,18 @@ def move_file(source, target, err=False):
     log.info('Moving "%s" to "%s"' % (source, target))
     status = False
 
-    if create_dir(os.path.dirname(target)):
-        try:
-            os.rename(source, target)
-            status = True
-        except OSError, err:
-            log.error('%s move to %s failed -- %s' % (source, target, err))
+    if os.path.exists(source):
+        if create_dir(os.path.dirname(target)):
+            try:
+                if not dry:
+                    os.rename(source, target)
+                status = True
+            except OSError, err:
+                log.error('%s move to %s failed -- %s' % (source,
+                                                          target,
+                                                          err))
+    else:
+        log.warn('Source file "%s" does not exist' % str(source))
 
     if not status:
         try:

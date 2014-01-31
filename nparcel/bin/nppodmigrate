@@ -1,0 +1,89 @@
+#!/usr/bin/python
+
+import os
+import inspect
+import signal
+
+import nparcel
+from nparcel.utils.files import (gen_digest_path,
+                                 move_file)
+from nparcel.utils.log import (log,
+                               set_log_level,
+                               set_console)
+
+
+class PodMigrateDaemon(nparcel.DaemonService):
+    _current_dir = os.curdir
+
+    def __init__(self, pidfile, dry=True, config='nparcel.conf'):
+        super(PodMigrateDaemon, self).__init__(pidfile=pidfile)
+
+        self.set_dry(dry)
+        self.config = nparcel.B2CConfig(file=config)
+        self.config.parse_config()
+
+    @property
+    def current_dir(self):
+        return self._current_dir
+
+    def set_current_dir(self, value):
+        self._current_dir = value
+
+    def _start(self, event):
+        signal.signal(signal.SIGTERM, self._exit_handler)
+
+        try:
+            if self.config.archive_dir is not None:
+                self.set_current_dir(self.config.archive_dir)
+        except AttributeError, err:
+            pass
+
+        path = os.path.join(self.current_dir, 'signature')
+        print('POD signature path: %s' % path)
+
+        listing_paths = [os.path.join(path, f) for f in os.listdir(path)]
+        files = [f for f in listing_paths if os.path.isfile(f)]
+
+        for file in files:
+            fname = os.path.basename(file)
+            id = fname.split('.', 1)[0]
+            digest_path = gen_digest_path(id)
+            target = os.path.join(path, *digest_path)
+            target = os.path.join(target, fname)
+            move_file(file, target, dry=self.dry)
+            
+
+def main():
+    config_file = os.path.join(os.path.expanduser('~'),
+                               '.nparceld',
+                               'nparceld.conf')
+
+    based = nparcel.BaseD(config=config_file)
+    based.set_command('start')
+    script_name = inspect.getfile(inspect.currentframe())
+    script_name = os.path.basename(script_name)
+    based.set_script_name(script_name)
+    based.parser.set_usage('usage: %prog [options] <POD value>')
+    based.check_args()
+
+    set_console()
+
+    # Enable detailed logging if required.
+    if based.options.verbose == 0:
+        set_log_level('INFO')
+    else:
+        log.info('Logging verbosity set to "DEBUG" level')
+
+    pd = PodMigrateDaemon(pidfile=based.pidfile,
+                          dry=based.dry,
+                          config=based.options.config)
+
+    # OK, start processing.
+    based.set_batch(True)
+    # In this case, we set dry mode to True so that output just goes
+    # to STDOUT.
+    based.set_dry(True)
+    based.launch_command(pd, script_name)
+
+if __name__ == '__main__':
+    main()

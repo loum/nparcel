@@ -92,7 +92,7 @@ class OnDelivery(nparcel.Service):
             *connote*: search key value relating to the ``job.card_ref_nbr``
             column.
 
-        **Returns:*
+        **Returns:**
             list of ids that match the search criteria
 
         """
