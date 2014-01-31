@@ -372,12 +372,11 @@ class B2CConfig(nparcel.Config):
 
     def set_in_dirs(self, values):
         del self._dirs_to_check[:]
+        self._dirs_to_check = []
 
         if values is not None:
             log.debug('Set inbound directory "%s"' % str(values))
             self._dirs_to_check.extend(values)
-        else:
-            self._dirs_to_check = []
 
     @property
     def pe_in_dirs(self):

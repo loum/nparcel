@@ -44,6 +44,8 @@ class TestTransSend(unittest2.TestCase):
                      '19102',
                      'APLD029228001',
                      'ON FOR DEL',
+                     None,
+                     None,
                      '2013-05-28 00:00:00',
                      '2013-05-27 14:34:25',
                      'DEL',

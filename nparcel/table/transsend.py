@@ -20,6 +20,8 @@ class TransSend(nparcel.Table):
                 "transsend_job_number TEXT(16)",
                 "item_number TEXT(32)",
                 "latest_scan_event_action TEXT(64) NOT NULL",
+                "latest_scanner_description TEXT(64)",
+                "notes TEXT(512)",
                 "job_due_date TIMESTAMP",
                 "job_last_updated_date TIMESTAMP",
                 "job_type TEXT(64)",

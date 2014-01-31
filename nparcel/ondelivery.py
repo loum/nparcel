@@ -33,6 +33,16 @@ class OnDelivery(nparcel.Service):
         string that represents a delivered event
         (default ``delivered``)
 
+    .. attribute:: scan_desc_header
+
+        string that represents the TransSend column name for the
+        latest scanned description (default ``latest_scanner_description``)
+
+    .. attribute:: scan_desc_keys
+
+        list of strings that represents a scanned description
+        that should be omitted from the search set
+
     .. attribute:: ts_db
 
         :mod:`cx_Oracle` object to manage the TransSend database
@@ -43,6 +53,8 @@ class OnDelivery(nparcel.Service):
     _ts_db_kwargs = None
     _delivered_header = 'latest_scan_event_action'
     _delivered_event_key = 'delivered'
+    _scan_desc_header = 'latest_scanner_description'
+    _scan_desc_keys = []
     _ts_db = None
 
     def __init__(self, db_kwargs=None, ts_db_kwargs=None, comms_dir=None):
@@ -79,6 +91,22 @@ class OnDelivery(nparcel.Service):
     @property
     def delivered_event_key(self):
         return self._delivered_event_key
+
+    @property
+    def scan_desc_header(self):
+        return self._scan_desc_header
+
+    @property
+    def scan_desc_keys(self):
+        return self._scan_desc_keys
+
+    def set_scan_desc_keys(self, values):
+        del self._scan_desc_keys[:]
+        self._scan_desc_keys = []
+
+        if values is not None:
+            log.debug('Set scan description keys "%s"' % str(values))
+            self._scan_desc_keys.extend(values)
 
     @property
     def ts_db(self):
@@ -243,11 +271,28 @@ class OnDelivery(nparcel.Service):
             log.debug('Headers received: %s' % str(headers))
             index = headers.index(self.delivered_header)
             log.debug('Delivered header index: %d' % index)
+            scan_index = headers.index(self.scan_desc_header)
+            log.debug('Scanned desc header index: %d' % scan_index)
 
             for row in self.ts_db.rows():
                 log.debug('TransSend "%s" value: "%s"' %
                           (self.delivered_header, row[index].lower()))
-                if row[index].lower() == self.delivered_event_key:
+
+                # Check if the scanned description suggests that we need
+                # to suppress the row.
+                suppress = False
+                for scanned_desc in self.scan_desc_keys:
+                    log.debug('scanned desc|row value "%s|%s"' %
+                              (scanned_desc, str(row[scan_index])))
+                    if (row[scan_index] is not None and
+                        row[scan_index].lower() == scanned_desc.lower()):
+                        suppress = True
+                        break
+
+                log.debug('Suppress scanned desc row value "%s"?: %s' %
+                          (row[scan_index], str(suppress)))
+                if (not suppress and
+                    row[index].lower() == self.delivered_event_key):
                     delivered = True
                     break
 

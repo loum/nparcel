@@ -363,6 +363,22 @@ class TestOnDelivery(unittest2.TestCase):
         msg = 'TransSend delivery check should be True'
         self.assertTrue(received)
 
+    def test_connote_delivered_delivered_with_scanned_desc_keys(self):
+        """Query delivered status against TransSend -- delivered.
+        """
+        old_scan_keys = self._on.scan_desc_keys
+        self._on.set_scan_desc_keys(['IDS – TOLL FAST GRAYS ONLINE'])
+
+        connote = 'IANZ012769'
+        item_nbr = 'IANZ012769'
+
+        received = self._on.connote_delivered(connote, item_nbr)
+        msg = 'TransSend delivery check should be True'
+        self.assertFalse(received)
+
+        # Clean up.
+        self._on.set_scan_desc_keys(old_scan_keys)
+
     @classmethod
     def tearDownClass(cls):
         cls._on = None
