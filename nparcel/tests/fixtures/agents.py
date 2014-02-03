@@ -50,4 +50,14 @@
         'postcode': '6101',
         'suburb': 'Victoria Park',
     },
+    {
+        'id': 6,
+        'code': 'P031',
+        'dp_code': 'PP1234',
+        'state': 'VIC',
+        'name': 'ParcelPoint Dodgies',
+        'address': '21 Dodgy Street',
+        'postcode': '3075',
+        'suburb': 'Lalor',
+    },
 ]

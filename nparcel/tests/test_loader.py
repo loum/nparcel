@@ -27,6 +27,15 @@ class TestLoader(unittest2.TestCase):
         cls._ldr = nparcel.Loader(comms_dir=cls._comms_dir)
         cls._job_ts = cls._ldr.db.date_now()
 
+        db = cls._ldr.db
+        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixtures = [{'db': db.agent, 'fixture': 'agents.py'}]
+        for i in fixtures:
+            fixture_file = os.path.join(fixture_dir, i['fixture'])
+            db.load_fixture(i['db'], fixture_file)
+
+        db.commit()
+
     def test_init(self):
         """Initialise a Loader object.
         """
@@ -109,12 +118,12 @@ FROM job_item"""
     def test_processor_valid_record_parcel_point_record(self):
         """Process valid raw T1250 line -- with ParcelPoint Agent code.
         """
-        msg = 'Valid ParcelPoint T1250 record should return None'
+        msg = 'Valid ParcelPoint T1250 record should return True'
         line = self._c.get('test_lines', 'PP')
-        self.assertIsNone(self._ldr.process(self._job_ts,
-                                            line,
-                                            FILE_BU.get('tolp'),
-                                            COND_MAP_COMMS), msg)
+        self.assertTrue(self._ldr.process(self._job_ts,
+                                          line,
+                                          FILE_BU.get('tolp'),
+                                          COND_MAP_COMMS), msg)
 
     def test_processor_valid_record_with_comms_no_recipients(self):
         """Process valid raw T1250 line -- with comms no recipients.
@@ -323,7 +332,7 @@ FROM job_item"""
     def test_processor_missing_agent_id_record(self):
         """Process valid raw T1250 line -- missing Agent Id.
         """
-        line = self._c.get('test_lines', 'VALID_LINE')
+        line = self._c.get('test_lines', 'DODGY_POSTCODE')
         msg = 'Missing Agent Id should fail processing'
         self.assertFalse(self._ldr.process(self._job_ts,
                                            line,
@@ -819,17 +828,11 @@ FROM job_item"""
         """Valid agent ID check.
         """
         # Seed the Agent Id.
-        test_agent_id = 'N014'
-        agent_fields = {'code': test_agent_id}
-        self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
+        test_agent_id = 'W049'
 
         msg = 'Existing barcode should not return None'
         received = self._ldr.get_agent_id(test_agent_id)
-        expected = 1
-        self.assertEqual(received, expected, msg)
-
-        # Restore DB state.
-        self._ldr.db.rollback()
+        self.assertIsNotNone(received, msg)
 
     def test_match_connote_scenario_connote_lt_15_char(self):
         """Manufactured connote check -- connote < 15 chars.
@@ -962,7 +965,8 @@ SET state = 'VIC'"""
         """
         line = self._c.get('test_lines', 'PP')
         fields = self._ldr.parser.parse_line(line)
-        received = self._ldr.ignore_record(fields)
+        agent_code = fields.get('Agent Id')
+        received = self._ldr.ignore_record(agent_code)
         msg = 'Agent code should set ignored flag'
         self.assertTrue(received, msg)
 
@@ -971,7 +975,8 @@ SET state = 'VIC'"""
         """
         line = self._c.get('test_lines', 'VALID_LINE')
         fields = self._ldr.parser.parse_line(line)
-        received = self._ldr.ignore_record(fields)
+        agent_code = fields.get('Agent Id')
+        received = self._ldr.ignore_record(agent_code)
         msg = 'Agent code should not set ignored flag'
         self.assertFalse(received, msg)
 

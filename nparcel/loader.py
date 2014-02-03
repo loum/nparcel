@@ -177,101 +177,103 @@ class Loader(nparcel.Service):
         connote_literal = raw_record[0:20].rstrip()
         log.info('Conn Note: "%s" start parse ...' % connote_literal)
         fields = self.parser.parse_line(raw_record)
-        if self.ignore_record(fields):
-            status = None
-        else:
-            fields['job_ts'] = time
-            fields['bu_id'] = bu_id
 
-            barcode = fields.get('Bar code')
-            log.info('Barcode "%s" start mapping ...' % barcode)
-            try:
-                job_data = self.table_column_map(fields,
-                                                JOB_MAP,
+        fields['job_ts'] = time
+        fields['bu_id'] = bu_id
+
+        # Make note of the raw agent code as this is overwritten
+        # during the table_column_map().
+        agent_code = fields.get('Agent Id')
+
+        barcode = fields.get('Bar code')
+        log.info('Barcode "%s" start mapping ...' % barcode)
+        try:
+            job_data = self.table_column_map(fields,
+                                            JOB_MAP,
+                                            cond_map)
+            job_item_data = self.table_column_map(fields,
+                                                JOB_ITEM_MAP,
                                                 cond_map)
-                job_item_data = self.table_column_map(fields,
-                                                    JOB_ITEM_MAP,
-                                                    cond_map)
-                log.info('Barcode "%s" mapping OK' % barcode)
-            except ValueError, e:
-                status = False
-                self.set_alerts('Barcode "%s" mapping error: %s' %
-                                (barcode, e))
+            log.info('Barcode "%s" mapping OK' % barcode)
+        except ValueError, e:
+            status = False
+            self.set_alerts('Barcode "%s" mapping error: %s' %
+                            (barcode, e))
 
-            # Check for a manufactured barcode.
-            if status:
-                job_id = None
-                skip_jobitem_chk = False
+        # Check for a manufactured barcode.
+        if status:
+            job_id = None
+            skip_jobitem_chk = False
 
-                connote = job_item_data.get('connote_nbr')
-                if self.match_connote(connote, barcode):
-                    # Manufactured barcode.
-                    item_nbr = fields.get('Item Number')
-                    job_id = self.get_jobitem_based_job_id(connote=connote,
-                                                           item_nbr=item_nbr)
-                    if job_id is not None:
-                        skip_jobitem_chk = True
-                else:
-                    # Explicit barcode.
-                    barcodes = self.barcode_exists(barcode=barcode)
-                    if barcodes:
-                        job_id = barcodes[0]
-
-                # OK, update or create ...
-                agent_id = fields.get('Agent Id')
-                agent_id_row_id = job_data.get('agent_id')
-                job_item_id = None
+            connote = job_item_data.get('connote_nbr')
+            if self.match_connote(connote, barcode):
+                # Manufactured barcode.
+                item_nbr = fields.get('Item Number')
+                job_id = self.get_jobitem_based_job_id(connote=connote,
+                                                        item_nbr=item_nbr)
                 if job_id is not None:
-                    log.info('Updating Nparcel barcode "%s" agent ID "%s"' %
-                             (barcode, agent_id))
-                    job_item_id = self.update(job_id,
-                                              agent_id_row_id,
-                                              job_item_data,
-                                              skip_jobitem_chk)
-                else:
-                    log.info('Creating Nparcel barcode "%s"' % barcode)
-                    job_item_id = self.create(job_data, job_item_data)
+                    skip_jobitem_chk = True
+            else:
+                # Explicit barcode.
+                barcodes = self.barcode_exists(barcode=barcode)
+                if barcodes:
+                    job_id = barcodes[0]
 
-                # Send comms?
-                if job_item_id is not None:
-                    service_code = job_data.get('service_code')
+            # OK, update or create ...
+            agent_id = fields.get('Agent Id')
+            agent_id_row_id = job_data.get('agent_id')
+            job_item_id = None
+            if job_id is not None:
+                log.info('Updating Nparcel barcode "%s" agent ID "%s"' %
+                            (barcode, agent_id))
+                job_item_id = self.update(job_id,
+                                            agent_id_row_id,
+                                            job_item_data,
+                                            skip_jobitem_chk)
+            else:
+                log.info('Creating Nparcel barcode "%s"' % barcode)
+                job_item_id = self.create(job_data, job_item_data)
 
-                    send_email = cond_map.get('send_email')
-                    email_addr = job_item_data.get('email_addr')
-                    send_sc_1 = cond_map.get('send_sc_1')
-                    send_sc_2 = cond_map.get('send_sc_2')
-                    send_sc_4 = cond_map.get('send_sc_4')
-                    ignore_sc_4 = cond_map.get('ignore_sc_4')
-                    delay_template_sc_4 = cond_map.get('delay_template_sc_4')
-                    if self.trigger_comms(service_code,
-                                          send_email,
-                                          send_sc_1,
-                                          send_sc_2,
-                                          send_sc_4,
-                                          ignore_sc_4):
-                        template = self.get_template(service_code,
-                                                     delay_template_sc_4)
-                        self.comms('email',
-                                   job_item_id,
-                                   email_addr,
-                                   template=template,
-                                   dry=dry)
+            # Send comms?
+            if job_item_id is not None:
+                service_code = job_data.get('service_code')
 
-                    send_sms = cond_map.get('send_sms')
-                    phone_nbr = job_item_data.get('phone_nbr')
-                    if self.trigger_comms(service_code,
-                                          send_sms,
-                                          send_sc_1,
-                                          send_sc_2,
-                                          send_sc_4,
-                                          ignore_sc_4):
-                        template = self.get_template(service_code,
-                                                     delay_template_sc_4)
-                        self.comms('sms',
-                                   job_item_id,
-                                   phone_nbr,
-                                   template=template,
-                                   dry=dry)
+                send_email = cond_map.get('send_email')
+                email_addr = job_item_data.get('email_addr')
+                send_sc_1 = cond_map.get('send_sc_1')
+                send_sc_2 = cond_map.get('send_sc_2')
+                send_sc_4 = cond_map.get('send_sc_4')
+                ignore_sc_4 = cond_map.get('ignore_sc_4')
+                delay_template_sc_4 = cond_map.get('delay_template_sc_4')
+                if self.trigger_comms(service_code,
+                                        send_email,
+                                        send_sc_1,
+                                        send_sc_2,
+                                        send_sc_4,
+                                        ignore_sc_4):
+                    template = self.get_template(service_code,
+                                                    delay_template_sc_4)
+                    self.comms('email',
+                                job_item_id,
+                                email_addr,
+                                template=template,
+                                dry=dry)
+
+                send_sms = cond_map.get('send_sms')
+                phone_nbr = job_item_data.get('phone_nbr')
+                if self.trigger_comms(service_code,
+                                        send_sms,
+                                        send_sc_1,
+                                        send_sc_2,
+                                        send_sc_4,
+                                        ignore_sc_4):
+                    template = self.get_template(service_code,
+                                                    delay_template_sc_4)
+                    self.comms('sms',
+                                job_item_id,
+                                phone_nbr,
+                                template=template,
+                                dry=dry)
 
         log.info('Conn Note: "%s" parse complete' % connote_literal)
 
@@ -871,7 +873,7 @@ class Loader(nparcel.Service):
             else:
                 log.debug('job.id %d OK' % row[0])
 
-    def ignore_record(self, parsed_fields):
+    def ignore_record(self, agent_code):
         """Manages Business Unit rules that determine if a raw T1250
         record should be ignored.
 
@@ -880,11 +882,8 @@ class Loader(nparcel.Service):
         * *Agent Id* starts with a ``P`` (this indicates a ParcelPoint job)
 
         **Args:**
-            *parsed_fields*: dictionary of parsed, raw values.  For
-            example::
-
-                {'Agent Id': 'N013',
-                 ...}
+            *agent_code*: the raw agent code string as parsed from the
+            T1250 file.  For example:: ``N013``.
 
         **Returns:**
             boolean ``True`` if record should be ignored
@@ -895,7 +894,6 @@ class Loader(nparcel.Service):
         log.info('Checking ignore rules ...')
         ignore = False
 
-        agent_code = parsed_fields.get('Agent Id')
         log.debug('Checking agent code "%s"' % agent_code)
         if agent_code is not None:
             if agent_code.startswith('P'):
