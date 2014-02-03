@@ -242,15 +242,27 @@ class OnDeliveryDaemon(nparcel.DaemonService):
             try:
                 self._od.set_delivered_header(self.config.delivered_header)
             except AttributeError, err:
-                log.debug('Using default PE delivered_header: "%s"' %
+                log.debug('Using default delivered_header: "%s"' %
                           self._od.delivered_header)
 
             try:
                 event_key = self.config.delivered_event_key
                 self._od.set_delivered_event_key(event_key)
             except AttributeError, err:
-                log.debug('Using default PE delivered_event_key: "%s"' %
+                log.debug('Using default delivered_event_key: "%s"' %
                           self._od.delivered_event_key)
+
+            try:
+                self._od.set_scan_desc_header(self.config.scan_desc_header)
+            except AttributeError, err:
+                log.debug('Using default scan_desc_header: "%s"' %
+                          self._od.scan_desc_header)
+
+            try:
+                self._od.set_scan_desc_keys(self.config.scan_desc_keys)
+            except AttributeError, err:
+                log.debug('Using default scan_desc_keys: "%s"' %
+                          self._od.scan_desc_keys)
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.

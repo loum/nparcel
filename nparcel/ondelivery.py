@@ -54,7 +54,7 @@ class OnDelivery(nparcel.Service):
     _delivered_header = 'latest_scan_event_action'
     _delivered_event_key = 'delivered'
     _scan_desc_header = 'latest_scanner_description'
-    _scan_desc_keys = []
+    _scan_desc_keys = ['IDS - TOLL FAST GRAYS ONLINE']
     _ts_db = None
 
     def __init__(self, db_kwargs=None, ts_db_kwargs=None, comms_dir=None):
@@ -95,6 +95,10 @@ class OnDelivery(nparcel.Service):
     @property
     def scan_desc_header(self):
         return self._scan_desc_header
+
+    def set_scan_desc_header(self, value):
+        self._scan_desc_header = value
+        log.debug('Set scan_desc_header to "%s"' % self._scan_desc_header)
 
     @property
     def scan_desc_keys(self):

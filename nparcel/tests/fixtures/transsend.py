@@ -115,7 +115,7 @@
         'transsend_job_number': '71010',
         'item_number': 'IANZ012769',
         'latest_scan_event_action': 'DELIVERED',
-        'latest_scanner_description': 'IDS – TOLL FAST GRAYS ONLINE',
+        'latest_scanner_description': 'IDS - TOLL FAST GRAYS ONLINE',
         'job_due_date': str(datetime.datetime(2013, 5, 31, 0, 0)),
         'job_last_updated_date': str(datetime.datetime(2013, 5, 30, 13, 41, 50)),
         'job_type': 'DEL',

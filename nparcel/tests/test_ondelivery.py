@@ -367,7 +367,7 @@ class TestOnDelivery(unittest2.TestCase):
         """Query delivered status against TransSend -- delivered.
         """
         old_scan_keys = self._on.scan_desc_keys
-        self._on.set_scan_desc_keys(['IDS – TOLL FAST GRAYS ONLINE'])
+        self._on.set_scan_desc_keys(['IDS - TOLL FAST GRAYS ONLINE'])
 
         connote = 'IANZ012769'
         item_nbr = 'IANZ012769'

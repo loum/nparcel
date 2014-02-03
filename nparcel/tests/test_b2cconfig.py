@@ -242,6 +242,16 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'TransSend delivered_event_key value error'
         self.assertEqual(received, expected, msg)
 
+        received = self._c.scan_desc_header.lower()
+        expected = 'latest_scanner_description'
+        msg = 'TransSend scan_desc_header value error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.scan_desc_keys
+        expected = ['IDS - TOLL FAST GRAYS ONLINE']
+        msg = 'TransSend scan_desc_keys value error'
+        self.assertListEqual(received, expected, msg)
+
     def test_parse_reporter(self):
         """Parse items from the config -- reporter.
         """

@@ -181,6 +181,16 @@ class B2CConfig(nparcel.Config):
         string that represents a delivered event
         (default ``delivered``)
 
+    .. attribute:: scan_desc_header
+
+        the scanned description column header in TransSend
+        (default ``latest_scanner_description``)
+
+    .. attribute:: scan_desc_keys
+
+        list of :attr:`scan_desc_header` tokens to compare against
+        (default ``IDS - TOLL FAST GRAYS ONLINE``)
+
     .. attribute:: report_bu_ids
 
         dictionary mapping between Business Unit ID (``job.bu_id``
@@ -310,6 +320,8 @@ class B2CConfig(nparcel.Config):
     _filter_customer = 'parcelpoint'
     _delivered_header = 'latest_scan_event_action'
     _delivered_event_key = 'delivered'
+    _scan_desc_header = 'latest_scanner_description'
+    _scan_desc_keys = ['IDS - TOLL FAST GRAYS ONLINE']
     _report_bu_ids = {}
     _report_outfile = 'Report_'
     _report_outfile_ts_format = '%Y%m%d-%H:%M'
@@ -874,6 +886,22 @@ class B2CConfig(nparcel.Config):
                 ConfigParser.NoSectionError), err:
             log.debug('Using default delivered_event_key: %s' %
                       self.delivered_event_key)
+
+        try:
+            self._scan_desc_header = self.get('transsend',
+                                              'scan_desc_header')
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default scan_desc_header: %s' %
+                      self.scan_desc_header)
+
+        try:
+            tmp_vals = self.get('transsend', 'scan_desc_keys')
+            self._scan_desc_keys = tmp_vals.split(',')
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default scan_desc_keys: %s' %
+                      self.scan_desc_keys)
 
         # Reporter.
         try:
@@ -1550,6 +1578,26 @@ class B2CConfig(nparcel.Config):
 
     def set_delivered_event_key(self, value):
         self._delivered_event_key = value
+
+    @property
+    def scan_desc_header(self):
+        return self._scan_desc_header
+
+    def set_scan_desc_header(self, value):
+        self._scan_desc_header = value
+
+    @property
+    def scan_desc_keys(self):
+        return self._scan_desc_keys
+
+    def set_scan_desc_keys(self, values):
+        del self._scan_desc_keys[:]
+        self._scan_desc_keys = []
+
+        if values is not None:
+            self._scan_desc_keys.append(values)
+            log.debug('Set scan_desc_keys to "%s"' %
+                      str(self._scan_desc_keys))
 
     @property
     def report_bu_ids(self):
