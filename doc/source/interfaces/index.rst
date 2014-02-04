@@ -15,3 +15,4 @@ the inbound and outbound processing.
     primaryelect.rst
     comms.rst
     pods.rst
+    filter.rst
