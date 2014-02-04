@@ -171,6 +171,10 @@ class B2CConfig(nparcel.Config):
         downstream recipient of filtered T1250 files
         (default ``parcelpoint``)
 
+    .. attribute:: filtering_rules
+
+        list of tokens to match against the start of the agent code field
+
     .. attribute:: delivered_header
 
         string that represents the TransSend column header name for
@@ -318,6 +322,7 @@ class B2CConfig(nparcel.Config):
     _pe_mts_filename_format = 'mts_delivery_report_\d{14}\.csv'
     _uncollected_day_range = 14.0
     _filter_customer = 'parcelpoint'
+    _filtering_rules = ['P', 'R']
     _delivered_header = 'latest_scan_event_action'
     _delivered_event_key = 'delivered'
     _scan_desc_header = 'latest_scanner_description'
@@ -545,6 +550,19 @@ class B2CConfig(nparcel.Config):
         self._filter_customer = value
 
     @property
+    def filtering_rules(self):
+        return self._filtering_rules
+
+    def set_filtering_rules(self, values):
+        del self._filtering_rules[:]
+        self._filtering_rules = []
+
+        if values is not None:
+            self._filtering_rules = values
+            log.debug('Config set filtering_rules to "%s"' %
+                      str(self._filtering_rules))
+
+    @property
     def notification_delay(self):
         return self._notification_delay
 
@@ -724,6 +742,13 @@ class B2CConfig(nparcel.Config):
                 ConfigParser.NoSectionError), err:
             log.debug('Using default Filter customer: %s' %
                       self.filter_customer)
+        try:
+            tmp_vals = self.get('filter', 'fitering_rules')
+            self._filtering_rules = tmp_vals.split(',')
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default Filtering rules: %s' %
+                      self.filtering_rules)
 
         # Optional items (defaults provided).
         try:

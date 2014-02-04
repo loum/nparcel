@@ -147,11 +147,6 @@ class TestB2CConfig(unittest2.TestCase):
         expected = 14.0
         self.assertEqual(received, expected, msg)
 
-        msg = 'Filter customer not as expected'
-        received = self._c.filter_customer
-        expected = 'parcelpoint'
-        self.assertEqual(received, expected, msg)
-
         # Reminders.
         received = self._c.notification_delay
         expected = 345600
@@ -718,6 +713,19 @@ class TestB2CConfig(unittest2.TestCase):
                     'npondeliveryd',
                     'npreminderd']
         msg = 'Health process list error'
+        self.assertListEqual(received, expected, msg)
+
+    def test_parse_filter(self):
+        """Parse items from the config -- filter.
+        """
+        msg = 'Filter customer not as expected'
+        received = self._c.filter_customer
+        expected = 'parcelpoint'
+        self.assertEqual(received, expected, msg)
+
+        msg = 'Filtering rules list not as expected'
+        received = self._c.filtering_rules
+        expected = ['P', 'R']
         self.assertListEqual(received, expected, msg)
 
     def test_condition_flag_item_excp_true(self):
