@@ -134,7 +134,8 @@ WHERE id IN (7, 8)""" % older_date
         self._db(sql)
 
         received = list(self._db.rows())
-        # Agent BAD1 does not have a reference in the agent_stocktake table.
+        # Agent BAD1,P031 does not have a reference in the agent_stocktake
+        # table.
         # Agent N031 has aged agent_stocktake table entries.
         expected = [('BAD1000',
                      'BAD1',
@@ -144,6 +145,10 @@ WHERE id IN (7, 8)""" % older_date
                      'N031',
                      'N031 Name',
                      '%s' % str(old_date)),
+                    ('PP1234',
+                     'P031',
+                     'ParcelPoint Dodgies',
+                     None),
                     ('WVIC005',
                      'W049',
                      'Bunters We Never Sleep News + Deli',

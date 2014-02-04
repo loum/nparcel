@@ -558,7 +558,7 @@ class B2CConfig(nparcel.Config):
         self._filtering_rules = []
 
         if values is not None:
-            self._filtering_rules = values
+            self._filtering_rules.extend(values)
             log.debug('Config set filtering_rules to "%s"' %
                       str(self._filtering_rules))
 

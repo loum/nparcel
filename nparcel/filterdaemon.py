@@ -31,6 +31,10 @@ class FilterDaemon(nparcel.DaemonService):
 
         context of outbound processing (default ``parcelpoint``)
 
+    .. attribute:: filtering_rules
+
+        list of tokens to match against the start of the agent code field
+
     .. attribute:: in_dirs
 
         list of inbound directory to check for files to process
@@ -39,6 +43,7 @@ class FilterDaemon(nparcel.DaemonService):
     _file_format = 'T1250_TOL.*\.txt'
     _staging_base = os.curdir
     _customer = 'parcelpoint'
+    _filtering_rules = ['P', 'R']
     _in_dirs = ['/data/nparcel/aggregate']
 
     def __init__(self,
@@ -87,6 +92,14 @@ class FilterDaemon(nparcel.DaemonService):
             log.info(msg)
 
         try:
+            if len(self.config.filtering_rules):
+                self.set_filtering_rules(self.config.filtering_rules)
+        except AttributeError, err:
+            msg = ('Daemon filter rules not defined in config -- using %s' %
+                   self.filtering_rules)
+            log.info(msg)
+
+        try:
             if self.config.aggregator_dirs is not None:
                 self.set_in_dirs(self.config.aggregator_dirs)
         except AttributeError, err:
@@ -124,6 +137,19 @@ class FilterDaemon(nparcel.DaemonService):
         self._customer = value
 
     @property
+    def filtering_rules(self):
+        return self._filtering_rules
+
+    def set_filtering_rules(self, values):
+        del self._filtering_rules[:]
+        self._filtering_rules = []
+
+        if values is not None:
+            self._filtering_rules.extend(values)
+            log.debug('Set filtering_rules to "%s"' %
+                      str(self._filtering_rules))
+
+    @property
     def in_dirs(self):
         return self._in_dirs
 
@@ -150,7 +176,7 @@ class FilterDaemon(nparcel.DaemonService):
         """
         signal.signal(signal.SIGTERM, self._exit_handler)
 
-        filter = nparcel.Filter()
+        filter = nparcel.Filter(rules=self.filtering_rules)
 
         commit = True
         if self.dry:
