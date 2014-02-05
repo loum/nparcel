@@ -17,11 +17,11 @@ The conditions map is delimited in the configuration file by the
 ``[conditions]`` section.  A typical setting is as follows::
 
     [conditions]
-    #      00000000011111111
-    #      12345678901234567
-    TOLP = 00010000000001011
-    TOLF = 00010110000001011
-    TOLI = 10001000000001011
+    #      000000000111111111
+    #      123456789012345678
+    TOLP = 000100000000010110
+    TOLF = 000101100000010110
+    TOLI = 100010000000010110
 
 Each column in the conditions maps string has semantic and is further
 detailed here.

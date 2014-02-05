@@ -25,7 +25,8 @@ FLAG_MAP = {'item_number_excp': 0,
             'pe_comms': 13,
             'on_del_sc_4': 14,
             'archive_ps_file': 15,
-            'archive_png_file': 16}
+            'archive_png_file': 16,
+            'delay_template_sc_2': 17}
 
 
 class B2CConfig(nparcel.Config):

@@ -40,7 +40,7 @@ display to the terminal the files and directories that will be required::
     Processing dry run True
     Starting npinit ...
     Preparing environment in "/home/guest/.nparceld"
-    Copying "/usr/lib/python2.4/site-packages/nparcel/conf/init.conf.0.26"
+    Copying "/usr/lib/python2.4/site-packages/nparcel/conf/init.conf.0.28"
     ...
 
 ``npinit`` will create the base directory structure in the ``.nparceld``
@@ -48,16 +48,16 @@ directory off the current user's home directory.
 
 Keys Files at a Glance ...
 ++++++++++++++++++++++++++
-As of release 0.26, the required directory structure is as follows::
+As of release 0.28, the required directory structure is as follows::
 
     $ tree .nparceld
     .nparceld
     |-- conf
-    |   |-- init.conf.0.26
-    |   |-- log.conf.0.26
-    |   |-- nparceld.conf.0.26
-    |   |-- npftp.conf.0.26
-    |   `-- npmts.conf.0.26
+    |   |-- init.conf.0.28
+    |   |-- log.conf.0.28
+    |   |-- nparceld.conf.0.28
+    |   |-- npftp.conf.0.28
+    |   `-- npmts.conf.0.28
     |-- pids
     |-- logs
     `-- templates
@@ -101,7 +101,7 @@ Enable the Logger Handlers
 Log handlers manage the log files and need to be confgured::
 
     $ cd ~/.nparceld
-    $ ln -s conf/log.conf.0.26 log.conf
+    $ ln -s conf/log.conf.0.28 log.conf
 
 Set the Default Configuration
 +++++++++++++++++++++++++++++
@@ -118,7 +118,7 @@ components look for the default config at ``~.nparceld/nparceld.conf``::
 As a start, we can use the package-provided default::
 
     $ cd ~/.nparceld
-    $ ln -s conf/nparceld.conf.0.26 nparceld.conf
+    $ ln -s conf/nparceld.conf.0.28 nparceld.conf
 
 From here we should get some sane information::
 
@@ -151,14 +151,14 @@ The default configuration mappings are provided as a generalisation of the
 Business Unit requirements during development.  These may have been modified
 during production and should be verified.
 
-The default settings for the condition map in release 0.26 are as follows::
+The default settings for the condition map in release 0.28 are as follows::
 
     [conditions]
-    #      00000000011111111
-    #      12345678901234567
-    TOLP = 00010000000001011
-    TOLF = 00010110000001011
-    TOLI = 10001000000001011
+    #      000000000111111111
+    #      123456789012345678
+    TOLP = 000100000000010110
+    TOLF = 000101100000010110
+    TOLI = 100010000000010110
 
 Adjust these to align with your environments requirements.
 
@@ -190,7 +190,7 @@ The outbound FTP service has its own configuration file, ``npftp.conf``.
 be linked to the appropriate lcoation::
 
     $ cd ~/.nparceld
-    $ ln -s conf/npftp.conf.0.26 npftp.conf
+    $ ln -s conf/npftp.conf.0.28 npftp.conf
 
 Connect to the MTS Interface
 ++++++++++++++++++++++++++++
@@ -199,7 +199,7 @@ against the Primary Elect jobs within the Nparcel database as a trigger
 point for sending out consumer comms::
 
     $ cd ~/.nparceld
-    $ ln -s conf/npmts.conf.0.26 npmts.conf
+    $ ln -s conf/npmts.conf.0.28 npmts.conf
 
 Edit the ``npmts.conf`` file and provide the supplied MTS credentials::
 
