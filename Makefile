@@ -51,7 +51,6 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestComms \
 	 nparcel.tests:TestMapper \
 	 nparcel.tests:TestFilter \
-	 nparcel.tests:TestMts \
 	 nparcel.tests:TestAuditer \
 	 nparcel.report.tests:TestUncollected \
 	 nparcel.report.tests:TestCompliance \

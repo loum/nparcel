@@ -174,7 +174,7 @@ class OnDelivery(nparcel.Service):
                 service_code,
                 bu_ids,
                 job_items=None,
-                mts_file=None,
+                tcd_file=None,
                 day_range=14,
                 dry=False):
         """Checks whether a Primary Elect job item has had comms sent.
@@ -193,7 +193,7 @@ class OnDelivery(nparcel.Service):
             *job_items*: list of ``(<id>, <connote>, <item_nbr>)``
             that can be fed into the process loop directly
 
-            *mts_file*: path to the MTS delivery report file
+            *tcd_file*: path to the TCD delivery report file
 
             *day_range*: imit uncollected parcel search to within nominated
             value
@@ -208,8 +208,8 @@ class OnDelivery(nparcel.Service):
         """
         processed_ids = []
 
-        if mts_file is not None:
-            self.parser.set_in_file(mts_file)
+        if tcd_file is not None:
+            self.parser.set_in_file(tcd_file)
             self.parser.read()
 
         if job_items is None:
@@ -240,7 +240,7 @@ class OnDelivery(nparcel.Service):
             log.debug('On Del id|connote|item: "%s|%s|%s" check complete' %
                       (id, connote, item_nbr))
 
-        if mts_file is not None:
+        if tcd_file is not None:
             self.parser.purge()
 
         return processed_ids

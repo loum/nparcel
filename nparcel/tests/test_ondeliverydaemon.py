@@ -177,13 +177,13 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
         self._odd.set_sc4_bu_ids(old_sc4_ids)
         self._odd._exit_event.clear()
 
-    def test_validate_file_not_mts_format(self):
+    def test_validate_file_not_tcd_format(self):
         """Parse non-MTS formatted file.
         """
         f_obj = tempfile.NamedTemporaryFile()
-        mts_file = f_obj.name
+        tcd_file = f_obj.name
 
-        received = self._odd.validate_file(mts_file)
+        received = self._odd.validate_file(tcd_file)
         msg = 'Dodgy MTS file shoould not validate'
         self.assertFalse(received)
 
@@ -193,15 +193,15 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
         dir = tempfile.mkdtemp()
         f = open(os.path.join(dir,
                  'mts_delivery_report_20131018100758.csv'), 'w')
-        mts_file = f.name
+        tcd_file = f.name
         f.close()
 
-        received = self._odd.validate_file(mts_file)
+        received = self._odd.validate_file(tcd_file)
         msg = 'Dodgy MTS file shoould not validate'
         self.assertTrue(received)
 
         # Clean up.
-        remove_files(mts_file)
+        remove_files(tcd_file)
         os.removedirs(dir)
 
     def test_get_files(self):
