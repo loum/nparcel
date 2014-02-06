@@ -52,8 +52,6 @@ Modules
     filter.rst
     filterdaemon.rst
 
-    mts.rst
-
     auditer.rst
 
     uncollected.rst

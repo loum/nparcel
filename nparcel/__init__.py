@@ -28,7 +28,6 @@ from nparcel.comms import Comms
 from nparcel.based import BaseD
 from nparcel.mapper import Mapper
 from nparcel.filter import Filter
-from nparcel.mts import Mts
 from nparcel.writer import Writer
 from nparcel.xlwriter import Xlwriter
 from nparcel.auditer import Auditer

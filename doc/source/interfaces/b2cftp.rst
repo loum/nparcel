@@ -7,7 +7,7 @@
 
 B2C FTP
 =======
-The Toll Parcel Portal B2C Exporter produces Proof of Delivery (POD)
+The Toll Parcel Portal B2C Exporter produces Proof of Delivery (PoD)
 report files that need to be returned to the relevant Business Units to
 complete the end-to-end process flow.  POD reports are accompanied by
 signature files.
@@ -135,6 +135,15 @@ New configuration items relative to *inbound* transfers include:
 * ``partial`` transfer the remote file into a temporary file on the
   local directory.  When set, the file under transfer will feature a
   ``.tmp`` extension locally
+
+**New in version 0.30**, the ``target`` option now supports a comma
+separated list of target directories to place a copy of the transferred
+file into.  For example::
+
+    target = /var/ftp/pub/nparcel/parcelpoint/in,/data/another/target
+
+will attempt to place a copy of the transferred file into the directories
+``/var/ftp/pub/nparcel/parcelpoint/in`` and ``/data/another/target``
 
 Archive Directory
 +++++++++++++++++

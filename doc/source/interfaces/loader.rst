@@ -157,7 +157,3 @@ configuration condition_map::
                             override default config
                             "/home/guest/.nparceld/nparceld.conf"
       -f FILE, --file=FILE  file to process inline (start only)
-
-Errors
-^^^^^^
-

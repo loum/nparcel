@@ -3,6 +3,8 @@
 .. toctree::
     :maxdepth: 2
 
+.. _on_delivery_trigger:
+
 On Delivery Comms Trigger
 =========================
 
@@ -53,8 +55,8 @@ On Delivery comms trigger process::
                             "/home/npprod/.nparceld/nparceld.conf"
     -f FILE, --file=FILE  file to process inline (start only)
 
-``npondelivery`` Configuration Items
-------------------------------------
+``npondeliveryd`` Configuration Items
+-------------------------------------
 
 The ``npondeliveryd`` utility uses the default ``nparceld.conf`` file to
 control processing workflows.

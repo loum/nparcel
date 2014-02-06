@@ -1,4 +1,4 @@
-.. Primary Elect
+.. Toll Parcel Portal On Delivery Notifications
 
 .. toctree::
     :maxdepth: 2
@@ -34,7 +34,7 @@ Toll Parcel Portal workflow:
 
 * Raw WebMethods files from Toll GIS
 
-* MTS Data Warehouse
+* TCD Database
 
 .. _primary_elect_workflow:
 
@@ -74,16 +74,17 @@ the required configuration options:
 
 * ``pe_in`` (default ``/var/ftp/pub/nparcel/gis/in``)
 
-    As with the other Business Units, inbound file from GIS are transfered
-    via FTP.  ``pe_in`` represents the FTP resource that files are deposited
-    to and where the ``mapper`` looks for files to process.
+    found under the ``[dirs]`` section, inbound file from GIS are transfered
+    via FTP into the ``pe_in`` directory.  ``pe_in`` represents the FTP
+    resource that files are deposited to and where the ``mapper`` looks
+    for files to process.
 
     .. note::
 
         As with the other FTP interfaces, the FTP resource needs to be
         created as per `these instructions <vsftpd.html>`_
 
-* ``pe_loop`` (default 30 (seconds))
+* ``mapper_loop`` (default 30 (seconds))
 
     Control mapper daemon facility sleep period between inbound file checks.
 
@@ -119,122 +120,22 @@ the required configuration options:
                               "/home/guest/.nparceld/nparceld.conf"
       -f FILE, --file=FILE  file to process inline (start only)
 
-MTS Delivery Report Files
+TCD Delivery Report Files
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. note::
+
+    TCD is targeted at Fast deliveries since Fast events are not
+    captured in TransSend.
+
 In order to generate customer notification comms the :mod:`mapper` needs
-to interogate the MTS system to capture job delivery times.
-
-MTS is a readonly data warehouse that provides a static view of all
-driver deliveries.  The interface is refreshed daily with new data
-being provided around midday.
-
-MTS Delivery Report Configuration Items
-***************************************
-
-As a separate process, MTS Delivery Report extraction configuration
-items are managed in a separate configuration file, ``npmts.conf``:
-
-* ``db``
-    Holds the MTS database credentials in the following format::
-
-        host = host
-        user = user
-        password = password
-        port =  1521
-        sid = sid
-
-* ``report_range`` (default ``7`` (days))
-
-    number of days that the report should cover
-
-* ``display_headers`` (default ``yes``)
-
-    will add the column names to the CSV if set to ``yes``
-
-* ``out_dir`` (default ``/data/nparcel/mts``)
-
-    controls where the CSV report files are written
-
-* ``file_cache`` (default ``10``)
-
-    file_cache is the number of report files to maintain before
-    purging from the file system
-
-``npmts`` usage
-***************
-
-.. note::
-    the MTS delivery report takes around 10 minutes to run.  The actual
-    SQL can be seen in the template file ``~/.nparceld/templates/mts_sql.t``
-
-Although built on top of the daemoniser facilty, it makes sense
-to run ``npmts`` in batch mode::
-
-    $ npmts -h
-    usage: npmts [options]
-    
-    options:
-      -h, --help            show this help message and exit
-      -v, --verbose         raise logging verbosity
-      -d, --dry             dry run - report only, do not execute
-      -b, --batch           single pass batch mode
-      -c CONFIG, --config=CONFIG
-                            override default config
-                            "/home/guest/.nparceld/npmts.conf"
-      -t TEMPLATE_DIR, --template_dir=TEMPLATE_DIR
-                            location of SQL template files
-
-Since the availability of MTS delivery report files can occur at any time
-up to midday, the safest option is to create a spread of runs similar to
-the following::
-
-     0 9,12,14 * * * /usr/local/bin/npmts
-  
-.. note::
-    the above crontab entry will generate a MTS delivery report
-    every day at 9AM, midday and 2PM
+to interogate the TCD Fast Delivery Report to capture job delivery times.
 
 Primary Elect Nofitications
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 In a similar fashion to the ``npreminderd`` process, Primary Elect
 consumer notifications are managed by a separate process,
-``npprimaryelectd``.
-
-``npprimaryelectd`` identifies all Primary Elect jobs whose job items
-have not had their ``jobitem.notify_ts`` column set and cross references
-the connote entries against those within the output produced by the MTS
-Delivery Report.  Connotes that appear in the MTS Delivery Report with
-a valid ``Actually Arrived`` entry triggers cnotification comms.
-
-``npprimaryelectd`` Configuration Items
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-* ``inbound_mts`` (default ``/data/nparcel/mts``)
-
-    the MTS Delivery Report directory.
-
-* ``mts_filename_format`` (default ``mts_delivery_report_\d{14}\.csv``)
-
-    the MTS Delivery Report filename format as expressed as a Python
-    regular expression string.
-
-``npprimaryelectd`` usage
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Although ``npprimaryelectd`` can be run as a daemon, it does not make
-sense since its feeder stream only provides fresh data at most once per
-day.  Therefore, align ``npprimaryelectd`` with ``npmts``::
-
-    $ npprimaryelectd -h
-    usage: npprimaryelectd [options] start|stop|status
-    
-    options:
-      -h, --help            show this help message and exit
-      -v, --verbose         raise logging verbosity
-      -d, --dry             dry run - report only, do not execute
-      -b, --batch           single pass batch mode
-      -c CONFIG, --config=CONFIG
-                            override default config
-                            "/home/guest/.nparceld/nparceld.conf"
-      -f FILE, --file=FILE  file to process inline (start only)
+:ref:`on_delivery_trigger`.  Here, the ``npondeliverd`` identifies all
+Primary Elect jobs whose job items have not had their ``jobitem.notify_ts``
+column set and cross references the connote/item number entries against
+TransSend and TCD Fast Delivery Report.

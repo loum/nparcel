@@ -25,7 +25,7 @@ The types of consumer notifications supported by the Comms facility are:
     Triggered *after* load into the Toll Parcel Portal database and
     verification has been obtained that the parcel has been delivered to
     the ADP.  Verification is typically provided via an alternate interface
-    (for example, MTS or TransSend)
+    (for example, TCD report or TransSend)
 
 Comms Workflow
 --------------

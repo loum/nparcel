@@ -11,6 +11,7 @@ the inbound and outbound processing.
     vsftpd.rst
     b2cftp.rst
     loader.rst
+    exporter.rst
     npremind.rst
     primaryelect.rst
     comms.rst

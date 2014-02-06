@@ -57,7 +57,6 @@ As of release 0.28, the required directory structure is as follows::
     |   |-- log.conf.0.28
     |   |-- nparceld.conf.0.28
     |   |-- npftp.conf.0.28
-    |   `-- npmts.conf.0.28
     |-- pids
     |-- logs
     `-- templates
@@ -76,7 +75,6 @@ As of release 0.28, the required directory structure is as follows::
         |-- email_rem_html.t
         |-- email_report_html.t
         |-- email_test_html.t
-        |-- mts_sql.t
         |-- sms_body_xml.t
         |-- sms_delay_xml.t
         |-- sms_pe_xml.t
@@ -191,24 +189,6 @@ be linked to the appropriate lcoation::
 
     $ cd ~/.nparceld
     $ ln -s conf/npftp.conf.0.28 npftp.conf
-
-Connect to the MTS Interface
-++++++++++++++++++++++++++++
-The MTS interface provides delivery report information that is cross-checked
-against the Primary Elect jobs within the Nparcel database as a trigger
-point for sending out consumer comms::
-
-    $ cd ~/.nparceld
-    $ ln -s conf/npmts.conf.0.28 npmts.conf
-
-Edit the ``npmts.conf`` file and provide the supplied MTS credentials::
-
-    [db]
-    host = host
-    user = user
-    password = password
-    port =  1521
-    sid = sid
 
 Upgrade
 -------
