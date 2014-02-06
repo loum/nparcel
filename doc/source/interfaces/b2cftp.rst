@@ -3,6 +3,8 @@
 .. toctree::
     :maxdepth: 2
 
+.. _b2cftp:
+
 B2C FTP
 =======
 The Toll Parcel Portal B2C Exporter produces Proof of Delivery (POD)

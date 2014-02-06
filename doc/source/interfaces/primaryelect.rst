@@ -11,9 +11,9 @@ Primary Elect is a service provided to the customer that allows them
 to nominate the Alternate Delivery Point from where they can pick up
 their parcels.
 
-Primary Elect jobs differ from the normal Nparcel flow in that the jobs
-are not triggerred by a failed delivery event.  Instead, jobs are sent
-directly from the vendor (for example, Grays Online)
+Primary Elect jobs differ from the normal Toll Parcel Portal flow in that
+the jobs are not triggerred by a failed delivery event.  Instead, jobs are
+sent directly from the vendor (for example, Grays Online)
 
 .. note::
 
@@ -25,37 +25,39 @@ The following diagram describes various interfaces:
 
 .. image:: ../_static/pe_overview.png
     :align: center
-    :alt: Nparcel B2C Primary Elect Interfaces
+    :alt: Toll Parcel Portal B2C Primary Elect Interfaces
 
-*The Nparcel B2C Primary Elect workflow*
+*The Toll Parcel Portal B2C Primary Elect workflow*
 
-Primary Elect jobs involve two additional interfaces to the normal Nparcel
-workflow:
+Primary Elect jobs involve two additional interfaces to the normal
+Toll Parcel Portal workflow:
 
 * Raw WebMethods files from Toll GIS
 
 * MTS Data Warehouse
 
-Nparcel Primary Elect Workflow
-------------------------------
+.. _primary_elect_workflow:
+
+Primary Elect Workflow
+----------------------
 
 Raw WebMethods T1250 Files -- GIS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Since the various Business Units do not support Primary Elect jobs,
-Nparcel receives a direct feed from the GIS-prepared WebMethods interface.
-Nparcel uses the :mod:`nparcel.mapper` middleware component to translate
-the WebMethods format into typical Nparcel T1250.
+Toll Parcel Portal receives a direct feed from the GIS-prepared WebMethods
+interface.  Toll Parcel Portal uses the :mod:`nparcel.mapper` middleware
+component to translate the WebMethods format into typical T1250 EDI files.
 
 The :mod:`mapper` workflow starts with the ``npmapperd`` script.
 First, ``npmapperd`` will check for WebMethods raw T1250 and attempts to
-translated these into Nparcel T1250 format.  From here, the translated
+translated these into T1250 EDI format.  From here, the translated
 T1250 files are deposited into the corresponding Business Unit inbound
-FTP resource directories where they enter into the normal Nparcel
+FTP resource directories where they enter into the normal Toll Parcel Portal
 workflow.
 
 .. note::
 
-    Translated Nparcel T1250 files that are processed by ``nploaderd``
+    Translated T1250 EDI files that are processed by ``nploaderd``
     **will not** generate comms files (Service Code ``3`` scenario)
 
 Some notable functionality provided by the translation process:

@@ -6,7 +6,19 @@
 Loader
 ======
 
-The Toll Parcel Portal loader facility manages ...
+The Toll Parcel Portal loader facility accepts inbound T1250 EDI files
+from the various upstream Business Units and extracts and loads parcel 
+details into the Toll Parcel Portal in preparation for consumer pickup.
+
+The list of Business Units supported include:
+* Priority (``bu_id 1``)
+* Fast (``bu_id 2``)
+* IPEC (``bu_id 3``)
+
+.. note::
+
+    an additional upstream feed provided by GIS also provides T1250
+    for the Primary Elect solution.  Refer to :ref:`primary_elect_workflow`
 
 Loader Workflow
 ---------------
@@ -14,13 +26,29 @@ Loader Workflow
 ``nploaderd`` Configuration Items
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``nploaderd`` uses the standard ``nparceld.conf`` configuration file.  The
-following list details the required configuration options:
+``nploaderd`` uses the standard ``nparceld.conf`` configuration file to
+control processing behaviour.  The following list details the required
+configuration options:
+
+* ``in``
+
+    found under the ``[dirs]`` section, the ``in`` config setting defines
+    the directories to search for new T1250 EDI files.  For example::
+
+        in = /var/ftp/pub/nparcel/priority/in,/var/ftp/pub/nparcel/ipec/in
+
+    These inbound directories typically align with the FTP inbound
+    directory structure defined at :ref:`b2cftp`.
+
+* ``archive`` (default ``/data/nparcel/comms``)
+
+    found under the ``[dirs]`` section, ``archive`` defines where
+    completed T1250 EDI files are deposited for archiving
 
 * ``comms`` (default ``/data/nparcel/comms``)
 
-    The comms outbound interface where comms event files are
-    deposited for further processing
+    found under the ``[dirs]`` section, the comms outbound interface where
+    comms event files are deposited for further processing
 
 Enabling Comms
 ^^^^^^^^^^^^^^
@@ -78,15 +106,23 @@ Selecting Templates
 *New in version 0.18*
 
 The Loader facility uses a default template for comms notifications.
-However, Service Code 4-based T1250 records can use the alternate ``delay``
-template.  This scenario represents alternate notifications that suggest
-a time *after* which the parcel is available for pickup.
+However, Service Code 2 and 4-based T1250 records can use the alternate
+``delay`` template.  This scenario represents alternate notifications
+consistent with consumers electing to have their parcels delivered to
+an Alternate Delivery Point for pickup.
 
-Service Code 4 template control can be enabled conditionally
-via the configuration condition_map::
+Service Code 2 and 4 template control can be enabled conditionally
+via the configuration condition_maps::
 
     # Pos 12: 0 use default loader comms template if service_code 4
     #         1 use delayed pickup comms template if service_code 4
+    ...
+    # Pos 18: 0 use default loader comms template if service_code 2
+    #         1 use delayed pickup comms template if service_code 2
+
+..note::
+
+    Service Code 2 template selections was enables in version 0.28
 
 Ignore Service Code 4
 *********************
