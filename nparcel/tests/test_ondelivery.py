@@ -160,7 +160,7 @@ class TestOnDelivery(unittest2.TestCase):
         received = self._on.process(template='pe',
                                     service_code=service_code,
                                     bu_ids=bu_ids,
-                                    mts_file=self._test_file,
+                                    tcd_file=self._test_file,
                                     dry=dry)
         expected = []
         msg = 'List of processed primary elect items incorrect'
@@ -176,7 +176,7 @@ class TestOnDelivery(unittest2.TestCase):
         received = self._on.process(template='pe',
                                     service_code=service_code,
                                     bu_ids=bu_ids,
-                                    mts_file=self._test_file,
+                                    tcd_file=self._test_file,
                                     dry=dry)
         expected = [self._id_001, self._id_004]
         msg = 'List of processed primary elect items incorrect'
@@ -214,7 +214,7 @@ class TestOnDelivery(unittest2.TestCase):
         received = self._on.process(template='pe',
                                     service_code=service_code,
                                     bu_ids=bu_ids,
-                                    mts_file=self._test_file,
+                                    tcd_file=self._test_file,
                                     dry=dry)
         expected = [self._id_004]
         msg = 'List of processed primary elect items incorrect'
@@ -250,7 +250,7 @@ class TestOnDelivery(unittest2.TestCase):
         received = self._on.process(template='pe',
                                     service_code=service_code,
                                     bu_ids=bu_ids,
-                                    mts_file=self._test_file,
+                                    tcd_file=self._test_file,
                                     dry=dry)
         expected = [self._id_001]
         msg = 'List of processed primary elect items incorrect'
@@ -285,7 +285,7 @@ class TestOnDelivery(unittest2.TestCase):
                                     service_code=service_code,
                                     bu_ids=bu_ids,
                                     job_items=job_items,
-                                    mts_file=self._test_file,
+                                    tcd_file=self._test_file,
                                     dry=dry)
         expected = [self._id_004]
         msg = 'List of processed primary elect items incorrect'
@@ -304,7 +304,7 @@ class TestOnDelivery(unittest2.TestCase):
         # Cleanup.
         remove_files(received)
 
-    def test_process_no_mts_file(self):
+    def test_process_no_tcd_file(self):
         """Check processing -- no MTS file.
         """
         dry = False

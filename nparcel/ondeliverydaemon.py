@@ -17,7 +17,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
     .. attribute:: report_in_dir
 
         MTS Delivery Report inbound directory
-        (default ``/data/nparcel/mts``)
+        (default ``/data/nparcel/tcd``)
 
     .. attribute:: report_file_format
 
@@ -61,7 +61,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
 
     """
     _config = None
-    _report_in_dirs = ['/data/nparcel/mts']
+    _report_in_dirs = ['/data/nparcel/tcd']
     _report_file_format = 'mts_delivery_report_\d{14}\.csv'
     _comms_dir = '/data/nparcel/comms'
     _db_kwargs = None
@@ -99,14 +99,14 @@ class OnDeliveryDaemon(nparcel.DaemonService):
             log.debug(msg)
 
         try:
-            self.set_report_in_dirs(self.config.pe_inbound_mts)
+            self.set_report_in_dirs(self.config.pe_inbound_tcd)
         except AttributeError, err:
             msg = ('Report inbound dir not in config -- using %s' %
                    self.report_in_dirs)
             log.debug(msg)
 
         try:
-            self.set_report_file_format(self.config.pe_mts_filename_format)
+            self.set_report_file_format(self.config.pe_tcd_filename_format)
         except AttributeError, err:
             msg = ('Report file format not in config -- using %s' %
                    self.report_file_format)
@@ -282,28 +282,28 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         self.set_on_delivery(comms_dir=self.comms_dir)
 
         while not event.isSet():
-            mts_files = []
+            tcd_files = []
 
             if not self.od.db() or not self.od.ts_db():
                 log.error('ODBC connection failure -- aborting')
                 event.set()
             else:
                 if self.file is not None:
-                    mts_files.append(self.file)
+                    tcd_files.append(self.file)
                     event.set()
                 else:
-                    mts_files.extend(self.get_files())
+                    tcd_files.extend(self.get_files())
 
-            mts_file = None
-            if len(mts_files):
-                mts_file = mts_files[0]
+            tcd_file = None
+            if len(tcd_files):
+                tcd_file = tcd_files[0]
 
             log.debug('Attempting On Delivery Primary Elect check ...')
             if len(self.pe_bu_ids):
                 processed_ids = self.od.process(template='pe',
                                                 service_code=3,
                                                 bu_ids=self.pe_bu_ids,
-                                                mts_file=mts_file,
+                                                tcd_file=tcd_file,
                                                 day_range=self.day_range,
                                                 dry=self.dry)
                 log.debug('PE job_items.id comms files created: "%s"' %
@@ -316,7 +316,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                 processed_ids = self.od.process(template='body',
                                                 service_code=4,
                                                 bu_ids=self.sc4_bu_ids,
-                                                mts_file=mts_file,
+                                                tcd_file=tcd_file,
                                                 day_range=self.day_range,
                                                 dry=self.dry)
                 log.debug('SC 4 job_items.id comms files created: "%s"' %
@@ -338,7 +338,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         """Parse the MTS-format filename string confirm that it validates
         as per the accepted file name convention.
 
-        Filename comparison is based on the ``pe_mts_filename_format``
+        Filename comparison is based on the ``pe_tcd_filename_format``
         config option.
 
         **Kwargs:**
@@ -365,7 +365,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
 
     def get_files(self):
         """Searches the :attr:`nparcel.OnDeliveryDaemon.report_in_dirs`
-        configuration item as the source directory for MTS report files.
+        configuration item as the source directory for TCD report files.
 
         There may be more than one MTS file available for processing
         but only the most recent instance will be returned.

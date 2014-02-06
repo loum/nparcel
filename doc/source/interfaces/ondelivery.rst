@@ -58,3 +58,14 @@ On Delivery comms trigger process::
 
 The ``npondeliveryd`` utility uses the default ``nparceld.conf`` file to
 control processing workflows.
+
+* ``report_in_dir``
+
+    found under the ``[primary_elect]`` section,  ``report_in_dir`` is the
+    Delivery Report inbound directory (default ``/data/nparcel/tcd``)
+
+* ``tcd_filename_format``
+
+    found under the ``[primary_elect]`` section, ``tcd_filename_format`` is
+    the TCD Delivery Report filename format as expressed as a Python
+    regular expression string (default ``mts_delivery_report_\d{14}\.csv``)
