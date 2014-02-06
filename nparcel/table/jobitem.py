@@ -128,7 +128,8 @@ WHERE connote_nbr = '%s'""" % (self.name, connote)
         sql = """SELECT id
 FROM %s
 WHERE connote_nbr = '%s'
-AND item_nbr = '%s'""" % (self.name, connote, item_nbr)
+AND item_nbr = '%s'
+ORDER BY created_ts DESC""" % (self.name, connote, item_nbr)
 
         return sql
 

@@ -189,11 +189,11 @@ class Loader(nparcel.Service):
         log.info('Barcode "%s" start mapping ...' % barcode)
         try:
             job_data = self.table_column_map(fields,
-                                            JOB_MAP,
-                                            cond_map)
+                                             JOB_MAP,
+                                             cond_map)
             job_item_data = self.table_column_map(fields,
-                                                JOB_ITEM_MAP,
-                                                cond_map)
+                                                  JOB_ITEM_MAP,
+                                                  cond_map)
             log.info('Barcode "%s" mapping OK' % barcode)
         except ValueError, e:
             status = False
@@ -210,7 +210,7 @@ class Loader(nparcel.Service):
                 # Manufactured barcode.
                 item_nbr = fields.get('Item Number')
                 job_id = self.get_jobitem_based_job_id(connote=connote,
-                                                        item_nbr=item_nbr)
+                                                       item_nbr=item_nbr)
                 if job_id is not None:
                     skip_jobitem_chk = True
             else:
@@ -227,9 +227,9 @@ class Loader(nparcel.Service):
                 log.info('Updating Nparcel barcode "%s" agent ID "%s"' %
                             (barcode, agent_id))
                 job_item_id = self.update(job_id,
-                                            agent_id_row_id,
-                                            job_item_data,
-                                            skip_jobitem_chk)
+                                          agent_id_row_id,
+                                          job_item_data,
+                                          skip_jobitem_chk)
             else:
                 log.info('Creating Nparcel barcode "%s"' % barcode)
                 job_item_id = self.create(job_data, job_item_data)
@@ -244,15 +244,17 @@ class Loader(nparcel.Service):
                 send_sc_2 = cond_map.get('send_sc_2')
                 send_sc_4 = cond_map.get('send_sc_4')
                 ignore_sc_4 = cond_map.get('ignore_sc_4')
+                delay_template_sc_2 = cond_map.get('delay_template_sc_2')
                 delay_template_sc_4 = cond_map.get('delay_template_sc_4')
                 if self.trigger_comms(service_code,
-                                        send_email,
-                                        send_sc_1,
-                                        send_sc_2,
-                                        send_sc_4,
-                                        ignore_sc_4):
+                                      send_email,
+                                      send_sc_1,
+                                      send_sc_2,
+                                      send_sc_4,
+                                      ignore_sc_4):
                     template = self.get_template(service_code,
-                                                    delay_template_sc_4)
+                                                 delay_template_sc_2,
+                                                 delay_template_sc_4)
                     self.comms('email',
                                 job_item_id,
                                 email_addr,
@@ -262,13 +264,14 @@ class Loader(nparcel.Service):
                 send_sms = cond_map.get('send_sms')
                 phone_nbr = job_item_data.get('phone_nbr')
                 if self.trigger_comms(service_code,
-                                        send_sms,
-                                        send_sc_1,
-                                        send_sc_2,
-                                        send_sc_4,
-                                        ignore_sc_4):
+                                      send_sms,
+                                      send_sc_1,
+                                      send_sc_2,
+                                      send_sc_4,
+                                      ignore_sc_4):
                     template = self.get_template(service_code,
-                                                    delay_template_sc_4)
+                                                 delay_template_sc_2,
+                                                 delay_template_sc_4)
                     self.comms('sms',
                                 job_item_id,
                                 phone_nbr,
@@ -905,6 +908,7 @@ class Loader(nparcel.Service):
 
     def get_template(self,
                      service_code,
+                     delay_template_sc_2,
                      delay_template_sc_4):
         """Determine which template to use.
 
@@ -915,6 +919,7 @@ class Loader(nparcel.Service):
         Current alternate templates supported include:
 
         * **delay** - for delayed pickup notifications.  Triggered with
+          *service_code* ``2`` and *delay_template_sc_2* is ``True`` or
           *service_code* ``4`` and *delay_template_sc_4* is ``True``
 
         **Args:**
@@ -934,10 +939,12 @@ class Loader(nparcel.Service):
         template = 'body'
 
         if service_code is not None:
-            if (service_code == 4 and delay_template_sc_4):
+            if ((service_code == 2 and delay_template_sc_2) or
+                (service_code == 4 and delay_template_sc_4)):
                 template = 'delay'
 
-        log.debug('Using template "%s" for SC with flag delay_sc4: %s' %
-                  (template, delay_template_sc_4))
+        msg = ('Template for SC with flag delay_sc2|delay_sc4 %s|%s: %s' %
+               (delay_template_sc_2, delay_template_sc_4, template))
+        log.debug(msg)
 
         return template

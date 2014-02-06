@@ -1110,14 +1110,27 @@ SET state = 'VIC'"""
         """Notification templates.
         """
         for service_code in [None, 1, 2, 4]:
+            for delay_sc_2 in [False, True]:
+                received = self._ldr.get_template(service_code,
+                                                  delay_sc_2,
+                                                  False)
+                if service_code == 2 and delay_sc_2:
+                    expected = 'delay'
+                else:
+                    expected = 'body'
+                msg = "Service Code 2 template scenario expected 'delay'"
+                self.assertEqual(received, expected, msg)
+
+        for service_code in [None, 1, 2, 4]:
             for delay_sc_4 in [False, True]:
                 received = self._ldr.get_template(service_code,
+                                                  False,
                                                   delay_sc_4)
                 if service_code == 4 and delay_sc_4:
                     expected = 'delay'
                 else:
                     expected = 'body'
-                msg = "Default template scenario expected 'body'"
+                msg = "Service Code 4 template scenario expected 'body'"
                 self.assertEqual(received, expected, msg)
 
     @classmethod
