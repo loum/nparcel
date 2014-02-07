@@ -12,6 +12,7 @@ from nparcel.utils.log import log
 from nparcel.utils.files import (create_dir,
                                  check_filename,
                                  move_file,
+                                 copy_file,
                                  get_directory_files)
 
 
@@ -245,8 +246,11 @@ class Ftp(ftplib.FTP):
                                                             filter))
 
             # Transfer files.
+            multi_dirs = []
             try:
-                target = self.config.get(xfer, 'target')
+                targets = self.config.get(xfer, 'target').split(',')
+                target = targets[0]
+                multi_dir = list(targets[1:])
             except ConfigParser.NoOptionError:
                 target = None
             xfered_files = self.get_files(filtered_files,
@@ -254,6 +258,9 @@ class Ftp(ftplib.FTP):
                                           partial=partial,
                                           dry=dry)
             log.debug('Retrieved files %s' % xfered_files)
+
+            if len(multi_dirs):
+                self.copy_to_multiple_directories(multi_dirs, xfered_files)
 
             # Get POD files?
             try:
@@ -597,3 +604,20 @@ class Ftp(ftplib.FTP):
                                   pod_file)
 
         return retrieved_pod_files
+
+    def copy_to_multiple_directories(self, target_dirs, files):
+        """Copy each file in *files* into *target_dirs*.
+
+        **Args:**
+            *target_dirs*: list of target directories to copy *files* into
+
+            *files*: list of files to copy
+        """
+        log.debug('target_dirs: %s' % target_dirs)
+        log.debug('files: %s' % files)
+
+        for dir in target_dirs:
+            for f in files:
+                target_basename = os.path.basename(f)
+                target = os.path.join(dir, target_basename)
+                copy_file(f, target)

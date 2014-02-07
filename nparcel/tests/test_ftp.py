@@ -235,6 +235,62 @@ class TestFtp(unittest2.TestCase):
         remove_files(get_directory_files_list(self._dir))
         self._ftp.reset_config()
 
+    def test_process_inbound_with_pod_to_multiple_targets(self):
+        """Process cycle for inbound transfer with POD - multiple targets
+        """
+        t_files = get_directory_files_list(os.path.join(self._test_dir,
+                                                        'returns'))
+        dir = self._ftp_dir
+        for f in t_files:
+            copy_file(f, os.path.join(dir, os.path.basename(f)))
+
+        # Prepare multiple targets.
+        target_1 = tempfile.mkdtemp()
+        target_2 = tempfile.mkdtemp()
+        dirs = [target_1, target_2]
+
+        # Prepare the config.
+        filter = '.*_VANA_RE[PFI]_\d{14}\.txt'
+        self._ftp.config.add_section('ftp_t')
+        self._ftp.config.set('ftp_t', 'host', '127.0.0.1')
+        self._ftp.config.set('ftp_t', 'port', '2121')
+        self._ftp.config.set('ftp_t', 'user', 'tester')
+        self._ftp.config.set('ftp_t', 'password', 'tester')
+        self._ftp.config.set('ftp_t', 'direction', 'inbound')
+        self._ftp.config.set('ftp_t', 'source', '')
+        self._ftp.config.set('ftp_t', 'filter', filter)
+        self._ftp.config.set('ftp_t', 'target', '%s,%s,%s' % (self._dir,
+                                                              target_1,
+                                                              target_2))
+        self._ftp.config.set('ftp_t', 'pod', 'Yes')
+        self._ftp.config.set('ftp_t', 'partial', 'YES')
+        self._ftp.config.set('ftp_t', 'delete', 'yes')
+        self._ftp._parse_config(file_based=False)
+
+        self._ftp.process(dry=False)
+
+        # Check FTP inbound directory (all files should be transfered).
+        received = get_directory_files_list(self._dir)
+        expected = [os.path.join(self._dir,
+                                 os.path.basename(x)) for x in t_files]
+        msg = 'FTP inbound directory list not as expected'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Check that the multi directories also got their copy.
+        for dir in dirs:
+            tmp_files = get_directory_files_list(dir)
+            received = [os.path.basename(x) for x in tmp_files]
+            xferd_files = get_directory_files_list(self._dir)
+            expected = [os.path.basename(x) for x in xfered_files]
+            msg = 'Mutliple dir copy - %s listing error' % dir
+            self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Clean up.
+        remove_files(get_directory_files_list(self._dir))
+        self._ftp.reset_config()
+        os.removedirs(target_1)
+        os.removedirs(target_2)
+
     def test_process_inbound_without_pod(self):
         """Test the process cycle for inbound transfer WITHOUT POD.
         """
@@ -637,6 +693,36 @@ class TestFtp(unittest2.TestCase):
         self._ftp.disconnect_resource()
         remove_files(get_directory_files_list(self._dir))
         self._ftp.reset_config()
+
+    def test_copy_to_multiple_directories(self):
+        """Copy files into multiple directories.
+        """
+        dir1 = tempfile.mkdtemp()
+        dir2 = tempfile.mkdtemp()
+        dirs = [dir1, dir2]
+        file_1_obj = tempfile.NamedTemporaryFile(suffix='.txt')
+        file_2_obj = tempfile.NamedTemporaryFile(suffix='.txt')
+        file_3_obj = tempfile.NamedTemporaryFile(suffix='.txt')
+        files = [file_1_obj.name, file_2_obj.name, file_3_obj.name]
+
+        self._ftp.copy_to_multiple_directories(dirs, files)
+
+        # Check target dirs.
+        for dir in dirs:
+            tmp_files = get_directory_files_list(dir)
+            received = [os.path.basename(x) for x in tmp_files]
+            expected = [os.path.basename(x) for x in files]
+            msg = 'Mutliple dir copy - %s listing error' % dir
+            self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Clean up.
+        file_1_obj.close()
+        file_2_obj.close()
+        file_3_obj.close()
+        for dir in dirs:
+            remove_files(get_directory_files_list(dir))
+        os.removedirs(dir1)
+        os.removedirs(dir2)
 
     @classmethod
     def tearDownClass(cls):
