@@ -276,20 +276,22 @@ class TestFtp(unittest2.TestCase):
         msg = 'FTP inbound directory list not as expected'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
-        # Check that the multi directories also got their copy.
+        # Check that the multi-directories also got their copy.
+        xfered_report_files = get_directory_files_list(self._dir,
+                                                       filter='.*\.txt$')
+        expected = [os.path.basename(x) for x in xfered_report_files]
         for dir in dirs:
             tmp_files = get_directory_files_list(dir)
             received = [os.path.basename(x) for x in tmp_files]
-            xferd_files = get_directory_files_list(self._dir)
-            expected = [os.path.basename(x) for x in xfered_files]
             msg = 'Mutliple dir copy - %s listing error' % dir
             self.assertListEqual(sorted(received), sorted(expected), msg)
 
         # Clean up.
         remove_files(get_directory_files_list(self._dir))
         self._ftp.reset_config()
-        os.removedirs(target_1)
-        os.removedirs(target_2)
+        for dir in dirs:
+            remove_files(get_directory_files_list(dir))
+            os.removedirs(dir)
 
     def test_process_inbound_without_pod(self):
         """Test the process cycle for inbound transfer WITHOUT POD.
@@ -721,8 +723,7 @@ class TestFtp(unittest2.TestCase):
         file_3_obj.close()
         for dir in dirs:
             remove_files(get_directory_files_list(dir))
-        os.removedirs(dir1)
-        os.removedirs(dir2)
+            os.removedirs(dir)
 
     @classmethod
     def tearDownClass(cls):

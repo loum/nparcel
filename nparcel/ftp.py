@@ -250,7 +250,7 @@ class Ftp(ftplib.FTP):
             try:
                 targets = self.config.get(xfer, 'target').split(',')
                 target = targets[0]
-                multi_dir = list(targets[1:])
+                multi_dirs.extend(list(targets[1:]))
             except ConfigParser.NoOptionError:
                 target = None
             xfered_files = self.get_files(filtered_files,
@@ -258,9 +258,6 @@ class Ftp(ftplib.FTP):
                                           partial=partial,
                                           dry=dry)
             log.debug('Retrieved files %s' % xfered_files)
-
-            if len(multi_dirs):
-                self.copy_to_multiple_directories(multi_dirs, xfered_files)
 
             # Get POD files?
             try:
@@ -282,6 +279,9 @@ class Ftp(ftplib.FTP):
                         complete_files.append(perm_file)
             else:
                 complete_files.extend(xfered_files)
+
+            if len(multi_dirs):
+                self.copy_to_multiple_directories(multi_dirs, complete_files)
 
             if remove_on_xfer:
                 for remote_to_delete in complete_files:
