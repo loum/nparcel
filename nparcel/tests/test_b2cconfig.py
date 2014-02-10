@@ -31,11 +31,6 @@ class TestB2CConfig(unittest2.TestCase):
         expected = ['/var/ftp/pub/nparcel/priority/in']
         self.assertListEqual(received, expected, msg)
 
-        msg = 'Directories to check not as expected'
-        received = self._c.pe_in_dirs
-        expected = ['/var/ftp/pub/nparcel/gis/in']
-        self.assertListEqual(received, expected, msg)
-
         msg = 'Archive directory not as expected'
         received = self._c.archive_dir
         expected = '/data/nparcel/archive'
@@ -132,14 +127,14 @@ class TestB2CConfig(unittest2.TestCase):
         expected = 'gis'
         self.assertEqual(received, expected, msg)
 
-        msg = 'Primary Elect MTS inbound directory not as expected'
-        received = self._c.pe_inbound_mts
-        expected = ['/data/nparcel/mts']
+        msg = 'TCD inbound directory not as expected'
+        received = self._c.inbound_tcd
+        expected = ['/data/nparcel/tcd']
         self.assertListEqual(received, expected, msg)
 
-        msg = 'Primary Elect MTS filename error'
-        received = self._c.pe_mts_filename_format
-        expected = 'mts_delivery_report_\d{14}\.csv'
+        msg = 'TCD filename error'
+        received = self._c.tcd_filename_format
+        expected = 'TCD_Deliveries_\d{14}\.DAT'
         self.assertEqual(received, expected, msg)
 
         msg = 'On Delivery uncollected day range error'
@@ -220,6 +215,14 @@ class TestB2CConfig(unittest2.TestCase):
         received = self._c.filter_loop
         expected = 30
         self.assertEqual(received, expected, msg)
+
+    def test_parse_config_mapper(self):
+        """Parse items from the config -- mapper
+        """
+        msg = 'Mapper inbound dir not as expected'
+        received = self._c.mapper_in_dirs
+        expected = []
+        self.assertListEqual(received, expected, msg)
 
     def test_parse_config_transsend(self):
         """Parse items from the config -- TransSend.

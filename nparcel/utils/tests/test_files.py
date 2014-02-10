@@ -84,11 +84,11 @@ class TestFiles(unittest2.TestCase):
         dir = os.path.dirname(file_obj.name)
         file = file_obj.name
 
-        filter_file = 'mts_delivery_report_20131018100758.csv'
+        filter_file = 'TCD_Deliveries_20140207111019.DAT'
         f = open(os.path.join(dir, filter_file), 'w')
         f.close()
 
-        filter = 'mts_delivery_report_\d{14}\.csv'
+        filter = 'TCD_Deliveries_\d{14}\.DAT'
         received = get_directory_files_list(os.path.dirname(file),
                                             filter=filter)
         expected = [os.path.join(dir, filter_file)]

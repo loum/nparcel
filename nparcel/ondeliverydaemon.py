@@ -16,13 +16,13 @@ class OnDeliveryDaemon(nparcel.DaemonService):
 
     .. attribute:: report_in_dir
 
-        MTS Delivery Report inbound directory
+        TCD Delivery Report inbound directory
         (default ``/data/nparcel/tcd``)
 
     .. attribute:: report_file_format
 
         regular expression format string for inbound delivery report
-        filename (default ``mts_delivery_report_\d{14}\.csv``)
+        filename (default ``TCD_Deliveries_\d{14}\.DAT``)
 
     .. attribute:: comms_dir
 
@@ -62,7 +62,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
     """
     _config = None
     _report_in_dirs = ['/data/nparcel/tcd']
-    _report_file_format = 'mts_delivery_report_\d{14}\.csv'
+    _report_file_format = 'TCD_Deliveries_\d{14}\.DAT'
     _comms_dir = '/data/nparcel/comms'
     _db_kwargs = None
     _od = None
@@ -92,21 +92,14 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                       self.loop)
 
         try:
-            self.set_in_dirs(self.config.pe_in_dir)
-        except AttributeError, err:
-            msg = ('Inbound directory not in config -- using %s' %
-                   self.in_dirs)
-            log.debug(msg)
-
-        try:
-            self.set_report_in_dirs(self.config.pe_inbound_tcd)
+            self.set_report_in_dirs(self.config.inbound_tcd)
         except AttributeError, err:
             msg = ('Report inbound dir not in config -- using %s' %
                    self.report_in_dirs)
             log.debug(msg)
 
         try:
-            self.set_report_file_format(self.config.pe_tcd_filename_format)
+            self.set_report_file_format(self.config.tcd_filename_format)
         except AttributeError, err:
             msg = ('Report file format not in config -- using %s' %
                    self.report_file_format)
@@ -335,7 +328,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                     time.sleep(self.loop)
 
     def validate_file(self, file):
-        """Parse the MTS-format filename string confirm that it validates
+        """Parse the TCD-format filename string confirm that it validates
         as per the accepted file name convention.
 
         Filename comparison is based on the ``pe_tcd_filename_format``
@@ -345,7 +338,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
             filename: the filename string to parse
 
         **Returns:**
-            boolean ``True`` if the filename conforms th MTS report format
+            boolean ``True`` if the filename conforms th TCD report format
             boolean ``False`` otherwise
 
         """
@@ -367,12 +360,12 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         """Searches the :attr:`nparcel.OnDeliveryDaemon.report_in_dirs`
         configuration item as the source directory for TCD report files.
 
-        There may be more than one MTS file available for processing
+        There may be more than one TCD file available for processing
         but only the most recent instance will be returned.
 
         **Returns:**
-            list if MTS delivery reports.  At this time, list will contain
-            at most one MTS report file (or zero) if not matches are found.
+            list if TCD delivery reports.  At this time, list will contain
+            at most one TCD report file (or zero) if not matches are found.
 
         """
         report_files = []

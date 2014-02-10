@@ -150,16 +150,16 @@ class B2CConfig(nparcel.Config):
 
         upstream provider of the T1250 files (default "gis")
 
-    .. attribute:: pe_inbound_mts
+    .. attribute:: inbound_tcd
 
-        MTS Delivery Report inbound directory
-        (default ``/data/nparcel/mts``)
+        TCD Delivery Report inbound directory
+        (default ``/data/nparcel/tcd``)
 
-    .. attribute:: pe_mts_filename_format
+    .. attribute:: tcd_filename_format
 
-        regular expression format string for Primary Elect MTS delivery
+        regular expression format string for TCD delivery
         reports inbound filenames
-        (default ``mts_delivery_report_\d{14}\.csv``)
+        (default ``TCD_Deliveries_\d{14}\.DAT``)
 
     .. attribute:: uncollected_day_range
 
@@ -288,7 +288,7 @@ class B2CConfig(nparcel.Config):
 
     """
     _dirs_to_check = []
-    _pe_dirs_to_check = []
+    _mapper_in_dirs = []
     _archive = None
     _staging_base = None
     _signature = None
@@ -319,8 +319,8 @@ class B2CConfig(nparcel.Config):
     _pe_in_file_format = 'T1250_TOL[PIF]_\d{14}\.dat'
     _pe_in_file_archive_string = 'T1250_TOL[PIF]_(\d{8})\d{6}\.dat'
     _pe_customer = 'gis'
-    _pe_inbound_mts = ['/data/nparcel/mts']
-    _pe_mts_filename_format = 'mts_delivery_report_\d{14}\.csv'
+    _inbound_tcd = ['/data/nparcel/tcd']
+    _tcd_filename_format = 'TCD_Deliveries_\d{14}\.DAT'
     _uncollected_day_range = 14.0
     _filter_customer = 'parcelpoint'
     _filtering_rules = ['P', 'R']
@@ -397,19 +397,6 @@ class B2CConfig(nparcel.Config):
             self._dirs_to_check.extend(values)
 
     @property
-    def pe_in_dirs(self):
-        return self._pe_dirs_to_check
-
-    def set_pe_in_dirs(self, values):
-        del self._pe_dirs_to_check[:]
-
-        if values is not None:
-            log.debug('Set PE in directory "%s"' % str(values))
-            self._pe_dirs_to_check.extend(values)
-        else:
-            self._send_time_ranges = []
-
-    @property
     def archive_dir(self):
         return self._archive
 
@@ -439,13 +426,25 @@ class B2CConfig(nparcel.Config):
 
     def set_aggregator_dirs(self, values):
         del self._aggregator_dirs[:]
+        self._aggregator_dirs = []
 
         if values is not None:
             log.debug('Set config aggregator in directories "%s"' %
                       str(values))
             self._aggregator_dirs.extend(values)
-        else:
-            self._aggregator_dirs = []
+
+    @property
+    def mapper_in_dirs(self):
+        return self._mapper_in_dirs
+
+    def set_mapper_in_dirs(self, values):
+        del self._mapper_in_dirs[:]
+        self._mapper_in_dirs = []
+
+        if values is not None:
+            log.debug('Set config mapper in directories "%s"' %
+                      str(values))
+            self._mapper_in_dirs.extend(values)
 
     @property
     def loader_loop(self):
@@ -525,19 +524,19 @@ class B2CConfig(nparcel.Config):
         return self._pe_customer
 
     @property
-    def pe_inbound_mts(self):
-        return self._pe_inbound_mts
+    def inbound_tcd(self):
+        return self._inbound_tcd
 
-    def set_pe_inbound_mts(self, values):
-        del self._pe_inbound_mts[:]
-        self._pe_inbound_mts = []
+    def set_inbound_tcd(self, values):
+        del self._inbound_tcd[:]
+        self._inbound_tcd = []
 
         if values is not None:
-            self._pe_inbound_mts.extend(values)
+            self._inbound_tcd.extend(values)
 
     @property
-    def pe_mts_filename_format(self):
-        return self._pe_mts_filename_format
+    def tcd_filename_format(self):
+        return self._tcd_filename_format
 
     @property
     def uncollected_day_range(self):
@@ -666,17 +665,6 @@ class B2CConfig(nparcel.Config):
             log.debug('Using default T1250 file format: %s' %
                       self.t1250_file_format)
 
-        # Primary elect work is only a temporary solution.
-        try:
-            self._pe_dirs_to_check = self.get('dirs', 'pe_in').split(',')
-            log.debug('Primary Elect directories to check %s' %
-                      str(self.pe_in_dirs))
-        except ConfigParser.NoOptionError:
-            log.debug('No Primary Elect inbound directories in config')
-
-        try:
-            self._pe_in_file_format = self.get('primary_elect',
-                                               'file_format')
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
             log.debug('Using default Primary Elect file format: %s' %
@@ -700,22 +688,21 @@ class B2CConfig(nparcel.Config):
                       self.pe_customer)
 
         try:
-            self.set_pe_inbound_mts(self.get('primary_elect',
-                                             'inbound_mts').split(','))
-            log.debug('Primary Elect directories to check %s' %
-                      str(self.pe_in_dirs))
+            self.set_inbound_tcd(self.get('primary_elect',
+                                          'inbound_tcd').split(','))
+            log.debug('Inbound TCD directories %s' % str(self.inbound_tcd))
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
-            log.debug('Using default Primary Elect MTS directory: %s' %
-                      self.pe_inbound_mts)
+            log.debug('Using default TCD inbound directory: %s' %
+                      self.inbound_tcd)
 
         try:
-            self._pe_mts_filename_format = self.get('primary_elect',
-                                                    'mts_filename_format')
+            self._tcd_filename_format = self.get('primary_elect',
+                                                 'tcd_filename_format')
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
-            log.debug('Using default Primary Elect MTS file format: %s' %
-                      self.pe_mts_filename_format)
+            log.debug('Using default TCD file format: %s' %
+                      self.tcd_filename_format)
 
         try:
             uncollected_day_range = self.get('primary_elect',

@@ -73,15 +73,15 @@ class MapperDaemon(nparcel.DaemonService):
             log.info(msg)
 
         try:
-            if len(self.config.pe_in_dirs):
-                self.set_in_dirs(self.config.pe_in_dirs)
+            if len(self.config.mapper_in_dirs):
+                self.set_in_dirs(self.config.mapper_in_dirs)
         except AttributeError, err:
             msg = ('Inbound directory not defined in config -- using %s' %
                    self.in_dirs)
             log.info(msg)
 
         try:
-            if self.config.filter_loop is not None:
+            if self.config.mapper_loop is not None:
                 self.set_loop(self.config.mapper_loop)
         except AttributeError, err:
             log.info('Daemon loop not defined in config -- default %d sec' %

@@ -21,8 +21,8 @@ class TestOnDelivery(unittest2.TestCase):
                                     'transsend.py')
         cls._on.ts_db.load_fixture(cls._on.ts_db.transsend, fixture_file)
 
-        test_dir = 'nparcel/tests/files'
-        test_file = 'mts_delivery_report_20131018100758.csv'
+        test_dir = os.path.join('nparcel', 'tests', 'files')
+        test_file = 'TCD_Deliveries_20140207111019.DAT'
         cls._test_file = os.path.join(test_dir, test_file)
 
         db = cls._on.db
@@ -75,8 +75,8 @@ class TestOnDelivery(unittest2.TestCase):
                      'phone_nbr': '0431602145',
                      'job_id': job_01,
                      'created_ts': '%s' % cls._now},
-                    {'connote_nbr': 'GOLW010997',
-                     'item_nbr': 'item_nbr_002',
+                    {'connote_nbr': 'ARTZ124111',
+                     'item_nbr': '00393403250085050766',
                      'email_addr': 'loumar@tollgroup.com',
                      'phone_nbr': '0431602145',
                      'job_id': job_02,
@@ -137,7 +137,7 @@ class TestOnDelivery(unittest2.TestCase):
     def test_get_primary_elect_job_item_id_valid_pe(self):
         """jobitem.id's of connote that is a primary elect job.
         """
-        received = self._on.get_primary_elect_job_item_id('GOLW010997')
+        received = self._on.get_primary_elect_job_item_id('ARTZ124111')
         expected = [self._id_001]
         msg = 'Primary elect job should produce ids'
         self.assertListEqual(received, expected, msg)
@@ -305,7 +305,7 @@ class TestOnDelivery(unittest2.TestCase):
         remove_files(received)
 
     def test_process_no_tcd_file(self):
-        """Check processing -- no MTS file.
+        """Check processing -- no TCD file.
         """
         dry = False
 

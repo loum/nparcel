@@ -20,8 +20,8 @@ class StopParser(object):
 
     """
     _in_file = None
-    _connote_header = 'Con Note'
-    _arrival_header = 'Actual Arrival'
+    _connote_header = 'Consignment Number'
+    _arrival_header = 'Delivery Date'
     _connotes = {}
 
     def __init__(self, file=None):
@@ -67,7 +67,7 @@ class StopParser(object):
         .. note::
 
             Delivered suggests that the connote has an 'Actual Delivered'
-            timestamp in the MTS Delivery Report.
+            timestamp in the TCD Delivery Report.
 
         **Args:**
             *connote*: connote relating to the ``jobitem.connote_nbr``
@@ -78,7 +78,7 @@ class StopParser(object):
             boolean ``False`` otherwise
 
         """
-        log.debug('MTS checking connote "%s" delivery status' % connote)
+        log.debug('TCD checking connote "%s" delivery status' % connote)
 
         delivered = False
         item = self.connote_lookup(connote)
@@ -86,20 +86,25 @@ class StopParser(object):
             if item[self.arrival_header]:
                 delivered = True
 
-        if delivered:
-            log.info('Connote "%s" delivery status: %s' % (connote,
-                                                           delivered))
+        log.debug('Connote "%s" delivery status: %s' % (connote, delivered))
 
         return delivered
 
     def read(self):
-        """Parses the csv file denoted by :attr:`in_file`.
+        """Parses the contents of file denoted by :attr:`in_file`.
 
         """
         if self.in_file is not None:
             try:
                 fh = open(self.in_file, 'rb')
-                reader = csv.DictReader(fh)
+                fieldnames = ['Consignment Number',
+                              'Despatch Date',
+                              'Item Number',
+                              'Delivery Date']
+                reader = csv.DictReader(fh,
+                                        delimiter=' ',
+                                        skipinitialspace=True,
+                                        fieldnames=fieldnames)
                 log.debug('Parsing connotes in "%s"' % fh.name)
                 for rowdict in reader:
                     self.set_connotes(rowdict)

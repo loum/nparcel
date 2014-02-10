@@ -9,8 +9,8 @@ class TestStopParser(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._sp = nparcel.StopParser()
-        test_dir = 'nparcel/tests/files'
-        test_file = 'mts_delivery_report_20131018100758.csv'
+        test_dir = os.path.join('nparcel', 'tests', 'files')
+        test_file = 'TCD_Deliveries_20140207111019.DAT'
         cls._test_file = os.path.join(test_dir, test_file)
 
     def test_init(self):
@@ -28,7 +28,7 @@ class TestStopParser(unittest2.TestCase):
         self._sp.read()
 
         # Return known connote.
-        received = self._sp.connote_lookup('ARTZ023438')
+        received = self._sp.connote_lookup('7179050262726')
         msg = 'Known connote should not return None'
         self.assertIsNotNone(received)
 
@@ -38,12 +38,12 @@ class TestStopParser(unittest2.TestCase):
         self.assertIsNone(received)
 
         # Check delivered.
-        received = self._sp.connote_delivered('GOLW013730')
+        received = self._sp.connote_delivered('7179050262')
         msg = 'Undelivered connote should return False'
         self.assertFalse(received)
 
         # Check delivered.
-        received = self._sp.connote_delivered('GOLW012959')
+        received = self._sp.connote_delivered('7179050262736')
         msg = 'Delivered connote should return True'
         self.assertTrue(received)
 

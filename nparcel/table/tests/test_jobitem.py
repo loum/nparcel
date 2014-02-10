@@ -357,7 +357,7 @@ AND notify_ts IS NOT NULL""" % job_item_id
         for row in self._db.rows():
             received.append(row)
         expected = [(3, 'pe_connote', 'pe_item_nbr'),
-                    (10, 'GOLW010997', 'GOLW010997'),
+                    (10, 'ARTZ124110', '00393403250085050506'),
                     (12, 'ANWD011307', 'ANWD011307001'),
                     (13, 'IANZ012764', 'IANZ012764')]
         msg = 'uncollected_primary_elect_jobitems_sql return list incorrect'

@@ -33,8 +33,8 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
         cls._odd.od.ts_db.load_fixture(cls._odd.od.ts_db.transsend,
                                        fixture_file)
 
-        cls._test_dir = 'nparcel/tests/files'
-        cls._test_file = 'mts_delivery_report_20131018100758.csv'
+        cls._test_dir = os.path.join('nparcel', 'tests', 'files')
+        cls._test_file = 'TCD_Deliveries_20140207111019.DAT'
         cls._test_filepath = os.path.join(cls._test_dir, cls._test_file)
 
         db = cls._odd.od.db
@@ -178,26 +178,25 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
         self._odd._exit_event.clear()
 
     def test_validate_file_not_tcd_format(self):
-        """Parse non-MTS formatted file.
+        """Parse non-TCD formatted file.
         """
         f_obj = tempfile.NamedTemporaryFile()
         tcd_file = f_obj.name
 
         received = self._odd.validate_file(tcd_file)
-        msg = 'Dodgy MTS file shoould not validate'
+        msg = 'Dodgy TCD file should not validate'
         self.assertFalse(received)
 
     def test_validate_file(self):
-        """Parse MTS formatted file.
+        """Parse TCD formatted file.
         """
         dir = tempfile.mkdtemp()
-        f = open(os.path.join(dir,
-                 'mts_delivery_report_20131018100758.csv'), 'w')
+        f = open(os.path.join(dir, 'TCD_Deliveries_20140207111019.DAT'), 'w')
         tcd_file = f.name
         f.close()
 
         received = self._odd.validate_file(tcd_file)
-        msg = 'Dodgy MTS file shoould not validate'
+        msg = 'Dodgy TCD file shoould not validate'
         self.assertTrue(received)
 
         # Clean up.
@@ -208,21 +207,21 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
         """Get report files.
         """
         # Seed some files.
-        old_mts_files = ['mts_delivery_report_20131018100755.csv',
-                         'mts_delivery_report_20131018100756.csv',
-                         'mts_delivery_report_20131018100757.csv']
-        mts_file = ['mts_delivery_report_20131018100758.csv']
-        for file in old_mts_files + mts_file:
-            fh = open(os.path.join(self._report_in_dirs, file), 'w')
+        old_files = ['TCD_Deliveries_20140207081019.DAT',
+                     'TCD_Deliveries_20140207091019.DAT',
+                     'TCD_Deliveries_20140207110019.DAT']
+        file = ['TCD_Deliveries_20140207111019.DAT']
+        for f in old_files + file:
+            fh = open(os.path.join(self._report_in_dirs, f), 'w')
             fh.close()
 
         received = self._odd.get_files()
-        expected = [os.path.join(self._report_in_dirs, mts_file[0])]
-        msg = 'MTS report files from get_files() error'
+        expected = [os.path.join(self._report_in_dirs, file[0])]
+        msg = 'TCD report files from get_files() error'
         self.assertListEqual(received, expected, msg)
 
         # Clean up.
-        files = old_mts_files + mts_file
+        files = old_files + file
         remove_files([os.path.join(self._report_in_dirs, x) for x in files])
 
     def test_get_files_empty_report_dir(self):

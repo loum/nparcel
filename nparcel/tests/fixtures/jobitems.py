@@ -101,7 +101,7 @@
         'consumer_name': 'Con Sumereight',
     },
     {
-        # Service Code 4 -- BU ID 2 (not exist in MTS or TransSend)
+        # Service Code 4 -- BU ID 2 (not exist in TCD or TransSend)
         'id': 9,
         'connote_nbr': 'uncollected_connote_sc_4',
         'item_nbr': 'uncollected_connote_sc_4_item_nbr',
@@ -113,10 +113,10 @@
         'consumer_name': 'Con Sumernine',
     },
     {
-        # Primary Elect -- delivered with recipients (MTS)
+        # Primary Elect -- delivered with recipients (TCD)
         'id': 10,
-        'connote_nbr': 'GOLW010997',
-        'item_nbr': 'GOLW010997',
+        'connote_nbr': 'ARTZ124110',
+        'item_nbr': '00393403250085050506',
         'job_id': 2,
         'created_ts': str(datetime.datetime.now()),
         'email_addr': 'loumar@tollgroup.com',
@@ -125,10 +125,10 @@
         'consumer_name': 'Con Sumerten',
     },
     {
-        # Primary Elect -- delivered without recipients (MTS)
+        # Primary Elect -- delivered without recipients (TCD)
         'id': 11,
-        'connote_nbr': 'GOLW012846',
-        'item_nbr': 'GOLW012846',
+        'connote_nbr': 'ARTZ124109',
+        'item_nbr': '00393403250085050490',
         'job_id': 2,
         'created_ts': str(datetime.datetime.now()),
         'email_addr': '',
