@@ -112,36 +112,6 @@ class TestB2CConfig(unittest2.TestCase):
                     'toli': '0,1,2,3,4,5,6,7'}
         self.assertDictEqual(received, expected, msg)
 
-        msg = 'Primary Elect file format not as expected'
-        received = self._c.pe_in_file_format
-        expected = 'T1250_TOL[PIF]_\d{14}\.dat'
-        self.assertEqual(received, expected, msg)
-
-        msg = 'Primary Elect archive string not as expected'
-        received = self._c.pe_in_file_archive_string
-        expected = 'T1250_TOL[PIF]_(\d{8})\d{6}\.dat'
-        self.assertEqual(received, expected, msg)
-
-        msg = 'Primary Elect customer not as expected'
-        received = self._c.pe_customer
-        expected = 'gis'
-        self.assertEqual(received, expected, msg)
-
-        msg = 'TCD inbound directory not as expected'
-        received = self._c.inbound_tcd
-        expected = ['/data/nparcel/tcd']
-        self.assertListEqual(received, expected, msg)
-
-        msg = 'TCD filename error'
-        received = self._c.tcd_filename_format
-        expected = 'TCD_Deliveries_\d{14}\.DAT'
-        self.assertEqual(received, expected, msg)
-
-        msg = 'On Delivery uncollected day range error'
-        received = self._c.uncollected_day_range
-        expected = 14.0
-        self.assertEqual(received, expected, msg)
-
         # Reminders.
         received = self._c.notification_delay
         expected = 345600
@@ -176,6 +146,44 @@ class TestB2CConfig(unittest2.TestCase):
         received = self._c.comms_q_error
         expected = 1000
         msg = 'Comms message queue error error'
+        self.assertEqual(received, expected, msg)
+
+    def test_parse_config_pe(self):
+        """Parse items from the config -- Primary Elect.
+        """
+        msg = 'Primary Elect file format not as expected'
+        received = self._c.pe_in_file_format
+        expected = 'T1250_TOL[PIF]_\d{14}\.dat'
+        self.assertEqual(received, expected, msg)
+
+        msg = 'Primary Elect archive string not as expected'
+        received = self._c.pe_in_file_archive_string
+        expected = 'T1250_TOL[PIF]_(\d{8})\d{6}\.dat'
+        self.assertEqual(received, expected, msg)
+
+        msg = 'Primary Elect customer not as expected'
+        received = self._c.pe_customer
+        expected = 'gis'
+        self.assertEqual(received, expected, msg)
+
+        msg = 'TCD inbound directory not as expected'
+        received = self._c.inbound_tcd
+        expected = ['/data/nparcel/tcd']
+        self.assertListEqual(received, expected, msg)
+
+        msg = 'TCD filename error'
+        received = self._c.tcd_filename_format
+        expected = 'TCD_Deliveries_\d{14}\.DAT'
+        self.assertEqual(received, expected, msg)
+
+        msg = 'On Delivery uncollected day range error'
+        received = self._c.uncollected_day_range
+        expected = 14.0
+        self.assertEqual(received, expected, msg)
+
+        msg = 'TCD file cache size error'
+        received = self._c.file_cache_size
+        expected = 5
         self.assertEqual(received, expected, msg)
 
     def test_parse_config_timeout(self):

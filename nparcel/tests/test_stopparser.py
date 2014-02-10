@@ -23,9 +23,15 @@ class TestStopParser(unittest2.TestCase):
     def test_read(self):
         """Read in the sample csv.
         """
-        old_in_file = self._sp.in_file
-        self._sp.set_in_file(self._test_file)
+        old_in_files = list(self._sp.in_files)
+        self._sp.set_in_files([self._test_file, self._test_file])
         self._sp.read()
+
+        # Check the size of the items parsed.
+        received = self._sp.size
+        expected = 2953
+        msg = 'Size of items parsed error'
+        self.assertEqual(received, expected, msg)
 
         # Return known connote.
         received = self._sp.connote_lookup('7179050262726')
@@ -56,7 +62,7 @@ class TestStopParser(unittest2.TestCase):
         self.assertIsNone(received)
 
         # Cleanup.
-        self._sp.set_in_file(old_in_file)
+        self._sp.set_in_files(old_in_files)
 
     @classmethod
     def tearDownClass(cls):

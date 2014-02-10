@@ -157,10 +157,11 @@ class TestOnDelivery(unittest2.TestCase):
 
         service_code = 3
         bu_ids = (1, 2, 3)
+        in_files = [self._test_file]
         received = self._on.process(template='pe',
                                     service_code=service_code,
                                     bu_ids=bu_ids,
-                                    tcd_file=self._test_file,
+                                    in_files=in_files,
                                     dry=dry)
         expected = []
         msg = 'List of processed primary elect items incorrect'
@@ -173,10 +174,11 @@ class TestOnDelivery(unittest2.TestCase):
 
         service_code = 3
         bu_ids = (1, 2, 3)
+        in_files = [self._test_file]
         received = self._on.process(template='pe',
                                     service_code=service_code,
                                     bu_ids=bu_ids,
-                                    tcd_file=self._test_file,
+                                    in_files=in_files,
                                     dry=dry)
         expected = [self._id_001, self._id_004]
         msg = 'List of processed primary elect items incorrect'
@@ -211,10 +213,11 @@ class TestOnDelivery(unittest2.TestCase):
 
         service_code = 3
         bu_ids = (1, 2, 3)
+        in_files = [self._test_file]
         received = self._on.process(template='pe',
                                     service_code=service_code,
                                     bu_ids=bu_ids,
-                                    tcd_file=self._test_file,
+                                    in_files=in_files,
                                     dry=dry)
         expected = [self._id_004]
         msg = 'List of processed primary elect items incorrect'
@@ -247,10 +250,11 @@ class TestOnDelivery(unittest2.TestCase):
 
         service_code = 3
         bu_ids = (1, 2, 3)
+        in_files = [self._test_file]
         received = self._on.process(template='pe',
                                     service_code=service_code,
                                     bu_ids=bu_ids,
-                                    tcd_file=self._test_file,
+                                    in_files=in_files,
                                     dry=dry)
         expected = [self._id_001]
         msg = 'List of processed primary elect items incorrect'
@@ -279,13 +283,14 @@ class TestOnDelivery(unittest2.TestCase):
         template = 'pe'
         service_code = 3
         bu_ids = (1, 2, 3)
+        in_files = [self._test_file]
         job_items = [(5, 'ANWD011307', 'ANWD011307001')]
 
         received = self._on.process(template=template,
                                     service_code=service_code,
                                     bu_ids=bu_ids,
                                     job_items=job_items,
-                                    tcd_file=self._test_file,
+                                    in_files=in_files,
                                     dry=dry)
         expected = [self._id_004]
         msg = 'List of processed primary elect items incorrect'

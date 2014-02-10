@@ -287,16 +287,12 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                 else:
                     tcd_files.extend(self.get_files())
 
-            tcd_file = None
-            if len(tcd_files):
-                tcd_file = tcd_files[0]
-
             log.debug('Attempting On Delivery Primary Elect check ...')
             if len(self.pe_bu_ids):
                 processed_ids = self.od.process(template='pe',
                                                 service_code=3,
                                                 bu_ids=self.pe_bu_ids,
-                                                tcd_file=tcd_file,
+                                                in_files=tcd_files,
                                                 day_range=self.day_range,
                                                 dry=self.dry)
                 log.debug('PE job_items.id comms files created: "%s"' %
@@ -309,7 +305,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                 processed_ids = self.od.process(template='body',
                                                 service_code=4,
                                                 bu_ids=self.sc4_bu_ids,
-                                                tcd_file=tcd_file,
+                                                in_files=tcd_files,
                                                 day_range=self.day_range,
                                                 dry=self.dry)
                 log.debug('SC 4 job_items.id comms files created: "%s"' %

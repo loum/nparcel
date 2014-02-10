@@ -166,6 +166,10 @@ class B2CConfig(nparcel.Config):
         limit uncollected parcel search to within nominated day range
         (default 14.0 days)
 
+    .. attribute:: file_cache_size
+
+        number of date-orderd TCD files to load during a processing loop
+        (default 5)
 
     .. attribute:: filter_customer
 
@@ -322,6 +326,7 @@ class B2CConfig(nparcel.Config):
     _inbound_tcd = ['/data/nparcel/tcd']
     _tcd_filename_format = 'TCD_Deliveries_\d{14}\.DAT'
     _uncollected_day_range = 14.0
+    _file_cache_size = 5
     _filter_customer = 'parcelpoint'
     _filtering_rules = ['P', 'R']
     _delivered_header = 'latest_scan_event_action'
@@ -543,6 +548,15 @@ class B2CConfig(nparcel.Config):
         return self._uncollected_day_range
 
     @property
+    def file_cache_size(self):
+        return self._file_cache_size
+
+    def set_file_cache_size(self, value):
+        self._file_cache_size = int(value)
+        log.debug('Set primary_elect:file_cache_size to "%s"' %
+                  self._file_cache_size)
+
+    @property
     def filter_customer(self):
         return self._filter_customer
 
@@ -712,6 +726,14 @@ class B2CConfig(nparcel.Config):
                 ConfigParser.NoSectionError), err:
             log.debug('Using default On Delivery day range: %s' %
                       self.uncollected_day_range)
+
+        try:
+            tmp_val = self.get('primary_elect', 'file_cache_size')
+            self.set_file_cache_size(tmp_val)
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default TCD file cache size: %s' %
+                      self.file_cache_size)
 
         # Aggregator.
         try:

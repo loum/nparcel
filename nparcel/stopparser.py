@@ -14,28 +14,33 @@ class StopParser(object):
         A dictionary based data structure that identifies the elements
         of interest.
 
-    .. attribute:: in_file
+    .. attribute:: in_files
 
-        csv file to parse
+        list of file to parse
 
     """
-    _in_file = None
+    _in_files = []
     _connote_header = 'Consignment Number'
     _arrival_header = 'Delivery Date'
     _connotes = {}
 
-    def __init__(self, file=None):
+    def __init__(self, files=None):
         """StopParser initialisation.
         """
-        if file is not None:
-            self._in_file = file
+        if files is not None:
+            self.set_in_files(files)
 
     @property
-    def in_file(self):
-        return self._in_file
+    def in_files(self):
+        return self._in_files
 
-    def set_in_file(self, value):
-        self._in_file = value
+    def set_in_files(self, values):
+        del self._in_files[:]
+        self._in_files = []
+
+        if values is not None:
+            self._in_files.extend(values)
+            log.debug('Set input files to: %s' % self._in_files)
 
     @property
     def connote_header(self):
@@ -54,6 +59,10 @@ class StopParser(object):
     @property
     def connotes(self):
         return self._connotes
+
+    @property
+    def size(self):
+        return len(self._connotes)
 
     def set_connotes(self, dict):
         self._connotes[dict[self.connote_header]] = dict
@@ -91,12 +100,13 @@ class StopParser(object):
         return delivered
 
     def read(self):
-        """Parses the contents of file denoted by :attr:`in_file`.
+        """Parses the contents of file denoted by :attr:`in_files`.
 
         """
-        if self.in_file is not None:
+        for f in self.in_files:
             try:
-                fh = open(self.in_file, 'rb')
+                log.debug('Parsing connotes in "%s"' % f)
+                fh = open(f, 'rb')
                 fieldnames = ['Consignment Number',
                               'Despatch Date',
                               'Item Number',
@@ -105,14 +115,11 @@ class StopParser(object):
                                         delimiter=' ',
                                         skipinitialspace=True,
                                         fieldnames=fieldnames)
-                log.debug('Parsing connotes in "%s"' % fh.name)
                 for rowdict in reader:
                     self.set_connotes(rowdict)
 
             except IOError, err:
-                log.error('Unable to open file "%s"' % self.in_file)
-        else:
-            log.warn('No csv file has been provided')
+                log.error('Unable to open file "%s"' % f)
 
     def purge(self):
         """Release :attr:`connotes` memory resources
