@@ -226,7 +226,7 @@ class OnDelivery(nparcel.Service):
             delivered_status = False
             if (not self.flag_comms_previous('email', id, template) and
                 not self.flag_comms_previous('sms', id, template)):
-                if (self.parser.connote_delivered(connote) or
+                if (self.parser.connote_delivered(connote, item_nbr) or
                     self.connote_delivered(connote, item_nbr)):
                     delivered_status = True
 
