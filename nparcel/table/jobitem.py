@@ -479,19 +479,19 @@ AND %(alias)s.job_id IN
        ag.state as AGENT_STATE,
        ag.postcode as AGENT_POSTCODE,
        ag.phone_nbr as AGENT_PHONE_NBR,
-       (SELECT ag.dp_code
+       (SELECT DISTINCT ag.dp_code
         FROM agent_stocktake AS st, agent AS ag
         WHERE (%(alias)s.connote_nbr = st.reference_nbr
                OR j.card_ref_nbr = st.reference_nbr
                OR %(alias)s.item_nbr = st.reference_nbr)
         AND st.agent_id = ag.id) AS ST_DP_CODE,
-       (SELECT ag.code
+       (SELECT DISTINCT ag.code
         FROM agent_stocktake AS st, agent AS ag
         WHERE (%(alias)s.connote_nbr = st.reference_nbr
                OR j.card_ref_nbr = st.reference_nbr
                OR %(alias)s.item_nbr = st.reference_nbr)
         AND st.agent_id = ag.id) AS ST_AGENT_CODE,
-       (SELECT ag.name
+       (SELECT DISTINCT ag.name
         FROM agent_stocktake AS st, agent AS ag
         WHERE (%(alias)s.connote_nbr = st.reference_nbr
                OR j.card_ref_nbr = st.reference_nbr
