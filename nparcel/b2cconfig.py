@@ -702,8 +702,7 @@ class B2CConfig(nparcel.Config):
                       self.pe_customer)
 
         try:
-            self.set_inbound_tcd(self.get('primary_elect',
-                                          'inbound_tcd').split(','))
+            self.set_inbound_tcd(self.get('dir', 'tcd_in').split(','))
             log.debug('Inbound TCD directories %s' % str(self.inbound_tcd))
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:

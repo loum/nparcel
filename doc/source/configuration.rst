@@ -42,3 +42,14 @@ with the Toll Parcel Portal system::
     #         1 archive .ps files
     # Pos 17: 0 do not archive .png files
     #         1 archive .png files
+
+.. _sc4_template_selection:
+
+Service Code 4 Template Selection
++++++++++++++++++++++++++++++++++
+
+Service Code 4 job records can selectively use either the default ``body``
+comms templates or the ``delay`` variant::
+
+    # Pos 12: 0 use default loader comms template if service_code 4
+    #         1 use delayed pickup comms template if service_code 4

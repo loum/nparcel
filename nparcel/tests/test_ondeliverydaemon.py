@@ -206,22 +206,62 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
     def test_get_files(self):
         """Get report files.
         """
+        old_file_cache = self._odd.file_cache_size
+        self._odd.set_file_cache_size(2)
+
         # Seed some files.
         old_files = ['TCD_Deliveries_20140207081019.DAT',
-                     'TCD_Deliveries_20140207091019.DAT',
-                     'TCD_Deliveries_20140207110019.DAT']
-        file = ['TCD_Deliveries_20140207111019.DAT']
-        for f in old_files + file:
+                     'TCD_Deliveries_20140207091019.DAT']
+        files = ['TCD_Deliveries_20140207100019.DAT',
+                 'TCD_Deliveries_20140207111019.DAT']
+        for f in old_files + files:
             fh = open(os.path.join(self._report_in_dirs, f), 'w')
             fh.close()
 
         received = self._odd.get_files()
-        expected = [os.path.join(self._report_in_dirs, file[0])]
+        expected = [os.path.join(self._report_in_dirs, x) for x in files]
         msg = 'TCD report files from get_files() error'
         self.assertListEqual(received, expected, msg)
 
         # Clean up.
-        files = old_files + file
+        self._odd.set_file_cache_size(old_file_cache)
+        remove_files([os.path.join(self._report_in_dirs, x) for x in files])
+
+    def test_get_files_no_files_to_purge(self):
+        """Get report files - no files to purge.
+        """
+        # Seed some files.
+        files = ['TCD_Deliveries_20140207081019.DAT',
+                 'TCD_Deliveries_20140207091019.DAT',
+                 'TCD_Deliveries_20140207100019.DAT',
+                 'TCD_Deliveries_20140207111019.DAT']
+        for f in files:
+            fh = open(os.path.join(self._report_in_dirs, f), 'w')
+            fh.close()
+
+        received = self._odd.get_files()
+        expected = [os.path.join(self._report_in_dirs, x) for x in files]
+        msg = 'TCD report files from get_files() error -- no purge'
+        self.assertListEqual(received, expected, msg)
+
+        # Clean up.
+        remove_files([os.path.join(self._report_in_dirs, x) for x in files])
+
+    def test_get_files_no_files(self):
+        """Get report files -- no files available.
+        """
+        # Seed some files.
+        files = []
+        for f in files:
+            fh = open(os.path.join(self._report_in_dirs, f), 'w')
+            fh.close()
+
+        received = self._odd.get_files()
+        expected = []
+        msg = 'TCD report files from get_files() error -- no files'
+        self.assertListEqual(received, expected, msg)
+
+        # Clean up.
         remove_files([os.path.join(self._report_in_dirs, x) for x in files])
 
     def test_get_files_empty_report_dir(self):

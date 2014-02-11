@@ -36,6 +36,24 @@ The alternate interfaces used include:
 
     MTS was deprecated as part of release 0.28
 
+Comms Templates
+---------------
+
+The delivery scenario (either **Primary Elect** or **Priority Transfer** out
+to V123) will determine the type of comms template to use.  Primary Elect is
+standard and simply uses the ``pe`` template.  For example, if
+``job_item.id`` 12345 triggers an On Delivery event, then (if configured)
+the comms events files generated include::
+
+    $ ls -1 /data/nparcel/comms
+    $ email.12345.pe
+    $ sms.12345.pe
+
+**Priority Transfer out to V123** defaults to the standard ``body``
+template.  However, as of *release 0.26* is behavior can be altered
+to use the ``delay`` template as detailed in the
+:ref:`sc4_template_selection`
+
 ``npondeliveryd`` Usage
 -----------------------
 
@@ -61,13 +79,83 @@ On Delivery comms trigger process::
 The ``npondeliveryd`` utility uses the default ``nparceld.conf`` file to
 control processing workflows.
 
-* ``report_in_dir``
+.. note::
+    all configuration settings are found under the ``[primary_elect]``
+    section unless otherwise specified
 
-    found under the ``[primary_elect]`` section,  ``report_in_dir`` is the
-    Delivery Report inbound directory (default ``/data/nparcel/tcd``)
+* ``tcd_in`` (under the ``[dirs]`` section)
+
+    TCD Delivery Report inbound directory (default ``/data/nparcel/tcd``)
 
 * ``tcd_filename_format``
 
-    found under the ``[primary_elect]`` section, ``tcd_filename_format`` is
-    the TCD Delivery Report filename format as expressed as a Python
-    regular expression string (default ``mts_delivery_report_\d{14}\.csv``)
+    TCD Delivery Report filename format as expressed as a Python
+    regular expression string (default ``TCD_Delivery_\d{14}\.DAT``)
+
+* ``file_cache_size``
+
+    number of date-ordered TCD files to load during a
+    processing loop.  Additonal files are deleted from the system
+
+* ``comms`` (under the ``[dirs]`` section)
+
+    directory where comms files are staged for further processing
+
+* ``ondelivery_loop``
+
+    time (seconds) between ``ondeliveryd`` processing iterations
+
+* ``pe_comms`` (set via the ``[conditions]`` map position 14)
+
+    enable/disable Primary Elect notifications (On Delivery)
+
+* ``sc4_comms_ids`` (set via the ``[conditions]`` map position 15)
+
+    enalbe/disable Service Code 4 on delivery notification (On Delivery)
+
+* ``db`` (the actual ``[db]`` section)
+
+    Toll Parcel Portal database connectivity information.  A typical
+    example is::
+
+        [db]
+            driver = FreeTDS
+            host = SQVDBAUT07
+            database = Nparcel
+            user = npscript
+            password = <passwd>
+
+* ``transsend_db`` (the actual ``[transsend_db]`` section)
+
+    TransSend database connectivity information.  A typical example is::
+
+        [transsend_db]
+            host = siedbdop01
+            user = NPARCEL
+            password = <password>
+            port = 1521
+            sid = TRCOPDOV
+
+* ``uncollected_day_range``
+
+    number in days to include in the ``jobitems.uncollected_jobitems_sql``
+    query uncollected_day_range (default 14.0)
+
+* ``delivered_header`` (under the ``[transsend]`` section)
+
+    string that represents the TransSend column header name for a delivered
+    item (default ``latest_scan_event_action``)
+
+* ``delivered_event_key`` (under the ``[transsend]`` section)
+
+    string that represents a delivered event (default ``delivered``)
+
+* ``scan_desc_header`` (under the ``[transsend]`` section)
+
+    the scanned description column header in TransSend
+    (default ``latest_scanner_description``)
+
+* ``scan_desc_keys`` (under the ``[transsend]`` section)
+
+    list of scan_desc_header tokens to compare against
+    (default ``IDS – TOLL FAST GRAYS ONLINE``)

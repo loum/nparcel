@@ -8,7 +8,8 @@ import os
 
 import nparcel
 from nparcel.utils.log import log
-from nparcel.utils.files import get_directory_files_list
+from nparcel.utils.files import (get_directory_files_list,
+                                 remove_files)
 
 
 class OnDeliveryDaemon(nparcel.DaemonService):
@@ -59,6 +60,11 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         Limit uncollected parcel search to within nominated day range
         (default 14.0 days)
 
+    .. attribute:: file_cache_size
+
+        number of date-orderd TCD files to load during a processing loop
+        (default 5)
+
     """
     _config = None
     _report_in_dirs = ['/data/nparcel/tcd']
@@ -69,6 +75,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
     _pe_bu_ids = ()
     _sc4_bu_ids = ()
     _day_range = 14
+    _file_cache_size = 5
 
     def __init__(self,
                  pidfile,
@@ -140,6 +147,12 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                    str(self.day_range))
             log.debug(msg)
 
+        try:
+            self.set_file_cache_size(self.config.file_cache_size)
+        except AttributeError, err:
+            log.debug('file_cache_size not in config -- default %d' %
+                      self.file_cache_size)
+
     @property
     def report_in_dirs(self):
         return self._report_in_dirs
@@ -197,6 +210,15 @@ class OnDeliveryDaemon(nparcel.DaemonService):
     @property
     def day_range(self):
         return self._day_range
+
+    @property
+    def file_cache_size(self):
+        return self._file_cache_size
+
+    def set_file_cache_size(self, value):
+        self._file_cache_size = int(value)
+        log.debug('Set daemon file_cache_size to "%s"' %
+                  self._file_cache_size)
 
     def set_day_range(self, value):
         self._day_range = value
@@ -285,7 +307,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                     tcd_files.append(self.file)
                     event.set()
                 else:
-                    tcd_files.extend(self.get_files())
+                    tcd_files.extend(self.get_files(dry=self.dry))
 
             log.debug('Attempting On Delivery Primary Elect check ...')
             if len(self.pe_bu_ids):
@@ -352,16 +374,22 @@ class OnDeliveryDaemon(nparcel.DaemonService):
 
         return status
 
-    def get_files(self):
+    def get_files(self, dry=False):
         """Searches the :attr:`nparcel.OnDeliveryDaemon.report_in_dirs`
         configuration item as the source directory for TCD report files.
 
         There may be more than one TCD file available for processing
-        but only the most recent instance will be returned.
+        but only the most recent
+        :attr:`nparcel.OnDeliveryDaemon.file_cache_size` will be returned.
+        All other files will be deleted from the system.
+
+        **Kwargs:**
+            *dry*: only report, do not execute
 
         **Returns:**
             list if TCD delivery reports.  At this time, list will contain
-            at most one TCD report file (or zero) if not matches are found.
+            at most :attr:`nparcel.OnDeliveryDaemon.file_cache_size` TCD
+            report files (or zero) if not matches are found.
 
         """
         report_files = []
@@ -377,9 +405,14 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         report_files.sort()
         log.debug('All report files: "%s"' % report_files)
 
-        report_file = []
+        files_to_parse = []
         if len(report_files):
-            report_file.append(report_files[-1])
-            log.debug('Using report file "%s"' % report_file)
+            files_to_parse.extend(report_files[(-1 * self.file_cache_size):])
+            log.debug('Using report files: %s' % str(report_files))
 
-        return report_file
+        for f in [x for x in report_files if x not in files_to_parse]:
+            log.info('Purging report file: "%s"' % f)
+            if not dry:
+                remove_files(f)
+
+        return files_to_parse
