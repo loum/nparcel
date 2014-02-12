@@ -93,6 +93,9 @@ class Mapper(object):
                 parsed_dict['Identifier'] = ('%s%s' % ('YMLML11',
                                                        identifier_str[7:]))
             translated_line = (bu, self.translate(parsed_dict))
+        else:
+            log.error('Unexpected "ADP Type" value: "%s"' %
+                      parsed_dict.get('ADP Type'))
 
         return translated_line
 

@@ -75,6 +75,10 @@ class MapperDaemon(nparcel.DaemonService):
         try:
             if len(self.config.mapper_in_dirs):
                 self.set_in_dirs(self.config.mapper_in_dirs)
+            else:
+                msg = ('No mapper inbound directory in config -- using %s' %
+                       self.in_dirs)
+                log.info(msg)
         except AttributeError, err:
             msg = ('Inbound directory not defined in config -- using %s' %
                    self.in_dirs)

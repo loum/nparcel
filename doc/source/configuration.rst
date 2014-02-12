@@ -53,3 +53,32 @@ comms templates or the ``delay`` variant::
 
     # Pos 12: 0 use default loader comms template if service_code 4
     #         1 use delayed pickup comms template if service_code 4
+
+.. _primary_elect_ondelivery:
+
+Primary Elect On Delivery Comms
++++++++++++++++++++++++++++++++
+
+Service Code 3 deliveries within Toll Parcel Portal have immediate
+comms suppressed during the initial T1250 load (this is hard-wired into the
+code base).  Instead, the middleware components interrogate alternate
+interfaces to establish when the parcel has been delivered to the
+Alternate Delivery Point.  This feature can be enabled on a per Business
+Unit basis::
+
+    # Pos 14: 0: disable Primary Elect notifications (On Delivery)
+    #         1: enable Primary Elect notifications (On Delivery)
+
+.. _sc4_ondelivery_bu_ids:
+
+Service Code 4 On Delivery Comms Business IDs List
+++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Service Code 4 deliveries within Toll Parcel Portal could have immediate
+comms suppressed during the initial T1250 load.  Instead, the middleware
+components interrogate alternate interfaces to establish when the parcel
+has been delivered to the Alternate Delivery Point.  This feature can be
+enabled on a per Business Unit basis::
+
+    # Pos 15: 0: disable Service Code 4 on delivery notification (On Delivery)
+    #         1: enable Service Code 4 on delivery notifications (On Delivery)

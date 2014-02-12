@@ -142,7 +142,7 @@ class OnDelivery(nparcel.Service):
                                   day_range=14):
         """Generator that returns the ``jobitem.id``,
         ``jobitem.connote_nbr`` and ``jobitem.item_nbr`` of uncollected
-        Primary Elect job items.
+        *service_code* based job items.
 
         **Kwargs:**
             *service_code*: integer of ``job.service_code`` columns
@@ -177,7 +177,7 @@ class OnDelivery(nparcel.Service):
                 in_files=None,
                 day_range=14,
                 dry=False):
-        """Checks whether a Primary Elect job item has had comms sent.
+        """Checks whether an On Delivery parcel item has had comms sent.
 
         **Args:**
             *template*: the comms notification template to use.  For

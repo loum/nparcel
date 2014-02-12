@@ -153,7 +153,7 @@ class B2CConfig(nparcel.Config):
     .. attribute:: inbound_tcd
 
         TCD Delivery Report inbound directory
-        (default ``/data/nparcel/tcd``)
+        (default ``/var/ftp/pub/nparcel/tcd/in``)
 
     .. attribute:: tcd_filename_format
 
@@ -323,7 +323,7 @@ class B2CConfig(nparcel.Config):
     _pe_in_file_format = 'T1250_TOL[PIF]_\d{14}\.dat'
     _pe_in_file_archive_string = 'T1250_TOL[PIF]_(\d{8})\d{6}\.dat'
     _pe_customer = 'gis'
-    _inbound_tcd = ['/data/nparcel/tcd']
+    _inbound_tcd = ['/var/ftp/pub/nparcel/tcd/in']
     _tcd_filename_format = 'TCD_Deliveries_\d{14}\.DAT'
     _uncollected_day_range = 14.0
     _file_cache_size = 5
@@ -647,6 +647,11 @@ class B2CConfig(nparcel.Config):
             self._dirs_to_check = self.get('dirs', 'in').split(',')
             log.debug('Loader directories to check %s' % str(self.in_dirs))
 
+            self.set_mapper_in_dirs(self.get('dirs',
+                                             'mapper_in').split(','))
+            log.debug('Config mapper directories to check %s' %
+                      str(self.mapper_in_dirs))
+
             self._archive = self.get('dirs', 'archive')
             log.debug('Loader archive directory %s' % self._archive)
 
@@ -702,7 +707,7 @@ class B2CConfig(nparcel.Config):
                       self.pe_customer)
 
         try:
-            self.set_inbound_tcd(self.get('dir', 'tcd_in').split(','))
+            self.set_inbound_tcd(self.get('dirs', 'tcd_in').split(','))
             log.debug('Inbound TCD directories %s' % str(self.inbound_tcd))
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:

@@ -81,12 +81,11 @@ class DaemonService(nparcel.utils.Daemon):
 
     def set_in_dirs(self, values):
         del self._in_dirs[:]
+        self._in_dirs = []
 
         if values is not None:
             log.debug('Set inbound directory list "%s"' % str(values))
             self._in_dirs.extend(values)
-        else:
-            self._in_dirs = []
 
     @property
     def dry(self):

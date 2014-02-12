@@ -151,6 +151,9 @@ class TestB2CConfig(unittest2.TestCase):
     def test_parse_config_pe(self):
         """Parse items from the config -- Primary Elect.
         """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
         msg = 'Primary Elect file format not as expected'
         received = self._c.pe_in_file_format
         expected = 'T1250_TOL[PIF]_\d{14}\.dat'
@@ -168,7 +171,7 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'TCD inbound directory not as expected'
         received = self._c.inbound_tcd
-        expected = ['/data/nparcel/tcd']
+        expected = ['/var/ftp/pub/nparcel/tcd/in']
         self.assertListEqual(received, expected, msg)
 
         msg = 'TCD filename error'

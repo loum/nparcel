@@ -26,15 +26,89 @@ On Delivery comms trigger is processed by the ``npondeliveryd`` daemon.
 The ``npondeliveryd`` daemon polls alternate interfaces to identify
 a delivery event at the Alternate Delivery Point.
 
+Parcels that are Pending Delivery
+---------------------------------
+
+Parcels that are pending delivery to an Alternate Delivery Point present
+in the Toll Parcel Portal as:
+
+* not being picked up (``jobitem.pickup_ts`` is ``NULL``)
+
+* not having notifications set (``jobitem.notify_ts`` is ``NULL``)
+
+* not aged (``jobitem.created_ts`` less than 14 days old)
+
+* have a ``job.service_code`` 3 (Primary Elect) or 4 (Priority Transfer
+  out to V123)
+
+* are configured to generate On Delivery Comms as per
+  :ref:`sc4_ondelivery_bu_ids` or :ref:`primary_elect_ondelivery`
+
+Parcels (``job_items``) within Toll Parcel Portal that exhibit these traits
+are extracted via the SQL query provided by
+:meth:`nparcel.table.jobitem.uncollected_jobitems_sql`.  From here,
+``npondeliveryd`` will poll the alternate interfaces for a delivered event.
+
+``npondeliveryd`` Interfaces
+----------------------------
+
 The alternate interfaces used include:
 
-* **TransSend**
+* **TransSend** (polled by default)
 
 * **TCD**
 
 .. note::
 
     MTS was deprecated as part of release 0.28
+
+All interfaces are polled by default.
+
+.. _transsend:
+
+TransSend
++++++++++
+
+TransSend is an Oracle DB interface that can be used to identify
+delivered parcels for **Priority** and **IPEC** (not **Fast**).  A typical
+query set is shown below:
+
+.. image:: ../_static/transsend_query.png
+   :align: center
+   :alt: TransSend query set
+
+``npondeliveryd`` uses the ``CONNOTE_NUMBER`` / ``ITEM_NUMBER`` TransSend
+columns to identify a parcel.  If found, it will check the
+``LATEST_SCAN_EVENT_ACTION`` value for ``DELIVERED`` before setting the
+comms events files.
+
+.. note::
+
+    as of **version 0.26**, comms are suppressed if the
+    ``LATEST_SCANNER_DESCRIPTION`` contains
+    ``IDS - TOLL FAST GRAYS ONLINE``.  This is required to suppress comms
+    for **IPEC** to **Fast** overflow deliveries.
+
+TCD
++++
+
+New in **version 0.28**, ``npondeliveryd`` now takes a daily extraction
+from TCD.  TCD push their report files to the Toll Parcel Portal FTP
+interface.  Typical contents are as follows::
+
+    MKL5050005831       20140211 00393403250088959404   20140212
+    MKL5050005831       20140211 00393403250088959398   20140212
+
+These line items are read as four space-separated columns where:
+
+* column 1 -- ``Consignment Number``
+* column 2 -- ``Despatch Date``
+* column 3 -- ``Item Number``
+* column 4 -- ``Delivery Date``
+
+Should the ``Consignment Number`` / ``Item Number`` lookup result in a
+valid ``Delivery Date`` value then ``npondeliveryd`` will generate a
+comms events file.
 
 Comms Templates
 ---------------
