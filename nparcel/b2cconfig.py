@@ -299,6 +299,16 @@ class B2CConfig(nparcel.Config):
         list of regular expressions that represent the type of files that
         can be parsed by the exporter
 
+    .. attribute:: connote_header
+
+       token used to identify the connote column in the Exporter report
+       file
+
+    .. attribute:: item_nbr_header
+
+       token used to identify the item number column in the Exporter report
+       file
+
     """
     _dirs_to_check = []
     _mapper_in_dirs = []
@@ -394,6 +404,8 @@ class B2CConfig(nparcel.Config):
     _report_bu_id_recipients = {}
     _health_processes = []
     _exporter_file_formats = []
+    _connote_header = None
+    _item_nbr_header = None
 
     def __init__(self, file=None):
         """Nparcel Config initialisation.
@@ -1165,6 +1177,21 @@ class B2CConfig(nparcel.Config):
                 ConfigParser.NoOptionError), err:
             log.debug('Using default exporter file formats: %s' %
                       str(self.exporter_file_formats))
+
+        # Exporter headers.
+        try:
+            self.set_connote_header(self.get('exporter', 'connote_header'))
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
+            log.debug('Using default exporter file connote header: %s' %
+                      str(self.connote_header))
+        try:
+            self.set_item_nbr_header(self.get('exporter',
+                                              'item_nbr_header'))
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
+            log.debug('Using default exporter file item nbr header: %s' %
+                      str(self.item_nbr_header))
 
     def condition(self, bu, flag):
         """Return the *bu* condition *flag* value.
@@ -2314,3 +2341,23 @@ class B2CConfig(nparcel.Config):
             self._exporter_file_formats.extend(values)
             log.debug('Config exporter file format list: "%s"' %
                       self.exporter_file_formats)
+
+    @property
+    def connote_header(self):
+        return self._connote_header
+
+    def set_connote_header(self, value=None):
+        if value is not None:
+            self._connote_header = value
+            log.debug('Config set report file connote header to: "%s"' %
+                      self.connote_header)
+
+    @property
+    def item_nbr_header(self):
+        return self._item_nbr_header
+
+    def set_item_nbr_header(self, value=None):
+        if value is not None:
+            self.item_nbr_header = value
+            log.debug('Config set report file item nbr header to: "%s"' %
+                      self.item_nbr_header)

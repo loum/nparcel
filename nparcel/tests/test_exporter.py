@@ -759,6 +759,33 @@ WHERE id = 1"""
             remove_files(get_directory_files_list(d))
             os.removedirs(d)
 
+    def test_parse_report_file(self):
+        """Extract connote/item number from report file.
+        """
+        test_file_dir = os.path.join('nparcel', 'tests', 'files')
+        file = 'VIC_VANA_REI_20131108145146.txt'
+
+        received = self._e.parse_report_file(os.path.join(test_file_dir,
+                                                          file))
+        expected = [('8473420000130', '6827668473420000130001'),
+                    ('8473420000131', '6827668473420000131001'),
+                    ('8473420000131', '6827668473420000131002'),
+                    ('8473420000131', '6827668473420000131003')]
+        msg = 'Exporter report files parsed values error'
+        self.assertListEqual(received, expected, msg)
+
+    def test_parse_missing_report_file(self):
+        """Extract connote/item number from missing report file.
+        """
+        file_fh = tempfile.NamedTemporaryFile()
+        file = file_fh.name
+        file_fh.close()
+
+        received = self._e.parse_report_file(file)
+        expected = []
+        msg = 'Exporter report files parsed (missing file) error'
+        self.assertListEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._e = None

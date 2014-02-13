@@ -155,6 +155,16 @@ configuration options:
     enable/disable suppression of Primary Elect POD exports (see
     :ref:`suppress_pod`)
 
+* ``connote_header`` (under the ``[exporter]`` section)
+
+    token used to identify the connote column in the Exporter report
+    file
+
+* ``item_nbr_header`` (under the ``[exporter]`` section)
+
+    token used to identify the item number column in the Exporter report
+    file
+
 ``npexporterd`` usage
 ^^^^^^^^^^^^^^^^^^^^^
 

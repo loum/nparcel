@@ -28,15 +28,39 @@ class ExporterDaemon(nparcel.DaemonService):
     def _start(self, event):
         signal.signal(signal.SIGTERM, self._exit_handler)
 
-        sig_dir = self.config.signature_dir
-        staging_dir = self.config.staging_base
-        archive_dir = self.config.archive_dir
-        if archive_dir is not None:
-            archive_dir = os.path.join(archive_dir, 'signature')
-        exporter = nparcel.Exporter(db=self.config.db_kwargs(),
-                                    signature_dir=sig_dir,
-                                    staging_dir=staging_dir,
-                                    archive_dir=archive_dir)
+        kwargs = {}
+        try:
+            kwargs['db'] = self.config.db_kwargs()
+        except AttributeError, err:
+            log.debug('DB kwargs not in config: %s ' % err)
+
+        try:
+            kwargs['signature_dir'] = self.config.signature_dir
+        except AttributeError, err:
+            log.debug('DB kwargs not in config: %s ' % err)
+
+        try:
+            kwargs['staging_dir'] = self.config.staging_base
+        except AttributeError, err:
+            log.debug('Staging directory not in config: %s ' % err)
+
+        try:
+            kwargs['archive_dir'] = os.path.join(self.config.archive_dir,
+                                                 'signature')
+        except AttributeError, err:
+            log.debug('Staging directory not in config: %s ' % err)
+
+        try:
+            kwargs['connote_header'] = self.config.connote_header
+        except AttributeError, err:
+            log.debug('Connote header not in config: %s ' % err)
+
+        try:
+            kwargs['item_nbr_header'] = self.config.item_nbr_header
+        except AttributeError, err:
+            log.debug('Item number header not in config: %s' % err)
+
+        exporter = nparcel.Exporter(**kwargs)
 
         while not event.isSet():
             if exporter.db():

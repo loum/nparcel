@@ -282,6 +282,16 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Exporter exporter_file_formats value error'
         self.assertListEqual(received, expected, msg)
 
+        received = self._c.connote_header
+        expected = 'REF1'
+        msg = 'Exporter connote header value error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.item_nbr_header
+        expected = 'ITEM_NBR'
+        msg = 'Exporter item nbr header value error'
+        self.assertEqual(received, expected, msg)
+
     def test_parse_reporter(self):
         """Parse items from the config -- reporter.
         """

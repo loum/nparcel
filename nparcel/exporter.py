@@ -7,6 +7,7 @@ import datetime
 import time
 import pytz
 import operator
+import csv
 
 import nparcel
 from nparcel.utils.log import log
@@ -45,35 +46,46 @@ class Exporter(nparcel.Service):
         list of regular expressions that represent the type of files that
         can be parsed by the exporter
 
+    .. attribute:: connote_header
+
+        token used to identify the connote column in the Exporter report
+        file
+
+    .. attribute:: item_nbr_header
+
+        token used to identify the item number column in the Exporter report
+        file
+
     """
     _signature_dir = None
     _staging_dir = None
     _archive_dir = None
     _exporter_dirs = []
     _exporter_file_formats = []
+    _connote_header = 'REF1'
+    _item_nbr_header = 'ITEM_NBR'
     _time_fmt = "%Y-%m-%d %H:%M:%S"
     _time_tz_fmt = "%Y-%m-%d %H:%M:%S %Z%z"
     _local_tz = TZ.get('vic')
 
-    def __init__(self,
-                 db=None,
-                 signature_dir=None,
-                 staging_dir=None,
-                 archive_dir=None):
+    def __init__(self, **kwargs):
         """Exporter object initialiser.
         """
-        super(nparcel.Exporter, self).__init__(db=db)
+        super(nparcel.Exporter, self).__init__(db=kwargs.get('db'))
 
-        self._signature_dir = signature_dir
-        self._staging_dir = staging_dir
+        self._signature_dir = kwargs.get('signature_dir')
+        self._staging_dir = kwargs.get('staging_dir')
         create_dir(self._staging_dir)
-        self._archive_dir = archive_dir
+        self._archive_dir = kwargs.get('archive_dir')
         create_dir(self._archive_dir)
 
         self._out_dir = None
 
         self._collected_items = []
         self._header = ()
+
+        self.set_connote_header(kwargs.get('connote_header'))
+        self.set_item_nbr_header(kwargs.get('item_nbr_header'))
 
     @property
     def signature_dir(self):
@@ -163,6 +175,26 @@ class Exporter(nparcel.Service):
             self._exporter_file_formats.extend(values)
             log.debug('Config exporter file format list: "%s"' %
                       self.exporter_file_formats)
+
+    @property
+    def connote_header(self):
+        return self._connote_header
+
+    def set_connote_header(self, value=None):
+        if value is not None:
+            self._connote_header = value
+            log.debug('Exporter set report file connote header to: "%s"' %
+                      self.connote_header)
+
+    @property
+    def item_nbr_header(self):
+        return self._item_nbr_header
+
+    def set_item_nbr_header(self, value=None):
+        if value is not None:
+            self._item_nbr_header = value
+            log.debug('Exporter set report file item nbr header to: "%s"' %
+                      self.item_nbr_header)
 
     @property
     def header(self):
@@ -487,6 +519,18 @@ class Exporter(nparcel.Service):
                            state='VIC',
                            dry=False):
         """
+        Write out the contents contained within *sorted_items*.
+
+        **Args:**
+            sequence: business unit-based report column control
+
+            identifier: business unit specific file identifier
+
+        **Returns:**
+
+            name of the report file produced (or ``None`` if no
+            report was generated)
+
         """
         target_file = None
 
@@ -668,3 +712,36 @@ class Exporter(nparcel.Service):
 
         log.debug('Found report files: "%s"' % str(files))
         return files
+
+    def parse_report_file(self, file):
+        """Parse the contents of a report file and extract the connote
+        and item number fields.
+
+        **Args:**
+            *file*: the absolute path to the report file to parse.
+
+        **Returns**:
+
+            tuple structure in the form (<connote>, <item_number>).  If
+            either connote and item number is not defined then field
+            is substituted with ``None``
+        """
+        values = []
+
+        fh = None
+        try:
+            fh = open(file, 'r')
+            log.info('Opened report file "%s" for reading ...' % file)
+        except IOError, err:
+            log.error('Unable to open report file: "%s"' % file)
+
+        if fh is not None:
+            reader = csv.DictReader(fh, delimiter='|')
+
+            for rowdict in reader:
+                row = (rowdict.get(self.connote_header),
+                    rowdict.get(self.item_nbr_header))
+                values.append(row)
+                log.info('Parsed (connote|item_nbr): %s' % str(row))
+
+        return values
