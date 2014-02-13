@@ -8,6 +8,7 @@ from nparcel.utils.files import (load_template,
                                  remove_files,
                                  check_filename,
                                  gen_digest,
+                                 copy_file,
                                  gen_digest_path)
 
 
@@ -144,3 +145,24 @@ class TestFiles(unittest2.TestCase):
         expected = ['73', '73b0', '73b0b6', '73b0b66e']
         msg = 'Digest directory path list error'
         self.assertListEqual(received, expected, msg)
+
+    def test_copy_file(self):
+        """Copy a file.
+        """
+        source_fh = tempfile.NamedTemporaryFile()
+        fh = tempfile.NamedTemporaryFile()
+        target = fh.name
+        fh.close()
+
+        # Check that the target does not exist.
+        msg = 'Target file should not exist yet'
+        self.assertFalse(os.path.exists(target))
+
+        copy_file(source_fh.name, target)
+
+        # Check that the target does exist.
+        msg = 'Target file should exist '
+        self.assertTrue(os.path.exists(target))
+
+        # Clean up.
+        source_fh.close()

@@ -16,6 +16,7 @@ import re
 import string
 import shutil
 import md5
+import tempfile
 
 from nparcel.utils.log import log
 
@@ -181,6 +182,9 @@ def move_file(source, target, err=False, dry=False):
 def copy_file(source, target):
     """Attempts to copy *source* to *target*.
 
+    Guarantees an atomic copy.  In other word, *target* will not present
+    on the filesystem until the copy is complete.
+
     Checks if the *target* directory exists.  If not, will attempt to
     create before attempting the file move.
 
@@ -201,7 +205,12 @@ def copy_file(source, target):
     if os.path.exists(source):
         if create_dir(os.path.dirname(target)):
             try:
-                shutil.copyfile(source, target)
+                tmp_dir = os.path.dirname(target)
+                tmp_target_fh = tempfile.NamedTemporaryFile(dir=tmp_dir)
+                tmp_target = tmp_target_fh.name
+                tmp_target_fh.close()
+                shutil.copyfile(source, tmp_target)
+                os.rename(tmp_target, target)
                 status = True
             except (OSError, IOError), err:
                 log.error('%s copy to %s failed -- %s' % (source,
