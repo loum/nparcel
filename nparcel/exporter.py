@@ -13,6 +13,7 @@ from nparcel.utils.log import log
 from nparcel.utils.files import (create_dir,
                                  remove_files,
                                  copy_file,
+                                 get_directory_files_list,
                                  gen_digest_path)
 
 STATES = ['NSW', 'VIC', 'QLD', 'SA', 'WA', 'ACT']
@@ -26,18 +27,30 @@ TZ = {'vic': 'Australia/Victoria',
       'nt': 'Australia/North'}
 
 
-class Exporter(object):
+class Exporter(nparcel.Service):
     """Nparcel Exporter.
 
     .. attribute:: archive_dir
 
-        where to archive signature files (if not being transfered).
-        Default of ``None`` will not archive files.
+        Where to archive signature files (if not being transfered).
+        Default of ``None`` will not archive files
+
+    .. attribute:: exporter_dirs
+
+        Directory list for file-based events to trigger a ``job_item``
+        closure
+
+    .. attribute:: exporter_file_formats
+
+        list of regular expressions that represent the type of files that
+        can be parsed by the exporter
 
     """
     _signature_dir = None
     _staging_dir = None
     _archive_dir = None
+    _exporter_dirs = []
+    _exporter_file_formats = []
     _time_fmt = "%Y-%m-%d %H:%M:%S"
     _time_tz_fmt = "%Y-%m-%d %H:%M:%S %Z%z"
     _local_tz = TZ.get('vic')
@@ -49,10 +62,7 @@ class Exporter(object):
                  archive_dir=None):
         """Exporter object initialiser.
         """
-        if db is None:
-            db = {}
-        self.db = nparcel.DbSession(**db)
-        self.db.connect()
+        super(nparcel.Exporter, self).__init__(db=db)
 
         self._signature_dir = signature_dir
         self._staging_dir = staging_dir
@@ -128,6 +138,31 @@ class Exporter(object):
         if self._archive_dir is not None:
             if not create_dir(self._archive_dir):
                 self._archive_dir = None
+
+    @property
+    def exporter_dirs(self):
+        return self._exporter_dirs
+
+    def set_exporter_dirs(self, values):
+        del self._exporter_dirs[:]
+        self._exporter_dirs = []
+
+        if values is not None:
+            log.debug('Exporter in directories "%s"' % str(values))
+            self._exporter_dirs.extend(values)
+
+    @property
+    def exporter_file_formats(self):
+        return self._exporter_file_formats
+
+    def set_exporter_file_formats(self, values=None):
+        del self._exporter_file_formats[:]
+        self._exporter_file_formats = []
+
+        if values is not None:
+            self._exporter_file_formats.extend(values)
+            log.debug('Config exporter file format list: "%s"' %
+                      self.exporter_file_formats)
 
     @property
     def header(self):
@@ -593,3 +628,43 @@ class Exporter(object):
         del self._collected_items[:]
         self._header = ()
         self._out_dir = None
+
+    def get_files(self, dirs=None, filters=None):
+        """Checks inbound directories (defined by the
+        :attr:`nparcel.b2cconfig.exporter_in` config option) or
+        overridden by *dir* for files filtered against
+        :attr:`nparcel.b2cconfig.exporter_file_formats` or overridden by
+        *filters*.
+
+        **Kwargs:**
+            *dirs*: list of directories to search (override the value
+            defined by :attr:`nparcel.b2cconfig.exporter_in`)
+
+            *filters*: list of file filters (override the value defined
+            by :attr:`nparcel.b2cconfig.exporter_file_formats`.
+
+        **Returns:**
+            list of filtered files
+
+        """
+        files = []
+
+        dirs_to_check = []
+        if dirs is not None:
+            dirs_to_check.extend(dirs)
+        else:
+            dirs_to_check.extend(self.exporter_dirs)
+
+        filters_to_use = []
+        if filters is not None:
+            filters_to_use.extend(filters)
+        else:
+            filters_to_use.extend(self.exporter_file_formats)
+
+        log.debug('Searching report directories: "%s"' % str(dirs_to_check))
+        for dir in dirs_to_check:
+            for filter in filters_to_use:
+                files.extend(get_directory_files_list(dir, filter))
+
+        log.debug('Found report files: "%s"' % str(files))
+        return files

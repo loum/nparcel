@@ -33,15 +33,15 @@ class B2CConfig(nparcel.Config):
     """Nparcel Config class.
 
     :class:`nparcel.Config` captures the configuration items required
-    by the Nparcel B2C Replicator.
+    by the Nparcel B2C Replicator
 
     .. attribute:: dirs_to_check (loader)
 
-        list of directories to look for T1250 files.
+        list of directories to look for T1250 files
 
     .. attribute:: archive_dir
 
-        base directory where working files are archived to.
+        base directory where working files are archived to
 
     .. attribute:: staging_base (exporter)
 
@@ -50,7 +50,7 @@ class B2CConfig(nparcel.Config):
 
     .. attribute:: signature (exporter)
 
-        directory where POD signature files are kept.
+        directory where POD signature files are kept
 
     .. attribute:: comms (loader, primary elect)
 
@@ -60,6 +60,10 @@ class B2CConfig(nparcel.Config):
 
         directory where T1250 loader files are aggregated for further
         processing
+
+    .. attribute:: exporter_dirs (Exporter processing)
+
+        directory list for file-based events to trigger a job_item closure
 
     .. attribute loader_loop (loader)
 
@@ -290,6 +294,11 @@ class B2CConfig(nparcel.Config):
 
         the names of the processes to include in the health check
 
+    .. attribute:: exporter_file_formats
+
+        list of regular expressions that represent the type of files that
+        can be parsed by the exporter
+
     """
     _dirs_to_check = []
     _mapper_in_dirs = []
@@ -298,6 +307,7 @@ class B2CConfig(nparcel.Config):
     _signature = None
     _comms = None
     _aggregator_dirs = []
+    _exporter_dirs = []
     _loader_loop = 30
     _ondelivery_loop = 30
     _reminder_loop = 3600
@@ -383,6 +393,7 @@ class B2CConfig(nparcel.Config):
     _report_collected_bu_based = False
     _report_bu_id_recipients = {}
     _health_processes = []
+    _exporter_file_formats = []
 
     def __init__(self, file=None):
         """Nparcel Config initialisation.
@@ -437,6 +448,19 @@ class B2CConfig(nparcel.Config):
             log.debug('Set config aggregator in directories "%s"' %
                       str(values))
             self._aggregator_dirs.extend(values)
+
+    @property
+    def exporter_dirs(self):
+        return self._exporter_dirs
+
+    def set_exporter_dirs(self, values):
+        del self._exporter_dirs[:]
+        self._exporter_dirs = []
+
+        if values is not None:
+            log.debug('Set config exporter in directories "%s"' %
+                      str(values))
+            self._exporter_dirs.extend(values)
 
     @property
     def mapper_in_dirs(self):
@@ -739,7 +763,7 @@ class B2CConfig(nparcel.Config):
             log.debug('Using default TCD file cache size: %s' %
                       self.file_cache_size)
 
-        # Aggregator.
+        # Aggregator directories.
         try:
             agg_dirs = self.get('dirs', 'aggregator').split(',')
             self.set_aggregator_dirs(agg_dirs)
@@ -748,6 +772,16 @@ class B2CConfig(nparcel.Config):
                 ConfigParser.NoSectionError), err:
             log.debug('Using default Aggregator inbound directories: %s' %
                       self.aggregator_dirs)
+
+        # Exporter directories.
+        try:
+            tmp_vals = self.get('dirs', 'exporter_in').split(',')
+            self.set_exporter_dirs(tmp_vals)
+            log.debug('Exporter directories %s' % self.exporter_dirs)
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default Exporter inbound directories: %s' %
+                      self.exporter_dirs)
 
         # Filter processing.
         try:
@@ -1117,13 +1151,20 @@ class B2CConfig(nparcel.Config):
         # Health.
         try:
             health_procs = self.get('health', 'processes')
-            log.debug('Config parsed health processes: "%s"' %
-                      health_procs)
             self.set_health_processes(health_procs.split(','))
         except (ConfigParser.NoSectionError,
                 ConfigParser.NoOptionError), err:
             log.debug('Using default health process list: %s' %
                       str(self.health_processes))
+
+        # Exporter file formats.
+        try:
+            tmp_vals = self.get('exporter', 'file_formats')
+            self.set_exporter_file_formats(tmp_vals.split(','))
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
+            log.debug('Using default exporter file formats: %s' %
+                      str(self.exporter_file_formats))
 
     def condition(self, bu, flag):
         """Return the *bu* condition *flag* value.
@@ -2254,11 +2295,22 @@ class B2CConfig(nparcel.Config):
 
     def set_health_processes(self, values=None):
         del self._health_processes[:]
-        self._health_processes
+        self._health_processes = []
 
         if values is not None:
             self._health_processes.extend(values)
             log.debug('Config health check process list: "%s"' %
                       self.health_processes)
-        else:
-            log.debug('Cleared health check process list')
+
+    @property
+    def exporter_file_formats(self):
+        return self._exporter_file_formats
+
+    def set_exporter_file_formats(self, values=None):
+        del self._exporter_file_formats[:]
+        self._exporter_file_formats = []
+
+        if values is not None:
+            self._exporter_file_formats.extend(values)
+            log.debug('Config exporter file format list: "%s"' %
+                      self.exporter_file_formats)

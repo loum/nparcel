@@ -3,6 +3,8 @@
 .. toctree::
     :maxdepth: 2
 
+.. _pod_archiving:
+
 Proof of Delivery Archiving
 ===========================
 

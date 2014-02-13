@@ -26,6 +26,9 @@ Closing off includes:
 * Stage the Exporter output into the relevant Business Unit's outbound
   FTP directory
 
+Identify Records to Close Off
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 The trigger for a close-off event is a ``job_item`` record which has the
 ``pickup_ts`` column set (not ``NULL``) and ``extract_ts`` column not set
 (``NULL``).  Here is an example of a close-off event
@@ -33,12 +36,26 @@ from the various upstream Business Units and extracts and loads parcel
 details into the Toll Parcel Portal in preparation for consumer pickup.
 
 The list of Business Units supported include:
+
 * Priority (``bu_id 1``)
 * Fast (``bu_id 2``)
 * IPEC (``bu_id 3``)
 
-Exporter Report
----------------
+New in **version 0.30**, the ``npexporterd`` can close off ``job_item``
+records via an existing report file.  This scenarios supports
+Alternate Delivery Partners that maintain their own parcel collections
+system.  For example, ParcelPoint.  In this case, it is important that
+the parcel pickup is closed off in Toll Parcel Portal to manage the
+consumer notifications.
+
+.. note::
+
+    Refer to the :ref:`exporter_in <exporter_in>` and
+    :ref:`file_formats <file_formats>` configuration options
+    to control the settings for report file-bases ``job_item`` close off.
+
+Exporter Report Output
+----------------------
 
 Sample Exporter report::
 
@@ -53,59 +70,95 @@ Sample Exporter report::
 control processing behaviour.  The following list details the required
 configuration options:
 
-* ``in``
+* * ``exporter_loop``
 
-    found under the ``[dirs]`` section, the ``in`` config setting defines
-    the directories to search for new T1250 EDI files.  For example::
+    time (seconds) between ``npexporterd`` processing iterations
 
-        in = /var/ftp/pub/nparcel/priority/in,/var/ftp/pub/nparcel/ipec/in
+* ``exporter_fields`` (the ``[exporter_fields]`` section)
+
+    Control the order in which the exporter displays column positions.
+    The SQL produces rows in the following order::
+
+        # 0: REF1
+        # 1: JOB_KEY
+        # 2: PICKUP_TIME
+        # 3: PICKUP_POD
+        # 4: IDENTITY_TYPE
+        # 5: IDENTITY_DATA
+        # 6: ITEM_NBR
+        # 7: AGENT_ID
+        # 8: AGENT_STATE
+
+    The column ordering can be controlled by providing a comma separated
+    list of indexes.  For example, to control **Priority** ordering::
+
+        [exporter_fields]
+        tolp = 0,1,2,3,5,6,4
+
+    This will place the ``IDENTITY_TYPE`` column last.
+
+.. note::
+    The default is ordering is ``0,1,2,3,4,5,6``
+
+* ``signature`` (under the ``[dirs]`` section)
+
+    directory where POD signature files are kept
+
+* ``staging_base`` (under the ``[dirs]`` section)
+
+    Base directory to place processed collected reports and signature files
+    for further processing.  The Business Unit directory structure is
+    appended to the ``staging_base``.  For example in the case of
+    **Priority**::
+
+        <staging_base>/priority/in
+
+* ``archive_dir`` (under the ``[dirs]`` section)
+
+    Base directory where working files are archived to.  In the case of
+    the exporter the processed signature file PODs are placed in::
+
+        <archive_dir>/signature/<hash>
+
+    .. note::
+
+        refer to :ref:`pod_archiving` for more detail around the ``<hash>``
+        algorithm
+
+.. _exporter_in:
+
+* ``exporter_in`` (under the ``[dirs]`` section)
+
+    Defines a comma separated list of directories to search for file-based
+    events to trigger a ``job_item`` closure::
+
+        exporter_in = /data/nparcel/exporter_1,/data/nparcel/exporter_2
 
     These inbound directories typically align with the FTP inbound
     directory structure defined at :ref:`b2cftp`.
 
-* ``archive`` (default ``/data/nparcel/comms``)
+.. _file_formats:
 
-    found under the ``[dirs]`` section, ``archive`` defines where
-    completed T1250 EDI files are deposited for archiving
+* ``file_formats`` (under the ``[exporter]`` section)
 
-* ``comms`` (default ``/data/nparcel/comms``)
+    list of python-based regular expressions that represent the type of
+    files that can be parsed by the exporter when polling the
+    ``exporter_in`` directory.  For example ``.*_RE[PIF]_\d{14}\.txt$``
+    will filter out the file ``VIC_VANA_REP_20140213120000.txt``
 
-    found under the ``[dirs]`` section, the comms outbound interface where
-    comms event files are deposited for further processing
+* ``state_reporting`` (set via the ``[conditions]`` map position 6)
 
-Enabling Comms
-^^^^^^^^^^^^^^
+    enable/disable state based reporting (see :ref:`state_based_reporting`)
 
-Comms notification files can be enabled conditionally via the configuration
-``condition_map`` setting::
+* ``pe_pods`` (set via the ``[conditions]`` map position 7)
 
-    # Pos 02: 0 do not send email
-    #         1 send email
-    # Pos 03: 0 do not send SMS
-    #         1 send SMS
-
-As per the condition map descriptor, set the position item flags to ``1``
-for the required communication facility.  For example::
-
-    # TOLP condition map with comms disabled
-    #      0000000001111
-    #      1234567890123
-    TOLP = 0001000000000
-
-    # TOLP condition map with comms enabled
-    #      0000000001111
-    #      1234567890123
-    TOLP = 0111000000000
-
-.. note::
-
-    Restart ``npexporterd`` for the configuration updates to take
-    effect
+    enable/disable suppression of Primary Elect POD exports (see
+    :ref:`suppress_pod`)
 
 ``npexporterd`` usage
 ^^^^^^^^^^^^^^^^^^^^^
 
-``npxporterd`` can be configured to run as a daemon as per the following::
+``npexporterd`` can be configured to run as a daemon as per the following::
 
     $ npexporterd -h
     usage: npexporterd [options] start|stop|status

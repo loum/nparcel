@@ -43,6 +43,42 @@ with the Toll Parcel Portal system::
     # Pos 17: 0 do not archive .png files
     #         1 archive .png files
 
+.. _state_based_reporting:
+
+State Based Reporting for the Exporter
+++++++++++++++++++++++++++++++++++++++
+
+::
+
+    # Pos 06: 0 not state based reporting
+    #         1 state based reporting
+
+The Exporter can be configured to split of each parcel POD line item
+into separate files that are delimited by state of origin.  For example::
+
+    WA_VANA_REF_20140213120000.txt
+
+.. note::
+
+    This was a requirement for **Fast**
+
+.. _suppress_pod:
+
+Exporter Suppress POD for Primary Elect
++++++++++++++++++++++++++++++++++++++++
+
+::
+
+    # Pos 07: 0 do not suppress Primary Elect POD exports
+    #         1 suppress Primary Elect POD exports
+
+The Exporter can be configured to suppress the POD files if the parcel
+was associated with a Primary Elect delivery scenario.
+
+.. note::
+
+    This was a requirement for **Fast**
+
 .. _sc4_template_selection:
 
 Service Code 4 Template Selection

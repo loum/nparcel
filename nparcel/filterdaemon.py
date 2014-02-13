@@ -297,6 +297,7 @@ class FilterDaemon(nparcel.DaemonService):
         of *file* processing.
 
         Generation of the outbound file is based on:
+
         * :attr:`nparcel.b2cconfig.staging_base` attribute (or current
           directory if not identified)
 

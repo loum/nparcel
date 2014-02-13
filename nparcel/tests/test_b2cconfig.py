@@ -25,37 +25,6 @@ class TestB2CConfig(unittest2.TestCase):
         self._c.set_config_file(self._file)
         self._c.parse_config()
 
-        # Check against expected config items.
-        msg = 'Directories to check not as expected'
-        received = self._c.in_dirs
-        expected = ['/var/ftp/pub/nparcel/priority/in']
-        self.assertListEqual(received, expected, msg)
-
-        msg = 'Archive directory not as expected'
-        received = self._c.archive_dir
-        expected = '/data/nparcel/archive'
-        self.assertEqual(received, expected, msg)
-
-        msg = 'Staging base directory not as expected'
-        received = self._c.staging_base
-        expected = '/var/ftp/pub/nparcel'
-        self.assertEqual(received, expected, msg)
-
-        msg = 'Signature directory not as expected'
-        received = self._c.signature_dir
-        expected = '/data/www/nparcel/data/signature'
-        self.assertEqual(received, expected, msg)
-
-        msg = 'Comms directory not as expected'
-        received = self._c.comms_dir
-        expected = '/data/nparcel/comms'
-        self.assertEqual(received, expected, msg)
-
-        msg = 'Aggregator directory not as expected'
-        received = self._c.aggregator_dirs
-        expected = ['/data/nparcel/aggregate']
-        self.assertListEqual(received, expected, msg)
-
         msg = 'Business units not as expected'
         received = self._c.business_units
         expected = {'priority': '1', 'fast': '2', 'ipec': '3'}
@@ -147,6 +116,47 @@ class TestB2CConfig(unittest2.TestCase):
         expected = 1000
         msg = 'Comms message queue error error'
         self.assertEqual(received, expected, msg)
+
+    def test_parse_config_dirs(self):
+        """Parse items from the config -- directories ([dirs]).
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+        # Check against expected config items.
+        msg = 'Directories to check not as expected'
+        received = self._c.in_dirs
+        expected = ['/var/ftp/pub/nparcel/priority/in']
+        self.assertListEqual(received, expected, msg)
+
+        msg = 'Archive directory not as expected'
+        received = self._c.archive_dir
+        expected = '/data/nparcel/archive'
+        self.assertEqual(received, expected, msg)
+
+        msg = 'Staging base directory not as expected'
+        received = self._c.staging_base
+        expected = '/var/ftp/pub/nparcel'
+        self.assertEqual(received, expected, msg)
+
+        msg = 'Signature directory not as expected'
+        received = self._c.signature_dir
+        expected = '/data/www/nparcel/data/signature'
+        self.assertEqual(received, expected, msg)
+
+        msg = 'Comms directory not as expected'
+        received = self._c.comms_dir
+        expected = '/data/nparcel/comms'
+        self.assertEqual(received, expected, msg)
+
+        msg = 'Aggregator directory not as expected'
+        received = self._c.aggregator_dirs
+        expected = ['/data/nparcel/aggregate']
+        self.assertListEqual(received, expected, msg)
+
+        msg = 'Exporter directories not as expected'
+        received = self._c.exporter_dirs
+        expected = ['/data/nparcel/exporter']
+        self.assertListEqual(received, expected, msg)
 
     def test_parse_config_pe(self):
         """Parse items from the config -- Primary Elect.
@@ -259,6 +269,17 @@ class TestB2CConfig(unittest2.TestCase):
         received = self._c.scan_desc_keys
         expected = ['IDS - TOLL FAST GRAYS ONLINE']
         msg = 'TransSend scan_desc_keys value error'
+        self.assertListEqual(received, expected, msg)
+
+    def test_parse_config_exporter(self):
+        """Parse items from the config -- Exporter.
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        received = self._c.exporter_file_formats
+        expected = ['.*_RE[PIF]_\d{14}\.txt$']
+        msg = 'Exporter exporter_file_formats value error'
         self.assertListEqual(received, expected, msg)
 
     def test_parse_reporter(self):

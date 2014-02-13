@@ -8,6 +8,7 @@ import StringIO
 import nparcel
 from nparcel.utils.files import (remove_files,
                                  get_directory_files_list,
+                                 copy_file,
                                  gen_digest_path)
 
 # Current business_unit map:
@@ -695,6 +696,68 @@ WHERE id = 1"""
         expected = '2013-11-25 12:45:10'
         msg = 'Timezone conversion error for TZ "TAS"'
         self.assertEqual(received, expected, msg)
+
+    def test_get_files(self):
+        """Get inbound report files list.
+        """
+        test_file_dir = os.path.join('nparcel', 'tests', 'files')
+        dir_1 = tempfile.mkdtemp()
+        dir_2 = tempfile.mkdtemp()
+        files = ['VIC_VANA_REI_20131108145146.txt',
+                 'VIC_VANA_REP_20131108145146.txt']
+        copy_file(os.path.join(test_file_dir, files[0]),
+                  os.path.join(dir_1, files[0]))
+        copy_file(os.path.join(test_file_dir, files[1]),
+                  os.path.join(dir_2, files[1]))
+        dirs = [dir_1, dir_2]
+        filters = ['.*_REP_\d{14}\.txt$', '.*_REI_\d{14}\.txt$']
+
+        received = self._e.get_files(dirs, filters)
+        expected = [os.path.join(dir_1, files[0]),
+                    os.path.join(dir_2, files[1])]
+        msg = 'Exporter report files list error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Clean up.
+        for d in dirs:
+            remove_files(get_directory_files_list(d))
+            os.removedirs(d)
+
+    def test_get_files_no_dirs(self):
+        """Get inbound report files list -- no dirs.
+        """
+        dirs = []
+        filters = ['.*_REP_\d{14}\.txt$', '.*_REI_\d{14}\.txt$']
+
+        received = self._e.get_files(dirs, filters)
+        expected = []
+        msg = 'Exporter report files list error -- no dirs'
+        self.assertListEqual(received, expected, msg)
+
+    def test_get_files_no_filters(self):
+        """Get inbound report files list - no filters.
+        """
+        test_file_dir = os.path.join('nparcel', 'tests', 'files')
+        dir_1 = tempfile.mkdtemp()
+        dir_2 = tempfile.mkdtemp()
+        files = ['VIC_VANA_REI_20131108145146.txt',
+                 'VIC_VANA_REP_20131108145146.txt']
+        copy_file(os.path.join(test_file_dir, files[0]),
+                  os.path.join(dir_1, files[0]))
+        copy_file(os.path.join(test_file_dir, files[1]),
+                  os.path.join(dir_2, files[1]))
+        dirs = [dir_1, dir_2]
+        filters = []
+
+        received = self._e.get_files(dirs, filters)
+        expected = []
+        msg = 'Exporter report files list error -- no filters'
+        self.assertListEqual(received, expected, msg)
+
+        # Clean up.
+        for d in dirs:
+            remove_files(get_directory_files_list(d))
+            os.removedirs(d)
 
     @classmethod
     def tearDownClass(cls):

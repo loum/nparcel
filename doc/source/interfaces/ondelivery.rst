@@ -177,7 +177,7 @@ control processing workflows.
 
 * ``ondelivery_loop``
 
-    time (seconds) between ``ondeliveryd`` processing iterations
+    time (seconds) between ``npondeliveryd`` processing iterations
 
 * ``pe_comms`` (set via the ``[conditions]`` map position 14)
 
