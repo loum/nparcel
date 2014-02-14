@@ -24,15 +24,17 @@ class TestExporter(unittest2.TestCase):
         cls.maxDiff = None
         cls._e = nparcel.Exporter()
 
+        db = cls._e.db
         # Prepare some sample data.
-        # "agent" table.
-        agents = [{'code': 'N031',
-                   'state': 'VIC'},
-                  {'code': 'BAD1',
-                   'state': 'NSW'}]
-        agent_ok = cls._e.db.insert(cls._e.db._agent.insert_sql(agents[0]))
-        agent_nok = cls._e.db.insert(cls._e.db._agent.insert_sql(agents[1]))
+        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixtures = [{'db': db.agent,
+                     'fixture': 'agents.py'}]
+        for i in fixtures:
+            fixture_file = os.path.join(fixture_dir, i['fixture'])
+            db.load_fixture(i['db'], fixture_file)
 
+        agent_ok = 1
+        agent_nok = 2
         cls._now = datetime.datetime.now()
         # "job" table.
         jobs = [{'card_ref_nbr': 'priority ref',
@@ -131,6 +133,8 @@ class TestExporter(unittest2.TestCase):
         self._e.db(sql)
 
         received = []
+        for row in self._e.db.rows():
+            received.append(row)
         expected = [('218501217863',
                      1,
                      '%s' % self._now,
@@ -140,8 +144,6 @@ class TestExporter(unittest2.TestCase):
                      'priority_item_nbr_001',
                      'N031',
                      'VIC')]
-        for row in self._e.db.rows():
-            received.append(row)
         self.assertEqual(received, expected, msg)
 
     def test_collected_sql_bu_fast(self):
@@ -785,6 +787,33 @@ WHERE id = 1"""
         expected = []
         msg = 'Exporter report files parsed (missing file) error'
         self.assertListEqual(received, expected, msg)
+
+    def test_file_based_updates(self):
+        """Verify file-based records are closed off.
+        """
+        connote = 'pe_connote'
+        item_nbr = 'pe_item_nbr'
+
+        old_exporter_dirs = self._e.exporter_dirs
+        old_exporter_file_formats = self._e.exporter_file_formats
+
+        test_file_dir = os.path.join('nparcel', 'tests', 'files')
+        dir = tempfile.mkdtemp()
+        file = 'VIC_VANA_REP_20140214120000.txt'
+        copy_file(os.path.join(test_file_dir, file),
+                  os.path.join(dir, file))
+        filters = [file]
+
+        self._e.set_exporter_dirs([dir])
+        self._e.set_exporter_file_formats(filters)
+
+        self._e.file_based_updates(dry=False)
+
+        # Clean up.
+        self._e.set_exporter_dirs(old_exporter_dirs)
+        self._e.set_exporter_file_formats(old_exporter_file_formats)
+        remove_files(get_directory_files_list(dir))
+        os.removedirs(dir)
 
     @classmethod
     def tearDownClass(cls):

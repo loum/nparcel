@@ -96,9 +96,11 @@ class TestFtp(unittest2.TestCase):
         for file in self._ftp.get_report_file(self._test_dir, filter):
             received.append(file)
         expected = [os.path.join(self._test_dir,
-                                 'VIC_VANA_REP_20131108145146.txt')]
+                                 'VIC_VANA_REP_20131108145146.txt'),
+                    os.path.join(self._test_dir,
+                                 'VIC_VANA_REP_20140214120000.txt')]
         msg = 'Priority report file should be found in listing'
-        self.assertListEqual(received, expected, msg)
+        self.assertListEqual(sorted(received), sorted(expected), msg)
 
         del (received[:], expected[:])
         received = expected = []
@@ -430,26 +432,30 @@ class TestFtp(unittest2.TestCase):
         is_pod = False
 
         received = self._ftp.get_xfer_files(source, filter, is_pod)
-        expected = ['nparcel/tests/files/VIC_VANA_REP_20131108145146.txt']
+        expected = ['nparcel/tests/files/VIC_VANA_REP_20131108145146.txt',
+                    'nparcel/tests/files/VIC_VANA_REP_20140214120000.txt']
         msg = 'POD report file get list'
-        self.assertListEqual(received, expected, msg)
+        self.assertListEqual(sorted(received), sorted(expected), msg)
 
     def test_get_xfer_files_is_pod(self):
         """Get list of files to transfer - POD.
         """
-        source = 'nparcel/tests/files'
+        source = os.path.join('nparcel', 'tests', 'files')
         filter = 'VIC_VANA_REP_\d{14}\.txt'
         is_pod = True
 
         files = ['VIC_VANA_REP_20131108145146.txt',
+                 'VIC_VANA_REP_20140214120000.txt',
                  '142828.ps',
                  '145563.ps',
                  '145601.ps',
                  '145661.ps',
+                 '150000.ps',
                  '142828.png',
                  '145563.png',
                  '145601.png',
-                 '145661.png']
+                 '145661.png',
+                 '150000.png']
         received = self._ftp.get_xfer_files(source, filter, is_pod)
         expected = [os.path.join(source, x) for x in files]
         msg = 'POD report file get list'

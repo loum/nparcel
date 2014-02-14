@@ -14,6 +14,7 @@ from nparcel.utils.log import log
 from nparcel.utils.files import (create_dir,
                                  remove_files,
                                  copy_file,
+                                 remove_files,
                                  get_directory_files_list,
                                  gen_digest_path)
 
@@ -160,7 +161,7 @@ class Exporter(nparcel.Service):
         self._exporter_dirs = []
 
         if values is not None:
-            log.debug('Exporter in directories "%s"' % str(values))
+            log.debug('Set exporter in directories "%s"' % str(values))
             self._exporter_dirs.extend(values)
 
     @property
@@ -173,7 +174,7 @@ class Exporter(nparcel.Service):
 
         if values is not None:
             self._exporter_file_formats.extend(values)
-            log.debug('Config exporter file format list: "%s"' %
+            log.debug('Set exporter file format list: "%s"' %
                       self.exporter_file_formats)
 
     @property
@@ -245,7 +246,8 @@ class Exporter(nparcel.Service):
                 ignore_pe=False,
                 dry=False):
         """
-        Identifies picked up items and prepares reporting.
+        Identifies picked up items and prepares reporting.  Sources both
+        the database resource and file-based reports as input.
 
         Moves/archives signature files as defined by *file_control*.
 
@@ -303,6 +305,8 @@ class Exporter(nparcel.Service):
                 log.debug('Remove POD file "%s"?: %s' % (sig_file, status))
                 if status and not dry:
                     remove_files(sig_file)
+
+        self.file_based_updates(dry=dry)
 
         return valid_items
 
@@ -745,3 +749,24 @@ class Exporter(nparcel.Service):
                 log.info('Parsed (connote|item_nbr): %s' % str(row))
 
         return values
+
+    def file_based_updates(self, dry=False):
+        """Close off records based on file input.
+
+        **Kwargs:**
+            *dry*: only report, do not execute.
+        """
+        for file in self.get_files():
+            records = []
+            records.extend(self.parse_report_file(file))
+
+            for r in records:
+                log.info('Closing off (connote|item_nbr): %s' % str(r))
+                sql = self.db.jobitem.upd_file_based_collected_sql(*r)
+                self.db(sql)
+                if not dry:
+                    self.db.commit()
+
+            log.info('Deleting file: "%s"' % file)
+            if not dry:
+                remove_files(file)

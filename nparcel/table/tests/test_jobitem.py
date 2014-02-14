@@ -894,6 +894,30 @@ WHERE id IN (16, 19, 20, 21, 22)""" % (self._now - datetime.timedelta(20))
 
         self._db.rollback()
 
+    def test_upd_file_based_collected_sql(self):
+        """Verify the upd_file_based_collected_sql SQL.
+        """
+        connote = 'pe_connote'
+        item_nbr = 'pe_item_nbr'
+        time = datetime.datetime.now().isoformat(' ').split('.', 1)[0]
+        sql = self._db.jobitem.upd_file_based_collected_sql(connote,
+                                                            item_nbr,
+                                                            time)
+        self._db(sql)
+
+        # Check rows.
+        sql = """SELECT connote_nbr, item_nbr, extract_ts, pickup_ts
+FROM job_item
+WHERE connote_nbr = '%s'
+AND item_nbr = '%s'""" % (connote, item_nbr)
+        self._db(sql)
+        received = list(self._db.rows())
+        expected = [(connote, item_nbr, time, time)]
+        msg = 'File based upd_file_based_collected_sql error'
+        self.assertListEqual(received, expected, msg)
+
+        self._db.rollback()
+
     @classmethod
     def tearDownClass(cls):
         cls._db.disconnect()

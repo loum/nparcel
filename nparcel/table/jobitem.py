@@ -74,12 +74,12 @@ AND (j.service_code != 3 OR j.service_code IS NULL)"""
 
         return sql
 
-    def upd_collected_sql(self, business_unit, time):
+    def upd_collected_sql(self, id, time):
         """SQL wrapper to update the collected items from the "jobitems"
         table.
 
         **Args:**
-            business_unit: the id relating to the job.bu_id value.
+            *id*: the id relating to the ``jobitem.id`` value.
 
         **Returns:**
             the SQL string
@@ -87,8 +87,41 @@ AND (j.service_code != 3 OR j.service_code IS NULL)"""
         """
         sql = """UPDATE job_item
 SET extract_ts = '%s'
-WHERE id = %d
-""" % (time, business_unit)
+WHERE id = %d""" % (time, id)
+
+        return sql
+
+    def upd_file_based_collected_sql(self, connote, item_nbr, time=None):
+        """SQL wrapper to update the collected items from the "jobitems"
+        table.
+
+        This variant of the :meth:`upd_collected_sql` method is used
+        to close of file-based extractions.
+
+        **Args:**
+            *connote*: connote value relating to the ``jobitem.connote_nbr``
+            value
+
+            *item_nbr*: connote value relating to the ``jobitem.item_nbr``
+            value
+
+        **Kwargs:**
+            *time*: override the time to set from the current time
+
+        **Returns:**
+            the SQL string
+
+        """
+        if time is None:
+            time = datetime.datetime.now().isoformat(' ').split('.', 1)[0]
+
+        sql = """UPDATE %(name)s
+SET extract_ts = '%(time)s', pickup_ts = '%(time)s'
+WHERE connote_nbr = '%(connote)s'
+AND item_nbr = '%(item_nbr)s'""" % {'name': self.name,
+                                    'time': time,
+                                    'connote': connote,
+                                    'item_nbr': item_nbr}
 
         return sql
 
@@ -235,7 +268,7 @@ AND ji.id = %d""" % job_item_id
 
         """
         if ts is None:
-            ts = datetime.datetime.now().isoformat(' ')[:-3]
+            ts = datetime.datetime.now().isoformat(' ').split('.', 1)[0]
 
         sql = """UPDATE %s
 SET %s = '%s'
