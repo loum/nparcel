@@ -165,4 +165,5 @@ class TestFiles(unittest2.TestCase):
         self.assertTrue(os.path.exists(target))
 
         # Clean up.
+        remove_files(target)
         source_fh.close()

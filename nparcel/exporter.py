@@ -14,7 +14,6 @@ from nparcel.utils.log import log
 from nparcel.utils.files import (create_dir,
                                  remove_files,
                                  copy_file,
-                                 remove_files,
                                  get_directory_files_list,
                                  gen_digest_path)
 
@@ -84,6 +83,9 @@ class Exporter(nparcel.Service):
 
         self._collected_items = []
         self._header = ()
+
+        self.set_exporter_dirs(kwargs.get('exporter_dirs'))
+        self.set_exporter_file_formats(kwargs.get('exporter_file_formats'))
 
         self.set_connote_header(kwargs.get('connote_header'))
         self.set_item_nbr_header(kwargs.get('item_nbr_header'))
@@ -673,6 +675,8 @@ class Exporter(nparcel.Service):
     def reset(self):
         """Initialise object state in readiness for another iteration.
         """
+        self.set_alerts()
+
         del self._collected_items[:]
         self._header = ()
         self._out_dir = None
@@ -762,6 +766,19 @@ class Exporter(nparcel.Service):
 
             for r in records:
                 log.info('Closing off (connote|item_nbr): %s' % str(r))
+
+                # Check that the record exists in the table.
+                sql = self.db.jobitem.connote_item_nbr_sql(*r)
+                self.db(sql)
+                rows = list(self.db.rows())
+                if not len(rows):
+                    err_file = os.path.basename(file)
+                    err = ('File-based record closure in file "%s"' %
+                           err_file)
+                    err = ('%s: %s no records found' % (err, str(r)))
+                    self.set_alerts(err)
+                    continue
+
                 sql = self.db.jobitem.upd_file_based_collected_sql(*r)
                 self.db(sql)
                 if not dry:

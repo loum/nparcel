@@ -13,9 +13,12 @@ class TestLoaderDaemon(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._file = 'nparcel/tests/files/T1250_TOLI_20130828202901.txt'
-        cls._d = nparcel.LoaderDaemon(pidfile=None,
-                                      config='nparcel/conf/nparceld.conf')
+        cls._file = os.path.join('nparcel',
+                                 'tests',
+                                 'files',
+                                 'T1250_TOLI_20130828202901.txt')
+        config = os.path.join('nparcel', 'conf', 'nparceld.conf')
+        cls._d = nparcel.LoaderDaemon(pidfile=None, config=config)
         cls._d.emailer.set_template_base(os.path.join('nparcel',
                                                       'templates'))
         cls._comms_dir = tempfile.mkdtemp()

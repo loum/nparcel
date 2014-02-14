@@ -25,6 +25,14 @@ class ExporterDaemon(nparcel.DaemonService):
         self.config = nparcel.B2CConfig(file=config)
         self.config.parse_config()
 
+        try:
+            if self.config.support_emails is not None:
+                self.set_support_emails(self.config.support_emails)
+        except AttributeError, err:
+            msg = ('Support emails not defined in config -- using %s' %
+                   str(self.support_emails))
+            log.info(msg)
+
     def _start(self, event):
         signal.signal(signal.SIGTERM, self._exit_handler)
 
@@ -49,6 +57,16 @@ class ExporterDaemon(nparcel.DaemonService):
                                                  'signature')
         except AttributeError, err:
             log.debug('Staging directory not in config: %s ' % err)
+
+        try:
+            kwargs['exporter_dirs'] = self.config.exporter_dirs
+        except AttributeError, err:
+            log.debug('Exporter dirs not in config: %s ' % err)
+
+        try:
+            kwargs['exporter_file_formats'] = self.config.exporter_file_formats
+        except AttributeError, err:
+            log.debug('Exporter file formats not in config: %s ' % err)
 
         try:
             kwargs['connote_header'] = self.config.connote_header
@@ -88,7 +106,18 @@ class ExporterDaemon(nparcel.DaemonService):
                                     sequence=seq,
                                     identifier=identifier,
                                     state_reporting=state_rep)
+                    alerts = list(exporter.alerts)
                     exporter.reset()
+                    if len(alerts):
+                        alert_table = self.create_table(alerts)
+                        del alerts[:]
+                        data = {'facility': self.__class__.__name__,
+                                'err_table': alert_table}
+                        self.emailer.send_comms(template='general_err',
+                                                data=data,
+                                                recipients=self.support_emails,
+                                                dry=self.dry)
+
             else:
                 log.error('ODBC connection failure -- aborting')
                 event.set()

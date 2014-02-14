@@ -19,14 +19,14 @@ class Service(object):
 
         directory where comms files are sent for further processing
 
-    .. attribute:: alert
+    .. attribute:: alerts
 
         list if alerts that can be captured during the processing workflow
 
     """
+    _db = None
     _comms_dir = None
     _alerts = []
-    _support_emails = []
 
     def __init__(self, db=None, comms_dir=None):
         """Nparcel Service initialisation.

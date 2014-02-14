@@ -54,6 +54,17 @@ consumer notifications.
     :ref:`file_formats <file_formats>` configuration options
     to control the settings for report file-bases ``job_item`` close off.
 
+In the odd event that a report based connote/item number lookup does not
+exist in the Toll Parcel Portal database, then an email notification
+similar to the following will be sent:
+
+.. image:: ../_static/exporter_alert_for_failed_lookup.png
+   :align: center
+   :alt: File-based connote/item number lookup failure comms
+
+The email recipients list is defined by the
+:ref:`support <support>` config item
+
 Exporter Report Output
 ----------------------
 
@@ -164,6 +175,13 @@ configuration options:
 
     token used to identify the item number column in the Exporter report
     file
+
+.. _support:
+
+* ``support`` (under the ``[email]`` section
+
+    comma separated list of email addresses to receive notifications
+    in case things go wrong
 
 ``npexporterd`` usage
 ^^^^^^^^^^^^^^^^^^^^^
