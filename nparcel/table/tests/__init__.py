@@ -5,3 +5,4 @@ from test_table import TestTable
 from test_identitytype import TestIdentityType
 from test_transsend import TestTransSend
 from test_agent_stocktake import TestAgentStocktake
+from test_parcel_size import TestParcelSize

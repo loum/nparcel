@@ -8,6 +8,7 @@
         'address': 'N031 Address',
         'postcode': '1234',
         'suburb': 'N031 Suburb',
+        'parcel_size_code': 2,
     },
     {
         'id': 2,
@@ -18,6 +19,7 @@
         'address': 'BAD1 Address',
         'postcode': '5678',
         'suburb': 'BAD1 Suburb',
+        'parcel_size_code': 2,
     },
     {
         'id': 3,
@@ -29,6 +31,7 @@
         'suburb': 'Testville',
         'postcode': '1234',
         'phone_nbr': '0431602145',
+        'parcel_size_code': 2,
     },
     {
         'id': 4,
@@ -39,6 +42,7 @@
         'address': '370 George Street',
         'postcode': '4000',
         'suburb': 'Brisbane',
+        'parcel_size_code': 2,
     },
     {
         'id': 5,
@@ -49,6 +53,7 @@
         'address': '693 Albany Hwy',
         'postcode': '6101',
         'suburb': 'Victoria Park',
+        'parcel_size_code': 2,
     },
     {
         'id': 6,
@@ -59,5 +64,6 @@
         'address': '21 Dodgy Street',
         'postcode': '3075',
         'suburb': 'Lalor',
+        'parcel_size_code': 2,
     },
 ]

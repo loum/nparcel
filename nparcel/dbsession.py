@@ -19,6 +19,7 @@ class DbSession(object):
     _agent = nparcel.Agent()
     _agent_stocktake = nparcel.AgentStocktake()
     _identity_type = nparcel.IdentityType()
+    _parcel_size = nparcel.ParcelSize()
 
     def __init__(self, **kwargs):
         self._host = kwargs.get('host')
@@ -121,6 +122,10 @@ class DbSession(object):
     def identity_type(self):
         return self._identity_type
 
+    @property
+    def parcel_size(self):
+        return self._parcel_size
+
     def date_now(self, *args):
         """Helper method that returns the current time stamp in a format
         suitable for the database.
@@ -191,11 +196,12 @@ class DbSession(object):
     def create_test_table(self):
         """
         """
-        self.create_table("job", self._job.schema)
+        self.create_table("job", self.job.schema)
         self.create_table("job_item", self.jobitem.schema)
-        self.create_table("agent", self._agent.schema)
-        self.create_table("identity_type", self._identity_type.schema)
-        self.create_table("agent_stocktake", self._agent_stocktake.schema)
+        self.create_table("agent", self.agent.schema)
+        self.create_table("identity_type", self.identity_type.schema)
+        self.create_table("agent_stocktake", self.agent_stocktake.schema)
+        self.create_table("parcel_size", self.parcel_size.schema)
 
     def disconnect(self):
         log.info('Disconnecting from DB ...')

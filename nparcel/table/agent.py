@@ -15,6 +15,28 @@ class Agent(nparcel.Table):
         self.code = None
         super(Agent, self).__init__(name='agent')
 
+    @property
+    def schema(self):
+        return ["id INTEGER PRIMARY KEY",
+                "code TEXT(6)",
+                "dp_id INTEGER",
+                "dp_code TEXT(10)",
+                "name TEXT(100)",
+                "contact_name TEXT(30)",
+                "phone_nbr TEXT(12)",
+                "email TEXT(40)",
+                "fax_nbr TEXT(12)",
+                "address TEXT(80)",
+                "suburb TEXT(30)",
+                "postcode TEXT(4)",
+                "state TEXT(3)",
+                "opening_hours TEXT(180)",
+                "notes TEXT(256)",
+                "username TEXT(10)",
+                "status INTEGER",
+                "created_ts TIMESTAMP",
+                "parcel_size_code INTEGER"]
+
     def check_agent_id(self, agent_code):
         """SQL wrapper to return return the "agent.id" value for a
         given *agent_code*.
@@ -45,15 +67,3 @@ FROM agent
 WHERE id=%d""" % id
 
         return sql
-
-    @property
-    def schema(self):
-        return ["id INTEGER PRIMARY KEY",
-                "name TEXT(100)",
-                "address TEXT(80)",
-                "suburb TEXT(30)",
-                "state TEXT(3)",
-                "postcode TEXT(4)",
-                "phone_nbr TEXT(12)",
-                "dp_code TEXT(10)",
-                "code TEXT(6)"]

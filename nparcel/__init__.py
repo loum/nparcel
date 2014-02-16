@@ -44,5 +44,6 @@ from table.jobitem import JobItem
 from table.agent import Agent
 from table.identitytype import IdentityType
 from table.transsend import TransSend
+from table.parcel_size import ParcelSize
 from nparcel.dbsession import DbSession
 from nparcel.oradbsession import OraDbSession

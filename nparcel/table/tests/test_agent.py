@@ -63,4 +63,5 @@ VALUES ("%s")""" % a_code
     def tearDownClass(cls):
         cls._db.disconnect()
         cls._db = None
+        cls._agent = None
         cls._test_id = None

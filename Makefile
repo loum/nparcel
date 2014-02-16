@@ -67,6 +67,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.table.tests:TestIdentityType \
 	 nparcel.table.tests:TestTransSend \
 	 nparcel.table.tests:TestAgentStocktake \
+	 nparcel.table.tests:TestParcelSize \
 	 nparcel.tests:TestDbSession \
 	 nparcel.tests:TestOraDbSession \
 	 nparcel.utils.tests:TestFiles \
