@@ -309,6 +309,11 @@ class B2CConfig(nparcel.Config):
        token used to identify the item number column in the Exporter report
        file
 
+    .. attribute:: adp_headers
+
+        dictionary of ``agent`` table columns to column headers in the
+        ADP bulk insert file
+
     """
     _dirs_to_check = []
     _mapper_in_dirs = []
@@ -406,6 +411,7 @@ class B2CConfig(nparcel.Config):
     _exporter_file_formats = []
     _connote_header = None
     _item_nbr_header = None
+    _adp_headers = {}
 
     def __init__(self, file=None):
         """Nparcel Config initialisation.
@@ -1192,6 +1198,13 @@ class B2CConfig(nparcel.Config):
                 ConfigParser.NoOptionError), err:
             log.debug('Using default exporter file item nbr header: %s' %
                       str(self.item_nbr_header))
+
+        # ADP headers
+        try:
+            self.set_adp_headers(dict(self.items('adp_headers')))
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default ADP headers: %s' % self.adp_headers)
 
     def condition(self, bu, flag):
         """Return the *bu* condition *flag* value.
@@ -2361,3 +2374,17 @@ class B2CConfig(nparcel.Config):
             self.item_nbr_header = value
             log.debug('Config set report file item nbr header to: "%s"' %
                       self.item_nbr_header)
+
+    @property
+    def adp_headers(self):
+        return self._adp_headers
+
+    def set_adp_headers(self, values=None):
+        self._adp_headers.clear()
+
+        if values is not None:
+            self._adp_headers = values
+            log.debug('Config ADP headers set to: "%s"' %
+                      self.adp_headers)
+        else:
+            log.debug('Cleared ADP headers')

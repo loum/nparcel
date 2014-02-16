@@ -760,7 +760,7 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Health process list error'
         self.assertListEqual(received, expected, msg)
 
-    def test_parse_filter(self):
+    def test_parse_config_filter(self):
         """Parse items from the config -- filter.
         """
         msg = 'Filter customer not as expected'
@@ -772,6 +772,33 @@ class TestB2CConfig(unittest2.TestCase):
         received = self._c.filtering_rules
         expected = ['P', 'R']
         self.assertListEqual(received, expected, msg)
+
+    def test_parser_adp_headers(self):
+        """Parse items from the config -- adp_headers
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        received = self._c.adp_headers
+        expected = {'code': 'TP Code',
+                    'dp_code': 'DP Code',
+                    'name': 'ADP Name',
+                    'address': 'Address',
+                    'suburb': 'Suburb',
+                    'state': 'State',
+                    'postcode': 'Postcode',
+                    'opening_hours': 'Opening Hours',
+                    'notes': 'Notes',
+                    'latitude': 'Latitude',
+                    'longitude': 'Longitude',
+                    'parcel_size_code': 'ADP Accepts Parcel Size',
+                    'phone_nbr': 'Phone',
+                    'contact': 'contact_name',
+                    'email': 'Email',
+                    'fax_nbr': 'Fax',
+                    'status': 'Active'}
+        msg = 'ADP headers not as expected'
+        self.assertDictEqual(received, expected, msg)
 
     def test_condition_flag_item_excp_true(self):
         """Check item_excp flag settings -- True.
