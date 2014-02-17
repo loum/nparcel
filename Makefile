@@ -33,6 +33,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestReminderDaemon \
 	 nparcel.tests:TestMapperDaemon \
 	 nparcel.tests:TestFilterDaemon \
+	 nparcel.tests:TestAdpDaemon \
 	 nparcel.tests:TestReporterDaemonUncollected \
 	 nparcel.tests:TestReporterDaemonCompliance \
 	 nparcel.tests:TestReporterDaemonNonCompliance \

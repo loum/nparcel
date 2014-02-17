@@ -26,39 +26,26 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
         schema = cls._odd.od.ts_db.transsend.schema
         cls._odd.od.ts_db.create_table(name='v_nparcel_adp_connotes',
                                        schema=schema)
-        fixture_file = os.path.join('nparcel',
-                                    'tests',
-                                    'fixtures',
-                                    'transsend.py')
+        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_file = os.path.join(fixture_dir, 'transsend.py')
         cls._odd.od.ts_db.load_fixture(cls._odd.od.ts_db.transsend,
                                        fixture_file)
+
+        db = cls._odd.od.db
+        fixtures = [{'db': db.agent, 'fixture': 'agents.py'},
+                    {'db': db.parcel_size, 'fixture': 'parcel_size.py'},
+                    {'db': db.job, 'fixture': 'jobs.py'},
+                    {'db': db.identity_type, 'fixture': 'identity_type.py'},
+                    {'db': db.jobitem, 'fixture': 'jobitems.py'}]
+        for i in fixtures:
+            fixture_file = os.path.join(fixture_dir, i['fixture'])
+            db.load_fixture(i['db'], fixture_file)
+
+        db.commit()
 
         cls._test_dir = os.path.join('nparcel', 'tests', 'files')
         cls._test_file = 'TCD_Deliveries_20140207111019.DAT'
         cls._test_filepath = os.path.join(cls._test_dir, cls._test_file)
-
-        db = cls._odd.od.db
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
-        # Prepare some sample data.
-        # Agent.
-        fixture_file = os.path.join(fixture_dir, 'agents.py')
-        db.load_fixture(db.agent, fixture_file)
-
-        cls._now = datetime.datetime.now()
-
-        # Job table.
-        fixture_file = os.path.join(fixture_dir, 'jobs.py')
-        db.load_fixture(db.job, fixture_file)
-
-        # "identity_type" table.
-        fixture_file = os.path.join(fixture_dir, 'identity_type.py')
-        db.load_fixture(db.identity_type, fixture_file)
-
-        # job_items table.
-        fixture_file = os.path.join(fixture_dir, 'jobitems.py')
-        db.load_fixture(db.jobitem, fixture_file)
-
-        db.commit()
 
     def test_init(self):
         """Intialise a OnDeliveryDaemon object.
