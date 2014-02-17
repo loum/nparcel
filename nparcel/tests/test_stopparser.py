@@ -16,9 +16,8 @@ class TestStopParser(unittest2.TestCase):
     def test_init(self):
         """Initialise a StopParser object.
         """
-        sp = nparcel.StopParser()
         msg = 'Object is not an nparcel.StopParser'
-        self.assertIsInstance(sp, nparcel.StopParser, msg)
+        self.assertIsInstance(self._sp, nparcel.StopParser, msg)
 
     def test_read(self):
         """Read in the sample csv.

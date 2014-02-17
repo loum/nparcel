@@ -1,4 +1,4 @@
-.. Nparcel B2C StopParser
+.. Toll Parcel Portal StopParser
 
 .. toctree::
     :maxdepth: 2

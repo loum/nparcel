@@ -1,0 +1,2 @@
+TP Code,DP Code,ADP Name,Address,Suburb,State,Postcode,Opening Hours,Notes,Latitude,Longtitude,ADP Accepts Parcel Size,Phone,Contact,Email,Fax,Active
+agent.code,agent.dp_code,agent.name,agent.address,agent.suburb,agent.state,agent.postcode,agent.opening_hours,agent.notes,agent.latitude,agent.longtitude,agent.parcel_size_code,agent.phone_nbr,agent.contact_name,agent.email,agent.fax_nbr,agent.status

@@ -1,5 +1,6 @@
 from nparcel.parser import Parser
 from nparcel.stopparser import StopParser
+from nparcel.adpparser import AdpParser
 from nparcel.service import Service
 from nparcel.loader import Loader
 from nparcel.reporter import Reporter

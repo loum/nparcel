@@ -28,6 +28,7 @@ Modules
     reminder.rst
     reminderdaemon.rst
     stopparser.rst
+    adpparser.rst
 
     ondelivery.rst
     ondeliverydaemon.rst

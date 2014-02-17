@@ -1,5 +1,6 @@
 from test_parser import TestParser
 from test_stopparser import TestStopParser
+from test_adpparser import TestAdpParser
 from test_dbsession import TestDbSession
 from test_oradbsession import TestOraDbSession
 from test_loader import TestLoader
