@@ -88,8 +88,12 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                                                dry=dry,
                                                batch=batch)
 
+        config_file = None
         if config is not None:
-            self.config = nparcel.B2CConfig(file=config)
+            config_file = config
+
+        if config_file is not None:
+            self.config = nparcel.B2CConfig(file=config_file)
             self.config.parse_config()
 
         try:
