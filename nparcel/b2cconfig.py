@@ -65,6 +65,10 @@ class B2CConfig(nparcel.Config):
 
         directory list for file-based events to trigger a job_item closure
 
+    .. attribute:: adp_dirs (ADP bulk load processing)
+
+        directory list for ADP bulk load files (into ``agent`` table)
+
     .. attribute loader_loop (loader)
 
         time (seconds) between loader processing iterations.
@@ -314,6 +318,11 @@ class B2CConfig(nparcel.Config):
         dictionary of ``agent`` table columns to column headers in the
         ADP bulk insert file
 
+    .. attribute:: adp_file_formats
+
+        list of regular expressions that represent the type of files that
+        can be parsed by the ADP loader
+
     """
     _dirs_to_check = []
     _mapper_in_dirs = []
@@ -323,6 +332,7 @@ class B2CConfig(nparcel.Config):
     _comms = None
     _aggregator_dirs = []
     _exporter_dirs = []
+    _adp_dirs = []
     _loader_loop = 30
     _ondelivery_loop = 30
     _reminder_loop = 3600
@@ -412,6 +422,7 @@ class B2CConfig(nparcel.Config):
     _connote_header = None
     _item_nbr_header = None
     _adp_headers = {}
+    _adp_file_formats = []
 
     def __init__(self, file=None):
         """Nparcel Config initialisation.
@@ -479,6 +490,19 @@ class B2CConfig(nparcel.Config):
             log.debug('Set config exporter in directories "%s"' %
                       str(values))
             self._exporter_dirs.extend(values)
+
+    @property
+    def adp_dirs(self):
+        return self._adp_dirs
+
+    def set_adp_dirs(self, values):
+        del self._adp_dirs[:]
+        self._adp_dirs = []
+
+        if values is not None:
+            log.debug('Set config exporter in directories "%s"' %
+                      str(values))
+            self._adp_dirs.extend(values)
 
     @property
     def mapper_in_dirs(self):
@@ -800,6 +824,16 @@ class B2CConfig(nparcel.Config):
                 ConfigParser.NoSectionError), err:
             log.debug('Using default Exporter inbound directories: %s' %
                       self.exporter_dirs)
+
+        # ADP directories.
+        try:
+            tmp_vals = self.get('dirs', 'adp_in').split(',')
+            self.set_adp_dirs(tmp_vals)
+            log.debug('ADP in bound directories %s' % self.adp_dirs)
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('Using default ADP inbound directories: %s' %
+                      self.adp_dirs)
 
         # Filter processing.
         try:
@@ -1205,6 +1239,15 @@ class B2CConfig(nparcel.Config):
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
             log.debug('Using default ADP headers: %s' % self.adp_headers)
+
+        # ADP file formats.
+        try:
+            tmp_vals = self.get('adp', 'file_formats')
+            self.set_adp_file_formats(tmp_vals.split(','))
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
+            log.debug('Using default ADP file formats: %s' %
+                      str(self.adp_file_formats))
 
     def condition(self, bu, flag):
         """Return the *bu* condition *flag* value.
@@ -2388,3 +2431,16 @@ class B2CConfig(nparcel.Config):
                       self.adp_headers)
         else:
             log.debug('Cleared ADP headers')
+
+    @property
+    def adp_file_formats(self):
+        return self._adp_file_formats
+
+    def set_adp_file_formats(self, values=None):
+        del self._adp_file_formats[:]
+        self._adp_file_formats = []
+
+        if values is not None:
+            self._adp_file_formats.extend(values)
+            log.debug('Config ADP file format list: "%s"' %
+                      self.adp_file_formats)
