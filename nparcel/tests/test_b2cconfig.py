@@ -806,8 +806,14 @@ class TestB2CConfig(unittest2.TestCase):
         self.assertDictEqual(received, expected, msg)
 
         received = self._c.adp_file_formats
+        expected = []
         msg = 'Exporter adp_file_formats value error'
-        self.assertIsNone(received, msg)
+        self.assertListEqual(received, expected, msg)
+
+        received = self._c.code_header
+        expected = 'Code'
+        msg = 'Exporter code_header value error'
+        self.assertEqual(received, expected, msg)
 
     def test_condition_flag_item_excp_true(self):
         """Check item_excp flag settings -- True.

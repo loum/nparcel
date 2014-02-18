@@ -35,6 +35,7 @@ from test_ftp import TestFtp
 from test_service import TestService
 from test_reminder import TestReminder
 from test_ondelivery import TestOnDelivery
+from test_adp import TestAdp
 from test_init import TestInit
 from test_comms import TestComms
 from test_mapper import TestMapper

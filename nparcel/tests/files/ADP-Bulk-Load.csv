@@ -1,2 +1,5 @@
 TP Code,DP Code,ADP Name,Address,Suburb,State,Postcode,Opening Hours,Notes,Latitude,Longtitude,ADP Accepts Parcel Size,Phone,Contact,Email,Fax,Active
 agent.code,agent.dp_code,agent.name,agent.address,agent.suburb,agent.state,agent.postcode,agent.opening_hours,agent.notes,agent.latitude,agent.longtitude,agent.parcel_size_code,agent.phone_nbr,agent.contact_name,agent.email,agent.fax_nbr,agent.status
+N031,NROS010,N031 Name,N031 Address,N031 Suburb,VIC,1234,Duplicate -- already exists,,,2,,,,,
+V001,VHAW050,Auburn Newsagency,119 Auburn Road,HAWTHORN EAST ,VIC,3123,Mon-Fri: 7am-6pm; Sat: 7am-2pm; Sun: 8am-2pm,valid new agent,,2,03 9818 4838,Joe Blow,auburnnewsagency@test.com.au,0398134833,1
+V110,VDOR010,Laurimar News and Lotto,Shop 8/ 95 Hazelglen Drive,DOREEN,VIC,3754,Mon/Wed/Fri: 7am-6pm; Tue/Thur/Sat: 7am-7pm; Sun: Closed,valid new agent,,2,03 9690 1350,Fred Blonk,,03 9645 8333,1

@@ -6,7 +6,7 @@ from nparcel.utils.log import log
 
 
 class OnDelivery(nparcel.Service):
-    """Nparcel OnDelivery class.
+    """OnDelivery class.
 
     .. attribute:: parser
 
@@ -58,7 +58,7 @@ class OnDelivery(nparcel.Service):
     _ts_db = None
 
     def __init__(self, db_kwargs=None, ts_db_kwargs=None, comms_dir=None):
-        """Nparcel OnDelivery initialisation.
+        """OnDelivery initialisation.
 
         """
         super(nparcel.OnDelivery, self).__init__(db=db_kwargs,

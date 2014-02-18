@@ -323,6 +323,12 @@ class B2CConfig(nparcel.Config):
         list of regular expressions that represent the type of files that
         can be parsed by the ADP loader
 
+    .. attribute:: code_header
+
+        special ADP bulk insert header name that relates to the
+        ``agent.code`` column.  This value is used as a unique
+        identifier during the agent insert process
+
     """
     _dirs_to_check = []
     _mapper_in_dirs = []
@@ -423,6 +429,7 @@ class B2CConfig(nparcel.Config):
     _item_nbr_header = None
     _adp_headers = {}
     _adp_file_formats = []
+    _code_header = None
 
     def __init__(self, file=None):
         """Nparcel Config initialisation.
@@ -1248,6 +1255,14 @@ class B2CConfig(nparcel.Config):
                 ConfigParser.NoOptionError), err:
             log.debug('Using default ADP file formats: %s' %
                       str(self.adp_file_formats))
+
+        # ADP file formats.
+        try:
+            self.set_code_header(self.get('adp', 'code_header'))
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
+            log.debug('Using default DP code header: %s' %
+                      str(self.code_header))
 
     def condition(self, bu, flag):
         """Return the *bu* condition *flag* value.
@@ -2444,3 +2459,13 @@ class B2CConfig(nparcel.Config):
             self._adp_file_formats.extend(values)
             log.debug('Config ADP file format list: "%s"' %
                       self.adp_file_formats)
+
+    @property
+    def code_header(self):
+        return self._code_header
+
+    def set_code_header(self, value=None):
+        if value is not None:
+            self.code_header = value
+            log.debug('Config set code_header to: "%s"' %
+                      self.code_header)

@@ -187,11 +187,11 @@ class TestFiles(unittest2.TestCase):
 
         # Check contents.
         fh = open(csv_file)
-        received = fh.read().strip()
+        received = fh.readline().strip()
         fh.close()
 
         fh = open(os.path.join(test_dir, 'ADP-Bulk-Load.csv'))
-        expected = fh.read()
+        expected = fh.readline().strip()
         fh.close()
 
         msg = 'CSV file contents error'

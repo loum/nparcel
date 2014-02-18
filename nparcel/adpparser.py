@@ -11,7 +11,7 @@ class AdpParser(object):
 
     """
     _in_files = []
-    _dp_code_header = 'DP Code'
+    _code_header = 'TP Code'
     _adps = {}
 
     def __init__(self, files=None):
@@ -37,11 +37,11 @@ class AdpParser(object):
         return self._adps
 
     @property
-    def dp_code_header(self):
-        return self._dp_code_header
+    def code_header(self):
+        return self._code_header
 
-    def set_dp_code_header(self, value):
-        self._dp_code_header = value
+    def set_code_header(self, value):
+        self._code_header = value
 
     def read(self, files=None):
         """Parses the contents of file denoted by :attr:`in_files`.
@@ -69,10 +69,10 @@ class AdpParser(object):
                 log.error('Unable to open file "%s"' % f)
 
     def set_adps(self, dict):
-        dp_code = dict.get(self.dp_code_header)
-        log.debug('dp_code_header value: %s' % dp_code)
+        code = dict.get(self.code_header)
+        log.debug('code_header value: %s' % code)
 
-        self._adps[dp_code] = dict
+        self._adps[code] = dict
 
-    def adp_lookup(self, dp_code):
-        return self.adps.get(dp_code)
+    def adp_lookup(self, code):
+        return self.adps.get(code)

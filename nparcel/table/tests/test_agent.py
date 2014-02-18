@@ -1,4 +1,5 @@
 import unittest2
+import os
 
 import nparcel
 
@@ -11,14 +12,16 @@ class TestAgent(unittest2.TestCase):
         cls._db = nparcel.DbSession()
         cls._db.connect()
 
-        # Load a single record.
-        name = 'Auburn Newsagency'
-        address = '119 Auburn Road'
-        suburb = 'HAWTHORN EAST'
-        postcode = '3123'
-        sql = """INSERT INTO agent (name, address, suburb, postcode)
-VALUES ('%s', '%s', '%s', '%s')""" % (name, address, suburb, postcode)
-        cls._test_id = cls._db.insert(sql)
+        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+
+        db = cls._db
+        fixtures = [{'db': db.agent, 'fixture': 'agents.py'},
+                    {'db': db.parcel_size, 'fixture': 'parcel_sizes.py'}]
+        for i in fixtures:
+            fixture_file = os.path.join(fixture_dir, i['fixture'])
+            db.load_fixture(i['db'], fixture_file)
+
+        db.commit()
 
     def test_init(self):
         """Placeholder test to make sure the Agent table is created.
@@ -29,16 +32,11 @@ VALUES ('%s', '%s', '%s', '%s')""" % (name, address, suburb, postcode)
     def test_check_agent_id(self):
         """Agent ID table check.
         """
-        a_code = 'N014'
-        sql = """INSERT INTO agent (code)
-VALUES ("%s")""" % a_code
-        self._db(sql)
+        a_code = 'W049'
 
         self._db(self._agent.check_agent_id(agent_code=a_code))
-        received = []
-        for row in self._db.rows():
-            received.append(row[0])
-        expected = [2]
+        received = list(self._db.rows())
+        expected = [(5,)]
         msg = 'Agent ID value not returned from the "agent" table'
         self.assertListEqual(received, expected, msg)
 
@@ -48,14 +46,12 @@ VALUES ("%s")""" % a_code
     def test_check_agent(self):
         """Agent details check.
         """
-        self._db(self._agent.agent_sql(id=self._test_id))
-        received = []
-        for row in self._db.rows():
-            received.append(row)
-        expected = [('Auburn Newsagency',
-                     '119 Auburn Road',
-                     'HAWTHORN EAST',
-                     '3123')]
+        self._db(self._agent.agent_sql(id=4))
+        received = list(self._db.rows())
+        expected = [('George Street News',
+                     '370 George Street',
+                     'Brisbane',
+                     '4000')]
         msg = 'Agent details not as expected'
         self.assertListEqual(received, expected, msg)
 

@@ -25,6 +25,7 @@ from nparcel.b2cconfig import B2CConfig
 from nparcel.ftp import Ftp
 from nparcel.reminder import Reminder
 from nparcel.ondelivery import OnDelivery
+from nparcel.adp import Adp
 from nparcel.init import Init
 from nparcel.comms import Comms
 from nparcel.based import BaseD

@@ -49,6 +49,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestService \
 	 nparcel.tests:TestReminder \
 	 nparcel.tests:TestOnDelivery \
+	 nparcel.tests:TestAdp \
 	 nparcel.tests:TestInit \
 	 nparcel.tests:TestComms \
 	 nparcel.tests:TestMapper \

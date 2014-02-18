@@ -26,8 +26,7 @@ class TestAdpParser(unittest2.TestCase):
         self._ap.set_in_files([self._test_file])
         self._ap.read()
 
-        # Get the one and only line item.
-        received = self._ap.adp_lookup('agent.dp_code')
+        received = self._ap.adp_lookup('agent.code')
         expected = {'Fax': 'agent.fax_nbr',
                     'TP Code': 'agent.code',
                     'ADP Accepts Parcel Size':
