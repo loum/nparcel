@@ -9,7 +9,8 @@ from nparcel.utils.files import (load_template,
                                  check_filename,
                                  gen_digest,
                                  copy_file,
-                                 gen_digest_path)
+                                 gen_digest_path,
+                                 xlsx_to_csv_converter)
 
 
 class TestFiles(unittest2.TestCase):
@@ -167,3 +168,46 @@ class TestFiles(unittest2.TestCase):
         # Clean up.
         remove_files(target)
         source_fh.close()
+
+    def test_xlsx_to_csv_converter(self):
+        """Convert a xlsx file to csv.
+        """
+        test_dir = os.path.join('nparcel', 'tests', 'files')
+        xlsx_file = os.path.join(test_dir, 'ADP-Bulk-Load.xlsx')
+        dir = tempfile.mkdtemp()
+        file_to_convert = os.path.join(dir, os.path.basename(xlsx_file))
+        copy_file(xlsx_file, file_to_convert)
+
+        csv_file = xlsx_to_csv_converter(file_to_convert)
+
+        # Check that the csv file exists.
+        msg = 'CSV file does not exist'
+        received = os.path.exists(csv_file)
+        self.assertTrue(received, msg)
+
+        # Check contents.
+        fh = open(csv_file)
+        received = fh.read().strip()
+        fh.close()
+
+        fh = open(os.path.join(test_dir, 'ADP-Bulk-Load.csv'))
+        expected = fh.read()
+        fh.close()
+
+        msg = 'CSV file contents error'
+        self.assertEqual(received, expected, msg)
+
+        # Clean up.
+        remove_files(get_directory_files_list(dir))
+        os.removedirs(dir)
+
+    def test_xlsx_to_csv_converter_invalid_file(self):
+        """Convert a xlsx file to csv -- invalid file.
+        """
+        test_dir = os.path.join('nparcel', 'tests', 'files')
+        file = os.path.join(test_dir, 'T1250_TOLI_20131011115618.dat')
+
+        received = xlsx_to_csv_converter(file)
+
+        msg = 'Non-xlsx file should not be converted and return None'
+        self.assertIsNone(received, msg)

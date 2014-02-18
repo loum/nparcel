@@ -158,6 +158,11 @@ class TestB2CConfig(unittest2.TestCase):
         expected = ['/data/nparcel/exporter']
         self.assertListEqual(received, expected, msg)
 
+        msg = 'ADP directories not as expected'
+        received = self._c.adp_dirs
+        expected = ['/var/ftp/pub/nparcel/adp/in']
+        self.assertListEqual(received, expected, msg)
+
     def test_parse_config_pe(self):
         """Parse items from the config -- Primary Elect.
         """
@@ -799,6 +804,10 @@ class TestB2CConfig(unittest2.TestCase):
                     'status': 'Active'}
         msg = 'ADP headers not as expected'
         self.assertDictEqual(received, expected, msg)
+
+        received = self._c.adp_file_formats
+        msg = 'Exporter adp_file_formats value error'
+        self.assertIsNone(received, msg)
 
     def test_condition_flag_item_excp_true(self):
         """Check item_excp flag settings -- True.

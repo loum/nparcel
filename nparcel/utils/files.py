@@ -10,6 +10,7 @@ __all__ = [
     "check_filename",
     "gen_digest",
     "gen_digest_path",
+    "xlsx_to_csv_converter",
 ]
 import os
 import re
@@ -17,6 +18,8 @@ import string
 import shutil
 import md5
 import tempfile
+import nparcel.openpyxl
+import csv
 
 from nparcel.utils.log import log
 
@@ -367,3 +370,47 @@ def gen_digest_path(value):
         dirs = [digest[0:2 + (i * 2)] for i in range(0, len(digest) / n)]
 
     return dirs
+
+
+def xlsx_to_csv_converter(xlsx_file):
+    """Convert *xlsx_file* into a CSV file.
+
+    Conversion will attempt to create the CSV file variant in the same
+    directory as *xlsx_file*.
+
+    **Args:**
+        *xlsx_file*: name of the ``*.xlsx`` file to convert
+
+    **Returns:**
+        the name of the new, converted CSV file (or ``None`` otherwise)
+
+    """
+    log.debug('Attempting to convert xlsx file: "%s" to csv' % xlsx_file)
+
+    file, extension = os.path.splitext(xlsx_file)
+    target_file = None
+
+    if extension == '.xlsx':
+        wb = nparcel.openpyxl.load_workbook(xlsx_file)
+        sh = wb.get_active_sheet()
+
+        target_file = os.path.join(os.path.dirname(xlsx_file),
+                                   "%s.csv" % os.path.basename(file))
+
+        fh = None
+        try:
+            fh = open(target_file, 'wb')
+        except IOError, err:
+            log.error('Unable to open file: "%s" - %s' % (target_file, err))
+
+        if fh is not None:
+            c = csv.writer(fh)
+            for r in sh.rows:
+                c.writerow([cell.value for cell in r])
+
+            fh.close()
+            log.info('Conversion produced file: "%s"' % target_file)
+    else:
+        log.info('"%s" is not an xlsx file' % xlsx_file)
+
+    return target_file

@@ -1,6 +1,5 @@
 import unittest2
 import tempfile
-import datetime
 import os
 
 import nparcel
@@ -163,32 +162,6 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
         self._odd.set_support_emails(old_support_emails)
         self._odd.set_sc4_bu_ids(old_sc4_ids)
         self._odd._exit_event.clear()
-
-    def test_validate_file_not_tcd_format(self):
-        """Parse non-TCD formatted file.
-        """
-        f_obj = tempfile.NamedTemporaryFile()
-        tcd_file = f_obj.name
-
-        received = self._odd.validate_file(tcd_file)
-        msg = 'Dodgy TCD file should not validate'
-        self.assertFalse(received)
-
-    def test_validate_file(self):
-        """Parse TCD formatted file.
-        """
-        dir = tempfile.mkdtemp()
-        f = open(os.path.join(dir, 'TCD_Deliveries_20140207111019.DAT'), 'w')
-        tcd_file = f.name
-        f.close()
-
-        received = self._odd.validate_file(tcd_file)
-        msg = 'Dodgy TCD file shoould not validate'
-        self.assertTrue(received)
-
-        # Clean up.
-        remove_files(tcd_file)
-        os.removedirs(dir)
 
     def test_get_files(self):
         """Get report files.

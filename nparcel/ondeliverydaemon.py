@@ -3,8 +3,6 @@ __all__ = [
 ]
 import time
 import signal
-import re
-import os
 
 import nparcel
 from nparcel.utils.log import log
@@ -349,35 +347,6 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                 else:
                     time.sleep(self.loop)
 
-    def validate_file(self, file):
-        """Parse the TCD-format filename string confirm that it validates
-        as per the accepted file name convention.
-
-        Filename comparison is based on the ``pe_tcd_filename_format``
-        config option.
-
-        **Kwargs:**
-            filename: the filename string to parse
-
-        **Returns:**
-            boolean ``True`` if the filename conforms th TCD report format
-            boolean ``False`` otherwise
-
-        """
-        log.debug('Validating filename "%s" against "%s"' %
-                  (file, self.report_file_format))
-        status = False
-
-        filename = os.path.basename(file)
-        r = re.compile(self.report_file_format)
-        m = r.match(filename)
-        if m:
-            status = True
-
-        log.debug('"%s" filename validation: %s' % (file, status))
-
-        return status
-
     def get_files(self, dry=False):
         """Searches the :attr:`nparcel.OnDeliveryDaemon.report_in_dirs`
         configuration item as the source directory for TCD report files.
@@ -396,25 +365,21 @@ class OnDeliveryDaemon(nparcel.DaemonService):
             report files (or zero) if not matches are found.
 
         """
-        report_files = []
+        files = []
         for report_in_dir in self.report_in_dirs:
             log.debug('Searching "%s" for report files' % report_in_dir)
-            files = get_directory_files_list(report_in_dir,
-                                             filter=self.report_file_format)
+            files.extend(get_directory_files_list(report_in_dir,
+                                                  self.report_file_format))
 
-        for f in files:
-            if self.validate_file(f):
-                report_files.append(f)
-
-        report_files.sort()
-        log.debug('All report files: "%s"' % report_files)
+        files.sort()
+        log.debug('All report files: "%s"' % files)
 
         files_to_parse = []
-        if len(report_files):
-            files_to_parse.extend(report_files[(-1 * self.file_cache_size):])
-            log.debug('Using report files: %s' % str(report_files))
+        if len(files):
+            files_to_parse.extend(files[(-1 * self.file_cache_size):])
+            log.debug('Using report files: %s' % str(files))
 
-        for f in [x for x in report_files if x not in files_to_parse]:
+        for f in [x for x in files if x not in files_to_parse]:
             log.info('Purging report file: "%s"' % f)
             if not dry:
                 remove_files(f)
