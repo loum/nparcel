@@ -410,6 +410,8 @@ def xlsx_to_csv_converter(xlsx_file):
 
             fh.close()
             log.info('Conversion produced file: "%s"' % target_file)
+    elif extension == '.csv':
+        target_file = xlsx_file
     else:
         log.info('"%s" is not an xlsx file' % xlsx_file)
 

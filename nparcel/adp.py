@@ -25,11 +25,13 @@ class Adp(nparcel.Service):
     _parser = nparcel.AdpParser()
     _headers = {}
 
-    def __init__(self, db_kwargs=None):
+    def __init__(self, **kwargs):
         """Adp initialisation.
 
         """
-        super(nparcel.Adp, self).__init__(db=db_kwargs)
+        super(nparcel.Adp, self).__init__(db=kwargs.get('db'))
+
+        self.set_headers(kwargs.get('headers'))
 
     @property
     def parser(self):

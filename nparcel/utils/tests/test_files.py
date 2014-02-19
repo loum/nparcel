@@ -211,3 +211,14 @@ class TestFiles(unittest2.TestCase):
 
         msg = 'Non-xlsx file should not be converted and return None'
         self.assertIsNone(received, msg)
+
+    def test_xlsx_to_csv_converter_csv_file(self):
+        """Convert a xlsx file to csv -- straight through CSV file.
+        """
+        test_dir = os.path.join('nparcel', 'tests', 'files')
+        file = os.path.join(test_dir, 'ADP-Bulk-Load.csv')
+
+        received = xlsx_to_csv_converter(file)
+        expected = file
+        msg = 'Straight through CSV should return itself'
+        self.assertEqual(received, expected, msg)

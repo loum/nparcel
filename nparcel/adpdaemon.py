@@ -5,7 +5,8 @@ import signal
 
 import nparcel
 from nparcel.utils.log import log
-from nparcel.utils.files import get_directory_files_list
+from nparcel.utils.files import (get_directory_files_list,
+                                 xlsx_to_csv_converter)
 
 
 class AdpDaemon(nparcel.DaemonService):
@@ -22,8 +23,6 @@ class AdpDaemon(nparcel.DaemonService):
         (default [] in which case all files are accepted)
 
     """
-
-    _config = None
     _adp_in_dirs = ['/var/ftp/pub/nparcel/adp/in']
     _adp_file_formats = []
 
@@ -38,11 +37,7 @@ class AdpDaemon(nparcel.DaemonService):
                                         dry=dry,
                                         batch=batch)
 
-        config_file = None
         if config is not None:
-            config_file = config
-
-        if config_file is not None:
             self.config = nparcel.B2CConfig(file=config)
             self.config.parse_config()
 
@@ -92,18 +87,31 @@ class AdpDaemon(nparcel.DaemonService):
         """
         signal.signal(signal.SIGTERM, self._exit_handler)
 
+        kwargs = {}
+        try:
+            kwargs['db'] = self.config.db_kwargs()
+        except AttributeError, err:
+            log.debug('DB kwargs not in config: %s ' % err)
+
+        try:
+            kwargs['headers'] = self.config.adp_headers
+        except AttributeError, err:
+            log.debug('ADP headers not in config: %s ' % err)
+
+        adp = nparcel.Adp(**kwargs)
+
         while not event.isSet():
             files = []
             if self.file is not None:
-                files.append(self.file)
+                converted_file = xlsx_to_csv_converter(self.file)
+                if converted_file is not None:
+                    files.append(converted_file)
                 event.set()
             else:
                 files.extend(self.get_files())
 
-            # TODO -- Start processing.
-            for file in files:
-                log.info('Processing file: "%s" ...' % file)
-
+            # Start processing.
+            adp.process(files)
             if not event.isSet():
                 if self.dry:
                     log.info('Dry run iteration complete -- aborting')
@@ -130,6 +138,13 @@ class AdpDaemon(nparcel.DaemonService):
             else:
                 files.extend(get_directory_files_list(dir))
 
-        log.debug('All ADP bulk load files: "%s"' % files)
+        # Convert xlsx file to csv.
+        converted_files = []
+        for f in files:
+            tmp_file = xlsx_to_csv_converter(f)
+            if tmp_file is not None:
+                converted_files.append(tmp_file)
 
-        return files
+        log.debug('All ADP bulk load files: "%s"' % converted_files)
+
+        return converted_files

@@ -34,11 +34,17 @@ class TestAdpDaemon(unittest2.TestCase):
         copy_file(self._test_file, os.path.join(dir, test_file))
 
         # Start processing.
+        self._adpd.config = nparcel.B2CConfig()
+        headers = {'code': 'TP Code',
+                   'dp_code':  'DP Code',
+                   'name': 'ADP Name'}
+        self._adpd.config.set_adp_headers(headers)
         self._adpd.set_dry()
         self._adpd.set_file(test_file)
         self._adpd._start(self._adpd.exit_event)
 
         # Clean up.
+        self._adpd.config = None
         self._adpd._exit_event.clear()
         self._adpd.set_dry(old_dry)
         self._adpd.set_file(old_file)
@@ -57,11 +63,17 @@ class TestAdpDaemon(unittest2.TestCase):
         copy_file(self._test_file, test_file)
 
         # Start processing.
+        self._adpd.config = nparcel.B2CConfig()
+        headers = {'code': 'TP Code',
+                   'dp_code':  'DP Code',
+                   'name': 'ADP Name'}
+        self._adpd.config.set_adp_headers(headers)
         self._adpd.set_dry()
         self._adpd.set_adp_in_dirs([dir])
         self._adpd._start(self._adpd.exit_event)
 
         # Clean up.
+        self._adpd._config = None
         self._adpd.set_dry(old_dry)
         self._adpd._exit_event.clear()
         self._adpd.set_adp_in_dirs(old_adp_in_dirs)

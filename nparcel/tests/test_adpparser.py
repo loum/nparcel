@@ -8,6 +8,8 @@ class TestAdpParser(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls.maxDiff = None
+
         cls._ap = nparcel.AdpParser()
         test_dir = os.path.join('nparcel', 'tests', 'files')
         test_file = 'ADP-Bulk-Load.csv'
@@ -26,25 +28,24 @@ class TestAdpParser(unittest2.TestCase):
         self._ap.set_in_files([self._test_file])
         self._ap.read()
 
-        received = self._ap.adp_lookup('agent.code')
-        expected = {'Fax': 'agent.fax_nbr',
-                    'TP Code': 'agent.code',
-                    'ADP Accepts Parcel Size':
-                    'agent.parcel_size_code',
-                    'Phone': 'agent.phone_nbr',
-                    'Notes': 'agent.notes',
-                    'Latitude': 'agent.latitude',
-                    'State': 'agent.state',
-                    'Longtitude': 'agent.longtitude',
-                    'Suburb': 'agent.suburb',
-                    'ADP Name': 'agent.name',
-                    'Contact': 'agent.contact_name',
-                    'DP Code': 'agent.dp_code',
-                    'Postcode': 'agent.postcode',
-                    'Address': 'agent.address',
-                    'Opening Hours': 'agent.opening_hours',
-                    'Email': 'agent.email',
-                    'Active': 'agent.status'}
+        received = self._ap.adp_lookup('V001')
+        expected = {'ADP Accepts Parcel Size': 'L',
+                    'ADP Name': 'Auburn Newsagency',
+                    'Active': '1',
+                    'Address': '119 Auburn Road',
+                    'Contact': '',
+                    'DP Code': 'VHAW050',
+                    'Email': 'auburnnewsagency@live.com.au',
+                    'Fax': '0398134833',
+                    'Latitude': '',
+                    'Longitude': '',
+                    'Notes': '',
+                    'Opening Hours': 'Mon-Fri: 7am-6pm; Sat: 7am-2pm; Sun: 8am-2pm',
+                    'Phone': '03 9818 4838',
+                    'Postcode': '3123',
+                    'State': 'VIC',
+                    'Suburb': 'HAWTHORN EAST ',
+                    'TP Code': 'V001'}
         msg = 'dp_code ADP lookup error'
         self.assertDictEqual(received, expected, msg)
 

@@ -1,5 +1,100 @@
-TP Code,DP Code,ADP Name,Address,Suburb,State,Postcode,Opening Hours,Notes,Latitude,Longtitude,ADP Accepts Parcel Size,Phone,Contact,Email,Fax,Active
-agent.code,agent.dp_code,agent.name,agent.address,agent.suburb,agent.state,agent.postcode,agent.opening_hours,agent.notes,agent.latitude,agent.longtitude,agent.parcel_size_code,agent.phone_nbr,agent.contact_name,agent.email,agent.fax_nbr,agent.status
-N031,NROS010,N031 Name,N031 Address,N031 Suburb,VIC,1234,Duplicate -- already exists,,,2,,,,,
-V001,VHAW050,Auburn Newsagency,119 Auburn Road,HAWTHORN EAST ,VIC,3123,Mon-Fri: 7am-6pm; Sat: 7am-2pm; Sun: 8am-2pm,valid new agent,,2,03 9818 4838,Joe Blow,auburnnewsagency@test.com.au,0398134833,1
-V110,VDOR010,Laurimar News and Lotto,Shop 8/ 95 Hazelglen Drive,DOREEN,VIC,3754,Mon/Wed/Fri: 7am-6pm; Tue/Thur/Sat: 7am-7pm; Sun: Closed,valid new agent,,2,03 9690 1350,Fred Blonk,,03 9645 8333,1
+TP Code,DP Code,ADP Name,Address,Suburb,State,Postcode,Opening Hours,Notes,Latitude,Longitude,ADP Accepts Parcel Size,Phone,Contact,Email,Fax,Active
+V001,VHAW050,Auburn Newsagency,119 Auburn Road,HAWTHORN EAST ,VIC,3123,Mon-Fri: 7am-6pm; Sat: 7am-2pm; Sun: 8am-2pm,,,,L,03 9818 4838,,auburnnewsagency@live.com.au,0398134833,1
+V010,VCLA005,Clayton Newsagency,345 Clayton Road,CLAYTON,VIC,3168,Mon-Sat: 3.00am - 6.30pm Sun: 4.00am - 1.00pm,,,,L,03 9544 1153,,clayton@alphalink.com.au,395627986,1
+V100,VFAI005,Fairfield News and Lucky Lotto,99 Station Street,FAIRFIELD,VIC,3078,Mon/Wed/Fri: 6am-5.30pm; Tue/Thur: 6am-6pm; Sat: 6am-6.30pm; Sun: 7am-1pm,,,,,03 9481 3240,,fairfieldna@gmail.com,03 9489 2588,1
+Q999,QLD999,QLD Test Newsagent 999,,,QLD,,,,,,,0401 619 750,,blaine.williams@tollgroup.com,,2
+Q001,QCLE005,Cleveland Nextra Newsagency,"Shop42, Stockland Cleveland, 91 Middle Street",CLEVELAND,QLD,4163,Mon-Fri: 7am-6pm; Sat: 7am-5pm; Sun: 7am-1pm,,,,,07 3286 1206,,,07 3821 2090,1
+Q002,QMID005,Middle Park Gifts and Casket,"Unit27 and 28, Park Village Shopping Centre, Cnr Horizon River hill Road",MIDDLE PARK,QLD,4074,Mon-Fri: 6.30am-6pm; Sat: 6.30am-5.30pm; Sun: 6.30am-12.30pm,,,,,07 3376 2528,,,,1
+Q003,QCAM005,Camp Hill News + Officesmart,569 Old Cleveland Road,CAMP HILL,QLD,4152,Mon-Fri: 5.30am-5.30pm; Sat: 5.30am-1pm; Sun: 6.30am-11am,,,,L,07 3398 3953,,,07 3398 3953,1
+Q004,QDAR005,newsXpress Darra,47 Railway Parade,DARRA,QLD,4076,Mon - Fri: 5:30am - 5:30pm; Saturday: 5:30am - 12pm; Sunday: Closed,,,,S,07 3375 4672,,,07 3375 4672,1
+Q005,QKEN005,Wongabell News + Casket,"Shop2, 12 Wongabel Street",KENMORE,QLD,4069,Mon-Fri: 7am-5pm; Sat: 7am-1pm; Sun: 7am-11am; Closed on public holidays,,,,,07 3378 5605,,,07 3878 2350,1
+Q006,QMIT005,Mitchelton Newsagency,39 Blackwood Street,MITCHELTON,QLD,4053,Mon-Fri: 6am-6pm; Sat: 6.30am-2pm; Sun: 6.30am-12pm,,,,L,07 3355 2365,,,07 3355 2365,1
+Q007,QTAR005,Gailey News,"Shop7, 144 Indooroopilly Rd",TARINGA,QLD,4068,Mon-Fri: 6am-6pm; Sat: 6am-5pm; Sun: 6am-12noon,,,,,07 3870 2210,,,07 3870 0942,1
+Q008,QKEP005,Keperra News,13 Dallas Parade,KEPPERRA,QLD,4054,Mon-Fri: 6am-5pm; Sat: 6am-1pm; Sun: 6am-10am,,,,,07 3355 2515,,,07 3355 2515,1
+Q009,QBEL005,Burstall Avenue News,"Belmont Road Shopping Village, Shop 7/185 Belmont Road",BELMONT,QLD,4153,Mon-Fri: 5.30am-6.45pm; Sat: 6am-6pm; Sun: 6am-2.30pm,,,,L,07 38903323,,,07 38903324,1
+V101,VVER010,Vermont South Newsagency,Shop 13-14; 495 Burwood Highway,VERMONT,VIC,3133,Mon-Sat: 6.30am-6pm; Sun: 7.30am-12noon,,,,,03 9803 4768,,peterxu578@hotmail.com,03 9803 4768,1
+Q010,QMAN005,Corner House News,195 Preston Road,MANLY WEST,QLD,4179,Mon-Sat: 5am-6pm; Sun: 4am-12noon,,,,L,07 3396 5947,,,07 3396 5947,1
+Q011,QWAV005,Shaw Road News,Shop 3/216 Shaw Road,WAVELL HEIGHTS,QLD,4012,Mon-Thur: 6am-6pm; Fri: 6am-5.35pm; Sat: 6am-4pm; Sun: 6am-11am,,,,L,07 3266 1024,,,07 3256 8425,1
+Q012,QRUN005,Daw Road Newsagency,258 Warrigal Rd,RUNCORN,QLD,4113,Mon-Fri: 6am-6pm; Sat: 6am-5.30pm; Sun: 6am-1pm,,,,,07 3841 3293,,,07 3841 3298,1
+Q013,QBRI005,George Street News,370 George Street,BRISBANE,QLD,4000,Mon-Fri: 6am-6pm; Weekends and Publich Holidays: Closed,,,,L,07 3236 5533,,,07 3236 5155,1
+Q014,QKED005,Kedron Newsagency and Casket,359 Gympie Road,KEDRON,QLD,4031,Mon-Sat: 6.30am-6pm; Sun: 6.30am-12pm,,,,L,07 3359 2669,,,07 3359 2669,1
+Q015,QDEA005,Deagon News,138 Braun Street,DEAGON,QLD,4017,Mon-Fri: 5am-5.30pm; Sat: 6am-3pm; Sun: 6.30am-10.30am; Public Holidays: 7am-11am,,,,L,07 3269 6143,,,07 3869 4366,1
+Q016,QWYN005,Wynnum North news,Shop 1 150-152 Selina St,WYNNUM,QLD,4178,Mon-Fri: 5am-6pm; Sat: 6am-5pm; Sun: 6am-12pm,,,,L,07 3396 4417,,,07 3396 4417,1
+Q017,QCAR005,Carina Newsagency,836 Old Cleveland Rd,CARINA,QLD,4152,Mon-Friday: 6.30am-5.30pm; Sat: 6.30am-2.30pm; Sun & Most Public Holidays : 7am-10.30am,,,,,07 3398 1932,,,07 3395 3959,1
+Q018,QLOG005,Tanah Merah News and Casket,"Shop3, 2-8 Ascot Drive",LOGANHOLME,QLD,4129,Mon-Fri: 6am-5.30pm; Sat: 6am-2pm; Sun: 6.30am-11.30am,,,,L,07 3801 3687,,,07 3801 3687,1
+Q019,QWIS005,Wishart Village News,590 Mt. Gravatt - Capalaba Road,WISHART,QLD,4122,Mon-Fri: 6am-6.30pm; Sat: 6am-6pm; Sun: 6am-1.30pm,,,,L,07 3849 7699,,,07 3849 7699,1
+V102,VMON010,Mont Albert News Tatts and Gifts,42 Hamilton Street,MONT ALBERT,VIC,3127,Mon-Fri: 7am-5.30pm; Sat: 7am-3.30pm; Sun: 7am-9.30am,,,,L,03 9890 1140,,mkbc@bigpond.com,03 9890 6963,1
+Q020,QROC005,Rochedale News,"Shop N18 Rochedale Village Centre, Underwood Road",ROCHEDALE,QLD,4123,Mon-Fri: 6am-6pm; Sat: 6am-5pm; Sun: 6am-1pm,,,,,07 3341 5336,,,,1
+Q021,QGRA005,Graceville News,2/286 Oxley Road,GRACEVILLE,QLD,4075,Mon-Fri: 6am-6pm; Sat: 6am-5.30pm; Sun: 6.30am-11.30am,,,,L,07 3379 1401,,,,1
+Q022,QDAI005,Daisy Hill News,"Shop7, Daisy Hill Plaza, Cnr of Daisy hill Rd and Cupania St",DAISY HILL,QLD,4127,Mon-Fri: 7am-6pm; Sat: 7am-5pm; Sun: 7am-1pm,,,,,07 3808 3430,,,,1
+Q024,QINA005,Skylark News,59 Skylark Street,INALA,QLD,4077,Mon-Fri: 6am-5.30pm; Sat: 6am-5pm; Sun: 6am-11am,,,,,07 3372 2374,,,07 3372 2374,1
+Q025,QBIR005,Birkdale Newsagency,"Shop4, Birkdale Fair Shopping Cenre, 196 Birkdale Road",BIRKDALE,QLD,4159,Mon-Wed/Fri: 6am-5.30pm; Thur: 6am-6pm; Sat: 6am-5pm; Sun: 6am-noon,,,,,07 3207 3005,,,07 3822 4599,1
+Q026,QNOR005,Northgate News,111 Ridge St,NORTHGATE,QLD,4013,Mon-Fri: 6am-6pm; Sat: 6am-4.30pm; Sun: 6am-12noon,,,,,07 3266 3025,,,07 3266 5466,1
+Q027,QSUN005,Jackson Road News,Shop19/344 Jackson Road,SUNNYBANK HILLS,QLD,4109,Mon-Fri: 6am-6pm; Sat: 6.30am-4pm; Sun: 6.30am-12noon,,,,L,07 3272 2911,,,07 3272 2944,1
+Q028,QBAN005,Banyo Officesmart,Shop2/276 St Vencents Road,BANYO ,QLD,4014,Mon-Fri: 5am-6pm; Sat: 5am-5pm; Sun: 5am-12.30pm,,,,L,07 3267 7320,,,07 3267 7320,1
+Q029,QBRI010,Eventide News and Casket Agency,18/353 Beaconsfield Tce,BRIGHTON,QLD,4017,Mon-Fri: 6.30am-6pm; Sat: 6.30am-5pm; Sun: 6.30am-11am,,,,L,07 3269 7855,,,07 3269 7855,1
+V103,VMOR010,Lucky Touch Lotto and Gifts,206 Lower Dandenong Road,MORDIALLOC,VIC,3195,Mon-Sat: 8am-7.30pm; Sun: Closed,,,,,03 9580 4141,,luckylotto8888@bigpond.com,03 9580 4141,1
+Q030,QSAL005,Salisbury News ,230 Lillian Ave,SALISBURY,QLD,4107,Mon-Fri: 5.45am-6pm; Sat: 6am-12.30pm; Sun: 6am-10.30am,,,,L,07 3277 2932,,,07 3277 2932,1
+Q031,QMCD005,North West Newsagency,"Shop23, North West Plaza, 97 Flockton Street",MCDOWALL,QLD,4053,Mon-Fri: 6.30am-6pm; Sat: 6.30am-5pm; Sun: 6.30am-12noon; Publich Holidays open 7.30am,,,,,07 3353 3586,,,07 3353 5622,1
+Q032,QRIV005,Riverhills News,200 Sumners Road,RIVERHILLS,QLD,4074,Mon-Fri: 6am-6.30pm; Sun: 7am-12pm,,,,,07 3376 3103,,,07 3376 3166,1
+Q033,QBRO005,newsXpress Westpoint ,"Shop11, Westpoint Shopping Centre",BROWNS PLAINS,QLD,4118,Mon/Wed/Fri: 7am-5.30pm; Tue/Thur: 7am-6.30pm; Sat: 7am-6.30pm; Sun: 7am-1pm,,,,L,07 3800 3115,,,07 3800 5104,1
+Q034,QSUN010,Sunnybank Hills News ,"Shop18, Sunnybank Hills Shopping Town, Cnr Compton and Calam Road",SUNNYBANK HILLS,QLD,4109,Mon-Fri: 8am-5.30pm; Sat: 8am-4pm; Sun: 9am-1pm,,,,,07 3273 5599,,,07 3273 5142,1
+Q035,QALE005,Nextra Alexandra Hill (shop 9),"Alexandra Hills Shopping Centre, 71 Cambridge Dr",ALEXANDRA HILLS,QLD,4161,Mon-Fri: 7am-6.30pm; Sat: 7am-5pm; Sun: 8am-2pm,,,,,07 3824 0641,,,07 3824 7200,1
+Q037,QMAR005,Marsden Newspower,"Marsden Park S/Centre, 55 Chambers Flat Road",MARSDEN,QLD,4132,Mon-Wed/Fri: 8am-5.30pm; Thur: 8am-7pm; Sat: 8am-4.45pm; Sun: Closed,,,,,07 3824 0641,,,07 ???? ????,1
+Q038,QHEN005,Groceries @ Pinkeys,17 Zillman Road,HENDRA,QLD,4011,Mon-Sun: 6am-7pm; Public Holidays: 7am-7pm,,,,L,07 3268 1481,,,07 3268 1481,1
+Q039,QSCA005,Scarborough News and Casket Agency,103 Landsborough Ave,SCARBOROUGH,QLD,4020,Mon-Sat: 7am-6pm; Sun: 7am-12noon; Public Holidays: Vary,,,,,07 3203 5422,,,07 3203 5422,1
+V104,VLYN005,Lynbrook Village Gift and Lotto,Shop 20/75 Lynbrook Blvd,LYNBROOK,VIC,3975,Mon-Sat: 8.30-7pm; Sun: Closed ,,,,,03 9799 4400,,saihty.young@hotmail.com,03 9799 4600,1
+Q044,QSTA005,Stafford News and Casket Agency,267 Stafford Road,STAFFORD,QLD,4053,Mon-Fri: 6.345am-5.45pm,,,,,07 3857 2489,,,07 3857 2489,1
+Q045,QEAG005,Eagle Junction Newsagency,272 Junction Road,EAGLE JUNCTION,QLD,4011,Mon-Fri: 5am-7pm; Sat: 5am-6pm; Sun: 7am-2pm,,,,,07 3857 3422,,,07 3857 3737,1
+Q046,QMTG010,Sunshine News,"Shop15, Mt Gravatt Plaza, 55 Creek Rd",MT GRAVATT,QLD,4122,Mon-Fri: 8am-6pm; Sat: 8am-5pm; Sun: 9am-3pm,,,,,07 3343 9460,,,07 3343 9460,1
+Q047,QSOU010,South Brisbane News + Casket,"Railway Station, Grey Street",SOUTH BRISBANE,QLD,4101,Mon-Fri: 6am-6pm; Sat/Sun: 9.30am-5pm,,,,L,07 3844 4208,,,,1
+Q048,QBRI015,South Bank Beach News,"Cnr Stanley St Plaza and Ermest Street, South Bank Parklands",BRISBANE,QLD,4101,Mon-Thur: 7am-5.30pm; Fri: 7am-7.30pm; Sat: 7.30am-7.30pm; Sun: 7.30am-5.30pm,,,,,07 3844 1285,,,,1
+Q049,QTHE010,newsXpress The Gap,21/1000 Waterworks Road,THE GAP,QLD,4061,Mon-Wed: 7.3-am-6.30pm; Thur: 7.30am-7.30pm; Fri: 7.30am-6pm; Sat: 7.30am-5pm; Sun: 7.30am-3pm,,,,,07 3300 6890,,,07 3300 5281,1
+V105,VMTW015,Tally Ho Newsagency,63 Blackburn Road,MT WAVERLEY,VIC,3149,Mon-Sat: 7am-6pm; Sun: Closed,,,,,03 9802 8132,,parksonlot@yahoo.com.au,03 9802 8132,1
+Q050,QMOR010,Colmslie Plaza News,"Shop2, 38 Junction Road",MORNINGSIDE,QLD,4170,Mon-Fri: 7.30am-5.30pm; Sat: 8am-1pm,,,,L,0408 073 398,,,07 3399 2883,1
+Q051,QWOL005,Woolloongabba News,7 Logan Road,WOLLOONGABBA,QLD,4102,Mon-Fri: 6.30am-4.30pm; Sat: 7.30am-1pm,,,,,07 3391 2834,,,,1
+Q052,QWES010,West End News,199 Boundary Street,WEST END,QLD,4101,Mon-Fri: 5.30am-6pm; Sat: 5.30am-4pm; Sun: 5.30am-12noon,,,,L,07 3384 6394,,,07 3844 2513,1
+Q053,QBRI030,Eagle Street News,"Ground Floor, 70 Eagle Street",BRISBANE,QLD,4000,Mon-Fri: 6am-6pm; Sat/Sun: Closed,,,,,07 3221 8585,,,07 3221 8995,1
+Q054,QGEE005,Geebung News,6 Railway Parade,GEEBUNG,QLD,4034,Mon-Fri: 5am-5.30pm; Sat: 6am-12.30pm; Sun: 6am-11am,,,,,07 3265 2388,,,07 3265 2388,1
+Q055,QSUN015,Sunnybank Plaza News and Casket Agency,"Shop22, Sunnybank Plaza, Mains Road",SUNNYBANK,QLD,4109,Mon/Tue/Wed/Fri: 8am-5.30pm; Thur: 8am-9pm; Sat/Sun: 8am-4pm,,,,,07 3345 5929,,,07 3345 4532,1
+Q056,QMAC010,Macgregor News,"Shop14 and 15, Sunny Park Shopping Centre, Main Rd and Mccullough St",MACGREGOR,QLD,4109,Mon-Fri: 8am-6pm; Sat: 8am-5pm; Sun: 9am-12noon,,,,,07 3345 9149,,,07 3345 9149,1
+Q057,QBRI025,Terrace News,149 Wickham Terrace,BRISBANE,QLD,4000,Mon-Fri: 6.30am-5.30pm; Sat/Sun: Closed,,,,,07 3832 2760,,,07 3832 2760,1
+Q058,QHER005,Nextra General Hospital,"L1, Ned Hanlon Building, RBWH",HERSTON,QLD,4029,Mon-Fri: 6am-7pm; Sat/Sun: 7am-6pm EXC Public Holidays,,,,L,07 3252 7813,,,07 3252 7844,1
+Q059,QGUM005,newsXpress Gumdale,"696, New Cleveland Road",GUMDALE ,QLD,4154,Mon-Sat: 6am-6.30pm; Sun: 6am-1pm,,,,,07 3390 4969,,,07 3390 4969,1
+V106,VHEI035,Warringal Newsagency,Shop 27; 56 Burgundy Street,HEIDELBERG,VIC,3084,Mon - Thur: 8am-5.30pm; Fri: 8am-7pm; Sat: 8am-5.30pm; Sun: 9am-4pm ,,,,,03 9456 9391,,john-qz@hotmail.com,03 9456 9391,1
+Q060,QMAN010,newsXpress Manly West,"Shop9, Mayfair Village, Cnr Havy Road and Hargraves Road",MANLY WEST,QLD,4179,Mon-Sat: 7am-6pm; Sun: 7am-12noon,,,,,07 3890 0277,,,07 3890 0277,1
+Q061,QDEA010,News Bulletin Deagon,"Shop 6, 75 Braun Street",DEAGON,QLD,4017,Mon-Fri: 8am-6pm; Sat: 8am-5pm; Sun: 7am-1pm,,,,L,07 3869 1120,,,07 3869 1125,1
+Q062,QSTA010,Stafford Heights News,28 Farrant Street,STAFFORD HEIGHTS,QLD,4053,Mon-Fri: 6.30am-6pm; Sat: 7am-12noon; Sun: 7am-11am,,,,,07 3359 4666,,,07 3359 4666,1
+Q063,QASP005,Bridgeman News,"Shop11, Aspley Hypermarket, 59  Albany Creek Road",ASPLEY,QLD,4034,Mon-Wed/Fri: 7.30am-5.30pm; Thur: 7.30am-9pm; Sat: 7.30am-5pm; Sun: 9am-3pm,,,,,07 3263 3811,,,07 3263 3811,1
+Q064,QHAM005,Ascot News,3/71 Racecourse Road,HAMILTON,QLD,4007,Mon-Fri: 5.30am-5.30pm; Sat: 5.30am-4pm; Sun: 5.30am-11.30am,,,,L,07 3268 4618,,,07 3268 4736,1
+Q065,QWOO015,Woody Point News,"Shop3, 60A King Street",WOODY POINT,QLD,4019,Mon-Fri: 6am-5pm; Sat: 6am-12noon; Sun: 6am-10am,,,,L,07 3284 2591,,,07 3284 2591,1
+Q066,QRED020,Redland Bay News,"Redland Bay Shopping Centre, Stradbroke Street",REDLAND BAY,QLD,4165,Mon-Fri: 6am-6pm; Sat: 6am-4pm; Sun: 6am-12noon,,,,L,07 3206 7997,,,07 3206 7104,1
+Q067,QASH005,Stewart Road News,17 Stewart Road,ASHGROVE,QLD,4060,Mon-Fri: 6am-6pm; Sat: 6am-5pm; Sun: 6am-12noon,,,,,07 3366 5788,,,07 3366 8466,1
+Q068,QMIT010,Brook News Nextra,"Shop90, Brookside Shopping Centre, Osborne Road",MITCHELTON,QLD,4053,Mon-Wed/Fri: 8am-5.30pm; Thur: 8am-9pm; Sat: 8am-5pm; Sun: 9am-3pm,,,,L,07 3355 7483,,,07 3355 7377,1
+Q069,QCAP005,Nextra Capalaba Park News,"Shop 133, Capalaba Park Shopping Centre",CAPALABA,QLD,4157,Mon-Wed/Fri: 8.30am-5.30pm; Thur: 8.30am-9pm; Sat: 8am-5pm; Sun: 9am-3pm,,,,,07 3245 5387,,,07 3245 3738,1
+V107,VMEL025,The Source Newsagency,217 Queen Street,MELBOURNE,VIC,3000,Mon-Fri: 6.30am-7pm; Sat: 8.30am-2pm; Sun: closed,,,,L,03 9670 3717,,,03 9600 4959,1
+Q070,QWEL005,Wellington Point News,Shop2/368 Main Road,WELLINGTON POINT,QLD,4160,Mon-Fri: 6.30am-5.30pm; Sat: 6am-4pm; Sun: 6am-11am,,,,,07 3207 2265,,,07 3822 1679,1
+Q071,QWOO010,Buranda News,140 Logan Road,WOOLLOONGABBA,QLD,4102,Mon-Fri: 6am-5pm; Sat: 6am-12noon; Sun: 7am-11am,,,,L,07 3891 1871,,,No Fax,1
+Q072,QRED015,Redland Heights Newsagency,30 Cypress Street,REDLAND BAY,QLD,4156,Mon: Closed; Tue -Fri: 6am-6pm; Sat: 6am-4pm; Sun: 6am-12noon,,,,L,07 3206 8565,,,07 3206 7656,1
+Q073,QFAI005,Fairfield Gardens Newsagency,"Shop 19, 180 Fairfield Road",FAIRFIELD,QLD,4103,Mon-Fri: 8am-6pm; Sat: 8am-5pm; Sun: 9am-1pm,,,,,07 3844 3821,,,07 3844 3014,1
+Q074,QCAL010,News on Kameruka,Cnr Kameruka St and Beaudesert Road,CALAMVALE,QLD,4116,Mon-Fri: 7.30am-6pm; Sat: 7am-4pm; Sun: 7am-10.30am,,,,,07 3711 5501,,,07 3711 5503,1
+Q075,QBRI020,Bramble Heights News,"Shop7, 11 North Road",BRIGHTON,QLD,4017,Mon-Fri: 6.30am-6pm; Sat: 6.30am-5pm; Sun: 6.30am-11am,,,,L,07 3269 1369,,,07 3269 1369,1
+Q076,QTHE005,Walton Bridge News,"Shop10, 974 Waterworks Road",THE GAP,QLD,4061,Mon-Fri: 6am-6pm; Sat: 6am-5pm; Sun: 6am-12noon,,,,L,07 3300 6671,,,07 3300 6671,1
+Q077,QMOO005,Moorvale News,"186A, Beaudesert Road",MOOROOKA,QLD,4105,Mon-Fri: 6am-6pm; Sat/Sun: 6am-12noon,,,,,07 3848 1702,,,07 3848 4062,1
+Q078,QSAN010,newsXpress Sandgate,"Shop3, 11 Bowser Parade",SANDGATE,QLD,4017,Mon-Fri: 5am-6pm; Sat: 6am-5.30pm; Sun: 6am-12noon,,,,L,07 3269 1995,,,07 3269 1961,1
+Q079,QCLE010,Bloomfield News,115-117 Bloomfield Street,CLEVELAND,QLD,4163,Mon-Fri: 6am-6pm; Sat: 7am-5pm; Sun: 7am-1pm,,,,S,07 3821 0597,,,07 3821 0964,1
+V108,VDON005,Doncaster Newspower,G210 Westfireld Doncaster S/C,DONCASTER,VIC,3108,Mon-Wed: 9am-5.30pm; Thur: 9am-9pm; Fri: 9am-9pm; Sat:9am-5pm; Sun: 10am-5pm,,,,,03 9840 0060,,,03 9840 7775,1
+Q080,QEAS005,Spar East Brisbane My news and Lotto,"Shop1, 89 Lytton Road",EAST BRISBANE,QLD,4169,Mon-Sun: 6am-10pm,,,,L,07 3333 2960,,,07 3333 2961,1
+Q081,QOXE005,Oxley News,94 Cook Street,OXLEY,QLD,4075,Mon-Fri: 5.15am-5.30pm; Sat: 5.30am-3pm; Sun: 6am-10am,,,,L,07 3379 4515,,,07 3379 4515,1
+Q082,QRED005,Jetty News,95 Redcliffe Parade,REDCLIFFE,QLD,4020,Mon-Sat: 7am-5pm; Sun: 7am-12noon,,,,,07 3284 2385,,,07 3284 2944,1
+Q083,QALG005,Algester News,4/188 Algester Road,ALGESTER,QLD,4115,Mon-Fri: 7am-6pm; Sat: 7am-4pm; Sun: 7am-11am,,,,,07 3273 2362,,,07 3272 5572,1
+Q084,QSTO005,newsXpress Stones Corner Village,Shop16/405 Logan Road,STONES CORNER,QLD,4120,Mon-Fri: 7.30am-5.15pm; Sat: 7.30am-4pm; Sun: 9am-1pm,,,,,07 3397 0928,,,07 3397 0928,1
+Q085,QGRE005,Farrell Kate Repartriation Newsagency,102 Newdegate Street,GREENSLOPES,QLD,4120,Mon-Fri: 6am-5.30pm; Sat: 6am-12.30pm; Sun: 6am-11.30am,,,,,07 3397 2433,,,07 3397 2433,1
+Q086,QGRE010,Greenslopes News,Shop19/700 Logan Road,GREENSLOPES,QLD,4120,Mon-Fri: 8am-5.30pm; Sat: 8am-5pm; Sun: 9am-1pm,,,,,07 3397 1000,,,07 3397 1822,1
+Q087,QBRI035,City News,10 Eagle Street,BRISBANE,QLD,4000,Mon-Fri: 7am-6pm; Sat/Sun: closed,,,,L,07 3221 4479,,,07 3221 4774,1
+Q088,QRED010,Midway Newsagents,544 Oxley Avenue,REDCLIFF,QLD,4020,Mon-Sat: 5am-6pm; Sun: 5am-12noon,,,,,07 3203 4209,,,07 3203 8225,1
+Q089,QARN005,newsXpress Arana Hills,"Shop13B, Arana Hills Plaza, Patricks Road",ARANA HILLS,QLD,4054,Mon-Wed/Fri: 8am-5.30pm; Thur: 8am-9pm; Sat: 8am-5pm; Sun: Closed,,,,L,07 3351 4481,,,07 3851 2870,1
+V109,VDIA005,Diamond Creek Newsagency,62A Hurstbridge Road,DIAMOND CREEK,VIC,3089,Mon-Fri: 7am-6pm; Sat: 6am-7pm; Sun: 7.30am-12noon,,,,,03 9438 1488,,,,1
+Q090,QWYN010,Nextra Wynnum Plaza,"Shop20, 2021 Wynnum Road, Wynnum Plaza Shopping Centre",WYNNUM WEST,QLD,4178,Mon-Fri: 8.30am-5.30pm; Sat: 8.30am-5pm; Sun: 9am-4pm,,,,L,07 3396 5305,,,07 3396 5305,1
+Q091,QMTG005,Mt Gravatt News,1488 Logan Road,MT GRAVATT,QLD,4122,Mon-Fri: 5am-4pm; Sat: 6am-11am; Sun: 6am-10am,,,,,07 3849 5752,,,07 3422 2369,1
+Q092,QBIG005,Aspley Day and Night News,1374 Gympie Road,ASPLEY,QLD,4034,7 days all year: 5am-11pm; open on public holidays,,,,,07 3263 6163,,,07 3263 3903,1
