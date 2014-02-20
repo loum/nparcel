@@ -6,3 +6,6 @@ from test_identitytype import TestIdentityType
 from test_transsend import TestTransSend
 from test_agent_stocktake import TestAgentStocktake
 from test_parcel_size import TestParcelSize
+from test_delivery_partner import TestDeliveryPartner
+from test_login_account import TestLoginAccount
+from test_system_level_access import TestSystemLevelAccess

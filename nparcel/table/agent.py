@@ -5,14 +5,12 @@ import nparcel
 
 
 class Agent(nparcel.Table):
-    """Nparcel DB Agent table ORM.
+    """Agent table ORM.
     """
 
     def __init__(self):
+        """Agent initialisater.
         """
-        """
-        self.id = None
-        self.code = None
         super(Agent, self).__init__(name='agent')
 
     @property

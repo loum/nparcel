@@ -20,6 +20,9 @@ class DbSession(object):
     _agent_stocktake = nparcel.AgentStocktake()
     _identity_type = nparcel.IdentityType()
     _parcel_size = nparcel.ParcelSize()
+    _delivery_partner = nparcel.DeliveryPartner()
+    _login_account = nparcel.LoginAccount()
+    _system_level_access = nparcel.SystemLevelAccess()
 
     def __init__(self, **kwargs):
         self._host = kwargs.get('host')
@@ -126,6 +129,18 @@ class DbSession(object):
     def parcel_size(self):
         return self._parcel_size
 
+    @property
+    def delivery_partner(self):
+        return self._delivery_partner
+
+    @property
+    def login_account(self):
+        return self._login_account
+
+    @property
+    def system_level_access(self):
+        return self._system_level_access
+
     def date_now(self, *args):
         """Helper method that returns the current time stamp in a format
         suitable for the database.
@@ -196,12 +211,16 @@ class DbSession(object):
     def create_test_table(self):
         """
         """
-        self.create_table("job", self.job.schema)
-        self.create_table("job_item", self.jobitem.schema)
-        self.create_table("agent", self.agent.schema)
-        self.create_table("identity_type", self.identity_type.schema)
-        self.create_table("agent_stocktake", self.agent_stocktake.schema)
-        self.create_table("parcel_size", self.parcel_size.schema)
+        self.create_table('job', self.job.schema)
+        self.create_table('job_item', self.jobitem.schema)
+        self.create_table('agent', self.agent.schema)
+        self.create_table('identity_type', self.identity_type.schema)
+        self.create_table('agent_stocktake', self.agent_stocktake.schema)
+        self.create_table('parcel_size', self.parcel_size.schema)
+        self.create_table('delivery_partner', self.delivery_partner.schema)
+        self.create_table('login_account', self.login_account.schema)
+        self.create_table('system_level_access',
+                          self.system_level_access.schema)
 
     def disconnect(self):
         log.info('Disconnecting from DB ...')

@@ -71,6 +71,9 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.table.tests:TestTransSend \
 	 nparcel.table.tests:TestAgentStocktake \
 	 nparcel.table.tests:TestParcelSize \
+	 nparcel.table.tests:TestDeliveryPartner \
+	 nparcel.table.tests:TestLoginAccount \
+	 nparcel.table.tests:TestSystemLevelAccess \
 	 nparcel.tests:TestDbSession \
 	 nparcel.tests:TestOraDbSession \
 	 nparcel.utils.tests:TestFiles \
