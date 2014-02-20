@@ -50,8 +50,20 @@ class TestAdp(unittest2.TestCase):
         headers = {'code': 'TP Code',
                    'dp_code':  'DP Code',
                    'name': 'ADP Name'}
+        code = {}
+        code['V010'] = {'TP Code': 'V010',
+                        'DP Code': 'VCLA005',
+                        'ADP Name': 'Clayton Newsagency',
+                        'Address': '345 Clayton Road',
+                        'Suburb': 'CLAYTON',
+                        'State': 'VIC',
+                        'Postcode': '3168'}
         self._adp.set_headers(headers)
-        self._adp.process(in_files=[in_file], dry=dry)
+        received = self._adp.process(code='V0101',
+                                     values=code['V010'],
+                                     dry=dry)
+        msg = 'ADP line item processing should return True'
+        self.assertTrue(received, msg)
 
         # Clean up.
         self._adp.db.rollback()
@@ -96,6 +108,62 @@ class TestAdp(unittest2.TestCase):
 
         # Clean up.
         self._adp.set_headers(old_headers)
+
+    def test_sanitise_status(self):
+        """Sanitise the "agent.status" column.
+        """
+        received = self._adp.sanitise({'status': '1'})
+        expected = {'status': 1}
+        msg = 'Sanitise status "1" error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise({'status': 'NO'})
+        expected = {'status': 2}
+        msg = 'Sanitise status "NO" error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise({'status': 'YES'})
+        expected = {'status': 1}
+        msg = 'Sanitise status "YES" error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise({'banana': 'YES'})
+        expected = {'banana': 'YES'}
+        msg = 'Sanitise status not defined error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise({'banana': 'YES'})
+        expected = {'banana': 'YES'}
+        msg = 'Sanitise status not defined error'
+        self.assertEqual(received, expected, msg)
+
+    def test_validate_status(self):
+        """Validate the "agent.status" column.
+        """
+        received = self._adp.validate({'status': 2})
+        msg = 'Validate status as integer error'
+        self.assertTrue(received, msg)
+
+        received = self._adp.validate({'status': '1'})
+        msg = 'Validate status as a non-integer error'
+        self.assertFalse(received, msg)
+
+    def test_validate_postcode(self):
+        """Validate the "agent.postcode" column.
+        """
+        received = self._adp.validate({'postcode': '3000',
+                                       'state': 'VIC'})
+        msg = 'Validate postcode, state should be True'
+        self.assertTrue(received, msg)
+
+        received = self._adp.validate({'postcode': '4000',
+                                       'state': 'VIC'})
+        msg = 'Validate postcode, state should be False'
+        self.assertFalse(received, msg)
+
+        received = self._adp.validate({'postcode': '4000'})
+        msg = 'Validate postcode, missing state should be False'
+        self.assertTrue(received, msg)
 
     @classmethod
     def tearDownClass(cls):

@@ -12,6 +12,10 @@ from nparcel.utils.files import (get_directory_files_list,
 class AdpDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.AdpParser` class.
 
+    .. attribute:: parser
+ 
+        :mod:`nparcel.AdpParser` parser object
+
     .. attribute:: adp_in_dirs
 
         ADP bulk load inbound directory
@@ -23,6 +27,7 @@ class AdpDaemon(nparcel.DaemonService):
         (default [] in which case all files are accepted)
 
     """
+    _parser = nparcel.AdpParser()
     _adp_in_dirs = ['/var/ftp/pub/nparcel/adp/in']
     _adp_file_formats = []
 
@@ -47,6 +52,10 @@ class AdpDaemon(nparcel.DaemonService):
             msg = ('ADP inbound dir not in config -- using %s' %
                    self.adp_in_dirs)
             log.debug(msg)
+
+    @property
+    def parser(self):
+        return self._parser
 
     @property
     def adp_in_dirs(self):
@@ -111,7 +120,13 @@ class AdpDaemon(nparcel.DaemonService):
                 files.extend(self.get_files())
 
             # Start processing.
-            adp.process(files)
+            if files is not None:
+                self.parser.set_in_files(files)
+                self.parser.read()
+
+            for code, v in self.parser.adps.iteritems():
+                adp.process(code, v)
+
             if not event.isSet():
                 if self.dry:
                     log.info('Dry run iteration complete -- aborting')

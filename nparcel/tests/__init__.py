@@ -43,3 +43,4 @@ from test_filter import TestFilter
 from test_writer import TestWriter
 from test_xlwriter import TestXlwriter
 from test_auditer import TestAuditer
+from test_postcode import TestPostcode

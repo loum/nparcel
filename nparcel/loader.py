@@ -6,6 +6,7 @@ import inspect
 
 import nparcel
 from nparcel.utils.log import log
+from nparcel.postcode import translate_postcode
 
 FIELDS = {'Conn Note': {'offset': 0,
                         'length': 20},
@@ -57,7 +58,7 @@ JOB_MAP = {'Agent Id': {
                'column': 'postcode'},
            'state': {
                'column': 'state',
-               'callback': 'translate_postcode'},
+               'callback': translate_postcode},
            'status': {
                'column': 'status',
                'required': True,
@@ -91,48 +92,6 @@ JOB_ITEM_MAP = {'Conn Note': {
                     'column': 'created_ts',
                     'required': True,
                     'callback': 'date_now'}}
-POSTCODE_MAP = {'NSW': {
-                    'ranges': [
-                        (1000, 1999),
-                        (2000, 2599),
-                        (2619, 2898),
-                        (2921, 2999)],
-                    'exceptions': [
-                         2899]},
-                'ACT': {
-                    'ranges': [
-                        (200, 299),
-                        (2600, 2618),
-                        (2900, 2920)],
-                    'exceptions': []},
-                'VIC': {
-                    'ranges': [
-                        (3000, 3999),
-                        (8000, 8999)],
-                    'exceptions': []},
-                'QLD': {
-                    'ranges': [
-                        (4000, 4999),
-                        (9000, 9999)],
-                    'exceptions': []},
-                'SA': {
-                    'ranges': [
-                        (5000, 5799),
-                        (5800, 5999)],
-                    'exceptions': []},
-                'WA': {
-                    'ranges': [
-                        (6000, 6797),
-                        (6800, 6999)],
-                    'exceptions': []},
-                'TAS': {
-                    'ranges': [
-                        (7000, 7999)],
-                    'exceptions': []},
-                'NT': {
-                    'ranges': [
-                        (800, 999)],
-                    'exceptions': []}}
 
 
 class Loader(nparcel.Service):
@@ -584,42 +543,6 @@ class Loader(nparcel.Service):
 
         return cols
 
-    def translate_postcode(self, postcode):
-        """Translate postcode information to state.
-
-        **Args:**
-            *postcode*: integer representing a postcode (for example, 3754)
-
-        **Returns:**
-            string representing the state of the translated postcode
-
-        """
-        log.debug('Translating raw postcode value: "%s" ...' % postcode)
-
-        state = ''
-        try:
-            postcode = int(postcode)
-        except ValueError, e:
-            log.warn('Unable to translate postcode "%s"' % postcode)
-
-        if isinstance(postcode, int):
-            for postcode_state, postcode_ranges in POSTCODE_MAP.iteritems():
-                for range in postcode_ranges.get('ranges'):
-                    if postcode >= range[0] and postcode <= range[1]:
-                        state = postcode_state
-                        break
-                for exception in postcode_ranges.get('exceptions'):
-                    if postcode == exception:
-                        state = postcode_state
-                        break
-
-                if state:
-                    break
-
-            log.debug('Postcode/state - %d/"%s"' % (postcode, state))
-
-        return state
-
     def translate_service_code(self, service_code):
         """Translate postcode information to state.
 
@@ -861,7 +784,7 @@ class Loader(nparcel.Service):
         for row in self.db.rows():
             # Comes through as id, postcode, state.
             log.debug('Verifying job.id: %d ...' % row[0])
-            translated_state = self.translate_postcode(row[1])
+            translated_state = translate_postcode(row[1])
             m = re.match(translated_state, row[2])
             if m is None:
                 log.info('job.id %d postcode "%s" has wrong state "%s"' %
