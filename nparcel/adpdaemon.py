@@ -13,7 +13,7 @@ class AdpDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.AdpParser` class.
 
     .. attribute:: parser
- 
+
         :mod:`nparcel.AdpParser` parser object
 
     .. attribute:: adp_in_dirs
@@ -45,6 +45,13 @@ class AdpDaemon(nparcel.DaemonService):
         if config is not None:
             self.config = nparcel.B2CConfig(file=config)
             self.config.parse_config()
+
+        try:
+            if self.config.support_emails is not None:
+                self.set_support_emails(self.config.support_emails)
+        except AttributeError, err:
+            msg = ('Support emails not defined in config -- using %s' %
+                   str(self.support_emails))
 
         try:
             self.set_adp_in_dirs(self.config.adp_dirs)
@@ -109,6 +116,10 @@ class AdpDaemon(nparcel.DaemonService):
 
         adp = nparcel.Adp(**kwargs)
 
+        commit = True
+        if self.dry:
+            commit = False
+
         while not event.isSet():
             files = []
             if self.file is not None:
@@ -126,6 +137,19 @@ class AdpDaemon(nparcel.DaemonService):
 
             for code, v in self.parser.adps.iteritems():
                 adp.process(code, v)
+
+            # Report the results.
+            alerts = list(adp.alerts)
+            adp.reset()
+            if len(alerts):
+                alert_table = self.create_table(alerts)
+                del alerts[:]
+                data = {'facility': self.__class__.__name__,
+                        'err_table': alert_table}
+                self.emailer.send_comms(template='general_err',
+                                        data=data,
+                                        recipients=self.support_emails,
+                                        dry=self.dry)
 
             if not event.isSet():
                 if self.dry:

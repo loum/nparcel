@@ -71,12 +71,13 @@ class Adp(nparcel.Service):
         """
         status = True
 
-        log.debug('Processing Agent code: "%s"' % code)
+        log.info('Processing Agent code: "%s" ...' % code)
         filtered_values = self.extract_values(values)
 
         sanitised_values = self.sanitise(filtered_values)
         if not self.validate(sanitised_values):
             status = False
+            self.set_alerts('Agent code "%s" validation error' % code)
 
         if status:
             # Check if the code already exists.
@@ -84,9 +85,11 @@ class Adp(nparcel.Service):
             self.db(sql)
             rows = list(self.db.rows())
             if len(rows) > 0:
-                log.error('Code "%s" already exists' % code)
+                self.set_alerts('Agent code "%s" already exists' % code)
             else:
                 self.db.insert(self.db.agent.insert_sql(sanitised_values))
+
+        log.info('Agent code "%s" load status: %s' % (code, status))
 
         return status
 
@@ -198,3 +201,17 @@ class Adp(nparcel.Service):
             log.info('Validation failed')
 
         return is_valid
+
+    def reset(self, commit=False):
+        """Initialise object state in readiness for another iteration.
+        """
+        self.set_alerts()
+
+        if commit:
+            log.info('Committing transaction state to the DB ...')
+            self.db.commit()
+            log.info('Commit OK')
+        else:
+            log.info('Rolling back transaction state to the DB ...')
+            self.db.rollback()
+            log.info('Rollback OK')

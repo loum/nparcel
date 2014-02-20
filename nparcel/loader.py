@@ -156,8 +156,7 @@ class Loader(nparcel.Service):
             log.info('Barcode "%s" mapping OK' % barcode)
         except ValueError, e:
             status = False
-            self.set_alerts('Barcode "%s" mapping error: %s' %
-                            (barcode, e))
+            self.set_alerts('Barcode "%s" mapping error: %s' % (barcode, e))
 
         # Check for a manufactured barcode.
         if status:
