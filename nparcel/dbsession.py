@@ -23,6 +23,7 @@ class DbSession(object):
     _delivery_partner = nparcel.DeliveryPartner()
     _login_account = nparcel.LoginAccount()
     _system_level_access = nparcel.SystemLevelAccess()
+    _login_access = nparcel.LoginAccess()
 
     def __init__(self, **kwargs):
         self._host = kwargs.get('host')
@@ -141,6 +142,10 @@ class DbSession(object):
     def system_level_access(self):
         return self._system_level_access
 
+    @property
+    def login_access(self):
+        return self._login_access
+
     def date_now(self, *args):
         """Helper method that returns the current time stamp in a format
         suitable for the database.
@@ -221,6 +226,7 @@ class DbSession(object):
         self.create_table('login_account', self.login_account.schema)
         self.create_table('system_level_access',
                           self.system_level_access.schema)
+        self.create_table('login_access', self.login_access.schema)
 
     def disconnect(self):
         log.info('Disconnecting from DB ...')

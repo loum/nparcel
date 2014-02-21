@@ -51,5 +51,6 @@ from table.parcel_size import ParcelSize
 from table.delivery_partner import DeliveryPartner
 from table.login_account import LoginAccount
 from table.system_level_access import SystemLevelAccess
+from table.login_access import LoginAccess
 from nparcel.dbsession import DbSession
 from nparcel.oradbsession import OraDbSession

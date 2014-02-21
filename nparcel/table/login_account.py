@@ -11,7 +11,7 @@ class LoginAccount(nparcel.Table):
     def __init__(self):
         """LoginAccount initialiser.
         """
-        super(LoginAccount, self).__init__(name='login_access')
+        super(LoginAccount, self).__init__(name='login_account')
 
     @property
     def schema(self):

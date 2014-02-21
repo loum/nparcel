@@ -74,6 +74,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.table.tests:TestDeliveryPartner \
 	 nparcel.table.tests:TestLoginAccount \
 	 nparcel.table.tests:TestSystemLevelAccess \
+	 nparcel.table.tests:TestLoginAccess \
 	 nparcel.tests:TestDbSession \
 	 nparcel.tests:TestOraDbSession \
 	 nparcel.utils.tests:TestFiles \
