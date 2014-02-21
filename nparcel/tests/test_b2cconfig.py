@@ -1,5 +1,6 @@
 import unittest2
 import datetime
+import os
 
 import nparcel
 
@@ -8,7 +9,7 @@ class TestB2CConfig(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._file = 'nparcel/conf/nparceld.conf'
+        cls._file = os.path.join('nparcel', 'conf', 'nparceld.conf')
 
     def setUp(self):
         self._c = nparcel.B2CConfig()
@@ -778,8 +779,8 @@ class TestB2CConfig(unittest2.TestCase):
         expected = ['P', 'R']
         self.assertListEqual(received, expected, msg)
 
-    def test_parser_adp_headers(self):
-        """Parse items from the config -- adp_headers
+    def test_parser_adp(self):
+        """Parse items from the config -- ADP.
         """
         self._c.set_config_file(self._file)
         self._c.parse_config()
@@ -814,6 +815,19 @@ class TestB2CConfig(unittest2.TestCase):
         expected = 'Code'
         msg = 'Exporter code_header value error'
         self.assertEqual(received, expected, msg)
+
+        received = self._c.delivery_partners
+        expected = ['Nparcel', 'ParcelPoint', 'Toll', 'National Storage']
+        msg = 'ADP delivery partners error'
+        self.assertListEqual(received, expected, msg)
+
+        received = self._c.adp_default_passwords
+        expected = {'nparcel': 'aaaa',
+                    'parcelpoint': 'bbbb',
+                    'toll': 'cccc',
+                    'national storage': 'dddd'}
+        msg = 'ADP delivery partners default passwords error'
+        self.assertDictEqual(received, expected, msg)
 
     def test_condition_flag_item_excp_true(self):
         """Check item_excp flag settings -- True.
