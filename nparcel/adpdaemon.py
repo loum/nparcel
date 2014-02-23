@@ -114,6 +114,11 @@ class AdpDaemon(nparcel.DaemonService):
         except AttributeError, err:
             log.debug('ADP headers not in config: %s ' % err)
 
+        try:
+            kwargs['delivery_partners'] = self.config.delivery_partners
+        except AttributeError, err:
+            log.debug('ADP delivery partners not in config: %s ' % err)
+
         adp = nparcel.Adp(**kwargs)
 
         commit = True

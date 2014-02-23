@@ -45,11 +45,19 @@ class TestAdp(unittest2.TestCase):
         copy_file(test_file, os.path.join(dir, in_file))
 
         old_headers = self._adp.headers
+        old_delivery_partners = self._adp.delivery_partners
 
         # Start processing.
-        headers = {'code': 'TP Code',
-                   'dp_code':  'DP Code',
-                   'name': 'ADP Name'}
+        headers = {'agent.code': 'TP Code',
+                   'agent.dp_code':  'DP Code',
+                   'agent.name': 'ADP Name',
+                   'delivery_partner.id': 'DP Id'}
+        self._adp.set_headers(headers)
+        delivery_partners = ['Nparcel',
+                             'ParcelPoint',
+                             'Toll',
+                             'National Storage']
+        self._adp.set_delivery_partners(delivery_partners)
         code = {}
         code['V010'] = {'TP Code': 'V010',
                         'DP Code': 'VCLA005',
@@ -57,8 +65,8 @@ class TestAdp(unittest2.TestCase):
                         'Address': '345 Clayton Road',
                         'Suburb': 'CLAYTON',
                         'State': 'VIC',
-                        'Postcode': '3168'}
-        self._adp.set_headers(headers)
+                        'Postcode': '3168',
+                        'DP Id': 'Nparcel'}
         received = self._adp.process(code='V0101',
                                      values=code['V010'],
                                      dry=dry)
@@ -68,6 +76,7 @@ class TestAdp(unittest2.TestCase):
         # Clean up.
         self._adp.db.rollback()
         self._adp.set_headers(old_headers)
+        self._adp.set_delivery_partners(old_delivery_partners)
         remove_files(get_directory_files_list(dir))
         os.removedirs(dir)
 
@@ -112,18 +121,18 @@ class TestAdp(unittest2.TestCase):
     def test_sanitise_status(self):
         """Sanitise the "agent.status" column.
         """
-        received = self._adp.sanitise({'status': '1'})
-        expected = {'status': 1}
+        received = self._adp.sanitise({'agent.status': '1'})
+        expected = {'agent.status': 1}
         msg = 'Sanitise status "1" error'
         self.assertEqual(received, expected, msg)
 
-        received = self._adp.sanitise({'status': 'NO'})
-        expected = {'status': 2}
+        received = self._adp.sanitise({'agent.status': 'NO'})
+        expected = {'agent.status': 2}
         msg = 'Sanitise status "NO" error'
         self.assertEqual(received, expected, msg)
 
-        received = self._adp.sanitise({'status': 'YES'})
-        expected = {'status': 1}
+        received = self._adp.sanitise({'agent.status': 'YES'})
+        expected = {'agent.status': 1}
         msg = 'Sanitise status "YES" error'
         self.assertEqual(received, expected, msg)
 
@@ -137,33 +146,74 @@ class TestAdp(unittest2.TestCase):
         msg = 'Sanitise status not defined error'
         self.assertEqual(received, expected, msg)
 
+    def test_sanitise_delivery_partner(self):
+        """Sanitise the "delivery_partner.id" column.
+        """
+        old_delivery_partners = self._adp.delivery_partners
+
+        self._adp.set_delivery_partners(['Nparcel',
+                                         'ParcelPoint',
+                                         'Toll',
+                                         'National Storage'])
+        received = self._adp.sanitise({'delivery_partner.id': 'Nparcel'})
+        expected = {'delivery_partner.id': 1}
+        msg = 'Sanitise delivery_partner "Nparcel" error'
+        self.assertDictEqual(received, expected, msg)
+
+        # Unknown delivery partner.
+        received = self._adp.sanitise({'delivery_partner.id': 'banana'})
+        expected = {}
+        self.assertDictEqual(received, expected, msg)
+
+        # Clean up.
+        self._adp.set_delivery_partners(old_delivery_partners)
+
     def test_validate_status(self):
         """Validate the "agent.status" column.
         """
-        received = self._adp.validate({'status': 2})
+        received = self._adp.validate({'agent.status': 2,
+                                       'delivery_partner.id': 1})
         msg = 'Validate status as integer error'
         self.assertTrue(received, msg)
 
-        received = self._adp.validate({'status': '1'})
+        received = self._adp.validate({'agent.status': '1',
+                                       'delivery_partner.id': 1})
         msg = 'Validate status as a non-integer error'
         self.assertFalse(received, msg)
 
     def test_validate_postcode(self):
         """Validate the "agent.postcode" column.
         """
-        received = self._adp.validate({'postcode': '3000',
-                                       'state': 'VIC'})
+        received = self._adp.validate({'agent.postcode': '3000',
+                                       'agent.state': 'VIC',
+                                       'delivery_partner.id': 1})
         msg = 'Validate postcode, state should be True'
         self.assertTrue(received, msg)
 
-        received = self._adp.validate({'postcode': '4000',
-                                       'state': 'VIC'})
+        received = self._adp.validate({'agent.postcode': '4000',
+                                       'agent.state': 'VIC',
+                                       'delivery_partner.id': 1})
         msg = 'Validate postcode, state should be False'
         self.assertFalse(received, msg)
 
-        received = self._adp.validate({'postcode': '4000'})
+        received = self._adp.validate({'agent.postcode': '4000',
+                                       'delivery_partner.id': 1})
         msg = 'Validate postcode, missing state should be False'
         self.assertTrue(received, msg)
+
+    def test_validate_delivery_partner(self):
+        """Validate the "delivery_partner.id" column.
+        """
+        received = self._adp.validate({'agent.postcode': '3000',
+                                       'agent.state': 'VIC',
+                                       'delivery_partner.id': 1})
+        msg = 'Validate delivery_partner.id of 1 should be True'
+        self.assertTrue(received, msg)
+
+        received = self._adp.validate({'agent.postcode': '3000',
+                                       'agent.state': 'VIC'})
+        msg = 'Validate missing delivery_partner.id key should be False'
+        self.assertFalse(received, msg)
 
     @classmethod
     def tearDownClass(cls):

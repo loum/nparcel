@@ -70,7 +70,7 @@ class AdpParser(object):
 
     def set_adps(self, dict):
         code = dict.get(self.code_header)
-        log.debug('code_header value: %s' % code)
+        log.debug('Setting code_header value: %s' % code)
 
         self._adps[code] = dict
 
