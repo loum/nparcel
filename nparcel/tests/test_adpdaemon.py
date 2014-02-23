@@ -13,6 +13,17 @@ class TestAdpDaemon(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._adpd = nparcel.AdpDaemon(pidfile=None)
+        cls._adpd.config = nparcel.B2CConfig()
+        headers = {'agent.code': 'TP Code',
+                   'agent.dp_code':  'DP Code',
+                   'agent.name': 'ADP Name',
+                   'delivery_partner.id': 'DP Id'}
+        cls._adpd.config.set_adp_headers(headers)
+        delivery_partners = ['Nparcel',
+                             'ParcelPoint',
+                             'Toll',
+                             'National Storage']
+        cls._adpd.config.set_delivery_partners(delivery_partners)
         test_dir = os.path.join('nparcel', 'tests', 'files')
         xlsv_file = 'ADP-Bulk-Load.xlsx'
         cls._test_file = os.path.join(test_dir, xlsv_file)
@@ -34,11 +45,6 @@ class TestAdpDaemon(unittest2.TestCase):
         copy_file(self._test_file, os.path.join(dir, test_file))
 
         # Start processing.
-        self._adpd.config = nparcel.B2CConfig()
-        headers = {'code': 'TP Code',
-                   'dp_code':  'DP Code',
-                   'name': 'ADP Name'}
-        self._adpd.config.set_adp_headers(headers)
         self._adpd.set_dry()
         self._adpd.set_file(test_file)
         self._adpd._start(self._adpd.exit_event)
@@ -63,11 +69,6 @@ class TestAdpDaemon(unittest2.TestCase):
         copy_file(self._test_file, test_file)
 
         # Start processing.
-        self._adpd.config = nparcel.B2CConfig()
-        headers = {'code': 'TP Code',
-                   'dp_code':  'DP Code',
-                   'name': 'ADP Name'}
-        self._adpd.config.set_adp_headers(headers)
         self._adpd.set_dry()
         self._adpd.set_adp_in_dirs([dir])
         self._adpd._start(self._adpd.exit_event)

@@ -34,10 +34,12 @@ class TestAdpParser(unittest2.TestCase):
                     'Active': '1',
                     'Address': '119 Auburn Road',
                     'Contact': '',
+                    'DP Id': 'Nparcel',
                     'DP Code': 'VHAW050',
                     'Email': 'auburnnewsagency@live.com.au',
                     'Fax': '0398134833',
                     'Latitude': '',
+                    'Login Status': 'Y',
                     'Longitude': '',
                     'Notes': '',
                     'Opening Hours': 'Mon-Fri: 7am-6pm; Sat: 7am-2pm; Sun: 8am-2pm',
@@ -45,7 +47,8 @@ class TestAdpParser(unittest2.TestCase):
                     'Postcode': '3123',
                     'State': 'VIC',
                     'Suburb': 'HAWTHORN EAST ',
-                    'TP Code': 'V001'}
+                    'TP Code': 'V001',
+                    'Username': 'VHAW050'}
         msg = 'dp_code ADP lookup error'
         self.assertDictEqual(received, expected, msg)
 

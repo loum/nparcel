@@ -778,42 +778,56 @@ class TestB2CConfig(unittest2.TestCase):
         expected = ['P', 'R']
         self.assertListEqual(received, expected, msg)
 
-    def test_parser_adp_headers(self):
+    def test_parse_config_adp(self):
         """Parse items from the config -- adp_headers
         """
         self._c.set_config_file(self._file)
         self._c.parse_config()
 
         received = self._c.adp_headers
-        expected = {'code': 'TP Code',
-                    'dp_code': 'DP Code',
-                    'name': 'ADP Name',
-                    'address': 'Address',
-                    'suburb': 'Suburb',
-                    'state': 'State',
-                    'postcode': 'Postcode',
-                    'opening_hours': 'Opening Hours',
-                    'notes': 'Notes',
-                    'latitude': 'Latitude',
-                    'longitude': 'Longitude',
-                    'parcel_size_code': 'ADP Accepts Parcel Size',
-                    'phone_nbr': 'Phone',
-                    'contact': 'contact_name',
-                    'email': 'Email',
-                    'fax_nbr': 'Fax',
-                    'status': 'Active'}
+        expected = {'agent.code': 'TP Code',
+                    'agent.dp_code': 'DP Code',
+                    'agent.name': 'ADP Name',
+                    'agent.address': 'Address',
+                    'agent.suburb': 'Suburb',
+                    'agent.state': 'State',
+                    'agent.postcode': 'Postcode',
+                    'agent.opening_hours': 'Opening Hours',
+                    'agent.notes': 'Notes',
+                    'agent.latitude': 'Latitude',
+                    'agent.longitude': 'Longitude',
+                    'agent.parcel_size_code': 'ADP Accepts Parcel Size',
+                    'agent.phone_nbr': 'Phone',
+                    'agent.contact': 'contact_name',
+                    'agent.email': 'Email',
+                    'agent.fax_nbr': 'Fax',
+                    'agent.status': 'Active',
+                    'delivery_partner.id': 'DP Id'}
         msg = 'ADP headers not as expected'
         self.assertDictEqual(received, expected, msg)
 
         received = self._c.adp_file_formats
         expected = []
-        msg = 'Exporter adp_file_formats value error'
+        msg = 'ADP adp_file_formats value error'
         self.assertListEqual(received, expected, msg)
 
         received = self._c.code_header
         expected = 'Code'
-        msg = 'Exporter code_header value error'
+        msg = 'ADP code_header value error'
         self.assertEqual(received, expected, msg)
+
+        received = self._c.delivery_partners
+        expected = ['Nparcel', 'ParcelPoint', 'Toll', 'National Storage']
+        msg = 'ADP delivery_partners value error'
+        self.assertListEqual(received, expected, msg)
+
+        received = self._c.adp_default_passwords
+        expected = {'nparcel': 'aaaa',
+                    'parcelpoint': 'bbbb',
+                    'toll': 'cccc',
+                    'national storage': 'dddd'}
+        msg = 'ADP delivery_partners value error'
+        self.assertDictEqual(received, expected, msg)
 
     def test_condition_flag_item_excp_true(self):
         """Check item_excp flag settings -- True.

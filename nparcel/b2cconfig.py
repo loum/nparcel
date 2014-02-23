@@ -329,6 +329,14 @@ class B2CConfig(nparcel.Config):
         ``agent.code`` column.  This value is used as a unique
         identifier during the agent insert process
 
+    .. attribute:: delivery_partners
+
+        list of "delivery_partner" table values
+
+    .. attribute:: adp_default_passwords
+
+        dictionary of delivery partner default passwords
+
     """
     _dirs_to_check = []
     _mapper_in_dirs = []
@@ -430,6 +438,8 @@ class B2CConfig(nparcel.Config):
     _adp_headers = {}
     _adp_file_formats = []
     _code_header = None
+    _delivery_partners = []
+    _adp_default_passwords = {}
 
     def __init__(self, file=None):
         """Nparcel Config initialisation.
@@ -1263,6 +1273,24 @@ class B2CConfig(nparcel.Config):
                 ConfigParser.NoOptionError), err:
             log.debug('Using default DP code header: %s' %
                       str(self.code_header))
+
+        # Delivery partners.
+        try:
+            tmp_vals = self.get('adp', 'delivery_partners')
+            self.set_delivery_partners(tmp_vals.split(','))
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
+            log.debug('Using default DP code header: %s' %
+                      str(self.delivery_partners))
+
+        # Delivery partner default passwords.
+        try:
+            tmp_vals = dict(self.items('adp_default_passwords'))
+            self.set_adp_default_passwords(tmp_vals)
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
+            log.debug('Using default delivery partner passwords: %s' %
+                      str(self.adp_default_passwords))
 
     def condition(self, bu, flag):
         """Return the *bu* condition *flag* value.
@@ -2470,3 +2498,28 @@ class B2CConfig(nparcel.Config):
             self.code_header = value
             log.debug('Config set code_header to: "%s"' %
                       self.code_header)
+
+    @property
+    def delivery_partners(self):
+        return self._delivery_partners
+
+    def set_delivery_partners(self, values=None):
+        del self._delivery_partners[:]
+        self._delivery_partners = []
+
+        if values is not None:
+            self._delivery_partners.extend(values)
+            log.debug('Config delivery partners list: "%s"' %
+                      self.delivery_partners)
+
+    @property
+    def adp_default_passwords(self):
+        return self._adp_default_passwords
+
+    def set_adp_default_passwords(self, values=None):
+        self._adp_default_passwords.clear()
+
+        if values is not None:
+            self._adp_default_passwords = values
+            log.debug('Config ADP default passwords: "%s"' %
+                      self.adp_default_passwords)
