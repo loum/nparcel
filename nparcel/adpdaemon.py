@@ -119,6 +119,11 @@ class AdpDaemon(nparcel.DaemonService):
         except AttributeError, err:
             log.debug('ADP delivery partners not in config: %s ' % err)
 
+        try:
+            kwargs['default_passwords'] = self.config.adp_default_passwords
+        except AttributeError, err:
+            log.debug('ADP default passwords not in config: %s ' % err)
+
         adp = nparcel.Adp(**kwargs)
 
         commit = True

@@ -17,15 +17,34 @@ class TestAdpDaemon(unittest2.TestCase):
                                                          'templates'))
         cls._adpd.config = nparcel.B2CConfig()
         headers = {'agent.code': 'TP Code',
-                   'agent.dp_code':  'DP Code',
+                   'agent.dp_code': 'DP Code',
                    'agent.name': 'ADP Name',
-                   'delivery_partner.id': 'DP Id'}
+                   'agent.address': 'Address',
+                   'agent.suburb': 'Suburb',
+                   'agent.state': 'State',
+                   'agent.postcode': 'Postcode',
+                   'agent.opening_hours': 'Opening Hours',
+                   'agent.notes': 'Notes',
+                   'agent.parcel_size_code': 'ADP Accepts Parcel Size',
+                   'agent.phone_nbr': 'Phone',
+                   'agent.contact_name': 'Contact',
+                   'agent.email': 'Email',
+                   'agent.fax_nbr': 'Fax',
+                   'agent.status': 'Active',
+                   'delivery_partner.id': 'DP Id',
+                   'login_account.username': 'Username',
+                   'login_account.status': 'Login Status'}
         cls._adpd.config.set_adp_headers(headers)
         delivery_partners = ['Nparcel',
                              'ParcelPoint',
                              'Toll',
                              'National Storage']
         cls._adpd.config.set_delivery_partners(delivery_partners)
+        default_passwords = {'nparcel': 'aaaa',
+                             'parcelpoint': 'bbbb',
+                             'toll': 'cccc',
+                             'national storage': 'dddd'}
+        cls._adpd.config.set_adp_default_passwords(default_passwords)
 
         test_dir = os.path.join('nparcel', 'tests', 'files')
         xlsv_file = 'ADP-Bulk-Load.xlsx'
@@ -53,7 +72,6 @@ class TestAdpDaemon(unittest2.TestCase):
         self._adpd._start(self._adpd.exit_event)
 
         # Clean up.
-        self._adpd.config = None
         self._adpd._exit_event.clear()
         self._adpd.set_dry(old_dry)
         self._adpd.set_file(old_file)
@@ -75,23 +93,6 @@ class TestAdpDaemon(unittest2.TestCase):
         copy_file(self._test_file, os.path.join(dir, test_file))
 
         # Start processing.
-        self._adpd.config = nparcel.B2CConfig()
-        headers = {'code': 'TP Code',
-                   'dp_code': 'DP Code',
-                   'name': 'ADP Name',
-                   'address': 'Address',
-                   'suburb': 'Suburb',
-                   'state': 'State',
-                   'postcode': 'Postcode',
-                   'opening_hours': 'Opening Hours',
-                   'notes': 'Notes',
-                   'parcel_size_code': 'ADP Accepts Parcel Size',
-                   'phone_nbr': 'Phone',
-                   'contact': 'contact_name',
-                   'email': 'Email',
-                   'fax_nbr': 'Fax',
-                   'status': 'Active'}
-        self._adpd.config.set_adp_headers(headers)
         self._adpd.set_dry(dry)
         self._adpd.set_batch()
         self._adpd.set_file(test_file)
@@ -100,7 +101,6 @@ class TestAdpDaemon(unittest2.TestCase):
         self._adpd._start(self._adpd.exit_event)
 
         # Clean up.
-        self._adpd.config = None
         self._adpd.set_support_emails(old_support_emails)
         self._adpd.set_file(old_file)
         self._adpd.set_dry(old_dry)
@@ -126,7 +126,6 @@ class TestAdpDaemon(unittest2.TestCase):
         self._adpd._start(self._adpd.exit_event)
 
         # Clean up.
-        self._adpd._config = None
         self._adpd.set_dry(old_dry)
         self._adpd._exit_event.clear()
         self._adpd.set_adp_in_dirs(old_adp_in_dirs)

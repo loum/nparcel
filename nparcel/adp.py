@@ -24,9 +24,14 @@ class Adp(nparcel.Service):
 
         list of "delivery_partner" table values
 
+    .. attribute:: default_passwords
+
+        dictionary of delivery partner default passwords
+
     """
     _headers = {}
     _delivery_partners = []
+    _default_passwords = {}
 
     def __init__(self, **kwargs):
         """Adp initialisation.
@@ -36,6 +41,7 @@ class Adp(nparcel.Service):
 
         self.set_headers(kwargs.get('headers'))
         self.set_delivery_partners(kwargs.get('delivery_partners'))
+        self.set_default_passwords(kwargs.get('default_passwords'))
 
     @property
     def parser(self):
@@ -66,6 +72,17 @@ class Adp(nparcel.Service):
             self._delivery_partners.extend(values)
             log.debug('delivery partners list: "%s"' %
                       self.delivery_partners)
+
+    @property
+    def default_passwords(self):
+        return self._default_passwords
+
+    def set_default_passwords(self, values=None):
+        self._default_passwords.clear()
+
+        if values is not None:
+            self._default_passwords = values
+            log.debug('default passwords: "%s"' % self.default_passwords)
 
     def process(self, code, values, dry=False):
         """Parses an ADP bulk insert file and attempts to load the items
@@ -113,7 +130,20 @@ class Adp(nparcel.Service):
                         agent_values[k.replace('agent.', '')] = v
                 self.db.insert(self.db.agent.insert_sql(agent_values))
 
-        log.info('Agent code "%s" load status: %s' % (code, status))
+                # Login account table.
+                login_values = {}
+                for k, v in sanitised_values.iteritems():
+                    if 'login_account.' in k:
+                        login_values[k.replace('login_account.', '')] = v
+                sql = self.db.login_account.insert_sql(login_values)
+                self.db.insert(sql)
+
+                # Login access access.
+                # This is hardwired fugliness.
+                dp = sanitised_values.get('delivery_partner.id')
+                access_values = {'dp_id': dp, 'sla_id': 4}
+                sql = self.db.login_access.insert_sql(access_values)
+                self.db.insert(sql)
 
         log.info('Agent code "%s" load status: %s' % (code, status))
 
@@ -157,6 +187,14 @@ class Adp(nparcel.Service):
         * ``delivery_partner.id`` must convert the delivery partner name
           to the ``delivery_partner.id`` column value
 
+        * ``login_account.username`` must have an associated password
+
+        * ``login_account.status`` value to be converted from:
+
+          * ``YES`` or ``Y`` to integer 1
+
+          * ``NO`` or ``N`` to integer 0
+
         **Args:**
             *values*: dictionary of table column headers and values.
 
@@ -185,7 +223,8 @@ class Adp(nparcel.Service):
         column = 'delivery_partner.id'
         dp = values.get(column)
         if dp is not None:
-            log.debug('Sanitising "%s" value: "%s" ...' % (column, dp))
+            log.debug('Sanitising delivery_partner "%s" value: "%s" ...' %
+                      (column, dp))
             index = None
             try:
                 index = self.delivery_partners.index(dp) + 1
@@ -197,6 +236,37 @@ class Adp(nparcel.Service):
                 sanitised_values[column] = index
             else:
                 sanitised_values.pop(column)
+
+        # Password.
+        log.debug('Sanitising password ...')
+        if dp is not None:
+            pw = self.default_passwords.get(dp.lower())
+            if pw is not None:
+                sanitised_values['login_account.password'] = pw
+
+        if sanitised_values.get('login_account.password') is None:
+            self.set_alerts('Password lookup failed')
+
+        # login_account.status
+        log.debug('Sanitising login_account.status ...')
+        la_status = values.get('login_account.status')
+        if la_status is not None:
+            try:
+                la_status = int(la_status)
+            except ValueError, err:
+                if (la_status.lower() == 'no' or
+                    la_status.lower() == 'n'):
+                    la_status = 0
+                elif (la_status.lower() == 'yes' or
+                      la_status.lower() == 'y'):
+                    la_status = 1
+                log.debug('"login_account.status": %s new value: "%s"' %
+                          (values.get('login_account.status'), la_status))
+        else:
+            # Enable by default.
+            la_status = 1
+
+        sanitised_values['login_account.status'] = la_status
 
         return sanitised_values
 
@@ -213,6 +283,8 @@ class Adp(nparcel.Service):
         * The ``agent.status`` value needs to an integer
 
         * ``delivery_partner.id`` must contain a value
+
+        * ``login_account.username`` must have an associated password
 
         **Args:**
             *values*: dictionary of table column headers and values.
@@ -249,6 +321,17 @@ class Adp(nparcel.Service):
         dp = values.get('delivery_partner.id')
         if dp is None:
             self.set_alerts('Deliver partner invalid value')
+            is_valid = False
+
+        # Username / password.
+        username = values.get('login_account.username')
+        pw = values.get('login_account.password')
+        if username is None:
+            self.set_alerts('Username undefined')
+        elif pw is None:
+            self.set_alerts('Username "%s" - undefined password' % username)
+
+        if username is None or pw is None:
             is_valid = False
 
         if not is_valid:
