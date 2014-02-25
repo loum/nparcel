@@ -1,6 +1,7 @@
 __all__ = [
     "Adp",
 ]
+import datetime
 import copy
 
 import nparcel
@@ -125,6 +126,10 @@ class Adp(nparcel.Service):
                 self.set_alerts('Agent code "%s" already exists' % code)
             else:
                 # Agent table.
+                ts = datetime.datetime.now().isoformat(' ').split('.', 1)[0]
+                sanitised_values['agent.created_ts'] = ts
+                username = sanitised_values.get('login_account.username')
+                sanitised_values['agent.username'] = username
                 agent_values = {}
                 for k, v in sanitised_values.iteritems():
                     if 'agent.' in k:
@@ -142,7 +147,9 @@ class Adp(nparcel.Service):
                 # Login access access.
                 # This is hardwired fugliness.
                 dp = sanitised_values.get('delivery_partner.id')
-                access_values = {'dp_id': dp, 'sla_id': 4}
+                access_values = {'username': username,
+                                 'dp_id': dp,
+                                 'sla_id': 4}
                 sql = self.db.login_access.insert_sql(access_values)
                 self.db.insert(sql)
 
@@ -235,6 +242,7 @@ class Adp(nparcel.Service):
 
             if index is not None:
                 sanitised_values[column] = index
+                sanitised_values['agent.dp_id'] = index
             else:
                 sanitised_values.pop(column)
 
