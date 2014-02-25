@@ -4,7 +4,7 @@ Modules
 =======
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 3
 
     init.rst
 
@@ -28,6 +28,8 @@ Modules
     reminder.rst
     reminderdaemon.rst
     stopparser.rst
+
+    adp.rst
     adpparser.rst
 
     ondelivery.rst

@@ -175,7 +175,7 @@ control processing workflows.
 
     directory where comms files are staged for further processing
 
-* ``ondelivery_loop``
+* ``ondelivery_loop`` (under the ``[timeout]`` section)
 
     time (seconds) between ``npondeliveryd`` processing iterations
 
@@ -185,7 +185,7 @@ control processing workflows.
 
 * ``sc4_comms_ids`` (set via the ``[conditions]`` map position 15)
 
-    enalbe/disable Service Code 4 on delivery notification (On Delivery)
+    enable/disable Service Code 4 on delivery notification (On Delivery)
 
 * ``db`` (the actual ``[db]`` section)
 
@@ -193,22 +193,22 @@ control processing workflows.
     example is::
 
         [db]
-            driver = FreeTDS
-            host = SQVDBAUT07
-            database = Nparcel
-            user = npscript
-            password = <passwd>
+        driver = FreeTDS
+        host = SQVDBAUT07
+        database = Nparcel
+        user = npscript
+        password = <passwd>
 
 * ``transsend_db`` (the actual ``[transsend_db]`` section)
 
     TransSend database connectivity information.  A typical example is::
 
         [transsend_db]
-            host = siedbdop01
-            user = NPARCEL
-            password = <password>
-            port = 1521
-            sid = TRCOPDOV
+        host = siedbdop01
+        user = NPARCEL
+        password = <password>
+        port = 1521
+        sid = TRCOPDOV
 
 * ``uncollected_day_range``
 

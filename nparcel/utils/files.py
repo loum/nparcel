@@ -390,7 +390,7 @@ def xlsx_to_csv_converter(xlsx_file):
     file, extension = os.path.splitext(xlsx_file)
     target_file = None
 
-    if extension == '.xlsx':
+    if (os.path.exists(xlsx_file) and extension == '.xlsx'):
         wb = nparcel.openpyxl.load_workbook(xlsx_file)
         sh = wb.get_active_sheet()
 

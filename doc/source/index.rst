@@ -8,7 +8,7 @@ Overview
 
 The Toll Parcel Portal B2C middleware package presents an interface to the
 various Toll divisions to upload missed parcel collection information into
-the Toll `Parcel Portal <https://nparcel.tollgroup.com>`
+the `Toll Parcel Portal <https://nparcel.tollgroup.com>`_
 
 The following diagram describes various interfaces at a high-level:
 

@@ -279,7 +279,7 @@ class Adp(nparcel.Service):
 
             "hardwired" because of bad design :-(
 
-        Current sanitisation rules include:
+        Current validation rules include:
 
         * The ``agent.status`` value needs to an integer
 
@@ -288,7 +288,7 @@ class Adp(nparcel.Service):
         * ``login_account.username`` must have an associated password
 
         **Args:**
-            *values*: dictionary of table column headers and values.
+            *values*: dictionary of table column headers and values
 
         **Returns:**
             boolean ``True`` if the validation is OK

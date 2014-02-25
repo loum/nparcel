@@ -89,11 +89,15 @@ class B2CConfig(nparcel.Config):
 
         time (seconds) between exporter processing iterations.
 
-    .. attribute:: mapper_loop (exporter)
+    .. attribute:: mapper_loop (mapper)
 
         time (seconds) between mapper processing iterations.
 
-    .. attribute:: filter_loop (exporter)
+    .. attribute:: filter_loop (filter)
+
+        time (seconds) between filter processing iterations.
+
+    .. attribute:: adp_loop (ADP bulk load)
 
         time (seconds) between filter processing iterations.
 
@@ -354,6 +358,7 @@ class B2CConfig(nparcel.Config):
     _exporter_loop = 300
     _mapper_loop = 30
     _filter_loop = 30
+    _adp_loop = 30
     _proxy_scheme = 'https'
     _business_units = {}
     _t1250_file_format = 'T1250_TOL.*\.txt'
@@ -563,6 +568,10 @@ class B2CConfig(nparcel.Config):
         return self._filter_loop
 
     @property
+    def adp_loop(self):
+        return self._adp_loop
+
+    @property
     def business_units(self):
         return self._business_units
 
@@ -580,12 +589,11 @@ class B2CConfig(nparcel.Config):
 
     def set_support_emails(self, values):
         del self._support_emails[:]
+        self._support_emails = []
 
         if values is not None:
             log.debug('Set Support Emails "%s"' % str(values))
             self._support_emails.extend(values)
-        else:
-            self._support_emails = []
 
     @property
     def cond(self):
@@ -910,6 +918,12 @@ class B2CConfig(nparcel.Config):
         except ConfigParser.NoOptionError, err:
             log.debug('Using default Filter loop: %d (sec)' %
                       self.filter_loop)
+
+        try:
+            self._adp_loop = int(self.get('timeout', 'adp_loop'))
+        except ConfigParser.NoOptionError, err:
+            log.debug('Using default ADP loop: %d (sec)' %
+                      self.adp_loop)
 
         try:
             self._support_emails = self.get('email', 'support').split(',')

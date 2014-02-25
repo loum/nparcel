@@ -3,6 +3,7 @@ __all__ = [
 ]
 import signal
 import os
+import time
 
 import nparcel
 from nparcel.utils.log import log
@@ -72,6 +73,18 @@ class AdpDaemon(nparcel.DaemonService):
         except AttributeError, err:
             msg = ('Archive directory not in config -- archiving disabled')
             log.debug(msg)
+
+        try:
+            self.set_loop(self.config.adp_loop)
+        except AttributeError, err:
+            log.debug('Daemon loop not in config -- default %d sec' %
+                      self.loop)
+
+        try:
+            self.set_adp_file_formats(self.config.adp_file_formats)
+        except AttributeError, err:
+            log.debug('ADP file formats not in config -- default %s' %
+                      self.adp_file_formats)
 
     @property
     def parser(self):
@@ -145,6 +158,12 @@ class AdpDaemon(nparcel.DaemonService):
         except AttributeError, err:
             log.debug('ADP default passwords not in config: %s ' % err)
 
+        code_header = None
+        try:
+            code_header = self.config.code_header
+        except AttributeError, err:
+            log.debug('ADP code_header not in config: %s ' % err)
+
         adp = nparcel.Adp(**kwargs)
 
         commit = True
@@ -153,33 +172,39 @@ class AdpDaemon(nparcel.DaemonService):
 
         while not event.isSet():
             files = []
-            if self.file is not None:
-                converted_file = xlsx_to_csv_converter(self.file)
-                if converted_file is not None:
-                    files.append(converted_file)
-                event.set()
+            if adp.db():
+                if self.file is not None:
+                    converted_file = xlsx_to_csv_converter(self.file)
+                    if converted_file is not None:
+                        files.append(converted_file)
+                    event.set()
+                else:
+                    files.extend(self.get_files())
             else:
-                files.extend(self.get_files())
+                log.error('ODBC connection failure -- aborting')
+                event.set()
+                continue
 
             # Start processing.
-            if files is not None:
+            if len(files):
                 self.reporter.reset(identifier=str(files))
                 self.parser.set_in_files(files)
+                if code_header is not None:
+                    self.parser.set_code_header(code_header)
                 self.parser.read()
 
             for code, v in self.parser.adps.iteritems():
                 self.reporter(adp.process(code, v, dry=self.dry))
 
-            # Report the results.
-            alerts = list(adp.alerts)
-            adp.reset()
-
-            if files is not None:
+            if len(files):
+                adp.reset(commit=commit)
                 stats = self.reporter.report()
                 log.info(stats)
                 for f in files:
                     self.archive_file(f, dry=self.dry)
 
+            # Report the results.
+            alerts = list(adp.alerts)
             if len(alerts):
                 alert_table = self.create_table(alerts)
                 del alerts[:]
@@ -197,6 +222,8 @@ class AdpDaemon(nparcel.DaemonService):
                 elif self.batch:
                     log.info('Batch run iteration complete -- aborting')
                     event.set()
+                else:
+                    time.sleep(self.loop)
 
     def get_files(self):
         """Searches the :attr:`adp_in_dirs` directories for TCD report

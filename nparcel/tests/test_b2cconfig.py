@@ -243,6 +243,11 @@ class TestB2CConfig(unittest2.TestCase):
         expected = 30
         self.assertEqual(received, expected, msg)
 
+        msg = 'ADP loop not as expected'
+        received = self._c.adp_loop
+        expected = 30
+        self.assertEqual(received, expected, msg)
+
     def test_parse_config_mapper(self):
         """Parse items from the config -- mapper
         """

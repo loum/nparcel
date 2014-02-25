@@ -9,11 +9,13 @@ Each Business Unit must capture failed parcel delivery information into
 the standard Nparcel-formatted 1250 file.  These files must be periodically
 be transferred to the Nparcel B2C replicator system via FTP.
 
-The Nparcel B2C replicator presents a inbound FTP drop box for each
-Business Unit.
+The Toll Parcel Portal B2C middleware presents a inbound FTP drop box for
+each Business Unit.
 
-Prepare a T1250* inbound drop-box
----------------------------------
+.. _ftp_drop_box:
+
+Prepare an Inbound Drop-box
+---------------------------
 All Business Units have their own drop box details which branches off the
 generic ``/var/ftp/pub/nparcel`` directory structure.  For example, in the
 case of Business Unit **Priority**, the inbound FTP directory would be
