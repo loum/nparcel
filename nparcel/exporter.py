@@ -308,8 +308,6 @@ class Exporter(nparcel.Service):
                 if status and not dry:
                     remove_files(sig_file)
 
-        self.file_based_updates(dry=dry)
-
         return valid_items
 
     def archive_signature_file(self,
@@ -747,8 +745,16 @@ class Exporter(nparcel.Service):
             reader = csv.DictReader(fh, delimiter='|')
 
             for rowdict in reader:
-                row = (rowdict.get(self.connote_header),
-                    rowdict.get(self.item_nbr_header))
+                connote = rowdict.get(self.connote_header)
+                if connote is None:
+                    # We need this because ParcelPoint return the 'REF1'
+                    # column as 'Ref1' (just to be different ...)
+                    title = self.connote_header.lower().title()
+                    log.debug('Trying connote lookup as per title: "%s"' %
+                              title)
+                    connote = rowdict.get(title)
+                item_nbr = rowdict.get(self.item_nbr_header)
+                row = (connote, item_nbr)
                 values.append(row)
                 log.info('Parsed (connote|item_nbr): %s' % str(row))
 

@@ -25,7 +25,7 @@ class TestExporterDaemon(unittest2.TestCase):
 
     def test_start(self):
         self._ed.set_dry()
-        self._d.set_batch()
+        self._ed.set_batch()
         self._ed._start(self._ed.exit_event)
 
     def test_start_non_dry(self):

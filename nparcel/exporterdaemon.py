@@ -118,6 +118,7 @@ class ExporterDaemon(nparcel.DaemonService):
                                                 recipients=self.support_emails,
                                                 dry=self.dry)
 
+                exporter.file_based_updates(dry=self.dry)
             else:
                 log.error('ODBC connection failure -- aborting')
                 event.set()
