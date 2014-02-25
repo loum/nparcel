@@ -121,6 +121,7 @@ class Adp(nparcel.Service):
             self.db(sql)
             rows = list(self.db.rows())
             if len(rows) > 0:
+                status = False
                 self.set_alerts('Agent code "%s" already exists' % code)
             else:
                 # Agent table.

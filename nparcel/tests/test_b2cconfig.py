@@ -795,15 +795,14 @@ class TestB2CConfig(unittest2.TestCase):
                     'agent.postcode': 'Postcode',
                     'agent.opening_hours': 'Opening Hours',
                     'agent.notes': 'Notes',
-                    'agent.latitude': 'Latitude',
-                    'agent.longitude': 'Longitude',
                     'agent.parcel_size_code': 'ADP Accepts Parcel Size',
                     'agent.phone_nbr': 'Phone',
-                    'agent.contact': 'contact_name',
+                    'agent.contact_name': 'Contact',
                     'agent.email': 'Email',
                     'agent.fax_nbr': 'Fax',
                     'agent.status': 'Active',
-                    'delivery_partner.id': 'DP Id'}
+                    'delivery_partner.id': 'DP Id',
+                    'login_account.username': 'Username'}
         msg = 'ADP headers not as expected'
         self.assertDictEqual(received, expected, msg)
 
@@ -813,7 +812,7 @@ class TestB2CConfig(unittest2.TestCase):
         self.assertListEqual(received, expected, msg)
 
         received = self._c.code_header
-        expected = 'Code'
+        expected = 'TP Code'
         msg = 'ADP code_header value error'
         self.assertEqual(received, expected, msg)
 

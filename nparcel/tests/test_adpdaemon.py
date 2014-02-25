@@ -87,15 +87,19 @@ class TestAdpDaemon(unittest2.TestCase):
         old_dry = self._adpd.dry
         old_batch = self._adpd.batch
         old_support_emails = list(self._adpd.support_emails)
+        old_archive_dir = self._adpd.archive_dir
 
         dir = tempfile.mkdtemp()
         test_file = os.path.join(dir, os.path.basename(self._test_file))
         copy_file(self._test_file, os.path.join(dir, test_file))
 
+        archive_dir = tempfile.mkdtemp()
+
         # Start processing.
         self._adpd.set_dry(dry)
         self._adpd.set_batch()
         self._adpd.set_file(test_file)
+        self._adpd.set_archive_dir(archive_dir)
         # Add valid email address here if you want to verify support comms.
         self._adpd.set_support_emails(None)
         self._adpd._start(self._adpd.exit_event)
@@ -105,8 +109,11 @@ class TestAdpDaemon(unittest2.TestCase):
         self._adpd.set_file(old_file)
         self._adpd.set_dry(old_dry)
         self._adpd.set_batch(old_batch)
-        remove_files(get_directory_files_list(dir))
+        self._adpd.set_archive_dir(archive_dir)
         os.removedirs(dir)
+        remove_files(get_directory_files_list(os.path.join(archive_dir,
+                                                           'adp')))
+        os.removedirs(os.path.join(archive_dir, 'adp'))
         self._adpd._exit_event.clear()
 
     def test_start_dry_loop_dir_based(self):

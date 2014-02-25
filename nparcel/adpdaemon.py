@@ -2,10 +2,12 @@ __all__ = [
     "AdpDaemon",
 ]
 import signal
+import os
 
 import nparcel
 from nparcel.utils.log import log
 from nparcel.utils.files import (get_directory_files_list,
+                                 move_file,
                                  xlsx_to_csv_converter)
 
 
@@ -26,10 +28,15 @@ class AdpDaemon(nparcel.DaemonService):
         regular expression format string for inbound ADP bulk filenames
         (default [] in which case all files are accepted)
 
+    .. attribute:: archive_dir
+
+        where to archive ADP file after processing
+
     """
     _parser = nparcel.AdpParser()
     _adp_in_dirs = ['/var/ftp/pub/nparcel/adp/in']
     _adp_file_formats = []
+    _archive_dir = None
 
     def __init__(self,
                  pidfile,
@@ -60,6 +67,12 @@ class AdpDaemon(nparcel.DaemonService):
                    self.adp_in_dirs)
             log.debug(msg)
 
+        try:
+            self.set_archive_dir(self.config.archive_dir)
+        except AttributeError, err:
+            msg = ('Archive directory not in config -- archiving disabled')
+            log.debug(msg)
+
     @property
     def parser(self):
         return self._parser
@@ -87,6 +100,14 @@ class AdpDaemon(nparcel.DaemonService):
         if values is not None:
             log.debug('Setting ADP file formats to "%s"' % values)
             self._adp_file_formats.extend(values)
+
+    @property
+    def archive_dir(self):
+        return self._archive_dir
+
+    def set_archive_dir(self, value):
+        self._archive_dir = value
+        log.debug('Set archive directory to "%s"' % value)
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
@@ -142,15 +163,23 @@ class AdpDaemon(nparcel.DaemonService):
 
             # Start processing.
             if files is not None:
+                self.reporter.reset(identifier=str(files))
                 self.parser.set_in_files(files)
                 self.parser.read()
 
             for code, v in self.parser.adps.iteritems():
-                adp.process(code, v)
+                self.reporter(adp.process(code, v, dry=self.dry))
 
             # Report the results.
             alerts = list(adp.alerts)
             adp.reset()
+
+            if files is not None:
+                stats = self.reporter.report()
+                log.info(stats)
+                for f in files:
+                    self.archive_file(f, dry=self.dry)
+
             if len(alerts):
                 alert_table = self.create_table(alerts)
                 del alerts[:]
@@ -197,3 +226,29 @@ class AdpDaemon(nparcel.DaemonService):
         log.debug('All ADP bulk load files: "%s"' % converted_files)
 
         return converted_files
+
+    def archive_file(self, file, dry=False):
+        """Will attempt to move *file* to the ADP archive directory.
+
+        .. note::
+
+            All attempts will be made to archive the original ``*.xlsx``
+            and ``*.csv`` variant.
+
+        **Args:**
+            *file*: string representation of the filename to archive
+
+        """
+        filename = os.path.splitext(file)[0]
+        file_base = os.path.basename(filename)
+        log.info('Archiving "%s.*"' % filename)
+
+        if self.archive_dir is not None:
+            archive_path = os.path.join(self.archive_dir, 'adp')
+            if not dry:
+                for ext in ['xlsx', 'csv']:
+                    move_file("%s.%s" % (filename, ext),
+                              os.path.join(archive_path, "%s.%s" %
+                                                         (file_base, ext)))
+        else:
+            log.info('Archive directory not defined -- archiving disabled')
