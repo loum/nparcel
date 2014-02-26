@@ -315,7 +315,7 @@ class Adp(nparcel.Service):
 
         # Postcode.
         postcode = values.get('agent.postcode')
-        if (postcode is not None):
+        if (postcode is not None and postcode):
             translated_state = translate_postcode(postcode)
             state = values.get('agent.state')
             if state is None:

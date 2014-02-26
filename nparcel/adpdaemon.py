@@ -196,7 +196,9 @@ class AdpDaemon(nparcel.DaemonService):
             for code, v in self.parser.adps.iteritems():
                 self.reporter(adp.process(code, v, dry=self.dry))
 
+            alerts = []
             if len(files):
+                alerts = list(adp.alerts)
                 adp.reset(commit=commit)
                 stats = self.reporter.report()
                 log.info(stats)
@@ -204,7 +206,6 @@ class AdpDaemon(nparcel.DaemonService):
                     self.archive_file(f, dry=self.dry)
 
             # Report the results.
-            alerts = list(adp.alerts)
             if len(alerts):
                 alert_table = self.create_table(alerts)
                 del alerts[:]
