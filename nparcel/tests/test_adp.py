@@ -167,7 +167,8 @@ class TestAdp(unittest2.TestCase):
                                          'National Storage'])
         received = self._adp.sanitise({'delivery_partner.id': 'Nparcel'})
         expected = {'delivery_partner.id': 1,
-                    'login_account.status': 1}
+                    'login_account.status': 1,
+                    'agent.dp_id': 1}
         msg = 'Sanitise delivery_partner "Nparcel" error'
         self.assertDictEqual(received, expected, msg)
 
@@ -194,7 +195,8 @@ class TestAdp(unittest2.TestCase):
         received = self._adp.sanitise({'delivery_partner.id': 'Nparcel'})
         expected = {'delivery_partner.id': 1,
                     'login_account.password': 'aaaa',
-                    'login_account.status': 1}
+                    'login_account.status': 1,
+                    'agent.dp_id': 1}
         msg = 'Sanitise password error'
         self.assertDictEqual(received, expected, msg)
 

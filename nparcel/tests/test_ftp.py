@@ -464,12 +464,15 @@ class TestFtp(unittest2.TestCase):
     def test_get_xfer_files_is_not_pod_T1250(self):
         """Get list of files to transfer - non POD T1250.
         """
-        source = 'nparcel/tests/files'
-        filter = 'T1250_TOLP_\d{14}\.txt$'
+        source = os.path.join('nparcel', 'tests', 'files')
+        filter = 'T1250_TOLP_20130413\d{6}\.txt$'
         is_pod = False
 
         received = self._ftp.get_xfer_files(source, filter, is_pod)
-        expected = ['nparcel/tests/files/T1250_TOLP_20130413135756.txt']
+        expected = [os.path.join('nparcel',
+                                 'tests',
+                                 'files',
+                                 'T1250_TOLP_20130413135756.txt')]
         msg = 'POD report file get list'
         self.assertListEqual(received, expected, msg)
 
