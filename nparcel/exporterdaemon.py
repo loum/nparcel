@@ -117,8 +117,19 @@ class ExporterDaemon(nparcel.DaemonService):
                                                 data=data,
                                                 recipients=self.support_emails,
                                                 dry=self.dry)
-
+                # File based closures.
                 exporter.file_based_updates(dry=self.dry)
+                alerts = list(exporter.alerts)
+                exporter.reset()
+                if len(alerts):
+                    alert_table = self.create_table(alerts)
+                    del alerts[:]
+                    data = {'facility': self.__class__.__name__,
+                            'err_table': alert_table}
+                    self.emailer.send_comms(template='general_err',
+                                            data=data,
+                                            recipients=self.support_emails,
+                                            dry=self.dry)
             else:
                 log.error('ODBC connection failure -- aborting')
                 event.set()
