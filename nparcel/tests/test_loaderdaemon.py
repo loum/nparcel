@@ -13,9 +13,8 @@ class TestLoaderDaemon(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._file = os.path.join('nparcel',
-                                 'tests',
-                                 'files',
+        cls._test_dir = os.path.join('nparcel', 'tests', 'files')
+        cls._file = os.path.join(cls._test_dir,
                                  'T1250_TOLI_20130828202901.txt')
         config = os.path.join('nparcel', 'conf', 'nparceld.conf')
         cls._d = nparcel.LoaderDaemon(pidfile=None, config=config)
@@ -146,6 +145,60 @@ class TestLoaderDaemon(unittest2.TestCase):
         os.removedirs(in_dir)
         os.removedirs(expected_archive_dir)
         os.removedirs(agg_dir)
+        self._d.exit_event.clear()
+
+    def test_start_non_dry_loop_odbc_error(self):
+        """Start non-dry loop to fix ODBC error when no records to commit.
+        """
+        dry = True
+
+        old_file = self._d.file
+        old_dry = self._d.dry
+        old_batch = self._d.batch
+        old_in_dirs = list(self._d.config.in_dirs)
+        old_archive_dir = self._d.config.archive_dir
+        old_support_emails = list(self._d.support_emails)
+        # Need to connect to a MSSQL instance to reproduce this error.
+        # Uncomment the following config settings to redirect to MSSQL.
+        #self._d.config.set('db', 'host', '')
+        #self._d.config.set('db', 'driver', 'FreeTDS')
+        #self._d.config.set('db', 'database', '')
+        #self._d.config.set('db', 'user', '')
+        #self._d.config.set('db', 'password', '')
+        #self._d.config.set('db', 'port', '1442')
+        base_dir = tempfile.mkdtemp()
+        in_dir = os.path.join(base_dir, 'priority', 'in')
+        archive_dir = tempfile.mkdtemp()
+
+        # Copy over our test file.
+        file = 'T1250_TOLP_20131209071859.txt'
+        copy_file(os.path.join(self._test_dir, file),
+                  os.path.join(in_dir, os.path.basename(file)))
+
+        # Start processing.
+        self._d.set_dry(dry)
+        self._d.set_batch()
+        self._d.config.set_in_dirs([in_dir])
+        # Add valid email address here if you want to verify support comms.
+        self._d.set_support_emails(None)
+        self._d.config.set_archive_dir(archive_dir)
+        self._d._start(self._d.exit_event)
+
+        # Clean up.
+        self._d.set_file(old_file)
+        self._d.set_dry(old_dry)
+        self._d.set_batch(old_batch)
+        self._d.config.set_in_dirs(old_in_dirs)
+        self._d.config.set_archive_dir(old_archive_dir)
+        self._d.set_support_emails(old_support_emails)
+        self._d.config.remove_option('db', 'host')
+        self._d.config.remove_option('db', 'driver')
+        self._d.config.remove_option('db', 'database')
+        self._d.config.remove_option('db', 'user')
+        self._d.config.remove_option('db', 'user')
+        self._d.config.remove_option('db', 'port')
+        remove_files(get_directory_files_list(in_dir))
+        os.removedirs(in_dir)
         self._d.exit_event.clear()
 
     def test_start_non_dry_loop_priority(self):
@@ -584,6 +637,7 @@ class TestLoaderDaemon(unittest2.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        del cls._test_dir
         del cls._file
         cls._d = None
         del cls._d
