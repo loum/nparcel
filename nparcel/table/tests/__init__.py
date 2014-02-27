@@ -10,3 +10,5 @@ from test_delivery_partner import TestDeliveryPartner
 from test_login_account import TestLoginAccount
 from test_system_level_access import TestSystemLevelAccess
 from test_login_access import TestLoginAccess
+from test_returns_reference import TestReturnsReference
+from test_returns import TestReturns
