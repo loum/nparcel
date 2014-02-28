@@ -416,11 +416,12 @@ class Exporter(nparcel.Service):
             localised date string or *time_string* if *state* is invalid
 
         """
+        time_string = time_string.split('.')[0]
+
         log.info('Localising timezone for time "%s" against state: "%s"' %
                  (time_string, state))
 
         tz_time_string = time_string
-
         parsed_time = time.strptime(time_string, self.time_fmt)
         dt = datetime.datetime.fromtimestamp(time.mktime(parsed_time))
         local_dt = pytz.timezone(self.local_tz).localize(dt)

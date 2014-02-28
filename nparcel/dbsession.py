@@ -1,7 +1,7 @@
 __all__ = [
     "dbsession",
 ]
-import sqlite
+from pysqlite2 import dbapi2 as sqlite3
 import pyodbc
 import datetime
 
@@ -11,9 +11,16 @@ from nparcel.utils.log import log
 
 class DbSession(object):
     """Nparcel DB session manager.
+
+    .. attribute:: db_type
+
+        string value that captures the database type (for example,
+        ``sqlite`` or ``MSSQL``)
+
     """
     _connection = None
     _cursor = None
+    _db_type = None
     _job = nparcel.Job()
     _jobitem = nparcel.JobItem()
     _agent = nparcel.Agent()
@@ -105,6 +112,14 @@ class DbSession(object):
         self._cursor = value
 
     @property
+    def db_type(self):
+        return self._db_type
+
+    def set_db_type(self, value):
+        self._db_type = value
+        log.debug('Set DB type to "%s"' % self.db_type)
+
+    @property
     def connection(self):
         return self._connection
 
@@ -183,8 +198,10 @@ class DbSession(object):
 
         try:
             if self.host is None:
-                log.info('DB session (sqlite) -- starting ...')
-                self.set_connection(sqlite.connect(':memory:'))
+                log.info('DB session (sqlite3) -- starting ...')
+                self.set_connection(sqlite3.connect(':memory:'))
+                self.connection.text_factory = str
+                self.set_db_type('sqlite3')
             else:
                 log.info('DB session (MSSQL) -- starting ...')
                 conn_string = ('%s;%s;%s;%s;%s;%s;%s' %
@@ -196,6 +213,7 @@ class DbSession(object):
                                 'port=%d' % self.port,
                                 'autocommit=False'))
                 self.set_connection(pyodbc.connect(conn_string))
+                self.set_db_type('MSSQL')
 
             self.set_cursor(self.connection.cursor())
             log.info('DB session creation OK')

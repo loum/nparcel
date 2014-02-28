@@ -30,6 +30,21 @@ class TestReturnsReference(unittest2.TestCase):
         msg = 'Object is not an nparcel.ReturnsReference'
         self.assertIsInstance(self._rr, nparcel.ReturnsReference, msg)
 
+    def test_reference_nbr_sql(self):
+        """Verify the reference_nbr_sql string.
+        """
+        returns_id = 2
+        db_type = self._db.db_type
+
+        sql = self._db.returns_reference.reference_nbr_sql(returns_id,
+                                                           db=db_type)
+        self._db(sql)
+
+        received = list(self._db.rows())
+        expected = [('bbbbbb',), ('cccccc',)]
+        msg = 'reference_nbr_sql returned values error'
+        self.assertListEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._db.disconnect()

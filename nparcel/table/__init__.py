@@ -3,13 +3,35 @@ __all__ = [
 ]
 import re
 
+from nparcel.utils.log import log
+
 
 class Table(object):
     """Base Nparcel DB table.
     """
+    _name = None
+    _alias = None
 
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, name, alias=None):
+        self._name = name
+        if alias is not None:
+            self._alias = alias
+
+    @property
+    def name(self):
+        return self._name
+
+    def set_name(self, value):
+        self._name = value
+        log.debug('Set table name to "%s"' % self._name)
+
+    @property
+    def alias(self):
+        return self._alias
+
+    def set_alias(self, value):
+        self._alias = value
+        log.debug('Set table alias to "%s"' % self._alias)
 
     def insert_sql(self, kwargs):
         """
