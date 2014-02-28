@@ -19,14 +19,9 @@ class Comms(object):
 
         period (in seconds) that the uncollected parcel will be held for
 
-    .. attribute:: comms_dir
-
-         directory where comms files are read from for further processing
-
     """
     _hold_period = 691200
     _template_base = None
-    _comms_dir = None
 
     def __init__(self,
                  hold_period=None,
@@ -58,22 +53,12 @@ class Comms(object):
                                            proxy_scheme=scheme,
                                            **email_api)
 
-        if comms_dir is not None:
-            self.set_comms_dir(comms_dir)
-
     @property
     def hold_period(self):
         return self._hold_period
 
     def set_hold_period(self, value):
         self._hold_period = value
-
-    @property
-    def comms_dir(self):
-        return self._comms_dir
-
-    def set_comms_dir(self, value):
-        self._comms_dir = value
 
     @property
     def template_base(self):
@@ -83,8 +68,8 @@ class Comms(object):
         self._template_base = value
 
     def process(self, comms_file, dry=False):
-        """Slurps communication files from :attr:`comms_dir` and attempts
-        to send comms via appropratie medium.
+        """Attempts to send comms via appropratie medium based on
+        *comms_file* comms event file.
 
         Successful notifications will set the ``job_item.notify`` column
         if the corresponding ``job_item.id``.
@@ -190,6 +175,8 @@ class Comms(object):
                 log.info('Removing comms file: "%s"' % comms_file)
                 if not dry:
                     remove_files(comms_file)
+
+        log.debug('Comms status: %s' % str(comms_status))
 
         return comms_status
 
@@ -347,54 +334,11 @@ class Comms(object):
 
         return status
 
-    def get_comms_files(self):
-        """Produce a list of files in the :attr:`comms_dir`.
-
-        Comms files are matched based on the following pattern::
-
-            <action>.<job_item.id>.<template>
-
-        where:
-
-        * ``<action>`` is the communications medium (either SMS or email are
-          supported)
-          job_item table
-        * ``<job_item.id>`` is the integer based primary key from the
-          job_item table
-        * ``<template>`` is the string template used to build the message
-          content
-
-        **Returns:**
-            list of files to process or empty list if the :attr:`comms_dir`
-            is not defined or does not exist
-
-        """
-        comms_files = []
-
-        log.debug('Searching for comms in dir: %s' % self.comms_dir)
-
-        if self.comms_dir is not None:
-            if not os.path.exists(self.comms_dir):
-                log.error('Comms directory "%s" does not exist' %
-                          self.comms_dir)
-            else:
-                for f in os.listdir(self.comms_dir):
-                    r = re.compile("^(email|sms)\.(\d+)\.(pe|rem|body|delay)$")
-                    m = r.match(f)
-                    if m:
-                        comms_file = os.path.join(self.comms_dir, f)
-                        log.info('Found comms file: "%s"' % comms_file)
-                        comms_files.append(comms_file)
-        else:
-            log.error('Comms dir is not defined')
-
-        return comms_files
-
-    def get_agent_details(self, agent_id):
+    def get_agent_details(self, job_item_id):
         """Get agent details.
 
         **Args:**
-            agent_id: as per the agent.id table column
+            *job_item_id*: as per the ``job_item.id`` table column
 
         **Returns:**
             dictionary structure capturing the Agent's details similar to::
@@ -411,7 +355,7 @@ class Comms(object):
         """
         agent_details = []
 
-        sql = self.db.jobitem.job_item_agent_details_sql(agent_id)
+        sql = self.db.jobitem.job_item_agent_details_sql(job_item_id)
         self.db(sql)
         columns = self.db.columns()
         agents = []
@@ -420,12 +364,13 @@ class Comms(object):
 
         if len(agents) != 1:
             log.error('job_item.id %d agent list: "%s"' %
-                      (agent_id, agents))
+                      (job_item_id, agents))
         else:
             agent_details = [None] * (len(columns) + len(agents[0]))
             agent_details[::2] = columns
             agent_details[1::2] = agents[0]
-            log.debug('job_item.id %d detail: "%s"' % (agent_id, agents[0]))
+            log.debug('job_item.id %d detail: "%s"' %
+                      (job_item_id, agents[0]))
 
         return dict(zip(agent_details[0::2], agent_details[1::2]))
 

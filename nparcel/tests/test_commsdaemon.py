@@ -1,16 +1,20 @@
 import unittest2
 import datetime
+import os
+import tempfile
 
 import nparcel
+from nparcel.utils.files import remove_files
 
 
 class TestCommsDaemon(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        conf_file = 'nparcel/conf/nparceld.conf'
+        conf_file = os.path.join('nparcel', 'conf', 'nparceld.conf')
         cls._cd = nparcel.CommsDaemon(pidfile=None, config=conf_file)
-        cls._cd.emailer.set_template_base('nparcel/templates')
+        cls._cd.emailer.set_template_base(os.path.join('nparcel',
+                                                       'templates'))
 
     def test_init(self):
         """Initialise a CommsDaemon object.
@@ -147,6 +151,65 @@ class TestCommsDaemon(unittest2.TestCase):
                                              template='message_q_err')
         self._cd.emailer.set_recipients(['loumar@tollgroup.com'])
         received = self._cd.emailer.send(mime_message=mime, dry=dry)
+
+    def test_comms_file_not_set(self):
+        """Get files from comms dir when attribute is not set.
+        """
+        old_comms_dir = self._cd.comms_dir
+        self._cd.set_comms_dir(None)
+
+        received = self._cd.get_comms_files()
+        expected = []
+        msg = 'Unset comms_dir should return empty list'
+        self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        self._cd.set_comms_dir(old_comms_dir)
+
+    def test_comms_file_missing_directory(self):
+        """Get files from missing comms dir.
+        """
+        old_comms_dir = self._cd.comms_dir
+        dir = tempfile.mkdtemp()
+        self._cd.set_comms_dir(dir)
+        os.removedirs(dir)
+
+        received = self._cd.get_comms_files()
+        expected = []
+        msg = 'Unset comms_dir should return empty list'
+        self.assertListEqual(received, expected, msg)
+
+        # Cleanup.
+        self._cd.set_comms_dir(old_comms_dir)
+
+    def test_comms_file_read(self):
+        """Get comms files.
+        """
+        old_comms_dir = self._cd.comms_dir
+        dir = tempfile.mkdtemp()
+        self._cd.set_comms_dir(dir)
+
+        comms_files = ['email.1.rem',
+                       'sms.1.rem',
+                       'email.1111.pe',
+                       'sms.1111.pe',
+                       'email.1234.delay',
+                       'sms.1234.delay']
+        dodgy = ['banana', 'email.rem.3']
+        for f in comms_files + dodgy:
+            fh = open(os.path.join(self._cd.comms_dir, f), 'w')
+            fh.close()
+
+        received = self._cd.get_comms_files()
+        expected = [os.path.join(self._cd.comms_dir, x) for x in comms_files]
+        msg = 'Unset comms_dir should return empty list'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Cleanup.
+        files_to_delete = comms_files + dodgy
+        fs = [os.path.join(self._cd.comms_dir, x) for x in files_to_delete]
+        remove_files(fs)
+        self._cd.set_comms_dir(old_comms_dir)
 
     @classmethod
     def tearDownClass(cls):

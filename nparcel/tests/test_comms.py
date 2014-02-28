@@ -4,69 +4,43 @@ import os
 import datetime
 
 import nparcel
-from nparcel.utils.files import remove_files
+from nparcel.utils.files import (remove_files,
+                                 get_directory_files_list)
 
 
 class TestComms(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        cls.maxDiff = None
+
         conf = nparcel.B2CConfig()
         conf.set_config_file(os.path.join('nparcel',
                                           'conf',
-                                          'nparceld.conf')
+                                          'nparceld.conf'))
         conf.parse_config()
         proxy = conf.proxy_string()
-        cls._comms_dir = tempfile.mkdtemp()
         cls._c = nparcel.Comms(proxy=proxy,
                                scheme=conf.proxy_scheme,
                                sms_api=conf.sms_api_kwargs,
-                               email_api=conf.email_api_kwargs,
-                               comms_dir=cls._comms_dir)
+                               email_api=conf.email_api_kwargs)
         cls._c.set_template_base('nparcel')
         cls._now = datetime.datetime.now()
 
-        agents = [{'code': 'V031',
-                   'state': 'VIC',
-                   'name': 'V031 Name',
-                   'address': 'V031 Address',
-                   'postcode': '1234',
-                   'suburb': 'V031 Suburb'},
-                  {'code': 'N100',
-                   'state': 'NSW',
-                   'name': 'N100 Name',
-                   'address': 'N100 Address',
-                   'postcode': '2100',
-                   'suburb': 'N100 Suburb'}]
-        sql = cls._c.db._agent.insert_sql(agents[0])
-        agent_01 = cls._c.db.insert(sql)
-        sql = cls._c.db._agent.insert_sql(agents[1])
-        agent_02 = cls._c.db.insert(sql)
+        db = cls._c.db
+        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixtures = [{'db': db.agent, 'fixture': 'agents.py'},
+                    {'db': db.job, 'fixture': 'jobs.py'},
+                    {'db': db.jobitem, 'fixture': 'jobitems.py'}]
+        for i in fixtures:
+            fixture_file = os.path.join(fixture_dir, i['fixture'])
+            db.load_fixture(i['db'], fixture_file)
 
-        cls._now = datetime.datetime.now()
-        jobs = [{'agent_id': agent_01,
-                 'job_ts': '%s' % cls._now,
-                 'bu_id': 1}]
-        sql = cls._c.db.job.insert_sql(jobs[0])
-        job_01 = cls._c.db.insert(sql)
-
-        jobitems = [{'connote_nbr': 'con_001',
-                     'item_nbr': 'item_nbr_001',
-                     'email_addr': 'loumar@tollgroup.com',
-                     'phone_nbr': '0431602145',
-                     'job_id': job_01,
-                     'created_ts': '%s' % cls._now},
-                    {'connote_nbr': 'con_002',
-                     'item_nbr': 'item_nbr_002',
-                     'email_addr': 'loumar@tollgroup.com',
-                     'phone_nbr': '0431602145',
-                     'job_id': job_01,
-                     'created_ts': '%s' % cls._now,
-                     'pickup_ts': '%s' % cls._now}]
-        sql = cls._c.db.jobitem.insert_sql(jobitems[0])
-        cls._id_000 = cls._c.db.insert(sql)
-        sql = cls._c.db.jobitem.insert_sql(jobitems[1])
-        cls._id_001 = cls._c.db.insert(sql)
+        # Update the returns created_ts.
+        cls._now = str(datetime.datetime.now()).split('.')[0]
+        sql = """UPDATE job_item
+ SET created_ts = '%s'""" % cls._now
+        db(sql)
 
         cls._c.db.commit()
 
@@ -81,7 +55,6 @@ class TestComms(unittest2.TestCase):
         """
         dry = True
 
-        date = self._c.get_return_date(self._now)
         details = {'phone_nbr': '0431602145'}
 
         received = self._c.send_sms(details,
@@ -95,7 +68,6 @@ class TestComms(unittest2.TestCase):
         """
         dry = True
 
-        date = self._c.get_return_date(self._now)
         details = {'name': 'Mannum Newsagency',
                    'address': '77 Randwell Street',
                    'suburb': 'MANNUM',
@@ -103,7 +75,7 @@ class TestComms(unittest2.TestCase):
                    'connote_nbr': 'connote_rem',
                    'item_nbr': 'item_nbr_rem',
                    'phone_nbr': '0431602145',
-                   'date': '%s' % date}
+                   'date': '%s' % self._now.split('.')[0]}
 
         received = self._c.send_sms(details,
                                     template='rem',
@@ -166,6 +138,27 @@ class TestComms(unittest2.TestCase):
                                     template='body',
                                     dry=dry)
         msg = 'Loader SMS send should return True'
+        self.assertTrue(received)
+
+    def test_send_sms_returns(self):
+        """Send returns SMS.
+        """
+        dry = True
+
+        details = {'name': 'Returns Newsagency',
+                   'address': '10 Returns Street',
+                   'suburb': 'Returnsville',
+                   'postcode': '3333',
+                   'connote_nbr': 'returns_connote',
+                   'item_nbr': 'returns_item',
+                   'phone_nbr': '0431602145',
+                   'returns_refs': 'ref1, ref2, ref3',
+                   'date': '%s' % self._now.split('.')[0]}
+
+        received = self._c.send_sms(details,
+                                    template='ret',
+                                    dry=dry)
+        msg = 'Returns SMS send should return True'
         self.assertTrue(received)
 
     def test_get_return_date_string_based(self):
@@ -286,472 +279,346 @@ class TestComms(unittest2.TestCase):
         msg = 'Loader email send should return True'
         self.assertTrue(received)
 
-    def test_comms_file_not_set(self):
-        """Get files from comms dir when attribute is not set.
+    def test_send_email_returns(self):
+        """Send returns email comms.
         """
-        old_comms_dir = self._c.comms_dir
-        self._c.set_comms_dir(None)
+        dry = True
 
-        received = self._c.get_comms_files()
-        expected = []
-        msg = 'Unset comms_dir should return empty list'
-        self.assertListEqual(received, expected, msg)
+        details = {'name': 'Returns Newsagency',
+                   'address': '10 Returns Street',
+                   'suburb': 'Returnsville',
+                   'postcode': '3333',
+                   'connote_nbr': 'returns_connote',
+                   'item_nbr': 'returns_item',
+                   'phone_nbr': '0431602145',
+                   'email_addr': 'loumar@tollgroup.com',
+                   'returns_refs': 'ref1, ref2, ref3',
+                   'date': '%s' % self._now.split('.')[0]}
 
-        # Cleanup.
-        self._c.set_comms_dir(old_comms_dir)
+        received = self._c.send_email(details,
+                                      template='ret',
+                                      dry=dry)
+        msg = 'Returns email send should return True'
+        self.assertTrue(received)
 
-    def test_comms_file_missing_directory(self):
-        """Get files from missing comms dir.
+    def test_send_err_email_returns(self):
+        """Send returns error email comms.
         """
-        old_comms_dir = self._c.comms_dir
-        dir = tempfile.mkdtemp()
-        self._c.set_comms_dir(dir)
-        os.removedirs(dir)
+        dry = True
 
-        received = self._c.get_comms_files()
-        expected = []
-        msg = 'Unset comms_dir should return empty list'
-        self.assertListEqual(received, expected, msg)
+        details = {'name': 'Returns Newsagency',
+                   'address': '10 Returns Street',
+                   'suburb': 'Returnsville',
+                   'postcode': '3333',
+                   'connote_nbr': 'returns_connote',
+                   'item_nbr': 'returns_item',
+                   'phone_nbr': '0431602145',
+                   'email_addr': 'loumar@tollgroup.com',
+                   'bad_email_addr': 'loumar@tollgroup.com',
+                   'error_comms': 'email',
+                   'returns_refs': 'ref1, ref2, ref3',
+                   'date': '%s' % self._now.split('.')[0]}
 
-        # Cleanup.
-        self._c.set_comms_dir(old_comms_dir)
-
-    def test_comms_file_read(self):
-        """Get comms files.
-        """
-        comms_files = ['email.1.rem',
-                       'sms.1.rem',
-                       'email.1111.pe',
-                       'sms.1111.pe',
-                       'email.1234.delay',
-                       'sms.1234.delay']
-        dodgy = ['banana',
-                 'email.rem.3']
-        for f in comms_files + dodgy:
-            fh = open(os.path.join(self._c.comms_dir, f), 'w')
-            fh.close()
-
-        received = self._c.get_comms_files()
-        expected = [os.path.join(self._c.comms_dir, x) for x in comms_files]
-        msg = 'Unset comms_dir should return empty list'
-        self.assertListEqual(sorted(received), sorted(expected), msg)
-
-        # Cleanup.
-        files_to_delete = comms_files + dodgy
-        fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
-        remove_files(fs)
+        received = self._c.send_email(details,
+                                      template='ret',
+                                      err=True,
+                                      dry=dry)
+        msg = 'Returns error email send should return True'
+        self.assertTrue(received)
 
     def test_process_loader(self):
         """Test processing -- loader.
         """
         dry = True
 
-        comms_files = ['%s.%d.body' % ('email', self._id_000),
-                       '%s.%d.body' % ('sms', self._id_000),
-                       '%s.%d.body' % ('email', self._id_001),
-                       '%s.%d.body' % ('sms', self._id_001)]
-        dodgy = ['banana',
-                 'email.rem.3']
-        for f in comms_files + dodgy:
-            fh = open(os.path.join(self._c.comms_dir, f), 'w')
+        files = ['email.1.body', 'sms.1.body',
+                 'email.2.body', 'sms.2.body',
+                 'email.6.body', 'sms.6.body']
+        dodgy = ['banana', 'email.rem.3']
+
+        dir = tempfile.mkdtemp()
+        comms_files = []
+        for f in files + dodgy:
+            fh = open(os.path.join(dir, f), 'w')
+            comms_files.append(fh.name)
             fh.close()
 
-        files = self._c.get_comms_files()
-        for file in files:
+        for file in comms_files:
             received = self._c.process(file, dry=dry)
-            msg = 'Loader comms files processed incorrect'
+            msg = 'Loader comms files processing error'
             filename = os.path.basename(file)
-            if (filename == ('%s.%d.body' % ('email', self._id_000)) or
-                filename == ('%s.%d.body' % ('sms', self._id_000))):
+            if (filename == 'email.2.body' or
+                filename == 'sms.2.body' or
+                filename == 'email.6.body' or
+                filename == 'sms.6.body'):
                 self.assertTrue(received, msg)
             else:
                 self.assertFalse(received, msg)
 
-        if not dry:
-            received = self._c.get_comms_files()
-            expected = []
-            msg = 'Loader comms files second pass processing incorrect'
-            self.assertListEqual(received, expected, msg)
-
         # Cleanup.
+        remove_files(get_directory_files_list(dir))
+        os.removedirs(dir)
         self._c.db.rollback()
-        files_to_delete = dodgy
-        if dry:
-            files_to_delete += comms_files
-
-        fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
-        remove_files(fs)
 
     def test_process_loader_sms_error_comms(self):
         """Test processing -- loader SMS error comms.
         """
         dry = True
 
-        comms_files = ['%s.%d.body' % ('email', self._id_000),
-                       '%s.%d.body' % ('sms', self._id_000)]
-        dodgy = ['banana',
-                 'email.rem.3']
-        error_file = '%s.%d.body' % ('sms', self._id_000)
-        valid_file = '%s.%d.body' % ('email', self._id_000)
-        for f in comms_files + dodgy:
-            fh = open(os.path.join(self._c.comms_dir, f), 'w')
+        files = ['email.6.body', 'sms.6.body']
+
+        comms_files = []
+        dir = tempfile.mkdtemp()
+        for f in files:
+            fh = open(os.path.join(dir, f), 'w')
+            comms_files.append(fh.name)
             fh.close()
 
         # Provide a dodgy mobile.
         sql = """UPDATE job_item
 SET phone_nbr = '0531602145'
-WHERE id = %d""" % self._id_000
+WHERE id = 6"""
         self._c.db(sql)
 
-        files = self._c.get_comms_files()
         for file in files:
             received = self._c.process(file, dry=dry)
             msg = 'SMS error loader comms files processed incorrect'
-            if file == os.path.join(self._c.comms_dir, valid_file):
+            if os.path.basename(file) == 'email.6.body':
                 self.assertTrue(received, msg)
             else:
                 self.assertFalse(received, msg)
 
-        if not dry:
-            received = self._c.get_comms_files()
-            expected = []
-            msg = 'Loader comms files second pass processing incorrect'
-            self.assertListEqual(received, expected, msg)
-
         # Cleanup.
+        remove_files(get_directory_files_list(dir))
+        os.removedirs(dir)
         self._c.db.rollback()
-        files_to_delete = dodgy
-        if dry:
-            files_to_delete += comms_files
-        else:
-            files_to_delete.append('%s.%d.%s.err' %
-                                   ('sms', self._id_000, 'body'))
-
-        fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
-        remove_files(fs)
 
     def test_process_loader_email_error_comms(self):
         """Test processing -- loader email error comms.
         """
         dry = True
 
-        comms_files = ['%s.%d.body' % ('email', self._id_000),
-                       '%s.%d.body' % ('sms', self._id_000)]
-        dodgy = ['banana',
-                 'email.rem.3']
-        error_file = '%s.%d.body' % ('email', self._id_000)
-        valid_file = '%s.%d.body' % ('sms', self._id_000)
-        for f in comms_files + dodgy:
-            fh = open(os.path.join(self._c.comms_dir, f), 'w')
+        files = ['email.6.body', 'sms.6.body']
+
+        comms_files = []
+        dir = tempfile.mkdtemp()
+        for f in files:
+            fh = open(os.path.join(dir, f), 'w')
             fh.close()
 
         # Provide a dodgy email.
         sql = """UPDATE job_item
 SET email_addr = '@@@tollgroup.com'
-WHERE id = %d""" % self._id_000
+WHERE id = 6"""
         self._c.db(sql)
 
-        files = self._c.get_comms_files()
         for file in files:
             received = self._c.process(file, dry=dry)
             msg = 'Email error loader comms files processed incorrect'
-            if file == os.path.join(self._c.comms_dir, valid_file):
+            if os.path.basename(file) == 'sms.6.body':
                 self.assertTrue(received, msg)
             else:
                 self.assertFalse(received, msg)
 
-        if not dry:
-            received = self._c.get_comms_files()
-            expected = []
-            msg = 'Email error loader comms files second pass incorrect'
-            self.assertListEqual(received, expected, msg)
-
         # Cleanup.
+        remove_files(get_directory_files_list(dir))
+        os.removedirs(dir)
         self._c.db.rollback()
-        files_to_delete = dodgy
-        if dry:
-            files_to_delete += comms_files
-        else:
-            files_to_delete.append('%s.%d.%s.err' %
-                                   ('email', self._id_000, 'body'))
-
-        fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
-        remove_files(fs)
 
     def test_process_pe(self):
         """Test processing -- primary elect.
         """
         dry = True
 
-        comms_files = ['%s.%d.pe' % ('email', self._id_000),
-                       '%s.%d.pe' % ('sms', self._id_000)]
-        dodgy = ['banana',
-                 'email.rem.3']
-        for f in comms_files + dodgy:
-            fh = open(os.path.join(self._c.comms_dir, f), 'w')
+        files = ['email.3.pe', 'sms.3.pe']
+
+        dir = tempfile.mkdtemp()
+        comms_files = []
+        for f in files:
+            fh = open(os.path.join(dir, f), 'w')
+            comms_files.append(fh.name)
             fh.close()
 
-        files = self._c.get_comms_files()
         for file in files:
             received = self._c.process(file, dry=dry)
             msg = 'Primary elect comms files processed incorrect'
             self.assertTrue(received, msg)
 
-        if not dry:
-            received = self._c.get_comms_files()
-            expected = []
-            msg = 'Primary elect comms files 2nd pass processing incorrect'
-            self.assertListEqual(received, expected, msg)
-
         # Cleanup.
+        remove_files(get_directory_files_list(dir))
+        os.removedirs(dir)
         self._c.db.rollback()
-        files_to_delete = dodgy
-        if dry:
-            files_to_delete += comms_files
-
-        fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
-        remove_files(fs)
 
     def test_process_pe_sms_error_comms(self):
         """Test processing -- primary elect SMS error comms.
         """
         dry = True
 
-        comms_files = ['%s.%d.pe' % ('email', self._id_000),
-                       '%s.%d.pe' % ('sms', self._id_000)]
-        dodgy = ['banana',
-                 'email.rem.3']
-        error_file = '%s.%d.pe' % ('sms', self._id_000)
-        valid_file = '%s.%d.pe' % ('email', self._id_000)
-        for f in comms_files + dodgy:
-            fh = open(os.path.join(self._c.comms_dir, f), 'w')
+        files = ['email.3.pe', 'sms.3.pe']
+
+        dir = tempfile.mkdtemp()
+        comms_files = []
+        for f in files:
+            fh = open(os.path.join(dir, f), 'w')
+            comms_files.append(fh.name)
             fh.close()
 
         # Provide a dodgy mobile.
         sql = """UPDATE job_item
 SET phone_nbr = '0531602145'
-WHERE id = %d""" % self._id_000
+WHERE id = 3"""
         self._c.db(sql)
 
-        files = self._c.get_comms_files()
-        for file in files:
+        for file in comms_files:
             received = self._c.process(file, dry=dry)
-            msg = 'Loader comms files processed incorrect'
-            if file == os.path.join(self._c.comms_dir, valid_file):
+            msg = 'Primary Elect comms files processed incorrect'
+            if os.path.basename(file) == 'email.3.pe':
                 self.assertTrue(received, msg)
             else:
                 self.assertFalse(received, msg)
 
-        if not dry:
-            received = self._c.get_comms_files()
-            expected = []
-            msg = 'Primary elect comms files second pass processing incorrect'
-            self.assertListEqual(received, expected, msg)
-
         # Cleanup.
+        remove_files(get_directory_files_list(dir))
+        os.removedirs(dir)
         self._c.db.rollback()
-        files_to_delete = dodgy
-        if dry:
-            files_to_delete += comms_files
-        else:
-            files_to_delete.append('%s.%d.%s.err' %
-                                   ('sms', self._id_000, 'pe'))
-
-        fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
-        remove_files(fs)
 
     def test_process_pe_email_error_comms(self):
         """Test processing -- primary elect email error comms.
         """
         dry = True
 
-        comms_files = ['%s.%d.pe' % ('email', self._id_000),
-                       '%s.%d.pe' % ('sms', self._id_000)]
-        dodgy = ['banana',
-                 'email.rem.3']
-        error_file = '%s.%d.pe' % ('email', self._id_000)
-        valid_file = '%s.%d.pe' % ('sms', self._id_000)
-        for f in comms_files + dodgy:
-            fh = open(os.path.join(self._c.comms_dir, f), 'w')
+        files = ['email.3.pe', 'sms.3.pe']
+
+        dir = tempfile.mkdtemp()
+        comms_files = []
+        for f in files:
+            fh = open(os.path.join(dir, f), 'w')
+            comms_files.append(fh.name)
             fh.close()
 
         # Provide a dodgy email.
         sql = """UPDATE job_item
 SET email_addr = '@@@tollgroup.com'
-WHERE id = %d""" % self._id_000
+WHERE id = 3"""
         self._c.db(sql)
 
-        files = self._c.get_comms_files()
-        for file in files:
+        for file in comms_files:
             received = self._c.process(file, dry=dry)
-            msg = 'Email error primary elect comms files processed incorrect'
-            if file == os.path.join(self._c.comms_dir, valid_file):
+            msg = 'Primary Elect comms files processed incorrect'
+            if os.path.basename(file) == 'sms.3.pe':
                 self.assertTrue(received, msg)
             else:
                 self.assertFalse(received, msg)
 
-        if not dry:
-            received = self._c.get_comms_files()
-            expected = []
-            msg = 'Email primary elect comms files second pass incorrect'
-            self.assertListEqual(received, expected, msg)
-
         # Cleanup.
+        remove_files(get_directory_files_list(dir))
+        os.removedirs(dir)
         self._c.db.rollback()
-        files_to_delete = dodgy
-        if dry:
-            files_to_delete += comms_files
-        else:
-            files_to_delete.append('%s.%d.%s.err' %
-                                   ('email', self._id_000, 'pe'))
-
-        fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
-        remove_files(fs)
 
     def test_process_reminder(self):
         """Test processing -- reminder.
         """
         dry = True
 
-        comms_files = ['%s.%d.rem' % ('email', self._id_000),
-                       '%s.%d.rem' % ('sms', self._id_000)]
-        dodgy = ['banana',
-                 'email.rem.3']
-        for f in comms_files + dodgy:
-            fh = open(os.path.join(self._c.comms_dir, f), 'w')
+        files = ['email.6.rem', 'sms.6.rem']
+
+        dir = tempfile.mkdtemp()
+        comms_files = []
+        for f in files:
+            fh = open(os.path.join(dir, f), 'w')
+            comms_files.append(fh.name)
             fh.close()
 
-        files = self._c.get_comms_files()
-        for file in files:
+        for file in comms_files:
             received = self._c.process(file, dry=dry)
             msg = 'Reminder comms files processed incorrect'
             self.assertTrue(received, msg)
 
-        if not dry:
-            received = self._c.get_comms_files()
-            expected = []
-            msg = 'Reminder comms files second pass processing incorrect'
-            self.assertListEqual(received, expected, msg)
-
         # Cleanup.
+        remove_files(get_directory_files_list(dir))
+        os.removedirs(dir)
         self._c.db.rollback()
-        files_to_delete = dodgy
-        if dry:
-            files_to_delete += comms_files
-
-        fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
-        remove_files(fs)
 
     def test_process_reminder_sms_error_comms(self):
         """Test processing -- SMS reminder error comms.
         """
         dry = True
 
-        comms_files = ['%s.%d.rem' % ('email', self._id_000),
-                       '%s.%d.rem' % ('sms', self._id_000)]
-        dodgy = ['banana',
-                 'email.rem.3']
-        error_file = '%s.%d.rem' % ('sms', self._id_000)
-        valid_file = '%s.%d.rem' % ('email', self._id_000)
-        for f in comms_files + dodgy:
-            fh = open(os.path.join(self._c.comms_dir, f), 'w')
+        files = ['email.6.rem', 'sms.6.rem']
+
+        dir = tempfile.mkdtemp()
+        comms_files = []
+        for f in files:
+            fh = open(os.path.join(dir, f), 'w')
+            comms_files.append(fh.name)
             fh.close()
 
         # Provide a dodgy mobile.
         sql = """UPDATE job_item
 SET phone_nbr = '0531602145'
-WHERE id = %d""" % self._id_000
+WHERE id = 6"""
         self._c.db(sql)
 
-        files = self._c.get_comms_files()
-        for file in files:
+        for file in comms_files:
             received = self._c.process(file, dry=dry)
             msg = 'SMS errr reminder comms files processed incorrect'
-            if file == os.path.join(self._c.comms_dir, valid_file):
+            if os.path.basename(file) == 'email.6.rem':
                 self.assertTrue(received, msg)
             else:
                 self.assertFalse(received, msg)
 
-        if not dry:
-            received = self._c.get_comms_files()
-            expected = []
-            msg = 'SMS error reminder comms files second pass incorrect'
-            self.assertListEqual(received, expected, msg)
-
         # Cleanup.
+        remove_files(get_directory_files_list(dir))
+        os.removedirs(dir)
         self._c.db.rollback()
-        files_to_delete = dodgy
-        if dry:
-            files_to_delete += comms_files
-        else:
-            files_to_delete.append('%s.%d.%s.err' %
-                                   ('sms', self._id_000, 'rem'))
-
-        fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
-        remove_files(fs)
 
     def test_process_reminder_email_error_comms(self):
         """Test processing -- reminder email error comms.
         """
         dry = True
 
-        comms_files = ['%s.%d.rem' % ('email', self._id_000),
-                       '%s.%d.rem' % ('sms', self._id_000)]
-        dodgy = ['banana',
-                 'email.rem.3']
-        error_file = '%s.%d.rem' % ('email', self._id_000)
-        valid_file = '%s.%d.rem' % ('sms', self._id_000)
-        for f in comms_files + dodgy:
-            fh = open(os.path.join(self._c.comms_dir, f), 'w')
+        files = ['email.6.rem', 'sms.6.rem']
+
+        dir = tempfile.mkdtemp()
+        comms_files = []
+        for f in files:
+            fh = open(os.path.join(dir, f), 'w')
+            comms_files.append(fh.name)
             fh.close()
 
         # Provide a dodgy email.
         sql = """UPDATE job_item
 SET email_addr = '@@@tollgroup.com'
-WHERE id = %d""" % self._id_000
+WHERE id = 6"""
         self._c.db(sql)
 
-        files = self._c.get_comms_files()
-        for file in files:
+        for file in comms_files:
             received = self._c.process(file, dry=dry)
             msg = 'Email error reminder comms files processed incorrect'
-            if file == os.path.join(self._c.comms_dir, valid_file):
+            if os.path.basename(file) == 'sms.6.rem':
                 self.assertTrue(received, msg)
             else:
                 self.assertFalse(received, msg)
 
-        if not dry:
-            received = self._c.get_comms_files()
-            expected = []
-            msg = 'Email error reminder comms files second pass incorrect'
-            self.assertListEqual(received, expected, msg)
-
         # Cleanup.
+        remove_files(get_directory_files_list(dir))
+        os.removedirs(dir)
         self._c.db.rollback()
-        files_to_delete = dodgy
-        if dry:
-            files_to_delete += comms_files
-        else:
-            files_to_delete.append('%s.%d.%s.err' %
-                                   ('email', self._id_000, 'rem'))
-
-        fs = [os.path.join(self._c.comms_dir, x) for x in files_to_delete]
-        remove_files(fs)
 
     def test_get_agent_details(self):
         """Verify agent details.
         """
-        received = self._c.get_agent_details(self._id_000)
-        expected = {'address': 'V031 Address',
+        received = self._c.get_agent_details(6)
+        expected = {'address': 'N031 Address',
                     'bu_id': 1,
-                    'connote_nbr': 'con_001',
+                    'connote_nbr': 'uncollected_connote_sc_1',
                     'created_ts': '%s' % self._now,
-                    'item_nbr': 'item_nbr_001',
+                    'item_nbr': 'uncollected_connote_sc_1_item_nbr',
                     'email_addr': 'loumar@tollgroup.com',
                     'phone_nbr': '0431602145',
-                    'name': 'V031 Name',
+                    'name': 'N031 Name',
                     'postcode': '1234',
-                    'suburb': 'V031 Suburb',
+                    'suburb': 'N031 Suburb',
                     'pickup_ts': None}
         msg = 'job_item.id based Agent details incorrect'
         self.assertDictEqual(received, expected, msg)
@@ -803,7 +670,4 @@ WHERE id = %d""" % self._id_000
     def tearDownClass(cls):
         cls._c = None
         del cls._c
-        os.removedirs(cls._comms_dir)
-        del cls._comms_dir
         del cls._now
-        del cls._id_000

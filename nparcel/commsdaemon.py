@@ -4,6 +4,8 @@ __all__ = [
 import signal
 import time
 import datetime
+import os
+import re
 
 import nparcel
 from nparcel.utils.log import log
@@ -11,7 +13,13 @@ from nparcel.utils.log import log
 
 class CommsDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.Comms` class.
+
+    .. attribute:: comms_dir
+
+         directory where comms files are read from for further processing
+
     """
+    _comms_dir = None
 
     def __init__(self,
                  pidfile,
@@ -28,6 +36,14 @@ class CommsDaemon(nparcel.DaemonService):
         self.config.parse_config()
 
         self.emailer.set_recipients(self.config.support_emails)
+
+    @property
+    def comms_dir(self):
+        return self._comms_dir
+
+    def set_comms_dir(self, value):
+        self._comms_dir = value
+        log.debug('Set CommsDaemon comms_dir to "%s"' % self.comms_dir)
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
@@ -69,7 +85,7 @@ class CommsDaemon(nparcel.DaemonService):
                             files.append(self.file)
                             event.set()
                         else:
-                            files.extend(comms.get_comms_files())
+                            files.extend(self.get_comms_files())
             else:
                 log.error('ODBC connection failure -- aborting')
                 event.set()
@@ -215,5 +231,45 @@ class CommsDaemon(nparcel.DaemonService):
 
         return queue_ok
 
-    def send_email(self, msg):
-        pass
+    def get_comms_files(self):
+        """Produce a list of files in the :attr:`comms_dir`.
+
+        Comms files are matched based on the following pattern::
+
+            <action>.<job_item.id>.<template>
+
+        where:
+
+        * ``<action>`` is the communications medium (either SMS or email are
+          supported)
+          job_item table
+        * ``<job_item.id>`` is the integer based primary key from the
+          job_item table
+        * ``<template>`` is the string template used to build the message
+          content
+
+        **Returns:**
+            list of files to process or empty list if the :attr:`comms_dir`
+            is not defined or does not exist
+
+        """
+        comms_files = []
+
+        log.debug('Searching for comms in dir: %s' % self.comms_dir)
+
+        if self.comms_dir is not None:
+            if not os.path.exists(self.comms_dir):
+                log.error('Comms directory "%s" does not exist' %
+                          self.comms_dir)
+            else:
+                for f in os.listdir(self.comms_dir):
+                    r = re.compile("^(email|sms)\.(\d+)\.(pe|rem|body|delay)$")
+                    m = r.match(f)
+                    if m:
+                        comms_file = os.path.join(self.comms_dir, f)
+                        log.info('Found comms file: "%s"' % comms_file)
+                        comms_files.append(comms_file)
+        else:
+            log.error('Comms dir is not defined')
+
+        return comms_files
