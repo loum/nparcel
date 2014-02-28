@@ -12,7 +12,9 @@ class TestComms(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         conf = nparcel.B2CConfig()
-        conf.set_config_file('nparcel/conf/nparceld.conf')
+        conf.set_config_file(os.path.join('nparcel',
+                                          'conf',
+                                          'nparceld.conf')
         conf.parse_config()
         proxy = conf.proxy_string()
         cls._comms_dir = tempfile.mkdtemp()
