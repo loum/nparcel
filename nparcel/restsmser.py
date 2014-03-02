@@ -14,7 +14,14 @@ from nparcel.utils.log import log
 class RestSmser(nparcel.Rest):
     """Nparcel RestSmser.
 
+    .. attribute:: template_base
+        directory where templates are read from
+
     """
+    _facility = None
+    _template_base = os.path.join(os.path.expanduser('~'),
+                                  '.nparceld',
+                                  'templates')
 
     def __init__(self,
                  proxy=None,
@@ -30,6 +37,15 @@ class RestSmser(nparcel.Rest):
                                         api,
                                         api_username,
                                         api_password)
+
+    @property
+    def template_base(self):
+        return self._template_base
+
+    def set_template_base(self, value):
+        self._template_base = value
+        log.debug('%s template_base set to "%s"' %
+                  (self._facility, self.template_base))
 
     def create_comms(self, data, template='body', base_dir=None):
         """Create the SMS data string to send.
@@ -50,17 +66,13 @@ class RestSmser(nparcel.Rest):
             SMS XML template (default ``~user_home/.nparceld/templates``).
 
         """
-        dir = None
-        if base_dir is None:
-            dir = os.path.join(os.path.expanduser('~'),
-                               '.nparceld',
-                               'templates')
-        else:
-            dir = os.path.join(base_dir, 'templates')
+        template_dir = self.template_base
+        if base_dir is not None:
+            template_dir = base_dir
 
         sms_data = None
         try:
-            xml_file = os.path.join(dir, 'sms_%s_xml.t' % template)
+            xml_file = os.path.join(template_dir, 'sms_%s_xml.t' % template)
             log.debug('SMS template: "%s"' % xml_file)
             f = open(xml_file)
             sms_t = f.read()

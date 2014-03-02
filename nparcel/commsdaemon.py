@@ -6,6 +6,7 @@ import time
 import datetime
 import os
 import re
+import ConfigParser
 
 import nparcel
 from nparcel.utils.log import log
@@ -18,24 +19,101 @@ class CommsDaemon(nparcel.DaemonService):
 
          directory where comms files are read from for further processing
 
+    .. attribute:: q_warning
+
+        comms queue warning threshold.  If number of messages exceeds this
+        threshold (and is under the :attr:`q_error` threshold then a
+        warning email notification is triggered
+
+    .. attribute:: q_error
+
+        comms queue error threshold.  If number of messages exceeds this
+        threshold then an error email notification is triggered and
+        the comms daemon is terminated
+
+    .. attribute:: skip_days (comms)
+
+        list of days ['Saturday', 'Sunday'] to not send messages.  An empty
+        list (or no skip days) suggests that comms can be sent on any day
+
+    .. attribute:: send_time_ranges (comms)
+
+        time ranges when comms can be sent.  An empty list (or no
+        time ranges) suggests that comms can be sent at any time
+
     """
+    _comms = None
     _comms_dir = None
+    _q_warning = 100
+    _q_error = 1000
+    _skip_days = ['Sunday']
+    _send_time_ranges = ['08:00-19:00']
 
     def __init__(self,
                  pidfile,
                  file=None,
                  dry=False,
                  batch=False,
-                 config='nparcel.conf'):
+                 config=None):
+        self._facility = self.__class__.__name__
         super(CommsDaemon, self).__init__(pidfile=pidfile,
                                           file=file,
                                           dry=dry,
                                           batch=batch)
 
-        self.config = nparcel.B2CConfig(file=config)
-        self.config.parse_config()
+        if config is not None:
+            self.config = nparcel.B2CConfig(file=config)
+            self.config.parse_config()
 
-        self.emailer.set_recipients(self.config.support_emails)
+        try:
+            self.set_support_emails(self.config.support_emails)
+        except AttributeError, err:
+            msg = ('%s support_emails not defined in config -- using %s' %
+                   (self._facility, str(self.support_emails)))
+            log.debug(msg)
+
+        try:
+            self.set_comms_dir(self.config.comms_dir)
+        except AttributeError, err:
+            msg = ('%s comms_dir not in config -- using %s' %
+                   (self._facility, self.comms_dir))
+            log.debug(msg)
+
+        try:
+            self.set_q_warning(self.config.comms_q_warning)
+        except AttributeError, err:
+            msg = ('%s q_warning not in config -- using %s' %
+                   (self._facility, self.q_warning))
+            log.debug(msg)
+
+        try:
+            self.set_q_error(self.config.comms_q_error)
+        except AttributeError, err:
+            msg = ('%s q_error not in config -- using %s' %
+                   (self._facility, self.q_error))
+            log.debug(msg)
+
+        try:
+            self.set_loop(self.config.comms_loop)
+        except AttributeError, err:
+            log.debug('%s comms_loop not in config -- using %d sec' %
+                      (self._facility, self.loop))
+
+        try:
+            self.set_skip_days(self.config.skip_days)
+        except AttributeError, err:
+            log.debug('%s skip_days not in config -- using %s' %
+                      (self._facility, self.skip_days))
+
+        try:
+            self.set_send_time_ranges(self.config.send_time_ranges)
+        except AttributeError, err:
+            log.debug('%s send_time_ranges not in config -- using %s' %
+                      (self._facility, self.send_time_ranges))
+
+    @property
+    def comms(self):
+        return self._comms
 
     @property
     def comms_dir(self):
@@ -43,7 +121,118 @@ class CommsDaemon(nparcel.DaemonService):
 
     def set_comms_dir(self, value):
         self._comms_dir = value
-        log.debug('Set CommsDaemon comms_dir to "%s"' % self.comms_dir)
+        log.debug('%s comms_dir to "%s"' %
+                  (self._facility, self.comms_dir))
+
+    @property
+    def q_warning(self):
+        return self._q_warning
+
+    def set_q_warning(self, value):
+        self._q_warning = value
+
+    @property
+    def q_error(self):
+        return self._q_error
+
+    def set_q_error(self, value):
+        self._q_error = value
+
+    @property
+    def skip_days(self):
+        return self._skip_days
+
+    def set_skip_days(self, values=None):
+        del self._skip_days[:]
+        self._skip_days = []
+
+        if values is not None:
+            self._skip_days.extend(values)
+            log.debug('%s skip days set to "%s"' %
+                      (self._facility, str(self.skip_days)))
+
+    @property
+    def send_time_ranges(self):
+        return self._send_time_ranges
+
+    def set_send_time_ranges(self, values=None):
+        del self._send_time_ranges[:]
+        self._send_time_ranges = []
+
+        if values is not None:
+            self._send_time_ranges.extend(values)
+            log.debug('%s send_time_ranges set to "%s"' %
+                      (self._facility, str(values)))
+
+    @property
+    def sms_api(self):
+        sms_api = {}
+
+        try:
+            sms_api['api'] = self.config.get('rest', 'sms_api')
+            sms_api['api_username'] = self.config.get('rest', 'sms_user')
+            sms_api['api_password'] = self.config.get('rest', 'sms_pw')
+            log.debug('%s SMS REST credentials: %s' %
+                      (self._facility, str(sms_api)))
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('%s SMS REST credentials not in config: %s' %
+                      (self._facility, err))
+
+        return sms_api
+
+    @property
+    def email_api(self):
+        email_api = {}
+
+        try:
+            email_api['api'] = self.config.get('rest', 'email_api')
+            email_api['api_username'] = self.config.get('rest', 'email_user')
+            email_api['api_password'] = self.config.get('rest', 'email_pw')
+            email_api['support'] = self.config.get('rest', 'failed_email')
+            log.debug('%s Email REST credentials: %s' %
+                      (self._facility, str(email_api)))
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('%s Email REST credentials not in config: %s' %
+                      (self._facility, err))
+
+        return email_api
+
+    @property
+    def comms_kwargs(self):
+        kwargs = {}
+        try:
+            kwargs['db'] = self.config.db_kwargs()
+        except AttributeError, err:
+            log.debug('%s TPP DB kwargs not in config: %s ' %
+                      (self._facility, err))
+
+        try:
+            kwargs['proxy'] = self.config.proxy_string()
+        except AttributeError, err:
+            log.debug('%s proxy kwargs not in config: %s ' %
+                      (self._facility, err))
+
+        try:
+            kwargs['scheme'] = self.config.proxy_scheme
+        except AttributeError, err:
+            log.debug('%s proxy scheme not in config: %s ' %
+                      (self._facility, err))
+
+        try:
+            kwargs['sms_api'] = self.sms_api
+        except AttributeError, err:
+            log.debug('%s SMS REST credentials not in config: %s ' %
+                      (self._facility, err))
+
+        try:
+            kwargs['email_api'] = self.email_api
+        except AttributeError, err:
+            log.debug('%s Email REST credentials not in config: %s ' %
+                      (self._facility, err))
+
+        return kwargs
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
@@ -60,25 +249,13 @@ class CommsDaemon(nparcel.DaemonService):
         """
         signal.signal(signal.SIGTERM, self._exit_handler)
 
-        sms_api = {'api': self.config.rest.get('sms_api'),
-                   'api_username': self.config.rest.get('sms_user'),
-                   'api_password': self.config.rest.get('sms_pw')}
-        email_api = {'api': self.config.rest.get('email_api'),
-                     'api_username': self.config.rest.get('email_user'),
-                     'api_password': self.config.rest.get('email_pw'),
-                     'support': self.config.rest.get('failed_email')}
-
-        comms = nparcel.Comms(db=self.config.db_kwargs(),
-                              proxy=self.config.proxy_string(),
-                              scheme=self.config.proxy_scheme,
-                              sms_api=sms_api,
-                              email_api=email_api,
-                              comms_dir=self.config.comms_dir)
+        if self._comms is None:
+            self._comms = nparcel.Comms(**(self.comms_kwargs))
 
         while not event.isSet():
             files = []
 
-            if comms.db():
+            if self._comms.db():
                 if not self._skip_day():
                     if self._within_time_ranges():
                         if self.file is not None:
@@ -94,7 +271,7 @@ class CommsDaemon(nparcel.DaemonService):
             # Start processing files.
             if self._message_queue_ok(len(files), dry=self.dry):
                 for file in files:
-                    comms.process(file, self.dry)
+                    self._comms.process(file, self.dry)
             else:
                 log.info('Comms message queue threshold breached -- aborting')
                 event.set()
@@ -107,7 +284,7 @@ class CommsDaemon(nparcel.DaemonService):
                     log.info('Batch run iteration complete -- aborting')
                     event.set()
                 else:
-                    time.sleep(self.config.comms_loop)
+                    time.sleep(self.loop)
 
     def _skip_day(self):
         """Check whether comms is configured to skip current day of week.
@@ -122,12 +299,15 @@ class CommsDaemon(nparcel.DaemonService):
         is_skip_day = False
 
         current_day = datetime.datetime.now().strftime('%A').lower()
-        log.debug('Current day is: %s' % current_day.title())
+        log.debug('Current day/skip days: "%s/%s"' %
+                  (current_day.title(), str(self.skip_days)))
 
-        if current_day in [x.lower() for x in self.config.skip_days]:
+        if current_day in [x.lower() for x in self.skip_days]:
             log.info('%s is a configured comms skip day' %
                      current_day.title())
             is_skip_day = True
+
+        log.debug('Is a comms skip day?: "%s"' % str(is_skip_day))
 
         return is_skip_day
 
@@ -147,11 +327,11 @@ class CommsDaemon(nparcel.DaemonService):
         is_within_time_range = True
 
         current_time = datetime.datetime.now()
+        log.debug('Current time/send_time_ranges: "%s/%s"' %
+                  (str(current_time).split('.')[0],
+                   str(self.send_time_ranges)))
 
-        for range in self.config.send_time_ranges:
-            log.debug('Checking "%s" is within time range "%s"' %
-                      (current_time, range))
-
+        for range in self.send_time_ranges:
             try:
                 (lower_str, upper_str) = range.split('-')
             except ValueError, err:
@@ -175,6 +355,9 @@ class CommsDaemon(nparcel.DaemonService):
             if current_time < lower_dt or current_time > upper_dt:
                 is_within_time_range = False
                 break
+
+        log.debug('Is current time with range?: %s' %
+                    str(is_within_time_range))
 
         return is_within_time_range
 
@@ -201,29 +384,29 @@ class CommsDaemon(nparcel.DaemonService):
         queue_ok = True
 
         current_dt_str = datetime.datetime.now().strftime('%c')
-        if message_count > self.config.comms_q_error:
+        if message_count > self.q_error:
             log.info('Message queue count %d breaches error threshold %d' %
-                     (message_count, self.config.comms_q_error))
+                     (message_count, self.q_error))
             queue_ok = False
 
             subject = ('Error - Nparcel Comms message count was at %d' %
                        message_count)
             d = {'count': message_count,
                  'date': current_dt_str,
-                 'error_threshold': self.config.comms_q_error}
+                 'error_threshold': self.q_error}
             mime = self.emailer.create_comms(subject=subject,
                                              data=d,
                                              template='message_q_err')
             self.emailer.send(mime_message=mime, dry=dry)
-        elif message_count > self.config.comms_q_warning:
+        elif message_count > self.q_warning:
             log.info('Message queue count %d breaches warning threshold %d' %
-                     (message_count, self.config.comms_q_warning))
+                     (message_count, self.q_warning))
 
             subject = ('Warning - Nparcel Comms message count was at %d' %
                        message_count)
             d = {'count': message_count,
                  'date': current_dt_str,
-                 'warning_threshold': self.config.comms_q_warning}
+                 'warning_threshold': self.q_warning}
             mime = self.emailer.create_comms(subject=subject,
                                              data=d,
                                              template='message_q_warn')

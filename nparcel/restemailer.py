@@ -1,7 +1,6 @@
 __all__ = [
     "RestEmailer",
 ]
-import re
 import os
 import urllib
 import string
@@ -15,7 +14,7 @@ import nparcel.urllib2 as urllib2
 from nparcel.utils.log import log
 
 
-class RestEmailer(nparcel.Rest, nparcel.EmailerBase):
+class RestEmailer(nparcel.EmailerBase):
     """Nparcel RestEmailer.
 
     .. attribute:: recipients
@@ -35,11 +34,13 @@ class RestEmailer(nparcel.Rest, nparcel.EmailerBase):
                  support=None):
         """Nparcel RestEmailer initialiser.
         """
-        super(RestEmailer, self).__init__(proxy,
-                                          proxy_scheme,
-                                          api,
-                                          api_username,
-                                          api_password)
+        super(RestEmailer, self).__init__()
+
+        self._rest = nparcel.Rest(proxy,
+                                  proxy_scheme,
+                                  api,
+                                  api_username,
+                                  api_password)
 
         self._sender = sender
         if self._sender is None:
@@ -111,8 +112,8 @@ class RestEmailer(nparcel.Rest, nparcel.EmailerBase):
                          'Content-Transfer-Encoding: 7bit'))
         msg = ("%s\\nSubject: %s\\nFrom: %s\\nTo: %s\\n\\n%s" %
                (msg_preamble, subject, sender, recipient, msg))
-        f = [('username', self.api_username),
-             ('password', self.api_password),
+        f = [('username', self._rest.api_username),
+             ('password', self._rest.api_password),
              ('message', msg)]
         encoded_msg = urllib.urlencode(f)
 
@@ -157,7 +158,7 @@ class RestEmailer(nparcel.Rest, nparcel.EmailerBase):
                                       urllib2.HTTPSHandler)
         urllib2.install_opener(opener)
 
-        req = urllib2.Request(self.api, data, {})
+        req = urllib2.Request(self._rest.api, data, {})
         if not dry:
             try:
                 conn = urllib2.urlopen(req)
@@ -204,9 +205,7 @@ class RestEmailer(nparcel.Rest, nparcel.EmailerBase):
         """
         template_dir = None
         if base_dir is None:
-            template_dir = os.path.join(os.path.expanduser('~'),
-                                        '.nparceld',
-                                        'templates')
+            template_dir = self.template_base
         else:
             template_dir = os.path.join(base_dir, 'templates')
 
@@ -259,7 +258,7 @@ class RestEmailer(nparcel.Rest, nparcel.EmailerBase):
         log.info('Sending email comms ...')
         status = True
 
-        if self.api is None:
+        if self._rest.api is None:
             log.error('No email API provided -- email not sent')
             status = False
 
@@ -274,22 +273,22 @@ class RestEmailer(nparcel.Rest, nparcel.EmailerBase):
                     break
 
         if status:
-            log.debug('Email API username: "%s"' % self._api_username)
-            if self._api_password:
+            log.debug('Email API username: "%s"' % self._rest._api_username)
+            if self._rest.api_password:
                 log.debug('Email API username: "********"')
             else:
                 log.debug('Email API username undefined')
 
-            f = [('username', self.api_username),
-                 ('password', self.api_password),
+            f = [('username', self._rest.api_username),
+                 ('password', self._rest.api_password),
                  ('message', data)]
             encoded_msg = urllib.urlencode(f)
 
             proxy_kwargs = {}
-            if self.proxy is not None:
-                proxy_kwargs = {self.proxy_scheme: self.proxy}
-            log.debug('proxy_scheme: %s' % self.proxy_scheme)
-            log.debug('proxy: %s' % self.proxy)
+            if self._rest.proxy is not None:
+                proxy_kwargs = {self._rest.proxy_scheme: self._rest.proxy}
+            log.debug('proxy_scheme: %s' % self._rest.proxy_scheme)
+            log.debug('proxy: %s' % self._rest.proxy)
             proxy = urllib2.ProxyHandler(proxy_kwargs)
             auth = urllib2.HTTPBasicAuthHandler()
             opener = urllib2.build_opener(proxy,
@@ -297,8 +296,8 @@ class RestEmailer(nparcel.Rest, nparcel.EmailerBase):
                                           urllib2.HTTPSHandler)
             urllib2.install_opener(opener)
 
-            log.debug('Preparing request to API: "%s"' % self.api)
-            req = urllib2.Request(self.api, encoded_msg, {})
+            log.debug('Preparing request to API: "%s"' % self._rest.api)
+            req = urllib2.Request(self._rest.api, encoded_msg, {})
             if not dry:
                 try:
                     conn = urllib2.urlopen(req)
@@ -328,9 +327,7 @@ class RestEmailer(nparcel.Rest, nparcel.EmailerBase):
 
         """
         if base_dir is None:
-            template_dir = os.path.join(os.path.expanduser('~'),
-                                        '.nparceld',
-                                        'templates')
+            template_dir = self.template_base
         else:
             template_dir = os.path.join(base_dir, 'templates')
 

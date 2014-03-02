@@ -1,4 +1,5 @@
 import unittest2
+import os
 
 import nparcel
 
@@ -177,9 +178,12 @@ class TestRestSmser(unittest2.TestCase):
              'connote_nbr': '1234567890_connote',
              'item_nbr': '1234567890_item_nbr',
              'phone_nbr': '0431602145'}
-        received = self._rsms.create_comms(data=d, base_dir='nparcel')
+        template_dir = os.path.join('nparcel', 'templates')
+        received = self._rsms.create_comms(data=d, base_dir=template_dir)
 
-        f = open('nparcel/tests/create_comms_valid_data_structure.out')
+        f = open(os.path.join('nparcel',
+                              'tests',
+                              'create_comms_valid_data_structure.out'))
         expected = f.read().rstrip().replace('\\n', '\n')
         f.close()
         self.assertEqual(received, expected, msg)

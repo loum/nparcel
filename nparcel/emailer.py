@@ -1,7 +1,6 @@
 __all__ = [
     "Emailer",
 ]
-import re
 import os
 import smtplib
 import string
@@ -19,20 +18,15 @@ from nparcel.utils.log import log
 class Emailer(nparcel.EmailerBase):
     """Nparcel emailer.
 
-    .. attribute:: template_base
-        directory where templates are read from
-
     """
-    _template_base = os.path.join(os.path.expanduser('~'),
-                                  '.nparceld',
-                                  'templates')
-
     def __init__(self,
                  sender=None,
                  recipients=None):
         """Nparcel emailer initialiser.
 
         """
+        super(Emailer, self).__init__()
+
         self._sender = sender
         if self._sender is None:
             self._sender = "%s@%s" % (getpass.getuser(), getfqdn())
@@ -58,13 +52,6 @@ class Emailer(nparcel.EmailerBase):
 
         if values is not None:
             self._recipients.extend(values)
-
-    @property
-    def template_base(self):
-        return self._template_base
-
-    def set_template_base(self, value):
-        self._template_base = value
 
     def send(self, subject=None, msg=None, mime_message=None, dry=False):
         """Send the *msg*.

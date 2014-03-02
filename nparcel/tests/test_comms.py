@@ -24,7 +24,8 @@ class TestComms(unittest2.TestCase):
                                scheme=conf.proxy_scheme,
                                sms_api=conf.sms_api_kwargs,
                                email_api=conf.email_api_kwargs)
-        cls._c.set_template_base('nparcel')
+        cls._c._emailer.set_template_base(os.path.join('nparcel',
+                                                       'templates'))
         cls._now = datetime.datetime.now()
 
         db = cls._c.db
@@ -561,7 +562,7 @@ WHERE id = 6"""
 
         for file in comms_files:
             received = self._c.process(file, dry=dry)
-            msg = 'SMS errr reminder comms files processed incorrect'
+            msg = 'SMS err reminder comms files processed incorrect'
             if os.path.basename(file) == 'email.6.rem':
                 self.assertTrue(received, msg)
             else:

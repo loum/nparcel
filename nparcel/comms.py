@@ -12,7 +12,7 @@ from nparcel.utils.files import (remove_files,
                                  move_file)
 
 
-class Comms(object):
+class Comms(nparcel.Service):
     """Nparcel Comms class.
 
     .. attribute:: hold_period
@@ -21,37 +21,34 @@ class Comms(object):
 
     """
     _hold_period = 691200
-    _template_base = None
 
-    def __init__(self,
-                 hold_period=None,
-                 db=None,
-                 proxy=None,
-                 scheme='http',
-                 sms_api=None,
-                 email_api=None,
-                 comms_dir=None):
+    def __init__(self, **kwargs):
         """Nparcel Comms initialisation.
         """
-        if hold_period is not None:
-            self._hold_period = hold_period
+        db_kwargs = kwargs.get('db')
+        comms_dir = kwargs.get('comms_dir')
+        super(nparcel.Comms, self).__init__(db=db_kwargs,
+                                             comms_dir=comms_dir)
 
-        if db is None:
-                db = {}
-        self.db = nparcel.DbSession(**db)
-        self.db.connect()
+        if kwargs.get('hold_period') is not None:
+            self._hold_period = kwargs.get('hold_period')
 
+        proxy = kwargs.get('proxy')
+        proxy_scheme = kwargs.get('scheme')
+        sms_api = kwargs.get('sms_api')
         if sms_api is None:
             sms_api = {}
-        self.smser = nparcel.RestSmser(proxy=proxy,
-                                       proxy_scheme=scheme,
-                                       **sms_api)
-
+        email_api = kwargs.get('email_api')
         if email_api is None:
             email_api = {}
-        self.emailer = nparcel.RestEmailer(proxy=proxy,
-                                           proxy_scheme=scheme,
-                                           **email_api)
+
+        self._smser = nparcel.RestSmser(proxy=proxy,
+                                        proxy_scheme=proxy_scheme,
+                                        **sms_api)
+
+        self._emailer = nparcel.RestEmailer(proxy=proxy,
+                                            proxy_scheme=proxy_scheme,
+                                            **email_api)
 
     @property
     def hold_period(self):
@@ -59,13 +56,6 @@ class Comms(object):
 
     def set_hold_period(self, value):
         self._hold_period = value
-
-    @property
-    def template_base(self):
-        return self._template_base
-
-    def set_template_base(self, value):
-        self._template_base = value
 
     def process(self, comms_file, dry=False):
         """Attempts to send comms via appropratie medium based on
@@ -154,7 +144,7 @@ class Comms(object):
                 bad_email = template_items['email_addr']
                 template_items['bad_email_addr'] = bad_email
                 template_items['error_comms'] = action.upper()
-                for addr in self.emailer.support:
+                for addr in self._emailer.support:
                     template_items['email_addr'] = addr
                     email_status = self.send_email(template_items,
                                                    template=template,
@@ -215,7 +205,7 @@ class Comms(object):
             log.error('No SMS mobile contact provided')
             status = False
 
-        if status and not self.smser.validate(mobile):
+        if status and not self._smser.validate(mobile):
             status = False
             log.error('SMS mobile "%s" did not validate' % mobile)
 
@@ -223,11 +213,9 @@ class Comms(object):
             log.info('Sending customer SMS to "%s"' % str(mobile))
 
             # OK, generate the SMS structure.
-            base_dir = self.template_base
-            sms_data = self.smser.create_comms(data=item_details,
-                                               template=template,
-                                               base_dir=base_dir)
-            status = self.smser.send(data=sms_data, dry=dry)
+            sms_data = self._smser.create_comms(data=item_details,
+                                                template=template)
+            status = self._smser.send(data=sms_data, dry=dry)
 
         return status
 
@@ -309,28 +297,25 @@ class Comms(object):
 
         item_nbr = item_details.get('item_nbr')
         subject = ''
-        base_dir = self.template_base
         if status and item_details.keys() > 1:
-            subject = self.emailer.get_subject_line(item_details,
-                                                    base_dir=base_dir,
-                                                    template=template)
+            subject = self._emailer.get_subject_line(item_details,
+                                                     template=template)
             subject = subject.rstrip('\n')
 
         if status:
-            self.emailer.set_recipients(to_address.split(','))
+            self._emailer.set_recipients(to_address.split(','))
             if err:
                 log.info('Sending comms failure notification to "%s"' %
-                          str(self.emailer.support))
+                          str(self._emailer.support))
                 subject = 'FAILED NOTIFICATION - ' + subject
             else:
                 log.info('Sending customer email to "%s"' %
-                         str(self.emailer.recipients))
-            encoded_msg = self.emailer.create_comms(subject=subject,
-                                                    data=item_details,
-                                                    base_dir=base_dir,
-                                                    template=template,
-                                                    err=err)
-            status = self.emailer.send(data=encoded_msg, dry=dry)
+                         str(self._emailer.recipients))
+            encoded_msg = self._emailer.create_comms(subject=subject,
+                                                     data=item_details,
+                                                     template=template,
+                                                     err=err)
+            status = self._emailer.send(data=encoded_msg, dry=dry)
 
         return status
 

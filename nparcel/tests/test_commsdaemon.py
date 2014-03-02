@@ -4,17 +4,75 @@ import os
 import tempfile
 
 import nparcel
-from nparcel.utils.files import remove_files
+from nparcel.utils.files import (remove_files,
+                                 get_directory_files_list)
 
 
 class TestCommsDaemon(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        conf_file = os.path.join('nparcel', 'conf', 'nparceld.conf')
-        cls._cd = nparcel.CommsDaemon(pidfile=None, config=conf_file)
-        cls._cd.emailer.set_template_base(os.path.join('nparcel',
-                                                       'templates'))
+        cls.maxDiff = None
+
+        cls._cd = nparcel.CommsDaemon(pidfile=None)
+        cls._cd.config = nparcel.B2CConfig()
+
+        # If you want to perform a real run, uncomment the following
+        # according to your environment and provide the REST
+        # interface/proxy credentials.
+        # REST API.
+        cls._email_api = ('%s://%s' %
+        ('https',
+         'apps.cinder.co/tollgroup/wsemail/emailservice.svc/sendemail'))
+        cls._sms_api = ('%s://%s' %
+                        ('https',
+                         'api.esendex.com/v1.0/messagedispatcher'))
+        cls._cd.config.add_section('rest')
+        cls._cd.config.set('rest', 'email_api', cls._email_api)
+        cls._cd.config.set('rest',
+                           'email_user',
+                           '<email_user>')
+        cls._cd.config.set('rest',
+                           'email_pw',
+                           '<email_pw>')
+        cls._cd.config.set('rest',
+                           'failed_email',
+                           'lou.markovski@gmail.com')
+        cls._cd.config.set('rest',
+                           'sms_api',
+                           'https://api.esendex.com/v1.0/messagedispatcher')
+        cls._cd.config.set('rest',
+                           'sms_user',
+                           '<sms_user>')
+        cls._cd.config.set('rest',
+                           'sms_pw',
+                           '<sms_pw>')
+
+        # Proxy.
+        #cls._cd.config.add_section('proxy')
+        #cls._cd.config.set('proxy', 'host', 'auproxy-farm.toll.com.au')
+        #cls._cd.config.set('proxy', 'user', 'loumar')
+        #cls._cd.config.set('proxy', 'password', '<passwd>')
+        #cls._cd.config.set('proxy', 'port', '1442')
+        #cls._cd.config.set('proxy', 'protocol', 'http')
+
+        # Call up front to pre-load the DB.
+        cls._cd._comms = nparcel.Comms(**(cls._cd.comms_kwargs))
+        template_dir = os.path.join('nparcel', 'templates')
+        cls._cd._comms._emailer.set_template_base(template_dir)
+        cls._cd._comms._smser.set_template_base(template_dir)
+        cls._cd._emailer.set_template_base(template_dir)
+
+        db = cls._cd._comms.db
+        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixtures = [{'db': db.agent, 'fixture': 'agents.py'},
+                    {'db': db.job, 'fixture': 'jobs.py'},
+                    {'db': db.jobitem, 'fixture': 'jobitems.py'}]
+        for i in fixtures:
+            fixture_file = os.path.join(fixture_dir, i['fixture'])
+            db.load_fixture(i['db'], fixture_file)
+
+        db.commit()
 
     def test_init(self):
         """Initialise a CommsDaemon object.
@@ -25,75 +83,123 @@ class TestCommsDaemon(unittest2.TestCase):
     def test_start(self):
         """Start file processing loop.
         """
-        self._cd.set_dry()
+        # Chamge to False to actually send.  BE CAREFUL!
+        dry = True
+
+        old_dry = self._cd.dry
+        old_file = self._cd.file
+        old_comms_dir = self._cd.comms_dir
+        old_send_time_ranges = list(self._cd.send_time_ranges)
+        old_skip_days = list(self._cd.skip_days)
+
+        # job_item 1 collected.
+        # job_item 6 uncollected/no notify
+        dir = tempfile.mkdtemp()
+        event_files = ['email.1.body',
+                       'sms.1.body',
+                       'email.3.pe',
+                       'sms.3.pe',
+                       'email.6.body',
+                       'sms.6.body',
+                       'email.6.rem',
+                       'sms.6.rem',
+                       'email.9.delay',
+                       'sms.9.delay']
+        for f in event_files:
+            fh = open(os.path.join(dir, f), 'w')
+            fh.close()
+
+        # Start processing.
+        self._cd.set_dry(dry)
+        if not dry:
+            self._cd.set_batch()
+        self._cd.set_file()
+        self._cd.set_comms_dir(dir)
+        self._cd.set_send_time_ranges(None)
+        self._cd.set_skip_days(None)
         self._cd._start(self._cd.exit_event)
+
+        # Clean up.
+        self._cd._exit_event.clear()
+        self._cd.set_dry(old_dry)
+        self._cd.set_file(old_file)
+        self._cd.set_comms_dir(old_comms_dir)
+        self._cd.set_send_time_ranges(old_send_time_ranges)
+        self._cd.set_skip_days(old_skip_days)
+        remove_files(get_directory_files_list(dir))
+        os.removedirs(dir)
 
     def test_skip_day_is_a_skip_day(self):
         """Current skip day check.
         """
         # Fudge the configured skip days.
-        old_skip_days = list(self._cd.config.skip_days)
+        old_skip_days = list(self._cd.skip_days)
+
         fudge_day = datetime.datetime.now()
-        self._cd.config.set_skip_days([fudge_day.strftime('%A')])
+        self._cd.set_skip_days([fudge_day.strftime('%A')])
         received = self._cd._skip_day()
         msg = 'Is a skip day'
         self.assertTrue(received, msg)
 
         # Cleanup.
-        self._cd.config.set_skip_days(old_skip_days)
+        self._cd.set_skip_days(old_skip_days)
 
     def test_skip_day_is_not_a_skip_day(self):
         """Non skip day check.
         """
         # Fudge the configured skip days.
-        old_skip_days = list(self._cd.config.skip_days)
+        old_skip_days = list(self._cd.skip_days)
+
         fudge_day = datetime.datetime.now() + datetime.timedelta(days=3)
-        self._cd.config.set_skip_days([fudge_day.strftime('%A')])
+        self._cd.set_skip_days([fudge_day.strftime('%A')])
         received = self._cd._skip_day()
         msg = 'Not a skip day'
         self.assertFalse(received, msg)
 
         # Cleanup.
-        self._cd.config.set_skip_days(old_skip_days)
+        self._cd.set_skip_days(old_skip_days)
 
     def test_within_time_ranges_within_ranges(self):
         """Within configured time range.
         """
         # Fudge the configured skip days.
-        old_ranges = list(self._cd.config.send_time_ranges)
+        old_ranges = list(self._cd.send_time_ranges)
+
         current_dt = datetime.datetime.now()
         range_dt = current_dt - datetime.timedelta(seconds=3600)
         fudge_range = '%s-23:59' % range_dt.strftime('%H:%M')
-        self._cd.config.set_send_time_ranges([fudge_range])
+        self._cd.set_send_time_ranges([fudge_range])
 
         received = self._cd._within_time_ranges()
         msg = 'Should not be inside time range'
         self.assertTrue(received, msg)
 
         # Cleanup.
-        self._cd.config.set_send_time_ranges(old_ranges)
+        self._cd.set_send_time_ranges(old_ranges)
 
     def test_within_time_ranges_outside_ranges(self):
         """Outside configured time range.
         """
         # Fudge the configured skip days.
-        old_ranges = list(self._cd.config.send_time_ranges)
+        old_ranges = list(self._cd.send_time_ranges)
+
         current_dt = datetime.datetime.now()
-        range_dt = current_dt + datetime.timedelta(seconds=3600)
+        range_dt = current_dt + datetime.timedelta(seconds=60)
         fudge_range = '%s-23:59' % range_dt.strftime('%H:%M')
-        self._cd.config.set_send_time_ranges([fudge_range])
+        self._cd.set_send_time_ranges([fudge_range])
 
         received = self._cd._within_time_ranges()
         msg = 'Should be inside time range'
         self.assertFalse(received, msg)
 
         # Cleanup.
-        self._cd.config.set_send_time_ranges(old_ranges)
+        self._cd.set_send_time_ranges(old_ranges)
 
     def test_message_queue_within_thresholds(self):
         """Message queue threshold check.
         """
         dry = True
+
         received = self._cd._message_queue_ok(0, dry=dry)
         msg = 'Message queue within threshold should return True'
         self.assertTrue(received, msg)
@@ -102,6 +208,7 @@ class TestCommsDaemon(unittest2.TestCase):
         """Message queue threshold check -- warning.
         """
         dry = True
+
         received = self._cd._message_queue_ok(100, dry=dry)
         msg = 'Message queue within threshold should return True'
         self.assertTrue(received, msg)
@@ -114,6 +221,7 @@ class TestCommsDaemon(unittest2.TestCase):
         """Message queue threshold check -- error.
         """
         dry = True
+
         received = self._cd._message_queue_ok(1000, dry=dry)
         msg = 'Message queue within warning threshold should return True'
         self.assertTrue(received, msg)
@@ -126,11 +234,12 @@ class TestCommsDaemon(unittest2.TestCase):
         """Message queue alert email -- warning.
         """
         dry = True
+
         count = 101
         subject = 'Warning - Nparcel Comms message count was at %d' % count
         d = {'count': count,
              'date': datetime.datetime.now().strftime('%c'),
-             'warning_threshold': self._cd.config.comms_q_warning}
+             'warning_threshold': self._cd.q_warning}
         mime = self._cd.emailer.create_comms(subject=subject,
                                              data=d,
                                              template='message_q_warn')
@@ -145,7 +254,7 @@ class TestCommsDaemon(unittest2.TestCase):
         subject = 'Error - Nparcel Comms message count was at %d' % count
         d = {'count': count,
              'date': datetime.datetime.now().strftime('%c'),
-             'error_threshold': self._cd.config.comms_q_error}
+             'error_threshold': self._cd.q_error}
         mime = self._cd.emailer.create_comms(subject=subject,
                                              data=d,
                                              template='message_q_err')
@@ -211,7 +320,80 @@ class TestCommsDaemon(unittest2.TestCase):
         remove_files(fs)
         self._cd.set_comms_dir(old_comms_dir)
 
+    def test_comms_kwargs_no_config(self):
+        """Verify the comms kwarg initialiser structure -- no config.
+        """
+        received = self._cd.comms_kwargs
+        expected = {'db': None,
+                    'email_api': {'api': self._email_api,
+                                  'api_password': '<email_pw>',
+                                  'api_username': '<email_user>',
+                                  'support': 'lou.markovski@gmail.com'},
+                    'proxy': None,
+                    'scheme': 'https',
+                    'sms_api': {'api': self._sms_api,
+                                'api_password': '<sms_pw>',
+                                'api_username': '<sms_user>'}}
+        msg = 'Comms kwargs initialiser with no config error'
+        self.assertDictEqual(received, expected, msg)
+
+    def test_comms_kwargs(self):
+        """Verify the comms kwarg initialiser structure.
+        """
+        # Proxy kwargs.
+        cd = nparcel.CommsDaemon(pidfile=None)
+        cd.config = nparcel.B2CConfig()
+
+        # DB.
+        cd.config.add_section('db')
+        cd.config.set('db', 'driver', 'FreeTDS')
+        cd.config.set('db', 'host', 'SQVDBAUT07')
+        cd.config.set('db', 'database', 'Nparcel')
+        cd.config.set('db', 'user', 'user')
+        cd.config.set('db', 'password', '<db_passwd>')
+        cd.config.set('db', 'port', '1442')
+
+        # REST API.
+        cd.config.add_section('rest')
+        cd.config.set('rest', 'email_api', 'https://apps.cinder.co')
+        cd.config.set('rest', 'email_user', 'username')
+        cd.config.set('rest', 'email_pw', '<passwd>')
+        cd.config.set('rest', 'failed_email', 'loumar@tollgroup.com')
+        cd.config.set('rest', 'sms_api', 'https://api.esendex.com')
+        cd.config.set('rest', 'sms_user', 'sms_user')
+        cd.config.set('rest', 'sms_pw', '<sms_pw>')
+
+        # Proxy.
+        cd.config.add_section('proxy')
+        cd.config.set('proxy', 'host', 'auproxy-farm.toll.com.au')
+        cd.config.set('proxy', 'user', 'loumar')
+        cd.config.set('proxy', 'password', '<passwd>')
+        cd.config.set('proxy', 'port', '1442')
+        cd.config.set('proxy', 'protocol', 'http')
+        proxy = 'loumar:<passwd>@auproxy-farm.toll.com.au:1442'
+
+        received = cd.comms_kwargs
+        expected = {'db': {'driver': 'FreeTDS',
+                           'host': 'SQVDBAUT07',
+                           'database': 'Nparcel',
+                           'user': 'user',
+                           'password': '<db_passwd>',
+                           'port': 1442},
+                    'email_api': {'api': 'https://apps.cinder.co',
+                                  'api_username': 'username',
+                                  'api_password': '<passwd>',
+                                  'support': 'loumar@tollgroup.com'},
+                    'proxy': proxy,
+                    'scheme': 'http',
+                    'sms_api': {'api': 'https://api.esendex.com',
+                                'api_username': 'sms_user',
+                                'api_password': '<sms_pw>'}}
+        msg = 'Comms kwargs initialiser error'
+        self.assertDictEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._cd = None
         del cls._cd
+        del cls._email_api
+        del cls._sms_api

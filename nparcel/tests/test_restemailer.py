@@ -1,4 +1,5 @@
 import unittest2
+import os
 
 import nparcel
 
@@ -10,12 +11,14 @@ class TestRestEmailer(unittest2.TestCase):
         cls._re = nparcel.RestEmailer()
 
         conf = nparcel.B2CConfig()
-        conf.set_config_file('nparcel/conf/nparceld.conf')
+        conf.set_config_file(os.path.join('nparcel',
+                                          'conf',
+                                          'nparceld.conf'))
         conf.parse_config()
-        cls._re.set_proxy(conf.proxy_string())
-        cls._re.set_api(conf.rest.get('email_api'))
-        cls._re.set_api_username(conf.rest.get('email_user'))
-        cls._re.set_api_password(conf.rest.get('email_pw'))
+        cls._re._rest.set_proxy(conf.proxy_string())
+        cls._re._rest.set_api(conf.rest.get('email_api'))
+        cls._re._rest.set_api_username(conf.rest.get('email_user'))
+        cls._re._rest.set_api_password(conf.rest.get('email_pw'))
 
     def test_init(self):
         """Verify initialisation of an nparcel.RestEmailer object.
@@ -34,7 +37,11 @@ class TestRestEmailer(unittest2.TestCase):
                                           sender=sender,
                                           recipient=recipient,
                                           msg=msg)
-        expected = 'username=&password=&message=Content-Type%3A+text%2Fplain%3B+charset%3D%22us-ascii%22%5CnMIME-Version%3A+1.0%5CnContent-Transfer-Encoding%3A+7bit%5CnSubject%3A+Test+Message+from+Toll%5CnFrom%3A+loumar%40tollgroup.com%5CnTo%3A+loumar%40tollgroup.com%5Cn%5CnTEST+MESSAGE'
+        f = open(os.path.join('nparcel',
+                              'tests',
+                              'encoded_params.out'))
+        expected = f.read().rstrip()
+        f.close()
         msg = 'Encoded message not as expected'
         self.assertEqual(received, expected, msg)
 
@@ -74,7 +81,7 @@ class TestRestEmailer(unittest2.TestCase):
     def test_send(self):
         """Send an email message to the REST-based interface.
         """
-        self._re.set_proxy_scheme('https')
+        self._re._rest.set_proxy_scheme('https')
 
         self._re.set_recipients(['loumar@tollgroup.com'])
         subject = 'Test Message from Toll'
@@ -95,7 +102,7 @@ class TestRestEmailer(unittest2.TestCase):
 
         # Clean up.
         self._re.set_recipients(None)
-        self._re.set_proxy_scheme('http')
+        self._re._rest.set_proxy_scheme('http')
 
     def test_get_subject_line(self):
         """Build the subject line from a template -- base scenario.

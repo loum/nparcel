@@ -143,6 +143,18 @@ class B2CConfig(nparcel.Config):
 
         time ranges when comms can be sent
 
+    .. attribute:: comms_q_warning
+
+        comms queue warning threshold.  If number of messages exceeds this
+        threshold (and is under the :attr:`comms_q_error` threshold then a
+        warning email notification is triggered
+
+    .. attribute:: comms_q_error
+
+        comms queue error threshold.  If number of messages exceeds this
+        threshold then an error email notification is triggered and
+        the comms daemon is terminated
+
     .. attribute:: exporter_fields (exporter)
 
         dictionary of business unit exporter ordered columns
@@ -694,12 +706,11 @@ class B2CConfig(nparcel.Config):
 
     def set_skip_days(self, values):
         del self._skip_days[:]
+        self._skip_days = []
 
         if values is not None:
-            log.debug('Set skip days to "%s"' % str(values))
             self._skip_days.extend(values)
-        else:
-            self._skip_days = []
+            log.debug('Set skip days to "%s"' % str(self.skip_days))
 
     @property
     def send_time_ranges(self):
@@ -707,26 +718,25 @@ class B2CConfig(nparcel.Config):
 
     def set_send_time_ranges(self, values):
         del self._send_time_ranges[:]
+        self._send_time_ranges = []
 
         if values is not None:
             log.debug('Set send time ranges "%s"' % str(values))
             self._send_time_ranges.extend(values)
-        else:
-            self._send_time_ranges = []
 
     @property
     def comms_q_warning(self):
         return self._comms_q_warning
 
     def set_comms_q_warning(self, value):
-        self._comms_q_warning = value
+        self._comms_q_warning = int(value)
 
     @property
     def comms_q_error(self):
         return self._comms_q_error
 
     def set_comms_q_error(self, value):
-        self._comms_q_error = value
+        self._comms_q_error = int(value)
 
     def parse_config(self):
         """Read config items from the configuration file.
@@ -1681,7 +1691,7 @@ class B2CConfig(nparcel.Config):
             string that could be fed directly into a HTTP/S header
             to handle proxy authentication in the request.  Example::
 
-                http://loumar:<passwd>@itproxy-farm.toll.com.aus:8080
+                http://loumar:<passwd>@auproxy-farm.toll.com.aus:8080
 
         """
         values = None
@@ -1689,6 +1699,7 @@ class B2CConfig(nparcel.Config):
             values = kwargs
         else:
             values = self.proxy_kwargs()
+
         proxy = None
         if values is not None:
             # Check if we have a username and password.
