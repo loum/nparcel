@@ -15,7 +15,7 @@ class TestCommsDaemon(unittest2.TestCase):
         cls.maxDiff = None
 
         cls._cd = nparcel.CommsDaemon(pidfile=None)
-        cls._cd.config = nparcel.B2CConfig()
+        cls._cd.config = nparcel.CommsB2CConfig()
 
         # If you want to perform a real run, uncomment the following
         # according to your environment and provide the REST

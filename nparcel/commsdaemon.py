@@ -62,7 +62,7 @@ class CommsDaemon(nparcel.DaemonService):
                                           batch=batch)
 
         if config is not None:
-            self.config = nparcel.B2CConfig(file=config)
+            self.config = nparcel.CommsB2CConfig(file=config)
             self.config.parse_config()
 
         try:
@@ -80,6 +80,12 @@ class CommsDaemon(nparcel.DaemonService):
             log.debug(msg)
 
         try:
+            self.set_loop(self.config.comms_loop)
+        except AttributeError, err:
+            log.debug('%s comms_loop not in config -- using %d sec' %
+                      (self._facility, self.loop))
+
+        try:
             self.set_q_warning(self.config.comms_q_warning)
         except AttributeError, err:
             msg = ('%s q_warning not in config -- using %s' %
@@ -92,12 +98,6 @@ class CommsDaemon(nparcel.DaemonService):
             msg = ('%s q_error not in config -- using %s' %
                    (self._facility, self.q_error))
             log.debug(msg)
-
-        try:
-            self.set_loop(self.config.comms_loop)
-        except AttributeError, err:
-            log.debug('%s comms_loop not in config -- using %d sec' %
-                      (self._facility, self.loop))
 
         try:
             self.set_skip_days(self.config.skip_days)

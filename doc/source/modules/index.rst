@@ -10,6 +10,7 @@ Modules
 
     config.rst
     b2cconfig.rst
+    commsb2cconfig.rst
     parser.rst
     dbsession.rst
     oradbsession.rst

@@ -16,15 +16,22 @@ class Config(ConfigParser.SafeConfigParser):
         path to the configuration file to parse
 
     """
+    _facility = None
 
     def __init__(self, config_file=None):
         """Nparcel Config initialisation.
         """
+        self._facility = self.__class__.__name__
+
         ConfigParser.SafeConfigParser.__init__(self)
 
         self._config_file = config_file
         if self._config_file is not None:
             self.set_config_file(self._config_file)
+
+    @property
+    def facility(self):
+        return self._facility
 
     @property
     def config_file(self):

@@ -30,9 +30,9 @@ FLAG_MAP = {'item_number_excp': 0,
 
 
 class B2CConfig(nparcel.Config):
-    """Nparcel Config class.
+    """B2CConfig class.
 
-    :class:`nparcel.Config` captures the configuration items required
+    :class:`nparcel.B2CConfig` captures the configuration items required
     by the Nparcel B2C Replicator
 
     .. attribute:: dirs_to_check (loader)
@@ -80,10 +80,6 @@ class B2CConfig(nparcel.Config):
     .. attribute reminder_loop (reminder)
 
         time (seconds) between primary elect processing iterations.
-
-    .. attribute comms_loop (comms)
-
-        time (seconds) between notification iterations.
 
     .. attribute:: exporter_loop (exporter)
 
@@ -134,26 +130,6 @@ class B2CConfig(nparcel.Config):
 
         defines the time period (in seconds) since the job_item.created_ts
         that the agent will hold the parcel before being returned
-
-    .. attribute:: skip_days (comms)
-
-        list of days ['Saturday', 'Sunday'] to not send messages
-
-    .. attribute:: send_time_ranges (comms)
-
-        time ranges when comms can be sent
-
-    .. attribute:: comms_q_warning
-
-        comms queue warning threshold.  If number of messages exceeds this
-        threshold (and is under the :attr:`comms_q_error` threshold then a
-        warning email notification is triggered
-
-    .. attribute:: comms_q_error
-
-        comms queue error threshold.  If number of messages exceeds this
-        threshold then an error email notification is triggered and
-        the comms daemon is terminated
 
     .. attribute:: exporter_fields (exporter)
 
@@ -366,7 +342,6 @@ class B2CConfig(nparcel.Config):
     _loader_loop = 30
     _ondelivery_loop = 30
     _reminder_loop = 3600
-    _comms_loop = 30
     _exporter_loop = 300
     _mapper_loop = 30
     _filter_loop = 30
@@ -381,10 +356,6 @@ class B2CConfig(nparcel.Config):
     _notification_delay = 345600
     _start_date = datetime.datetime(2013, 9, 10, 0, 0, 0)
     _hold_period = 691200
-    _skip_days = ['Sunday']
-    _send_time_ranges = ['08:00-19:00']
-    _comms_q_warning = 100
-    _comms_q_error = 1000
     _exporter_fields = {}
     _pe_in_file_format = 'T1250_TOL[PIF]_\d{14}\.dat'
     _pe_in_file_archive_string = 'T1250_TOL[PIF]_(\d{8})\d{6}\.dat'
@@ -459,7 +430,7 @@ class B2CConfig(nparcel.Config):
     _adp_default_passwords = {}
 
     def __init__(self, file=None):
-        """Nparcel Config initialisation.
+        """B2CConfig initialisation.
         """
         nparcel.Config.__init__(self, file)
 
@@ -564,10 +535,6 @@ class B2CConfig(nparcel.Config):
         return self._reminder_loop
 
     @property
-    def comms_loop(self):
-        return self._comms_loop
-
-    @property
     def exporter_loop(self):
         return self._exporter_loop
 
@@ -604,8 +571,8 @@ class B2CConfig(nparcel.Config):
         self._support_emails = []
 
         if values is not None:
-            log.debug('Set Support Emails "%s"' % str(values))
             self._support_emails.extend(values)
+        log.debug('%s -- email.support "%s"' % (self.facility, values))
 
     @property
     def cond(self):
@@ -699,44 +666,6 @@ class B2CConfig(nparcel.Config):
 
     def set_hold_period(self, value):
         self._hold_period = value
-
-    @property
-    def skip_days(self):
-        return self._skip_days
-
-    def set_skip_days(self, values):
-        del self._skip_days[:]
-        self._skip_days = []
-
-        if values is not None:
-            self._skip_days.extend(values)
-            log.debug('Set skip days to "%s"' % str(self.skip_days))
-
-    @property
-    def send_time_ranges(self):
-        return self._send_time_ranges
-
-    def set_send_time_ranges(self, values):
-        del self._send_time_ranges[:]
-        self._send_time_ranges = []
-
-        if values is not None:
-            log.debug('Set send time ranges "%s"' % str(values))
-            self._send_time_ranges.extend(values)
-
-    @property
-    def comms_q_warning(self):
-        return self._comms_q_warning
-
-    def set_comms_q_warning(self, value):
-        self._comms_q_warning = int(value)
-
-    @property
-    def comms_q_error(self):
-        return self._comms_q_error
-
-    def set_comms_q_error(self, value):
-        self._comms_q_error = int(value)
 
     def parse_config(self):
         """Read config items from the configuration file.
@@ -906,12 +835,6 @@ class B2CConfig(nparcel.Config):
                       self.reminder_loop)
 
         try:
-            self._comms_loop = int(self.get('timeout', 'comms_loop'))
-        except ConfigParser.NoOptionError, err:
-            log.debug('Using default Notifications loop: %d (sec)' %
-                      self.comms_loop)
-
-        try:
             self._exporter_loop = int(self.get('timeout', 'exporter_loop'))
         except ConfigParser.NoOptionError, err:
             log.debug('Using default Exporter loop: %d (sec)' %
@@ -938,7 +861,7 @@ class B2CConfig(nparcel.Config):
         try:
             self._support_emails = self.get('email', 'support').split(',')
         except ConfigParser.NoOptionError, err:
-            log.warn('Support emails not provided: %s' % err)
+            log.warn('%s emails not provided: %s' % err)
 
         # Business unit conditons.  No probs if they are missing -- will
         # just default to '0' (False) for each flag.
@@ -993,48 +916,6 @@ class B2CConfig(nparcel.Config):
         except ConfigParser.NoOptionError, err:
             log.debug('Using default reminder hold period: %d' %
                       self.hold_period)
-
-        # Comms skip_days.
-        try:
-            skip_days = self.get('comms', 'skip_days').split(',')
-            self.set_skip_days(skip_days)
-            log.debug('Parsed comms days to skip: "%s"' % skip_days)
-        except (ConfigParser.NoSectionError,
-                ConfigParser.NoOptionError), err:
-            log.debug('Using default skip_days: %s' % str(self.skip_days))
-
-        # Comms send_time_ranges.
-        try:
-            send_time_ranges = self.get('comms', 'send_time_ranges')
-            self.set_send_time_ranges(send_time_ranges.split(','))
-            log.debug('Parsed comms send time ranges: "%s"' %
-                      send_time_ranges)
-        except (ConfigParser.NoSectionError,
-                ConfigParser.NoOptionError), err:
-            log.debug('Using default send time ranges: %s' %
-                      str(self.send_time_ranges))
-
-        # Comms comms queue warning threshold.
-        try:
-            comms_q_warning = self.get('comms', 'comms_queue_warning')
-            self.set_comms_q_warning(int(comms_q_warning))
-            log.debug('Parsed comms queue warn threshold: "%s"' %
-                      comms_q_warning)
-        except (ConfigParser.NoSectionError,
-                ConfigParser.NoOptionError), err:
-            log.debug('Using default comms queue warning: %s' %
-                      self.comms_q_warning)
-
-        # Comms comms queue error threshold.
-        try:
-            comms_q_error = self.get('comms', 'comms_queue_error')
-            self.set_comms_q_error(int(comms_q_error))
-            log.debug('Parsed comms queue error threshold: "%s"' %
-                      comms_q_error)
-        except (ConfigParser.NoSectionError,
-                ConfigParser.NoOptionError), err:
-            log.debug('Using default comms queue error: %s' %
-                      self.comms_q_error)
 
         # Transend.
         try:

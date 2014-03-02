@@ -98,26 +98,6 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Comms hold_period error'
         self.assertEqual(received, expected, msg)
 
-        received = self._c.skip_days
-        expected = ['Sunday']
-        msg = 'Comms skip_days error'
-        self.assertListEqual(received, expected, msg)
-
-        received = self._c.send_time_ranges
-        expected = ['08:00-19:00']
-        msg = 'Comms send_time_ranges error'
-        self.assertListEqual(received, expected, msg)
-
-        received = self._c.comms_q_warning
-        expected = 100
-        msg = 'Comms message queue warning error'
-        self.assertEqual(received, expected, msg)
-
-        received = self._c.comms_q_error
-        expected = 1000
-        msg = 'Comms message queue error error'
-        self.assertEqual(received, expected, msg)
-
     def test_parse_config_dirs(self):
         """Parse items from the config -- directories ([dirs]).
         """
@@ -142,11 +122,6 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Signature directory not as expected'
         received = self._c.signature_dir
         expected = '/data/www/nparcel/data/signature'
-        self.assertEqual(received, expected, msg)
-
-        msg = 'Comms directory not as expected'
-        received = self._c.comms_dir
-        expected = '/data/nparcel/comms'
         self.assertEqual(received, expected, msg)
 
         msg = 'Aggregator directory not as expected'
@@ -221,11 +196,6 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Reminder loop not as expected'
         received = self._c.reminder_loop
         expected = 3600
-        self.assertEqual(received, expected, msg)
-
-        msg = 'Notifications loop not as expected'
-        received = self._c.comms_loop
-        expected = 30
         self.assertEqual(received, expected, msg)
 
         msg = 'Exporter loop not as expected'
