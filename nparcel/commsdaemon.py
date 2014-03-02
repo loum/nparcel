@@ -4,39 +4,48 @@ __all__ = [
 import signal
 import time
 import datetime
-import os
-import re
 import ConfigParser
 
 import nparcel
 from nparcel.utils.log import log
+from nparcel.utils.files import get_directory_files_list
 
 
 class CommsDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.Comms` class.
 
-    .. attribute:: comms_dir
+    .. attribute:: *comms_dir*
 
          directory where comms files are read from for further processing
 
-    .. attribute:: q_warning
+    .. attribute:: *q_warning*
 
         comms queue warning threshold.  If number of messages exceeds this
         threshold (and is under the :attr:`q_error` threshold then a
         warning email notification is triggered
 
-    .. attribute:: q_error
+    .. attribute:: *q_error*
 
         comms queue error threshold.  If number of messages exceeds this
         threshold then an error email notification is triggered and
         the comms daemon is terminated
 
-    .. attribute:: skip_days (comms)
+    .. attribute:: *controlled_templates*
+
+        list of comms templates that are controlled by the delivery
+        period thresholds
+
+    .. attribute:: *uncontrolled_templates*
+
+        list of comms templates that are *NOT* controlled by the delivery
+        period thresholds.  In other words, comms can be sent 24 x 7
+
+    .. attribute:: *skip_days*
 
         list of days ['Saturday', 'Sunday'] to not send messages.  An empty
         list (or no skip days) suggests that comms can be sent on any day
 
-    .. attribute:: send_time_ranges (comms)
+    .. attribute:: *send_time_ranges*
 
         time ranges when comms can be sent.  An empty list (or no
         time ranges) suggests that comms can be sent at any time
@@ -46,6 +55,7 @@ class CommsDaemon(nparcel.DaemonService):
     _comms_dir = None
     _q_warning = 100
     _q_error = 1000
+    _controlled_templates = ['body']
     _skip_days = ['Sunday']
     _send_time_ranges = ['08:00-19:00']
 
@@ -100,10 +110,23 @@ class CommsDaemon(nparcel.DaemonService):
             log.debug(msg)
 
         try:
+            self.set_controlled_templates(self.config.controlled_templates)
+        except AttributeError, err:
+            msg = ('%s controlled_templates not in config -- using %s' %
+                   (self._facility, self.controlled_templates))
+            log.debug(msg)
+
+        try:
             self.set_skip_days(self.config.skip_days)
         except AttributeError, err:
             log.debug('%s skip_days not in config -- using %s' %
                       (self._facility, self.skip_days))
+
+        try:
+            self.set_controlled_templates(self.config.controlled_templates)
+        except AttributeError, err:
+            log.debug('%s controlled_templates not in config -- using %s' %
+                      (self._facility, self.controlled_templates))
 
         try:
             self.set_send_time_ranges(self.config.send_time_ranges)
@@ -137,6 +160,19 @@ class CommsDaemon(nparcel.DaemonService):
 
     def set_q_error(self, value):
         self._q_error = value
+
+    @property
+    def controlled_templates(self):
+        return self._controlled_templates
+
+    def set_controlled_templates(self, values=None):
+        del self._controlled_templates[:]
+        self._controlled_templates = []
+
+        if values is not None:
+            self._controlled_templates.extend(values)
+        log.debug('%s controlled_templates set to: "%s"' %
+                  (self._facility, self.controlled_templates))
 
     @property
     def skip_days(self):
@@ -255,25 +291,33 @@ class CommsDaemon(nparcel.DaemonService):
         while not event.isSet():
             files = []
 
-            if self._comms.db():
-                if not self._skip_day():
-                    if self._within_time_ranges():
-                        if self.file is not None:
-                            files.append(self.file)
-                            event.set()
-                        else:
-                            files.extend(self.get_comms_files())
-            else:
+            if not self._comms.db():
                 log.error('ODBC connection failure -- aborting')
                 event.set()
                 continue
 
+            if not self._skip_day():
+                if self._within_time_ranges():
+                    if self.file is not None:
+                        files.append(self.file)
+                        event.set()
+                    else:
+                        for filter in self.controlled_templates:
+                            files.extend(self.get_comms_files(filter))
+
+                    if len(files):
+                        self.reporter.reset('Comms')
+                        log.info('All files: "%s"' % files)
+
             # Start processing files.
             if self._message_queue_ok(len(files), dry=self.dry):
                 for file in files:
-                    self._comms.process(file, self.dry)
+                    self.reporter(self._comms.process(file, self.dry))
+
+                stats = self.reporter.report()
+                log.info(stats)
             else:
-                log.info('Comms message queue threshold breached -- aborting')
+                log.info('Comms queue threshold breached -- aborting')
                 event.set()
 
             if not event.isSet():
@@ -399,10 +443,10 @@ class CommsDaemon(nparcel.DaemonService):
                                              template='message_q_err')
             self.emailer.send(mime_message=mime, dry=dry)
         elif message_count > self.q_warning:
-            log.info('Message queue count %d breaches warning threshold %d' %
+            log.info('Comms queue count %d breaches warning threshold %d' %
                      (message_count, self.q_warning))
 
-            subject = ('Warning - Nparcel Comms message count was at %d' %
+            subject = ('Warning - Comms message count was at %d' %
                        message_count)
             d = {'count': message_count,
                  'date': current_dt_str,
@@ -414,7 +458,7 @@ class CommsDaemon(nparcel.DaemonService):
 
         return queue_ok
 
-    def get_comms_files(self):
+    def get_comms_files(self, template=None):
         """Produce a list of files in the :attr:`comms_dir`.
 
         Comms files are matched based on the following pattern::
@@ -431,28 +475,23 @@ class CommsDaemon(nparcel.DaemonService):
         * ``<template>`` is the string template used to build the message
           content
 
+        **Kwargs:**
+            *template*: template token to filter comms event files against
+
         **Returns:**
             list of files to process or empty list if the :attr:`comms_dir`
             is not defined or does not exist
 
         """
-        comms_files = []
-
         log.debug('Searching for comms in dir: %s' % self.comms_dir)
 
-        if self.comms_dir is not None:
-            if not os.path.exists(self.comms_dir):
-                log.error('Comms directory "%s" does not exist' %
-                          self.comms_dir)
-            else:
-                for f in os.listdir(self.comms_dir):
-                    r = re.compile("^(email|sms)\.(\d+)\.(pe|rem|body|delay)$")
-                    m = r.match(f)
-                    if m:
-                        comms_file = os.path.join(self.comms_dir, f)
-                        log.info('Found comms file: "%s"' % comms_file)
-                        comms_files.append(comms_file)
-        else:
-            log.error('Comms dir is not defined')
+        comms_files = []
+        filter = '^(email|sms)\.(\d+)\.(\w+)$'
+        if template is not None:
+            filter = '^(email|sms)\.(\d+)\.(%s)$' % template
+        comms_files.extend(get_directory_files_list(self.comms_dir,
+                                                    filter))
+
+        log.debug('Comms event files found: "%s"' % comms_files)
 
         return comms_files

@@ -107,8 +107,6 @@ class CommsB2CConfig(nparcel.B2CConfig):
     @property
     def controlled_templates(self):
         return self._controlled_templates
-        log.debug('%s -- comms.controlled_templates set to: "%s"' %
-                  (self.facility, self.controlled_templates))
 
     def set_controlled_templates(self, values=None):
         del self._controlled_templates[:]

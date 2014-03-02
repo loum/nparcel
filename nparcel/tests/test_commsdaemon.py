@@ -91,6 +91,7 @@ class TestCommsDaemon(unittest2.TestCase):
         old_comms_dir = self._cd.comms_dir
         old_send_time_ranges = list(self._cd.send_time_ranges)
         old_skip_days = list(self._cd.skip_days)
+        old_controlled_templates = list(self._cd.controlled_templates)
 
         # job_item 1 collected.
         # job_item 6 uncollected/no notify
@@ -104,7 +105,9 @@ class TestCommsDaemon(unittest2.TestCase):
                        'email.6.rem',
                        'sms.6.rem',
                        'email.9.delay',
-                       'sms.9.delay']
+                       'sms.9.delay',
+                       'email.9999999.body.err',
+                       'sms.9999999.body.err']
         for f in event_files:
             fh = open(os.path.join(dir, f), 'w')
             fh.close()
@@ -117,6 +120,10 @@ class TestCommsDaemon(unittest2.TestCase):
         self._cd.set_comms_dir(dir)
         self._cd.set_send_time_ranges(None)
         self._cd.set_skip_days(None)
+        self._cd.set_controlled_templates(['body',
+                                           'rem',
+                                           'delay',
+                                           'pe'])
         self._cd._start(self._cd.exit_event)
 
         # Clean up.
@@ -126,6 +133,7 @@ class TestCommsDaemon(unittest2.TestCase):
         self._cd.set_comms_dir(old_comms_dir)
         self._cd.set_send_time_ranges(old_send_time_ranges)
         self._cd.set_skip_days(old_skip_days)
+        self._cd.set_controlled_templates(old_controlled_templates)
         remove_files(get_directory_files_list(dir))
         os.removedirs(dir)
 
