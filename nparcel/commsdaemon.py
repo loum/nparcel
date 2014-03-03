@@ -56,6 +56,7 @@ class CommsDaemon(nparcel.DaemonService):
     _q_warning = 100
     _q_error = 1000
     _controlled_templates = ['body']
+    _uncontrolled_templates = ['ret']
     _skip_days = ['Sunday']
     _send_time_ranges = ['08:00-19:00']
 
@@ -66,10 +67,11 @@ class CommsDaemon(nparcel.DaemonService):
                  batch=False,
                  config=None):
         self._facility = self.__class__.__name__
-        super(CommsDaemon, self).__init__(pidfile=pidfile,
-                                          file=file,
-                                          dry=dry,
-                                          batch=batch)
+        nparcel.DaemonService.__init__(self,
+                                       pidfile=pidfile,
+                                       file=file,
+                                       dry=dry,
+                                       batch=batch)
 
         if config is not None:
             self.config = nparcel.CommsB2CConfig(file=config)
@@ -117,16 +119,18 @@ class CommsDaemon(nparcel.DaemonService):
             log.debug(msg)
 
         try:
+            tmp = self.config.uncontrolled_templates
+            self.set_uncontrolled_templates(tmp)
+        except AttributeError, err:
+            msg = ('%s uncontrolled_templates not in config -- using %s' %
+                   (self._facility, self.uncontrolled_templates))
+            log.debug(msg)
+
+        try:
             self.set_skip_days(self.config.skip_days)
         except AttributeError, err:
             log.debug('%s skip_days not in config -- using %s' %
                       (self._facility, self.skip_days))
-
-        try:
-            self.set_controlled_templates(self.config.controlled_templates)
-        except AttributeError, err:
-            log.debug('%s controlled_templates not in config -- using %s' %
-                      (self._facility, self.controlled_templates))
 
         try:
             self.set_send_time_ranges(self.config.send_time_ranges)
@@ -173,6 +177,19 @@ class CommsDaemon(nparcel.DaemonService):
             self._controlled_templates.extend(values)
         log.debug('%s controlled_templates set to: "%s"' %
                   (self._facility, self.controlled_templates))
+
+    @property
+    def uncontrolled_templates(self):
+        return self._uncontrolled_templates
+
+    def set_uncontrolled_templates(self, values=None):
+        del self._uncontrolled_templates[:]
+        self._uncontrolled_templates = []
+
+        if values is not None:
+            self._uncontrolled_templates.extend(values)
+        log.debug('%s uncontrolled_templates set to: "%s"' %
+                  (self._facility, self.uncontrolled_templates))
 
     @property
     def skip_days(self):
@@ -268,6 +285,21 @@ class CommsDaemon(nparcel.DaemonService):
             log.debug('%s Email REST credentials not in config: %s ' %
                       (self._facility, err))
 
+        try:
+            kwargs['templates'] = (self.config.controlled_templates +
+                                   self.config.uncontrolled_templates)
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('%s templates cannot be built from %s: %s ' %
+                      (self._facility, 'comms.*controlled_templates', err))
+
+        try:
+            kwargs['returns_templates'] = self.config.uncontrolled_templates
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('%s returns_templates cannot be built from %s: %s ' %
+                      (self._facility, 'comms.uncontrolled_templates', err))
+
         return kwargs
 
     def _start(self, event):
@@ -288,6 +320,10 @@ class CommsDaemon(nparcel.DaemonService):
         if self._comms is None:
             self._comms = nparcel.Comms(**(self.comms_kwargs))
 
+        all_templates = (self.controlled_templates +
+                         self.uncontrolled_templates)
+        log.info('Enabled templates: %s' % all_templates)
+
         while not event.isSet():
             files = []
 
@@ -302,7 +338,8 @@ class CommsDaemon(nparcel.DaemonService):
                         files.append(self.file)
                         event.set()
                     else:
-                        for filter in self.controlled_templates:
+                        for filter in all_templates:
+                            log.debug('filter: %s' % filter)
                             files.extend(self.get_comms_files(filter))
 
                     if len(files):
@@ -314,8 +351,9 @@ class CommsDaemon(nparcel.DaemonService):
                 for file in files:
                     self.reporter(self._comms.process(file, self.dry))
 
-                stats = self.reporter.report()
-                log.info(stats)
+                if len(files):
+                    stats = self.reporter.report()
+                    log.info(stats)
             else:
                 log.info('Comms queue threshold breached -- aborting')
                 event.set()

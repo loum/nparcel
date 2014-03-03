@@ -67,7 +67,10 @@ class TestCommsDaemon(unittest2.TestCase):
         fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
         fixtures = [{'db': db.agent, 'fixture': 'agents.py'},
                     {'db': db.job, 'fixture': 'jobs.py'},
-                    {'db': db.jobitem, 'fixture': 'jobitems.py'}]
+                    {'db': db.jobitem, 'fixture': 'jobitems.py'},
+                    {'db': db.returns_reference,
+                     'fixture': 'returns_reference.py'},
+                    {'db': db.returns, 'fixture': 'returns.py'}]
         for i in fixtures:
             fixture_file = os.path.join(fixture_dir, i['fixture'])
             db.load_fixture(i['db'], fixture_file)
@@ -92,6 +95,9 @@ class TestCommsDaemon(unittest2.TestCase):
         old_send_time_ranges = list(self._cd.send_time_ranges)
         old_skip_days = list(self._cd.skip_days)
         old_controlled_templates = list(self._cd.controlled_templates)
+        old_uncontrolled_templates = list(self._cd.uncontrolled_templates)
+        old_template_tokens = self._cd.comms.template_tokens
+        old_returns_template_tokens = self._cd.comms.returns_template_tokens
 
         # job_item 1 collected.
         # job_item 6 uncollected/no notify
@@ -106,6 +112,8 @@ class TestCommsDaemon(unittest2.TestCase):
                        'sms.6.rem',
                        'email.9.delay',
                        'sms.9.delay',
+                       'email.2.ret',
+                       'sms.2.ret',
                        'email.9999999.body.err',
                        'sms.9999999.body.err']
         for f in event_files:
@@ -124,6 +132,13 @@ class TestCommsDaemon(unittest2.TestCase):
                                            'rem',
                                            'delay',
                                            'pe'])
+        self._cd.set_uncontrolled_templates(['ret'])
+        self._cd.comms.set_template_tokens(['body',
+                                            'rem',
+                                            'delay',
+                                            'pe',
+                                            'ret'])
+        self._cd.comms.set_returns_template_tokens(['ret'])
         self._cd._start(self._cd.exit_event)
 
         # Clean up.
@@ -134,6 +149,9 @@ class TestCommsDaemon(unittest2.TestCase):
         self._cd.set_send_time_ranges(old_send_time_ranges)
         self._cd.set_skip_days(old_skip_days)
         self._cd.set_controlled_templates(old_controlled_templates)
+        self._cd.set_uncontrolled_templates(old_uncontrolled_templates)
+        self._cd.comms.set_template_tokens(old_template_tokens)
+        self._cd.comms.set_returns_template_tokens(old_returns_template_tokens)
         remove_files(get_directory_files_list(dir))
         os.removedirs(dir)
 
@@ -341,7 +359,9 @@ class TestCommsDaemon(unittest2.TestCase):
                     'scheme': 'https',
                     'sms_api': {'api': self._sms_api,
                                 'api_password': '<sms_pw>',
-                                'api_username': '<sms_user>'}}
+                                'api_username': '<sms_user>'},
+                    'templates': [],
+                    'returns_templates': []}
         msg = 'Comms kwargs initialiser with no config error'
         self.assertDictEqual(received, expected, msg)
 
@@ -350,7 +370,7 @@ class TestCommsDaemon(unittest2.TestCase):
         """
         # Proxy kwargs.
         cd = nparcel.CommsDaemon(pidfile=None)
-        cd.config = nparcel.B2CConfig()
+        cd.config = nparcel.CommsB2CConfig()
 
         # DB.
         cd.config.add_section('db')
@@ -380,6 +400,13 @@ class TestCommsDaemon(unittest2.TestCase):
         cd.config.set('proxy', 'protocol', 'http')
         proxy = 'loumar:<passwd>@auproxy-farm.toll.com.au:1442'
 
+        # Templates.
+        cd.config.set_controlled_templates(['body',
+                                            'rem',
+                                            'delay',
+                                            'pe'])
+        cd.config.set_uncontrolled_templates(['ret'])
+
         received = cd.comms_kwargs
         expected = {'db': {'driver': 'FreeTDS',
                            'host': 'SQVDBAUT07',
@@ -395,13 +422,21 @@ class TestCommsDaemon(unittest2.TestCase):
                     'scheme': 'http',
                     'sms_api': {'api': 'https://api.esendex.com',
                                 'api_username': 'sms_user',
-                                'api_password': '<sms_pw>'}}
+                                'api_password': '<sms_pw>'},
+                    'templates': ['body',
+                                  'rem',
+                                  'delay',
+                                  'pe',
+                                  'ret'],
+                    'returns_templates': ['ret']}
         msg = 'Comms kwargs initialiser error'
         self.assertDictEqual(received, expected, msg)
 
     @classmethod
     def tearDownClass(cls):
         cls._cd = None
+        del cls._cd.config
+        del cls._cd.comms
         del cls._cd
         del cls._email_api
         del cls._sms_api

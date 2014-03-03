@@ -227,7 +227,12 @@ class RestEmailer(nparcel.EmailerBase):
         body_t = f.read()
         f.close()
         body_s = string.Template(body_t)
-        body = body_s.substitute(**data)
+        body = str()
+        try:
+            body = body_s.substitute(**data)
+        except KeyError, err:
+            log.error('Template "%s" substitute failed: %s' %
+                      (html_template, err))
 
         f = open(os.path.join(template_dir, 'email_html.t'))
         main_t = f.read()

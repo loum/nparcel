@@ -3,6 +3,6 @@
   <accountreference>EX0111642</accountreference>
   <message>
     <to>${phone_nbr}</to>
-    <body>Returns # ${returns_refs} has been receipted at ${name}, ${address}, ${suburb}, ${postcode} on ${date}.</body>
+    <body>Returns # ${reference_nbr} has been receipted at ${name}, ${address}, ${suburb}, ${postcode} on ${created_ts}.</body>
   </message>
 </messages>

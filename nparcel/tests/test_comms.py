@@ -14,7 +14,7 @@ class TestComms(unittest2.TestCase):
     def setUpClass(cls):
         cls.maxDiff = None
 
-        conf = nparcel.B2CConfig()
+        conf = nparcel.CommsB2CConfig()
         conf.set_config_file(os.path.join('nparcel',
                                           'conf',
                                           'nparceld.conf'))
@@ -26,13 +26,24 @@ class TestComms(unittest2.TestCase):
                                email_api=conf.email_api_kwargs)
         cls._c._emailer.set_template_base(os.path.join('nparcel',
                                                        'templates'))
+        cls._c._smser.set_template_base(os.path.join('nparcel',
+                                                     'templates'))
+        cls._c.set_template_tokens(['body',
+                                    'rem',
+                                    'delay',
+                                    'pe',
+                                    'ret'])
+        cls._c.set_returns_template_tokens(['ret'])
         cls._now = datetime.datetime.now()
 
         db = cls._c.db
         fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
         fixtures = [{'db': db.agent, 'fixture': 'agents.py'},
                     {'db': db.job, 'fixture': 'jobs.py'},
-                    {'db': db.jobitem, 'fixture': 'jobitems.py'}]
+                    {'db': db.jobitem, 'fixture': 'jobitems.py'},
+                    {'db': db.returns_reference,
+                     'fixture': 'returns_reference.py'},
+                    {'db': db.returns, 'fixture': 'returns.py'}]
         for i in fixtures:
             fixture_file = os.path.join(fixture_dir, i['fixture'])
             db.load_fixture(i['db'], fixture_file)
@@ -153,8 +164,8 @@ class TestComms(unittest2.TestCase):
                    'connote_nbr': 'returns_connote',
                    'item_nbr': 'returns_item',
                    'phone_nbr': '0431602145',
-                   'returns_refs': 'ref1, ref2, ref3',
-                   'date': '%s' % self._now.split('.')[0]}
+                   'reference_nbr': 'ref1, ref2, ref3',
+                   'created_ts': '%s' % self._now.split('.')[0]}
 
         received = self._c.send_sms(details,
                                     template='ret',
@@ -293,8 +304,8 @@ class TestComms(unittest2.TestCase):
                    'item_nbr': 'returns_item',
                    'phone_nbr': '0431602145',
                    'email_addr': 'loumar@tollgroup.com',
-                   'returns_refs': 'ref1, ref2, ref3',
-                   'date': '%s' % self._now.split('.')[0]}
+                   'reference_nbr': 'ref1, ref2, ref3',
+                   'created_ts': '%s' % self._now.split('.')[0]}
 
         received = self._c.send_email(details,
                                       template='ret',
@@ -540,6 +551,63 @@ WHERE id = 3"""
         os.removedirs(dir)
         self._c.db.rollback()
 
+    def test_process_returns(self):
+        """Test processing -- returns.
+        """
+        dry = True
+
+        files = ['email.2.ret', 'sms.2.ret']
+
+        dir = tempfile.mkdtemp()
+        comms_files = []
+        for f in files:
+            fh = open(os.path.join(dir, f), 'w')
+            comms_files.append(fh.name)
+            fh.close()
+
+        for file in comms_files:
+            received = self._c.process(file, dry=dry)
+            msg = 'Returns comms files processed incorrect'
+            self.assertTrue(received, msg)
+
+        # Cleanup.
+        remove_files(get_directory_files_list(dir))
+        os.removedirs(dir)
+        self._c.db.rollback()
+
+    def test_process_returns_err_sms(self):
+        """Test processing -- returns with an invalid SMS.
+        """
+        dry = True
+
+        # Provide a dodgy mobile.
+        sql = """UPDATE returns
+SET phone_nbr = '0531602145'
+WHERE id = 2"""
+        self._c.db(sql)
+
+        files = ['email.2.ret', 'sms.2.ret']
+
+        dir = tempfile.mkdtemp()
+        comms_files = []
+        for f in files:
+            fh = open(os.path.join(dir, f), 'w')
+            comms_files.append(fh.name)
+            fh.close()
+
+        for file in comms_files:
+            received = self._c.process(file, dry=dry)
+            msg = 'Returns comms files with invalid SMS error'
+            if os.path.basename(file) == 'email.2.ret':
+                self.assertTrue(received, msg)
+            else:
+                self.assertFalse(received, msg)
+
+        # Cleanup.
+        remove_files(get_directory_files_list(dir))
+        os.removedirs(dir)
+        self._c.db.rollback()
+
     def test_process_reminder_sms_error_comms(self):
         """Test processing -- SMS reminder error comms.
         """
@@ -665,6 +733,16 @@ WHERE id = 6"""
         received = self._c.parse_comms_filename('email..pe')
         expected = ()
         msg = 'Filename "email..pe" incorrect'
+        self.assertTupleEqual(received, expected, msg)
+
+        received = self._c.parse_comms_filename('email.333.ret')
+        expected = ('email', 333, 'ret')
+        msg = 'Filename "email.333.ret" incorrect'
+        self.assertTupleEqual(received, expected, msg)
+
+        received = self._c.parse_comms_filename('sms.333.ret')
+        expected = ('sms', 333, 'ret')
+        msg = 'Filename "sms.333.ret" incorrect'
         self.assertTupleEqual(received, expected, msg)
 
     @classmethod

@@ -19,16 +19,31 @@ class Comms(nparcel.Service):
 
         period (in seconds) that the uncollected parcel will be held for
 
+    .. attribute:: template_tokens
+
+        list of template tokens that are currently supported.  Possible
+        values include ``body``, ``rem``, ``delay``, ``pe`` and ``ret``.
+        Default ``body``
+
+    .. attribute:: returns_template_tokens
+
+        list of template tokens that extracts template detail from the
+        ``returns`` table (default ``[ret]``)
+
     """
+    _facility = None
     _hold_period = 691200
+    _template_tokens = ['body']
+    _returns_template_tokens = ['ret']
 
     def __init__(self, **kwargs):
         """Nparcel Comms initialisation.
         """
+        self._facility = self.__class__.__name__
+
         db_kwargs = kwargs.get('db')
         comms_dir = kwargs.get('comms_dir')
-        super(nparcel.Comms, self).__init__(db=db_kwargs,
-                                             comms_dir=comms_dir)
+        nparcel.Service.__init__(self, db=db_kwargs, comms_dir=comms_dir)
 
         if kwargs.get('hold_period') is not None:
             self._hold_period = kwargs.get('hold_period')
@@ -56,6 +71,32 @@ class Comms(nparcel.Service):
 
     def set_hold_period(self, value):
         self._hold_period = value
+
+    @property
+    def template_tokens(self):
+        return self._template_tokens
+
+    def set_template_tokens(self, values=None):
+        del self._template_tokens[:]
+        self._template_tokens = []
+
+        if values is not None:
+            self._template_tokens.extend(values)
+        log.debug('%s template_tokens set to: "%s"' %
+                  (self._facility, self.template_tokens))
+
+    @property
+    def returns_template_tokens(self):
+        return self._returns_template_tokens
+
+    def set_returns_template_tokens(self, values=None):
+        del self._returns_template_tokens[:]
+        self._returns_template_tokens = []
+
+        if values is not None:
+            self._returns_template_tokens.extend(values)
+        log.debug('%s returns_template_tokens set to: "%s"' %
+                  (self._facility, self.returns_template_tokens))
 
     def process(self, comms_file, dry=False):
         """Attempts to send comms via appropratie medium based on
@@ -93,10 +134,10 @@ class Comms(nparcel.Service):
             comms_status = False
 
         if comms_status:
-            template_items = self.get_agent_details(id)
+            template_items = self.get_agent_details(id, template)
             if not template_items.keys():
                 log.error('%s processing error: %s' %
-                        (comms_file, 'no agent details'))
+                          (comms_file, 'no agent details'))
                 if not dry:
                     move_file(comms_file, comms_file_err)
                 comms_status = False
@@ -319,11 +360,16 @@ class Comms(nparcel.Service):
 
         return status
 
-    def get_agent_details(self, job_item_id):
+    def get_agent_details(self, table_id, template_token=None):
         """Get agent details.
 
         **Args:**
-            *job_item_id*: as per the ``job_item.id`` table column
+            *table_id*: as per the ``job_item.id`` table column for
+            non-returns or ``returns.id`` otherwise
+
+        **Kwargs:**
+            *template_token*: template context.  Selection includes one of
+            either ``body``, ``rem``, ``delay``, ``pe`` or ``ret``
 
         **Returns:**
             dictionary structure capturing the Agent's details similar to::
@@ -340,28 +386,48 @@ class Comms(nparcel.Service):
         """
         agent_details = []
 
-        sql = self.db.jobitem.job_item_agent_details_sql(job_item_id)
-        self.db(sql)
-        columns = self.db.columns()
         agents = []
-        for row in self.db.rows():
-            agents.append(row)
+        tmp_agents = []
+        if (template_token is None or
+            template_token not in self.returns_template_tokens):
+            sql = self.db.jobitem.job_item_agent_details_sql(table_id)
+            self.db(sql)
+            columns = self.db.columns()
+            agents.extend(list(self.db.rows()))
+        else:
+            # Fugly hack because we can't get a group_concat in sqlite.
+            sql = self.db.returns.extract_id_sql(table_id)
+            self.db(sql)
+            columns = self.db.columns()
+            tmp_agents.extend(list(self.db.rows()))
+
+            sql = self.db.returns_reference.reference_nbr_sql(table_id)
+            self.db(sql)
+            columns.extend(self.db.columns())
+            refs = [x[0] for x in list(self.db.rows())]
+
+            for agent in tmp_agents:
+                with_refs = agent + (', '.join(refs), )
+                agents.append(with_refs)
 
         if len(agents) != 1:
-            log.error('job_item.id %d agent list: "%s"' %
-                      (job_item_id, agents))
+            log.error('"%s" table_id %d agent list: "%s"' %
+                      (template_token, table_id, agents))
         else:
             agent_details = [None] * (len(columns) + len(agents[0]))
             agent_details[::2] = columns
             agent_details[1::2] = agents[0]
-            log.debug('job_item.id %d detail: "%s"' %
-                      (job_item_id, agents[0]))
+            log.debug('"%s" table_id %d detail: "%s"' %
+                      (template_token, table_id, agents[0]))
 
         return dict(zip(agent_details[0::2], agent_details[1::2]))
 
     def parse_comms_filename(self, filename):
         """Parse the comm *filename* and extract the job_item.id
         and template.
+
+        Tokens that are supported must be listed in
+        :attr:`template_tokens`
 
         **Args:**
             *filename*: the filename to parse
@@ -379,7 +445,8 @@ class Comms(nparcel.Service):
         comm_parse = ()
 
         log.debug('Parsing comms filename: "%s"' % filename)
-        r = re.compile("(email|sms)\.(\d+)\.(pe|rem|body|delay)")
+        r = re.compile('(email|sms)\.(\d+)\.(%s)' %
+                       '|'.join(self.template_tokens))
         m = r.match(filename)
         if m:
             try:
