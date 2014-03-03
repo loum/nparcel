@@ -7,6 +7,7 @@ import nparcel
 from nparcel.utils.files import (get_directory_files_list,
                                  remove_files,
                                  gen_digest_path)
+from nparcel.timezone import convert_timezone
 
 # Current business_unit map:
 BU = {'fast': 2}
@@ -192,8 +193,7 @@ class TestExporterFast(unittest2.TestCase):
                      '%s|%s|%s|%s|%s|%s|%s' %
                      ('fast_connote_nbr_04',
                       '4',
-                      self._e.convert_timezone(self._now.isoformat(' ')[:-7],
-                                               'QLD'),
+                      convert_timezone(self._now.isoformat(' ')[:-7], 'QLD'),
                       'pod_name fast 04',
                       'License',
                       'fast identity 04',
@@ -209,8 +209,7 @@ class TestExporterFast(unittest2.TestCase):
                      '%s|%s|%s|%s|%s|%s|%s' %
                      ('fast_connote_nbr_06',
                       '6',
-                      self._e.convert_timezone(self._now.isoformat(' ')[:-7],
-                                               'SA'),
+                      convert_timezone(self._now.isoformat(' ')[:-7], 'SA'),
                       'pod_name fast 06',
                       'License',
                       'fast identity 06',
@@ -299,8 +298,7 @@ class TestExporterFast(unittest2.TestCase):
                      'ITEM_NBR',
                      'fast_connote_nbr_04',
                      '4',
-                     self._e.convert_timezone(self._now.isoformat(' ')[:-7],
-                                              'QLD'),
+                     convert_timezone(self._now.isoformat(' ')[:-7], 'QLD'),
                      'pod_name fast 04',
                      'License',
                      'fast identity 04',
@@ -321,8 +319,7 @@ class TestExporterFast(unittest2.TestCase):
                      'ITEM_NBR',
                      'fast_connote_nbr_06',
                      '6',
-                     self._e.convert_timezone(self._now.isoformat(' ')[:-7],
-                                              'SA'),
+                     convert_timezone(self._now.isoformat(' ')[:-7], 'SA'),
                      'pod_name fast 06',
                      'License',
                      'fast identity 06',
@@ -343,8 +340,7 @@ class TestExporterFast(unittest2.TestCase):
                      'ITEM_NBR',
                      'fast_connote_nbr_01',
                      '1',
-                     self._e.convert_timezone(self._now.isoformat(' ')[:-7],
-                                              'VIC'),
+                     convert_timezone(self._now.isoformat(' ')[:-7], 'VIC'),
                      'pod_name fast 01',
                      'License',
                      'fast identity 01',

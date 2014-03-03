@@ -52,7 +52,8 @@ class Returns(nparcel.Table):
        ag.name,
        ag.address,
        ag.suburb,
-       ag.postcode
+       ag.postcode,
+       ag.state
 FROM %(name)s AS %(alias)s, agent AS ag
 WHERE %(alias)s.id = %(id)d
 AND ag.id = %(alias)s.agent_id""" % {'alias': self.alias,

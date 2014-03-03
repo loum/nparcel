@@ -82,7 +82,8 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestOraDbSession \
 	 nparcel.utils.tests:TestFiles \
 	 nparcel.utils.tests:TestUtils \
-	 nparcel.tests:TestPostcode
+	 nparcel.tests:TestPostcode \
+	 nparcel.tests:TestTimezone
 
 sdist:
 	$(PY) setup.py sdist

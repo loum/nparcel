@@ -4,8 +4,6 @@ __all__ = [
 import re
 import os
 import datetime
-import time
-import pytz
 import operator
 import csv
 
@@ -16,16 +14,9 @@ from nparcel.utils.files import (create_dir,
                                  copy_file,
                                  get_directory_files_list,
                                  gen_digest_path)
+from nparcel.timezone import convert_timezone
 
 STATES = ['NSW', 'VIC', 'QLD', 'SA', 'WA', 'ACT']
-TZ = {'vic': 'Australia/Victoria',
-      'nsw': 'Australia/NSW',
-      'qld': 'Australia/Queensland',
-      'sa': 'Australia/South',
-      'wa': 'Australia/West',
-      'act': 'Australia/ACT',
-      'tas': 'Australia/Tasmania',
-      'nt': 'Australia/North'}
 
 
 class Exporter(nparcel.Service):
@@ -66,7 +57,6 @@ class Exporter(nparcel.Service):
     _item_nbr_header = 'ITEM_NBR'
     _time_fmt = "%Y-%m-%d %H:%M:%S"
     _time_tz_fmt = "%Y-%m-%d %H:%M:%S %Z%z"
-    _local_tz = TZ.get('vic')
 
     def __init__(self, **kwargs):
         """Exporter object initialiser.
@@ -216,10 +206,6 @@ class Exporter(nparcel.Service):
     @property
     def time_tz_fmt(self):
         return self._time_tz_fmt
-
-    @property
-    def local_tz(self):
-        return self._local_tz
 
     def get_collected_items(self, business_unit_id, ignore_pe=False):
         """Query DB for recently collected items.
@@ -377,7 +363,7 @@ class Exporter(nparcel.Service):
         pickup_ts = row[2]
         if isinstance(row[2], str):
             m = re.match('(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\.\d*',
-                        row[2])
+                         row[2])
             try:
                 pickup_ts = m.group(1)
             except AttributeError, err:
@@ -396,48 +382,12 @@ class Exporter(nparcel.Service):
             log.warn('Cleansed state -- no value: %s' % err)
 
         # Localise the time.
-        row_list[2] = self.convert_timezone(row_list[2], row_list[8])
+        row_list[2] = convert_timezone(row_list[2],
+                                       row_list[8],
+                                       self.time_fmt,
+                                       self.time_tz_fmt)
 
         return tuple(row_list)
-
-    def convert_timezone(self, time_string, state):
-        """Will parse the *time_string* and attempt to localise the
-        timezone against *state*.
-
-        *Args*:
-            *time_string*: the ISO formated date string.  For example::
-
-                2013-11-25 09:51:00
-
-            *state*: the Australian state to localise the timezone against
-
-        *Returns*:
-
-            localised date string or *time_string* if *state* is invalid
-
-        """
-        time_string = time_string.split('.')[0]
-
-        log.info('Localising timezone for time "%s" against state: "%s"' %
-                 (time_string, state))
-
-        tz_time_string = time_string
-        parsed_time = time.strptime(time_string, self.time_fmt)
-        dt = datetime.datetime.fromtimestamp(time.mktime(parsed_time))
-        local_dt = pytz.timezone(self.local_tz).localize(dt)
-
-        state_tz = TZ.get(state.lower())
-        if state_tz is not None:
-            tz = pytz.timezone(state_tz)
-            dt = tz.normalize(local_dt.astimezone(tz))
-            tz_time_string = dt.strftime(self.time_fmt)
-            log.info('"%s" localised to "%s"' %
-                     (time_string, dt.strftime(self.time_tz_fmt)))
-        else:
-            log.warn('Unable to determine TZ for state: "%s"' %
-                     state.upper())
-
-        return tz_time_string
 
     def report(self,
                items,

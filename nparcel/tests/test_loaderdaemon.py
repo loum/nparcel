@@ -199,6 +199,7 @@ class TestLoaderDaemon(unittest2.TestCase):
         self._d.config.remove_option('db', 'port')
         remove_files(get_directory_files_list(in_dir))
         os.removedirs(in_dir)
+        os.removedirs(archive_dir)
         self._d.exit_event.clear()
 
     def test_start_non_dry_loop_priority(self):

@@ -10,6 +10,7 @@ import nparcel
 from nparcel.utils.log import log
 from nparcel.utils.files import (remove_files,
                                  move_file)
+from nparcel.timezone import convert_timezone
 
 
 class Comms(nparcel.Service):
@@ -150,9 +151,15 @@ class Comms(nparcel.Service):
 
         if comms_status:
             recipient = None
+            created_ts = template_items.get('created_ts')
             if template == 'rem':
-                returned_date = template_items.get('created_ts')
-                template_items['date'] = self.get_return_date(returned_date)
+                template_items['date'] = self.get_return_date(created_ts)
+            elif template == 'ret':
+                state = template_items.get('state')
+                if state is not None:
+                    state = state.rstrip()
+                    local_time = convert_timezone(created_ts, state)
+                    template_items['created_ts'] = local_time
 
             if action == 'email':
                 recipient = template_items.get('email_addr')

@@ -1,7 +1,7 @@
 __all__ = [
     "translate_postcode",
 ]
-from nparcel.utils.files import log
+from nparcel.utils.log import log
 
 
 POSTCODE_MAP = {'NSW': {

@@ -52,7 +52,8 @@ SET created_ts = '%s'""" % cls._now
                      'Bunters We Never Sleep News + Deli',
                      '693 Albany Hwy',
                      'Victoria Park',
-                     '6101')]
+                     '6101',
+                     'WA')]
         msg = 'extract_id_sql returned values error'
         self.assertListEqual(received, expected, msg)
 

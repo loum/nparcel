@@ -343,8 +343,9 @@ class TestCommsDaemon(unittest2.TestCase):
         # Cleanup.
         files_to_delete = comms_files + dodgy
         fs = [os.path.join(self._cd.comms_dir, x) for x in files_to_delete]
-        remove_files(fs)
         self._cd.set_comms_dir(old_comms_dir)
+        remove_files(fs)
+        os.removedirs(dir)
 
     def test_comms_kwargs_no_config(self):
         """Verify the comms kwarg initialiser structure -- no config.
@@ -435,8 +436,6 @@ class TestCommsDaemon(unittest2.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls._cd = None
-        del cls._cd.config
-        del cls._cd.comms
         del cls._cd
         del cls._email_api
         del cls._sms_api
