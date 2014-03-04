@@ -3,6 +3,8 @@
 .. toctree::
     :maxdepth: 2
 
+.. _environment_initialisation:
+
 Environment Initialisation
 ==========================
 
@@ -219,3 +221,48 @@ If your existing configuration arrangement features customisations, ensure
 that you copy these over to the new ``nparceld.conf`` file.
 
 The defaults are a good starting point but probably not what you require.
+
+Starting the Daemons
+--------------------
+
+As of *version 0.32*, ``npctrl`` can be used to start and stop all
+middleware daemons in a single call.
+
+``npctrl`` Usage
+++++++++++++++++
+
+::
+
+    npctrl -h
+    usage: npctrl [options] start|stop|status
+
+    options:
+      -h, --help            show this help message and exit
+      -v, --verbose         raise logging verbosity
+
+For example::
+
+    $ npctrl start
+    Starting nploaderd as daemon ...
+    Starting npexporterd as daemon ...
+    Starting npfilterd as daemon ...
+    Starting npmapperd as daemon ...
+    Starting npondeliveryd as daemon ...
+    Starting npreminderd as daemon ...
+    Starting npcommsd as daemon ...
+
+    $ npctrl stop
+    Stopping nploaderd ...
+    OK
+    Stopping npexporterd ...
+    OK
+    Stopping npfilterd ...
+    OK
+    Stopping npmapperd ...
+    OK
+    Stopping npondeliveryd ...
+    OK
+    Stopping npreminderd ...
+    OK
+    Stopping npcommsd ...
+    OK
