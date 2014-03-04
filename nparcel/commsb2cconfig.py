@@ -168,7 +168,7 @@ class CommsB2CConfig(nparcel.B2CConfig):
             self.set_support_emails(self.get('email', 'support').split(','))
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
-            log.warn('%s -- email.support: %s' % (self.facility, err))
+            log.debug('%s -- email.support: %s' % (self.facility, err))
 
         try:
             self.set_comms_dir(self.get('dirs', 'comms'))
@@ -206,7 +206,7 @@ class CommsB2CConfig(nparcel.B2CConfig):
             self.set_controlled_templates(tmp)
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
-            log.warn('%s -- comms.controlled_templates: %s' %
+            log.debug('%s -- comms.controlled_templates: %s' %
                      (self.facility, err))
 
         try:
@@ -214,16 +214,16 @@ class CommsB2CConfig(nparcel.B2CConfig):
             self.set_uncontrolled_templates(tmp)
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
-            log.warn('%s -- comms.uncontrolled_templates: %s' %
-                     (self.facility, err))
+            log.debug('%s -- comms.uncontrolled_templates: %s' %
+                      (self.facility, err))
 
         try:
             tmp = self.get('comms', 'skip_days').split(',')
             self.set_skip_days(tmp)
         except (ConfigParser.NoSectionError,
                 ConfigParser.NoOptionError), err:
-            log.warn('%s -- comms.skip_days: %s.  Using "%s"' %
-                     (self.facility, err, self.skip_days))
+            log.debug('%s -- comms.skip_days: %s.  Using "%s"' %
+                      (self.facility, err, self.skip_days))
 
         try:
             tmp = self.get('comms', 'send_time_ranges').split(',')

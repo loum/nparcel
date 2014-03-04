@@ -47,6 +47,7 @@ class DaemonService(nparcel.utils.Daemon):
         base directory where processed files are archived
 
     """
+    _facility = None
     _file = None
     _in_dirs = []
     _dry = False
@@ -62,11 +63,17 @@ class DaemonService(nparcel.utils.Daemon):
                  file=None,
                  dry=False,
                  batch=False):
-        super(DaemonService, self).__init__(pidfile=pidfile)
+        self._facility = self.__class__.__name__
+
+        nparcel.utils.Daemon.__init__(self, pidfile=pidfile)
 
         self._file = file
         self._dry = dry
         self._batch = batch
+
+    @property
+    def facility(self):
+        return self._facility
 
     @property
     def file(self):

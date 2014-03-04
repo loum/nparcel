@@ -1,0 +1,52 @@
+#!/bin/sh
+
+function usage() {
+cat <<EOF
+usage: npctrl [options] start|stop|status
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         raise logging verbosity
+EOF
+
+exit 1
+}
+
+FACILITIES="nploaderd npexporterd npfilterd npmapperd npondeliveryd npreminderd npcommsd"
+BIN='/usr/local/bin'
+
+verbose=off
+
+# Process the switches.
+while [ $# -gt 0 ]
+do
+    case "$1" in
+        -v) verbose=on;;
+        -h) usage;;
+        -*) usage ;;
+        *) break;;
+    esac
+    shift
+done
+
+VERBOSE=
+if [ "$verbose" = "on" ]
+then
+    VERBOSE="-v "
+fi
+
+# Finally, the positional parameters.
+while [ $# -gt 0 ]
+do
+    case "$1" in
+        start|stop|status)
+            for facility in $FACILITIES
+            do
+                $BIN/$facility $VERBOSE$1
+            done
+        ;;
+        *) usage ;;
+    esac
+
+    shift
+done

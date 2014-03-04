@@ -55,11 +55,11 @@ class MapperDaemon(nparcel.DaemonService):
                  dry=False,
                  batch=False,
                  config=None):
-        super(MapperDaemon, self).__init__(pidfile=pidfile,
-                                           file=file,
-                                           dry=dry,
-                                           batch=batch)
-
+        nparcel.DaemonService.__init__(self,
+                                       pidfile=pidfile,
+                                       file=file,
+                                       dry=dry,
+                                       batch=batch)
         if config is not None:
             self.config = nparcel.B2CConfig(file=config)
             self.config.parse_config()
@@ -68,20 +68,18 @@ class MapperDaemon(nparcel.DaemonService):
             if self.config.pe_customer is not None:
                 self.set_customer(self.config.pe_customer)
         except AttributeError, err:
-            msg = ('Mapper customer not defined in config -- using %s' %
-                   self.customer)
-            log.info(msg)
+            msg = ('%s -- customer not defined in config.  Using "%s"' %
+                   (self.facility, self.customer))
+            log.debug(msg)
 
         try:
             if len(self.config.mapper_in_dirs):
                 self.set_in_dirs(self.config.mapper_in_dirs)
-            else:
-                msg = ('No mapper inbound directory in config -- using %s' %
-                       self.in_dirs)
-                log.info(msg)
+            if not len(self.in_dirs):
+                raise
         except AttributeError, err:
-            msg = ('Inbound directory not defined in config -- using %s' %
-                   self.in_dirs)
+            msg = ('%s -- inbound directory not in config -- using %s' %
+                   (self.facility, self.in_dirs))
             log.info(msg)
 
         try:
@@ -144,8 +142,9 @@ class MapperDaemon(nparcel.DaemonService):
         return self._customer
 
     def set_customer(self, value):
-        log.info('Setting customer to "%s"' % value)
         self._customer = value
+        log.debug('%s customer set to "%s"' %
+                  (self.facility, self.customer))
 
     @property
     def archive_string(self):
