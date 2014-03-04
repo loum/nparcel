@@ -49,9 +49,9 @@ class TestComms(unittest2.TestCase):
             db.load_fixture(i['db'], fixture_file)
 
         # Update the returns created_ts.
-        cls._now = str(datetime.datetime.now()).split('.')[0]
+        cls._now_str = cls._now.strftime('%Y-%m-%d %H:%M')
         sql = """UPDATE job_item
- SET created_ts = '%s'""" % cls._now
+ SET created_ts = '%s'""" % cls._now_str
         db(sql)
 
         cls._c.db.commit()
@@ -87,7 +87,7 @@ class TestComms(unittest2.TestCase):
                    'connote_nbr': 'connote_rem',
                    'item_nbr': 'item_nbr_rem',
                    'phone_nbr': '0431602145',
-                   'date': '%s' % self._now.split('.')[0]}
+                   'date': '%s' % self._now_str}
 
         received = self._c.send_sms(details,
                                     template='rem',
@@ -165,7 +165,7 @@ class TestComms(unittest2.TestCase):
                    'item_nbr': 'returns_item',
                    'phone_nbr': '0431602145',
                    'reference_nbr': 'ref1, ref2, ref3',
-                   'created_ts': '%s' % self._now.split('.')[0]}
+                   'created_ts': '%s' % self._now_str}
 
         received = self._c.send_sms(details,
                                     template='ret',
@@ -204,7 +204,7 @@ class TestComms(unittest2.TestCase):
         """
         dry = True
 
-        date = self._c.get_return_date(self._now)
+        date = self._c.get_return_date(self._now_str)
         details = {'email_addr': 'loumar@tollgroup.com'}
 
         received = self._c.send_email(details,
@@ -218,7 +218,7 @@ class TestComms(unittest2.TestCase):
         """
         dry = True
 
-        date = self._c.get_return_date(self._now)
+        date = self._c.get_return_date(self._now_str)
         details = {'name': 'Mannum Newsagency',
                    'address': '77 Randwell Street',
                    'suburb': 'MANNUM',
@@ -305,7 +305,7 @@ class TestComms(unittest2.TestCase):
                    'phone_nbr': '0431602145',
                    'email_addr': 'loumar@tollgroup.com',
                    'reference_nbr': 'ref1, ref2, ref3',
-                   'created_ts': '%s' % self._now.split('.')[0]}
+                   'created_ts': '%s' % self._now.strftime('%Y-%m-%d %H:%M')}
 
         received = self._c.send_email(details,
                                       template='ret',
@@ -329,7 +329,7 @@ class TestComms(unittest2.TestCase):
                    'bad_email_addr': 'loumar@tollgroup.com',
                    'error_comms': 'email',
                    'returns_refs': 'ref1, ref2, ref3',
-                   'date': '%s' % self._now.split('.')[0]}
+                   'date': '%s' % self._now.strftime('%Y-%m-%d %H:%M')}
 
         received = self._c.send_email(details,
                                       template='ret',
@@ -681,7 +681,7 @@ WHERE id = 6"""
         expected = {'address': 'N031 Address',
                     'bu_id': 1,
                     'connote_nbr': 'uncollected_connote_sc_1',
-                    'created_ts': '%s' % self._now,
+                    'created_ts': '%s' % self._now_str,
                     'item_nbr': 'uncollected_connote_sc_1_item_nbr',
                     'email_addr': 'loumar@tollgroup.com',
                     'phone_nbr': '0431602145',
@@ -750,3 +750,4 @@ WHERE id = 6"""
         cls._c = None
         del cls._c
         del cls._now
+        del cls._now_str

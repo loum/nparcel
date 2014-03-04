@@ -3,6 +3,8 @@
 .. toctree::
     :maxdepth: 2
 
+.. _primary_elect:
+
 Primary Elect
 =============
 *New in version 0.14*

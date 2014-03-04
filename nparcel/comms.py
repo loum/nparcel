@@ -158,7 +158,9 @@ class Comms(nparcel.Service):
                 state = template_items.get('state')
                 if state is not None:
                     state = state.rstrip()
-                    local_time = convert_timezone(created_ts, state)
+                    local_time = convert_timezone(created_ts,
+                                                  state,
+                                                  '%d/%m/%Y %I:%M%p')
                     template_items['created_ts'] = local_time
 
             if action == 'email':

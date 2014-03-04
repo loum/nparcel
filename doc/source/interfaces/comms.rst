@@ -4,7 +4,7 @@
     :maxdepth: 2
 
 Comms
-======
+=====
 
 The Toll Parcel Portal comms facility manages comsumer notifications.
 Notifications are provided via email and SMS.
@@ -13,29 +13,45 @@ The types of consumer notifications supported by the Comms facility are:
 
 * **"Sorry we missed you ..."**
 
-    Triggered when loaded into the Toll Parcel Portal database
+    Triggered when loaded into the Toll Parcel Portal database as per:
+
+    * Service Code is NULL (unconditionally)
+
+    * Service Code is not NULL and :ref:`comms_service_code_based_control`
+      is enabled
 
 * **Reminders**
 
     Triggered if the parcel has not been picked up a pre-defined period
-    after the initial notification has been sent
+    after the initial notification has been sent.  See :ref:`reminders` for
+    more detail.
 
 * **Primary Elect**
 
     Triggered *after* load into the Toll Parcel Portal database and
     verification has been obtained that the parcel has been delivered to
     the ADP.  Verification is typically provided via an alternate interface
-    (for example, TCD report or TransSend)
+    (for example, TCD report or TransSend).  See :ref:`primary_elect` for
+    more detail
+
+* **On Delivery to Alternate Delivery Point**
+
+    Similar to *Primary Elect* in that the comms are triggerred *after*
+    the load event into the Toll Parcel Portal database.  See
+    :ref:`on_delivery_trigger` for more detail
+
+* **Returns**
+
+    As of *release v0.32*, consumers can return parcels to an Alternate
+    Delivery Point.  Acceptance is receipted against email and SMS comms
+    that are sent to the consumer in real time.  The Toll Parcel Portal
+    website creates the returns comms event files
 
 Comms Workflow
 --------------
 
-.. note ::
-
-    Refer to the individual Toll Parcel Portal B2C sub-systems for a more
-    detailed analysis of the business rules that trigger a comms event.
-
-In general, the various subsystems generate a comms event by providing an
+The various subsystems (:ref:`on_delivery_trigger`, :ref:`loader`,
+:ref:`reminders`) generate a comms event by providing an
 appropriately constructed file to the comms module interface.
 
 .. note::
@@ -45,8 +61,34 @@ appropriately constructed file to the comms module interface.
 
 Comms event files are processed by the ``npcommsd`` daemon process.
 
+Enabling Returns Comms
+^^^^^^^^^^^^^^^^^^^^^^
+
+The Returns comms is unlike the other templates in that it builds its
+information from a different database table (``returns``).  In code,
+it follows a different login stream that must be enabled via the
+following configration setting:
+
+* :ref:`comms_uncontrolled_templates <comms_uncontrolled_templates>`
+
+    The Returns facility is an exception to the comms send window
+    in that a receipt should be received by the consumer at any time.
+    As such, add the ``ret`` token to the ``comms.uncontrolled_templates``
+    configuration setting.
+
+    To suppress the ``ret`` template processing, remove the token from
+    either ``comms.controlled_templates`` or
+    ``comms.uncontrolled_templates``.  In this case, the ``npcommsd``
+    daemon will simply ignore the ``ret`` -based comms event files.
+    These files will continue to pool in the :ref:`comms_dir <comms_dir>`
+
+    .. note::
+
+        ``comms.controlled_templates`` has precedence over the list in
+        ``comms.uncontrolled_templates``
+
 Comms Event Files
-^^^^^^^^^^^^^^^^^
+-----------------
 
 A comms event is defined by a simple, empty file which conforms to a defined
 filename convention.  In general, a comms event file is formatted as
@@ -65,27 +107,79 @@ follows::
 
 * **<template>**
 
-    The template used to built the message
+    Token that represents the template used to build the message
 
 .. note..
 
     Comms event files are case sensitive
 
+Template Structures
+^^^^^^^^^^^^^^^^^^^
+
+As of *release v0.32*, the template tokens that are currently supported are:
+
+* **body**
+
+.. image:: ../_static/body_templates_email.png
+    :width: 65%
+    :alt: Comms body email template
+
+.. image:: ../_static/body_templates_sms.png
+    :alt: Comms body SMS template
+
+* **delay**
+
+.. image:: ../_static/delay_templates_email.png
+    :width: 65%
+    :alt: Comms delay email template
+
+.. image:: ../_static/delay_templates_sms.png
+    :alt: Comms delay SMS template
+
+* **pe**
+
+.. image:: ../_static/pe_templates_email.png
+    :width: 65%
+    :alt: Comms pe email template
+
+.. image:: ../_static/pe_templates_sms.png
+    :alt: Comms pe SMS template
+
+* **ret**
+
+.. image:: ../_static/ret_templates_email.png
+    :width: 65%
+    :alt: Comms ret email template
+
+.. image:: ../_static/ret_templates_sms.png
+    :alt: Comms ret SMS template
+
 ``npcommsd`` Configuration Items
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------------
 
-``npcommsd`` uses the standard ``nparceld.conf`` configuration file.  The
-following list details the required configuration options:
+The ``npcommsd`` utility uses the default ``nparceld.conf`` configuration
+file to control processing workflow.
 
-* ``comms`` (default ``/data/nparcel/comms``)
+.. note::
 
-    The ``npcommsd`` inbound interface where comms event files are
-    deposited for further processing
+    all configuration settings are found under the ``[comms]`` section
+    unless otherwise specified
 
-* ``comms_loop`` (default 30 (seconds))
+* ``failed_email`` (under the ``[rest]`` section))
+
+    Email recipient for comms failures notification alerts
+
+.. _comms_dir:
+
+* ``comms`` (under the ``[dirs]`` section)
+
+    Inbound interface where comms event files are read from.
+    Default ``/data/nparcel/comms``
+
+* ``comms_loop`` (under the ``[timeout]`` section)
 
     Control comms daemon facility sleep period between comms event file
-    checks.
+    checks.  Default 30 seconds
 
 * ``rest``
 
@@ -100,37 +194,51 @@ following list details the required configuration options:
         email_user =
         email_pw =
 
-* ``failed_email``
+* ``comms_q_warning``
 
-    Email recipient for comms failures notification alerts
-
-* ``skip_days`` (default ``Sunday``)
-
-    List of days to not send messages.  To avoid confusion,
-    enter the full day name (Monday) separated by commas.
-
-* ``send_time_ranges`` (``default 08:00-19:00``)
-
-    Time ranges when comms *can* be sent.  Use 24 hour format and ensure
-    that the times are day delimited.  Ranges must be separated with a
-    hyphen '-' and use format HH:MM.  Multiple ranges are separated with
-    commas.
-
-* ``comms_queue_warning`` (default 100)
-    Threshold limit that will invoke a warning email to support if breached.
-    A typical notification email is as follows:
+    comms queue warning threshold.  If number of messages exceeds this
+    threshold (and is under the :attr:`comms_q_error` threshold then a
+    warning email notification is triggered.  Default 100.  A typical
+    notification email is as follows:
 
 .. image:: ../_static/comms_warning.png
     :align: center
     :alt: Toll Parcel Portal B2C Comms Queue Threshold Warning
-        
 
-* ``comms_queue_error`` (default 1000 )
-    Threshold limit that will invoke an error email to support if breached
-    and terminate the ``npcommsd`` daemon.
+* ``comms_q_error``
+
+    comms queue error threshold.  If number of messages exceeds this
+    threshold then an error email notification is triggered and
+    the comms daemon is terminated.  Default 1000
+
+* ``controlled_templates``
+
+    list of comms templates that are controlled by the delivery
+    period thresholds
+
+.. _comms_uncontrolled_templates:
+
+* ``uncontrolled_templates``
+
+    list of comms templates that are *NOT* controlled by the delivery
+    period thresholds.  In other words, comms can be sent 24 x 7.
+    Default ``ret``
+
+* ``skip_days``
+
+    List of days to not send messages.  To avoid confusion,
+    enter the full day name (Monday) separated by commas.  Default
+    ``Sunday``
+
+* ``send_time_ranges``
+
+    Time ranges when comms *can* be sent.  Use 24 hour format and ensure
+    that the times are day delimited.  Ranges must be separated with a
+    hyphen '-' and use format HH:MM.  Multiple ranges are separated with
+    commas.  Default ``default 08:00-19:00``)
 
 ``npcommsd`` usage
-^^^^^^^^^^^^^^^^^^
+------------------
 
 ``npcommsd`` can be configured to run as a daemon as per the following::
 

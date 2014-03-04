@@ -32,6 +32,10 @@ def convert_timezone(time_string,
 
             2013-11-25 09:51:00
 
+        .. note::
+
+            the time string parser expects the time in this format.
+
         *state*: the Australian state to localise the timezone against
 
         *time_format*: format string used to display the date
@@ -50,7 +54,7 @@ def convert_timezone(time_string,
                 (time_string, state))
 
     tz_time_string = time_string
-    parsed_time = time.strptime(time_string, time_format)
+    parsed_time = time.strptime(time_string, '%Y-%m-%d %H:%M:%S')
     dt = datetime.datetime.fromtimestamp(time.mktime(parsed_time))
     local_dt = pytz.timezone(_local_tz).localize(dt)
 

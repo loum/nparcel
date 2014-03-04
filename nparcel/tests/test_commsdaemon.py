@@ -37,7 +37,7 @@ class TestCommsDaemon(unittest2.TestCase):
                            '<email_pw>')
         cls._cd.config.set('rest',
                            'failed_email',
-                           'lou.markovski@gmail.com')
+                           'loumar@tollgroup.com')
         cls._cd.config.set('rest',
                            'sms_api',
                            'https://api.esendex.com/v1.0/messagedispatcher')
@@ -53,8 +53,8 @@ class TestCommsDaemon(unittest2.TestCase):
         #cls._cd.config.set('proxy', 'host', 'auproxy-farm.toll.com.au')
         #cls._cd.config.set('proxy', 'user', 'loumar')
         #cls._cd.config.set('proxy', 'password', '<passwd>')
-        #cls._cd.config.set('proxy', 'port', '1442')
-        #cls._cd.config.set('proxy', 'protocol', 'http')
+        #cls._cd.config.set('proxy', 'port', '8080')
+        #cls._cd.config.set('proxy', 'protocol', 'https')
 
         # Call up front to pre-load the DB.
         cls._cd._comms = nparcel.Comms(**(cls._cd.comms_kwargs))
@@ -86,7 +86,7 @@ class TestCommsDaemon(unittest2.TestCase):
     def test_start(self):
         """Start file processing loop.
         """
-        # Chamge to False to actually send.  BE CAREFUL!
+        # Change to False to actually send.  BE CAREFUL!
         dry = True
 
         old_dry = self._cd.dry
@@ -355,7 +355,7 @@ class TestCommsDaemon(unittest2.TestCase):
                     'email_api': {'api': self._email_api,
                                   'api_password': '<email_pw>',
                                   'api_username': '<email_user>',
-                                  'support': 'lou.markovski@gmail.com'},
+                                  'support': 'loumar@tollgroup.com'},
                     'proxy': None,
                     'scheme': 'https',
                     'sms_api': {'api': self._sms_api,

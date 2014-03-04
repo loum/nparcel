@@ -26,6 +26,37 @@ The conditions map is delimited in the configuration file by the
 Each column in the conditions maps string has semantic and is further
 detailed here.
 
+.. _comms_control:
+
+Comms Control
++++++++++++++
+
+At the highest level, email and SMS comms can be controlled at a BU level::
+
+    # Pos 02: 0 do not send email
+    #         1 send email
+    # Pos 03: 0 do not send SMS
+    #         1 send SMS
+
+.. _comms_service_code_based_control:
+
+Comms Service Code-based Control
+++++++++++++++++++++++++++++++++
+
+By default, a Service Code value of NULL will trigger a ``body`` based
+templated message (if :ref:`comms_control` is enabled).  However, comms can
+also be controlled at the Service Code level by setting the following
+flags::
+
+    # Pos 09: 0 do not send comms if service_code 1
+    #         1 send comms if service_code 1
+    # Pos 10: 0 do not send comms if service_code 2
+    #         1 send comms if service_code 2
+    # Pos 11: 0 do not send comms if service_code 4
+    #         1 send comms if service_code 4
+
+.. _pod_file_processing:
+
 POD File Processing
 +++++++++++++++++++
 

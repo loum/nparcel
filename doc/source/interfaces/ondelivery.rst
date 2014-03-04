@@ -20,7 +20,8 @@ require this additional level of processing are:
 * **Primary Elect** - where the consumer is able to nominate an
   Alternate Delivery Point from where they will pick up the parcel
 
-* **Priority Transfer out to V123 (Service Code 4)**
+* **Priority Transfer out to V123 (Service Code 4)** or **Driver Transfer
+  out to ADP (Service Code 2)**
 
 On Delivery comms trigger is processed by the ``npondeliveryd`` daemon.
 The ``npondeliveryd`` daemon polls alternate interfaces to identify

@@ -1,7 +1,9 @@
-.. Nparcel B2C Reminder Notifications
+.. Toll Parcel Portal B2C Reminder Notifications
 
 .. toctree::
     :maxdepth: 2
+
+.. _reminders:
 
 Send Email/SMS Reminder Notifications
 =====================================

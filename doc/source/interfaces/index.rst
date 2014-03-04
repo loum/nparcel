@@ -12,7 +12,7 @@ the inbound and outbound processing.
     b2cftp.rst
     loader.rst
     exporter.rst
-    npremind.rst
+    reminder.rst
     primaryelect.rst
     comms.rst
     pods.rst
