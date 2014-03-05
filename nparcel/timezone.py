@@ -48,7 +48,9 @@ def convert_timezone(time_string,
         localised date string or *time_string* if *state* is invalid
 
     """
-    time_string = time_string.split('.')[0]
+    log.debug('Timezone conversion for "%s/%s": ' %
+              (str(time_string), state))
+    time_string = str(time_string).split('.')[0]
 
     log.info('Localising timezone for time "%s" against state: "%s"' %
                 (time_string, state))

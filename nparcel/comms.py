@@ -49,6 +49,13 @@ class Comms(nparcel.Service):
         if kwargs.get('hold_period') is not None:
             self._hold_period = kwargs.get('hold_period')
 
+        if kwargs.get('templates') is not None:
+            self.set_template_tokens(kwargs.get('templates'))
+
+        if kwargs.get('returns_templates') is not None:
+            tmp = kwargs.get('returns_templates')
+            self.set_returns_template_tokens(tmp)
+
         proxy = kwargs.get('proxy')
         proxy_scheme = kwargs.get('scheme')
         sms_api = kwargs.get('sms_api')
@@ -205,7 +212,7 @@ class Comms(nparcel.Service):
                     if template == 'rem':
                         log.info('Setting job_item %d reminder flag' % id)
                         self.db(self.db.jobitem.update_reminder_ts_sql(id))
-                    else:
+                    elif template != 'ret':
                         log.info('Setting job_item %d notify flag' % id)
                         self.db(self.db.jobitem.update_notify_ts_sql(id))
 
@@ -416,7 +423,7 @@ class Comms(nparcel.Service):
             refs = [x[0] for x in list(self.db.rows())]
 
             for agent in tmp_agents:
-                with_refs = agent + (', '.join(refs), )
+                with_refs = tuple(agent) + (', '.join(refs), )
                 agents.append(with_refs)
 
         if len(agents) != 1:
