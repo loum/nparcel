@@ -2,6 +2,7 @@ import unittest2
 import os
 import tempfile
 import threading
+import datetime
 
 import nparcel
 from nparcel.utils.files import (copy_file,
@@ -133,9 +134,7 @@ class TestFtp(unittest2.TestCase):
     def test_archive_file(self):
         """Archive file.
         """
-        #temp_file = tempfile.NamedTemporaryFile()
-        #temp_file_name = temp_file.name
-        test_file = os.path.join(self._dir, 'tester')
+        test_file = os.path.join(self._dir, 'file_to_archive')
         fh = open(test_file, 'w')
         fh.close()
 
@@ -144,7 +143,8 @@ class TestFtp(unittest2.TestCase):
         self.assertTrue(received, msg)
 
         # Check the archive directory.
-        files = os.listdir(self._ftp.archive_dir)
+        files = get_directory_files_list(self._ftp.archive_dir)
+        print('xxx: %s' % files)
         received = [os.path.join(self._ftp.archive_dir, x) for x in files]
         expected = [os.path.join(self._ftp.archive_dir,
                                  os.path.basename(test_file))]
@@ -181,8 +181,11 @@ class TestFtp(unittest2.TestCase):
         self._ftp.process(dry=False)
 
         # Check archive directory.
-        received = get_directory_files_list(self._ftp.archive_dir)
-        expected = [os.path.join(self._archive_dir, x) for x in t_files]
+        ymd = datetime.datetime.now().strftime('%Y%m%d')
+        archive_dir = os.path.join(self._ftp.archive_dir, 'tester', ymd)
+
+        received = get_directory_files_list(archive_dir)
+        expected = [os.path.join(archive_dir, x) for x in t_files]
         msg = 'Archive directory list not as expected'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -195,8 +198,10 @@ class TestFtp(unittest2.TestCase):
         # Clean up.
         for f in t_files:
             remove_files(os.path.join(self._ftp_dir, f))
-            remove_files(os.path.join(self._ftp.archive_dir, f))
+            remove_files(os.path.join(archive_dir, f))
         os.removedirs(dir)
+        os.rmdir(os.path.join(archive_dir))
+        os.rmdir(os.path.join(self._ftp.archive_dir, 'tester'))
         self._ftp.reset_config()
 
     def test_process_inbound_with_pod(self):
@@ -406,8 +411,10 @@ class TestFtp(unittest2.TestCase):
         self._ftp.process(dry=False)
 
         # Check archive directory.
-        received = get_directory_files_list(self._ftp.archive_dir)
-        expected = [os.path.join(self._archive_dir, x) for x in t_files]
+        ymd = datetime.datetime.now().strftime('%Y%m%d')
+        archive_dir = os.path.join(self._ftp.archive_dir, 'tester', ymd)
+        received = get_directory_files_list(archive_dir)
+        expected = [os.path.join(archive_dir, x) for x in t_files]
         msg = 'Archive directory list not as expected'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -420,8 +427,10 @@ class TestFtp(unittest2.TestCase):
         # Clean up.
         for f in t_files:
             remove_files(os.path.join(self._ftp_dir, f))
-            remove_files(os.path.join(self._ftp.archive_dir, f))
+            remove_files(os.path.join(archive_dir, f))
         os.removedirs(dir)
+        os.rmdir(os.path.join(self._archive_dir, 'tester', ymd))
+        os.rmdir(os.path.join(self._archive_dir, 'tester'))
         self._ftp.reset_config()
 
     def test_get_xfer_files_is_not_pod(self):
@@ -733,6 +742,20 @@ class TestFtp(unittest2.TestCase):
         for dir in dirs:
             remove_files(get_directory_files_list(dir))
             os.removedirs(dir)
+
+    def test_archive_branch(self):
+        """Verify the branched FTP archive directory.
+        """
+        tmp_dir = tempfile.mkdtemp()
+
+        ymd = datetime.datetime.now().strftime('%Y%m%d')
+
+        received = self._ftp.archive_branch('banana', tmp_dir)
+        msg = 'Context-based archive branch error'
+        self.assertTrue(os.path.exists(received), msg)
+
+        # Clean up.
+        os.removedirs(received)
 
     @classmethod
     def tearDownClass(cls):

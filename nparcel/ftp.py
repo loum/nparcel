@@ -5,6 +5,7 @@ import os
 import re
 import ftplib
 import socket
+import datetime
 
 import nparcel
 import ConfigParser
@@ -382,7 +383,8 @@ class Ftp(ftplib.FTP):
                     log.info(self.storbinary('STOR %s' % filename, f))
                 f.close()
 
-                self.archive_file(file, dry=dry)
+                user = self.config.get(xfer, 'user')
+                self.archive_file(file, user, dry=dry)
 
     def get_files(self, files, target_dir=None, partial=False, dry=False):
         """Retrives files defined by *files* list.
@@ -441,25 +443,30 @@ class Ftp(ftplib.FTP):
 
         return xfered_file
 
-    def archive_file(self, file, dry=False):
-        """Move the Nparcel signature file and report to the archive
-        directory.
+    def archive_file(self, file, name=None, dry=False):
+        """Move the *file* to the archive directory.
+
+        If *name* is supplied, will try to create a context-based
+        archive that branches off :attr:`archive_dir`.
 
         .. note::
 
-            Move will only occur if archive directory is defined and exists.
+            Move will only occur if :attr:`archive_dir` is defined and
+            exists.
 
         **Args:**
             *file*: full path of file to archive
 
         **Kwargs:**
+            *name*: the context descriptor of the transfer
+
             *dry*: only report what would happen (do not move file)
 
         **Returns:**
             ``boolean``::
 
-                boolean ``True`` if file is archived successfully
-                boolean ``False`` otherwise
+                ``True`` if file is archived successfully
+                ``False`` otherwise
 
         """
         status = True
@@ -469,15 +476,15 @@ class Ftp(ftplib.FTP):
             status = False
 
         if status:
-            target = os.path.join(self.archive_dir, os.path.basename(file))
+            branch_arch = self.archive_dir
 
-            log.info('Archiving "%s" to "%s"' % (file, target))
-            try:
-                if not dry:
-                    os.rename(file, target)
-            except OSError, err:
-                log.error('Signature file move failed: "%s"' % err)
-                status = False
+            if name is not None:
+                branch_arch = self.archive_branch(name,
+                                                  self.archive_dir,
+                                                  dry=dry)
+
+            target = os.path.join(branch_arch, os.path.basename(file))
+            move_file(file, target, dry)
 
         return status
 
@@ -621,3 +628,36 @@ class Ftp(ftplib.FTP):
                 target_basename = os.path.basename(f)
                 target = os.path.join(dir, target_basename)
                 copy_file(f, target)
+
+    def archive_branch(self, name, base_dir, dry=False):
+        """Determine the branch archive directory structure based on
+        context of the transfer.
+
+        Typical construct will use the *name* parameter and the
+        ``YYYYMMDD`` time format of the current date in the form
+        ``<archive_dir>/<name>/<YYYYMMDD>.  For example, if the
+        :attr:`archive_dir` directory is set to
+        ``/data/nparcel/archive/ftp``::
+
+            /data/nparcel/archive/ftp/priority/20140305
+
+        **Kwargs:**
+            *name*: the context descriptor of the transfer
+
+        **Returns:**
+            string that represents the archive branch or ``None``
+            if the :attr:`archive_base` is not set
+
+        """
+        branched_archive_dir = base_dir
+
+        if branched_archive_dir is not None:
+            ymd = datetime.datetime.now().strftime('%Y%m%d')
+            branched_archive_dir = os.path.join(base_dir, name, ymd)
+            log.debug('Branched archive directory: "%s"' %
+                      branched_archive_dir)
+            if not dry:
+                if not create_dir(branched_archive_dir):
+                    branched_archive_dir = base_dir
+
+        return branched_archive_dir
