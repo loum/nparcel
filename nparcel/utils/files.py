@@ -145,10 +145,10 @@ def move_file(source, target, err=False, dry=False):
 
     **Kwargs:**
         *err*: boolean flag which will attempt to move *source* aside if
-        the move fails.  Target fail name is *source*.err
+        the move fails if set to ``True``.  Target fail name is *source*.err
 
         *dry*: only report, do not execute (but will create the target
-        direcotry if it is missing)
+        directory if it is missing)
 
     **Returns:**
         boolean ``True`` if move was successful
@@ -160,24 +160,26 @@ def move_file(source, target, err=False, dry=False):
     status = False
 
     if os.path.exists(source):
-        if create_dir(os.path.dirname(target)):
-            try:
-                if not dry:
+        if not dry:
+            if create_dir(os.path.dirname(target)):
+                try:
                     os.rename(source, target)
-                status = True
-            except OSError, err:
-                log.error('%s move to %s failed -- %s' % (source,
-                                                          target,
-                                                          err))
+                    status = True
+                except OSError, error:
+                    log.error('%s move to %s failed -- %s' % (source,
+                                                              target,
+                                                              error))
     else:
         log.warn('Source file "%s" does not exist' % str(source))
 
-    if not status:
+    if not status and err and not dry:
         try:
-            target = '%s.err' % source
-            os.rename(source, target)
-        except OSError, err:
-            log.error('%s move to %s failed -- %s' % (source, target, err))
+            if os.path.exists(source):
+                target = '%s.err' % source
+                os.rename(source, target)
+        except OSError, error:
+            log.error('%s move to %s failed -- %s' %
+                      (source, target, error))
 
     return status
 

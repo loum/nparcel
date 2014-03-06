@@ -6,6 +6,7 @@ import re
 import ftplib
 import socket
 import datetime
+import time
 
 import nparcel
 import ConfigParser
@@ -14,7 +15,8 @@ from nparcel.utils.files import (create_dir,
                                  check_filename,
                                  move_file,
                                  copy_file,
-                                 get_directory_files)
+                                 get_directory_files,
+                                 get_directory_files_list)
 
 
 class Ftp(ftplib.FTP):
@@ -484,7 +486,7 @@ class Ftp(ftplib.FTP):
                                                   dry=dry)
 
             target = os.path.join(branch_arch, os.path.basename(file))
-            move_file(file, target, dry)
+            move_file(file, target, dry=dry)
 
         return status
 
@@ -629,7 +631,7 @@ class Ftp(ftplib.FTP):
                 target = os.path.join(dir, target_basename)
                 copy_file(f, target)
 
-    def archive_branch(self, name, base_dir, dry=False):
+    def archive_branch(self, name, base_dir, ymd=None, dry=False):
         """Determine the branch archive directory structure based on
         context of the transfer.
 
@@ -641,8 +643,17 @@ class Ftp(ftplib.FTP):
 
             /data/nparcel/archive/ftp/priority/20140305
 
-        **Kwargs:**
+        **Args:**
             *name*: the context descriptor of the transfer
+
+            *base_dir*: the directory to use as a base for the
+            archive branch
+
+        **Kwargs:**
+            *ymd*: the sting based time descriptor to use in the archive
+            string. For example, ``20140006``
+
+            *dry*: only report what would happen (do not move file)
 
         **Returns:**
             string that represents the archive branch or ``None``
@@ -652,7 +663,8 @@ class Ftp(ftplib.FTP):
         branched_archive_dir = base_dir
 
         if branched_archive_dir is not None:
-            ymd = datetime.datetime.now().strftime('%Y%m%d')
+            if ymd is None:
+                ymd = datetime.datetime.now().strftime('%Y%m%d')
             branched_archive_dir = os.path.join(base_dir, name, ymd)
             log.debug('Branched archive directory: "%s"' %
                       branched_archive_dir)
@@ -661,3 +673,67 @@ class Ftp(ftplib.FTP):
                     branched_archive_dir = base_dir
 
         return branched_archive_dir
+
+    def migrate_archived_files(self, dry=False):
+        """Identify old-style archived files and migrate to the new
+        archiving arrangement.
+
+        .. note::
+
+            this is a throwaway.  Only to be used once and then removed
+
+        **Kwargs:**
+            *dry*: only report what would happen (do not move file)
+
+        """
+        log.info('Searching archive dir "%s" for archived files ...' %
+                 (self.archive_dir))
+
+        files = []
+        if self.archive_dir is not None:
+            files = get_directory_files_list(self.archive_dir,
+                                             '.*_VANA_RE[PFI]_\d{14}\.txt$')
+
+        for f in files:
+            log.debug('Found files: %s' % files)
+
+            # Get the BU.
+            r = re.compile('.*_VANA_RE([PFI])_\d{14}\.txt$')
+            m = r.match(os.path.basename(f))
+            name = None
+            try:
+                bu = m.group(1)
+                if bu == 'P':
+                    name = 'priority'
+                elif bu == 'F':
+                    name = 'fast'
+                elif bu == 'I':
+                    name = 'ipec'
+            except AttributeError, err:
+                log.error('Unable to parse BU from filename')
+
+            if name is not None:
+                # Get the file's timestamp.
+                ctime = os.stat(f)[9]
+                ymd = time.strftime('%Y%m%d', time.localtime(ctime))
+                log.debug('ctime to YYYYMMDD: "%s/%s"' % (ctime, ymd))
+
+                archive_dir = self.archive_branch(name,
+                                                  self.archive_dir,
+                                                  ymd=ymd,
+                                                  dry=dry)
+                log.debug('Branch archive directory: "%s"' % archive_dir)
+
+                # Get the report file keys.
+                keys = self.get_report_file_ids(f)
+                for k in keys:
+                    for ext in ['ps', 'png']:
+                        pod = '%s.%s' % (k, ext)
+                        source = os.path.join(os.path.dirname(f), pod)
+                        target = os.path.join(archive_dir, pod)
+                        move_file(source, target, dry=dry)
+
+                target = os.path.join(archive_dir, os.path.basename(f))
+                move_file(f, target, dry=dry)
+
+        log.info('Archive migration complete')

@@ -757,6 +757,50 @@ class TestFtp(unittest2.TestCase):
         # Clean up.
         os.removedirs(received)
 
+    def test_migrate_archived_files(self):
+        """Migrate old-style archived files.
+        """
+        dry = False
+
+        old_archive = self._ftp.archive_dir
+        archive_dir = tempfile.mkdtemp()
+        self._ftp.set_archive_dir(archive_dir)
+
+        t_files = ['VIC_VANA_REP_20131108145146.txt',
+                   '142828.ps',
+                   '145563.ps',
+                   '145601.ps',
+                   '145661.ps',
+                   'VIC_VANA_REI_20131108145146.txt',
+                   '145401.png',
+                   '145402.png',
+                   '145403.png',
+                   '145404.png']
+        for f in t_files:
+            copy_file(os.path.join(self._test_dir, f),
+                      os.path.join(archive_dir, f))
+
+        self._ftp.migrate_archived_files(dry=dry)
+
+        if not dry:
+            ymd = datetime.datetime.now().strftime('%Y%m%d')
+            priority_dir = os.path.join(archive_dir, 'priority', ymd)
+            ipec_dir = os.path.join(archive_dir, 'ipec', ymd)
+            priority_files = get_directory_files_list(priority_dir)
+            ipec_files = get_directory_files_list(ipec_dir)
+            all_files = priority_files + ipec_files
+            received = [os.path.basename(x) for x in all_files]
+            expected = t_files
+            msg = 'Branched archive directory files list error'
+            self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Clean up.
+        self._ftp.set_archive_dir(old_archive)
+        if not dry:
+            remove_files(all_files)
+            os.removedirs(priority_dir)
+            os.removedirs(ipec_dir)
+
     @classmethod
     def tearDownClass(cls):
         cls._ftpserver.stop()
