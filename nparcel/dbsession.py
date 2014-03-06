@@ -1,12 +1,15 @@
 __all__ = [
     "dbsession",
 ]
-from pysqlite2 import dbapi2 as sqlite3
+from nparcel.utils.log import log
+try:
+    from pysqlite2 import dbapi2 as sqlite3
+except:
+    import sqlite as sqlite3
 import pyodbc
 import datetime
 
 import nparcel
-from nparcel.utils.log import log
 
 
 class DbSession(object):
