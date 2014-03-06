@@ -147,21 +147,36 @@ will attempt to place a copy of the transferred file into the directories
 
 Archive Directory
 +++++++++++++++++
+
+The ``archive`` option is part of the **npftp.conf** ``dirs`` section.
+This value is captured in the :attr:`archive_dir` attribute.
+
 The outbound FTP facility will attempt to archive files upon successful
 transfer if the ``archive`` configuration option is defined::
 
     [dirs]
     archive = /data/nparcel/archive/ftp
 
-An attempt will be made to create the archive directory if it does not exist.
+.. note::
 
-The ``archive`` option is part of the **npftp.conf** ``dirs`` section
+    An attempt will be made to create the archive directory if it does
+    not exist.
 
 To disable FTP archiving: simply comment out the ``archive`` option as
 below::
 
     [dirs]
     #archive = /data/nparcel/archive/ftp
+
+As of *version 0.32*, archiving is context based to better distribute
+the files across the file system.  The extended directory structure
+*branches* off the :attr:`archive_dir` according to the username of the
+FTP transfer and the date of transfer (in the format ``YYYYMMMDD``).  For
+example, the Priority report file ``VIC_VANA_REP_20131108145146.txt``
+(which connects as the user ``priority`` and was transferred on
+08/11/2013) would be archived to::
+
+    /data/nparcel/archive/ftp/priority/20131108
 
 ``npftp`` Usage
 ---------------
