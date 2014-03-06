@@ -26,6 +26,11 @@ class TestB2CConfig(unittest2.TestCase):
         self._c.set_config_file(self._file)
         self._c.parse_config()
 
+        msg = 'environment.prod not as expected'
+        received = self._c.prod
+        expected = 'faswbaup02'
+        self.assertEqual(received, expected, msg)
+
         msg = 'Business units not as expected'
         received = self._c.business_units
         expected = {'priority': '1', 'fast': '2', 'ipec': '3'}

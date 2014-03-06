@@ -35,6 +35,10 @@ class B2CConfig(nparcel.Config):
     :class:`nparcel.B2CConfig` captures the configuration items required
     by the Nparcel B2C Replicator
 
+    .. attribute:: prod
+
+        hostname of the production instance
+
     .. attribute:: dirs_to_check (loader)
 
         list of directories to look for T1250 files
@@ -330,6 +334,7 @@ class B2CConfig(nparcel.Config):
         dictionary of delivery partner default passwords
 
     """
+    _prod = None
     _dirs_to_check = []
     _mapper_in_dirs = []
     _archive = None
@@ -433,6 +438,15 @@ class B2CConfig(nparcel.Config):
         """B2CConfig initialisation.
         """
         nparcel.Config.__init__(self, file)
+
+    @property
+    def prod(self):
+        return self._prod
+
+    def set_prod(self, value=None):
+        self._prod = value
+        log.debug('%s -- environment.prod set to "%s"' % (self.facility,
+                                                          self.prod))
 
     @property
     def in_dirs(self):
@@ -704,7 +718,13 @@ class B2CConfig(nparcel.Config):
             log.critical('Missing required config: %s' % err)
             sys.exit(1)
 
-        # The standard T1250 file (which shouldn't change much)
+        try:
+            self.set_prod(self.get('environment', 'prod'))
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('%s -- environment.prod not defined.  Using "%s"' %
+                      self.prod)
+
         try:
             self._t1250_file_format = self.get('files',
                                                't1250_file_format')
