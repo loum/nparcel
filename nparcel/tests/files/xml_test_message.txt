@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<messages>
+  <accountreference>EX0111642</accountreference>
+  <message>
+    <to>0431602145</to>
+    <body>TEST PLS IGNORE
+Your tracking # 1234567890_connote has been delivered to Auburn Newsagency, 119 Auburn Road, HAWTHORN EAST, 3123.
+
+Please bring your photo-ID for collection</body>
+  </message>
+</messages>

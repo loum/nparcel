@@ -445,8 +445,8 @@ class B2CConfig(nparcel.Config):
 
     def set_prod(self, value=None):
         self._prod = value
-        log.debug('%s -- environment.prod set to "%s"' % (self.facility,
-                                                          self.prod))
+        log.debug('%s environment.prod set to "%s"' %
+                  (self.facility, self.prod))
 
     @property
     def in_dirs(self):
@@ -586,7 +586,7 @@ class B2CConfig(nparcel.Config):
 
         if values is not None:
             self._support_emails.extend(values)
-        log.debug('%s -- email.support "%s"' % (self.facility, values))
+        log.debug('%s email.support "%s"' % (self.facility, values))
 
     @property
     def cond(self):
@@ -722,7 +722,7 @@ class B2CConfig(nparcel.Config):
             self.set_prod(self.get('environment', 'prod'))
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
-            log.debug('%s -- environment.prod not defined.  Using "%s"' %
+            log.debug('%s environment.prod not defined.  Using "%s"' %
                       self.prod)
 
         try:

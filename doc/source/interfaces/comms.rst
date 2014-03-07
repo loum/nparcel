@@ -165,6 +165,11 @@ file to control processing workflow.
     all configuration settings are found under the ``[comms]`` section
     unless otherwise specified
 
+* ``prod`` (under the ``[environment]`` section)
+
+    hostname of the production instance.  This is used to flag **TEST**
+    comms messages
+
 * ``failed_email`` (under the ``[rest]`` section))
 
     Email recipient for comms failures notification alerts

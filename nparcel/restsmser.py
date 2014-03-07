@@ -5,6 +5,7 @@ import re
 import os
 import string
 import base64
+from elementtree import ElementTree
 
 import nparcel
 import nparcel.urllib2 as urllib2
@@ -32,11 +33,12 @@ class RestSmser(nparcel.Rest):
         """Nparcel Smser initialiser.
 
         """
-        super(RestSmser, self).__init__(proxy,
-                                        proxy_scheme,
-                                        api,
-                                        api_username,
-                                        api_password)
+        nparcel.Rest.__init__(self,
+                              proxy,
+                              proxy_scheme,
+                              api,
+                              api_username,
+                              api_password)
 
     @property
     def template_base(self):
@@ -47,11 +49,19 @@ class RestSmser(nparcel.Rest):
         log.debug('%s template_base set to "%s"' %
                   (self._facility, self.template_base))
 
-    def create_comms(self, data, template='body', base_dir=None):
-        """Create the SMS data string to send.
+    def create_comms(self,
+                     data,
+                     template='body',
+                     base_dir=None,
+                     prod=None):
+        """Create the SMS data string to send based on *data* and
+        *template*.
+
+        If current hostname matches *prod* then comms messages will be
+        prepended with a special ``TEST ONLY`` descriptor.
 
         **Args:**
-            data: dictionary structure of items to expected by the HTML
+            *data*: dictionary structure of items to expected by the HTML
             email templates::
 
                {'name': 'Auburn Newsagency',
@@ -62,8 +72,17 @@ class RestSmser(nparcel.Rest):
                 'phone_nbr': '0431602145'}
 
         **Kwargs:**
-            base_dir: override the standard location to search for the
+            *template*: template token that defines the message context.
+            For example, ``ret`` for the returns template
+
+            *base_dir*: override the standard location to search for the
             SMS XML template (default ``~user_home/.nparceld/templates``).
+
+            *prod*: name of the production instance
+
+        **Returns:**
+            string representation of the message to send or ``None`` if
+            the template processing failed
 
         """
         template_dir = self.template_base
@@ -81,6 +100,11 @@ class RestSmser(nparcel.Rest):
             sms_data = sms_s.substitute(**data)
         except IOError, err:
             log.error('Unable to source SMS template at "%s"' % xml_file)
+
+        # Add TEST token to message if not production.
+        if (sms_data is not None and
+            (prod is None or prod != self.hostname)):
+            sms_data = self.add_test_string(sms_data)
 
         return sms_data
 
@@ -216,3 +240,24 @@ class RestSmser(nparcel.Rest):
                          (mobile_number, tmp_mobile_number))
 
         return tmp_mobile_number
+
+    def add_test_string(self, xml_message):
+        """Add TEST token to the SMS XML message construct.
+
+        **Args**:
+            *xml_message*: the source XML message string to alter
+
+        **Returns**:
+            the altered SMS message as a string
+
+        """
+        log.debug('Adding TEST token to XML: "%s"' % xml_message)
+
+        content = ElementTree.fromstring(xml_message)
+        body = content.find('message/body')
+        body.text = '%s\n%s' % ('TEST PLS IGNORE', body.text)
+
+        new_xml_message = ElementTree.tostring(content, encoding='UTF-8')
+        log.debug('New XML: "%s"' % new_xml_message)
+
+        return new_xml_message
