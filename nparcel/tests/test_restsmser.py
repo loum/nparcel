@@ -10,14 +10,16 @@ class TestRestSmser(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._rsms = nparcel.RestSmser()
-        proxy = 'loumar:<passwd>@auproxy-farm.toll.com.au:1442'
-        sms_api = 'https://api.esendex.com/v1.0/messagedispatcher'
-        cls._rsms.set_api(sms_api)
+
         # Uncomment these and set accordingly if you want to really send a
         # message.  BE CAREFUL!
+        #proxy = 'loumar:<passwd>@auproxy-farm.toll.com.au:8080'
         #cls._rsms.set_proxy(proxy)
-        #cls._rsms.set_api_username('sms_user')
-        #cls._rsms.set_api_password('<sms_pw>')
+
+        sms_api = 'https://api.esendex.com/v1.0/messagedispatcher'
+        cls._rsms.set_api(sms_api)
+        cls._rsms.set_api_username('sms_user')
+        cls._rsms.set_api_password('<sms_pw>')
 
         cls._template_base = os.path.join('nparcel', 'templates')
         cls._rsms.set_template_base(cls._template_base)
@@ -49,7 +51,7 @@ class TestRestSmser(unittest2.TestCase):
         self.assertTrue(received, msg)
 
     def test_send_non_prod_instance(self):
-        """Send REST SMS.
+        """Send REST SMS -- non-PROD.
         """
         dry = True
 

@@ -1,5 +1,6 @@
 import unittest2
 import os
+import socket
 
 import nparcel
 
@@ -10,15 +11,23 @@ class TestRestEmailer(unittest2.TestCase):
     def setUpClass(cls):
         cls._re = nparcel.RestEmailer()
 
-        conf = nparcel.B2CConfig()
-        conf.set_config_file(os.path.join('nparcel',
-                                          'conf',
-                                          'nparceld.conf'))
-        conf.parse_config()
-        cls._re._rest.set_proxy(conf.proxy_string())
-        cls._re._rest.set_api(conf.rest.get('email_api'))
-        cls._re._rest.set_api_username(conf.rest.get('email_user'))
-        cls._re._rest.set_api_password(conf.rest.get('email_pw'))
+        # Uncomment these and set accordingly if you want to really send a
+        # message.  BE CAREFUL!
+        #proxy = 'loumar:P0o9i8U7@auproxy-farm.toll.com.au:8080'
+        #cls._re._rest.set_proxy(proxy)
+        #cls._re._rest.set_proxy_scheme('https')
+
+        email_api = ('%s://%s' %
+        ('https',
+         'apps.cinder.co/tollgroup/wsemail/emailservice.svc/sendemail'))
+        cls._re._rest.set_api(email_api)
+        cls._re._rest.set_api_username('user')
+        cls._re._rest.set_api_password('<pw>')
+
+        cls._template_base = os.path.join('nparcel', 'templates')
+        cls._re.set_template_base(cls._template_base)
+
+        cls._hostname = socket.gethostname()
 
     def test_init(self):
         """Verify initialisation of an nparcel.RestEmailer object.
@@ -39,15 +48,18 @@ class TestRestEmailer(unittest2.TestCase):
                                           msg=msg)
         f = open(os.path.join('nparcel',
                               'tests',
+                              'files',
                               'encoded_params.out'))
         expected = f.read().rstrip()
         f.close()
         msg = 'Encoded message not as expected'
         self.assertEqual(received, expected, msg)
 
-    def test_send(self):
+    def test_send_simple(self):
         """Send an email message to the REST-based interface.
         """
+        dry = True
+
         subject = 'Test Message from Toll'
         sender = 'loumar@tollgroup.com'
         recipient = 'loumar@tollgroup.com'
@@ -57,7 +69,7 @@ class TestRestEmailer(unittest2.TestCase):
                                         sender=sender,
                                         recipient=recipient,
                                         msg=msg,
-                                        dry=True)
+                                        dry=dry)
         msg = 'Email send should return True'
         self.assertTrue(received, msg)
 
@@ -73,7 +85,7 @@ class TestRestEmailer(unittest2.TestCase):
              'item_nbr': '3456789012-item_nbr'}
         received = self._re.create_comms(subject=subject,
                                          data=d,
-                                         base_dir='nparcel')
+                                         prod=self._hostname)
 
         msg = 'Create comms should return a valid string'
         self.assertTrue(received, msg)
@@ -81,7 +93,7 @@ class TestRestEmailer(unittest2.TestCase):
     def test_send(self):
         """Send an email message to the REST-based interface.
         """
-        self._re._rest.set_proxy_scheme('https')
+        dry = True
 
         self._re.set_recipients(['loumar@tollgroup.com'])
         subject = 'Test Message from Toll'
@@ -93,10 +105,38 @@ class TestRestEmailer(unittest2.TestCase):
              'item_nbr': '3456789012-item_nbr'}
         encoded_msg = self._re.create_comms(subject=subject,
                                             data=d,
-                                            base_dir='nparcel')
+                                            prod=self._hostname)
 
-        received = self._re.send(data=encoded_msg, dry=True)
+        msg = 'Encoded e-mail message should not be None'
+        self.assertIsNotNone(encoded_msg, msg)
 
+        received = self._re.send(data=encoded_msg, dry=dry)
+        msg = 'Email send should return True'
+        self.assertTrue(received, msg)
+
+        # Clean up.
+        self._re.set_recipients(None)
+        self._re._rest.set_proxy_scheme('http')
+
+    def test_send_non_prod_instance(self):
+        """Send an email message to the REST-based interface -- non-PROD.
+        """
+        dry = True
+
+        self._re.set_recipients(['loumar@tollgroup.com'])
+        subject = 'Test Message from Toll'
+        d = {'name': 'Auburn Newsagency',
+             'address': '119 Auburn Road',
+             'suburb': 'HAWTHORN EAST',
+             'postcode': '3123',
+             'connote_nbr': '218501217863-connote',
+             'item_nbr': '3456789012-item_nbr'}
+        encoded_msg = self._re.create_comms(subject=subject, data=d)
+
+        msg = 'Encoded e-mail message should not be None'
+        self.assertIsNotNone(encoded_msg, msg)
+
+        received = self._re.send(data=encoded_msg, dry=dry)
         msg = 'Email send should return True'
         self.assertTrue(received, msg)
 
@@ -113,10 +153,22 @@ class TestRestEmailer(unittest2.TestCase):
         msg = 'Base body subject line not as expected'
         self.assertEqual(received, expected, msg)
 
+    def test_check_subject(self):
+        """Check subject context based on PROD and non-PROD instance.
+        """
+        subject = 'Subject'
+
+        received = self._re.check_subject(subject, prod='banana')
+        expected = 'TEST PLEASE IGNORE -- Subject'
+        msg = 'Non-PROD subject error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._re.check_subject(subject, prod=self._hostname)
+        expected = subject
+        msg = 'PROD subject error'
+        self.assertEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
-        cls._re = None
-        cls._proxy = None
-        cls._api = None
-        cls._user = None
-        cls._pw = None
+        del cls._re
+        del cls._hostname

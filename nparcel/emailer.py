@@ -16,16 +16,16 @@ from nparcel.utils.log import log
 
 
 class Emailer(nparcel.EmailerBase):
-    """Nparcel emailer.
+    """Emailer class.
 
     """
     def __init__(self,
                  sender=None,
                  recipients=None):
-        """Nparcel emailer initialiser.
+        """Emailer initialiser.
 
         """
-        super(Emailer, self).__init__()
+        nparcel.EmailerBase.__init__(self)
 
         self._sender = sender
         if self._sender is None:

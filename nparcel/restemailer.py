@@ -14,15 +14,10 @@ import nparcel.urllib2 as urllib2
 from nparcel.utils.log import log
 
 
-class RestEmailer(nparcel.EmailerBase):
-    """Nparcel RestEmailer.
-
-    .. attribute:: recipients
-
-        list of mobile numbers to send SMS to
+class RestEmailer(nparcel.Emailer):
+    """RestEmailer class.
 
     """
-
     def __init__(self,
                  sender='no-reply@consumerdelivery.tollgroup.com',
                  recipients=None,
@@ -32,9 +27,10 @@ class RestEmailer(nparcel.EmailerBase):
                  api_username=None,
                  api_password=None,
                  support=None):
-        """Nparcel RestEmailer initialiser.
+        """RestEmailer initialiser.
+
         """
-        super(RestEmailer, self).__init__()
+        nparcel.Emailer.__init__(self)
 
         self._rest = nparcel.Rest(proxy,
                                   proxy_scheme,
@@ -123,16 +119,16 @@ class RestEmailer(nparcel.EmailerBase):
         """Send the Email.
 
         **Args:**
-            subject: email subject
+            *subject*: email subject
 
-            sender: email sender (From)
+            *sender*: email sender (From)
 
-            recipient: email recipient (To)
+            *recipient*: email recipient (To)
 
-            msg: email content
+            *msg*: email content
 
         **Kwargs:**
-            dry: do not send, only report what would happen
+            *dry*: do not send, only report what would happen
 
         **Returns:**
             boolean ``True`` if the send is successful
@@ -149,8 +145,8 @@ class RestEmailer(nparcel.EmailerBase):
                                   msg=msg)
 
         proxy_kwargs = {}
-        if self.proxy is not None:
-            proxy_kwargs = {self.proxy_scheme: self.proxy}
+        if self._rest.proxy is not None:
+            proxy_kwargs = {self._rest.proxy_scheme: self.proxy}
         proxy = urllib2.ProxyHandler(proxy_kwargs)
         auth = urllib2.HTTPBasicAuthHandler()
         opener = urllib2.build_opener(proxy,
@@ -178,14 +174,18 @@ class RestEmailer(nparcel.EmailerBase):
                      data,
                      base_dir=None,
                      template='body',
-                     err=False):
+                     err=False,
+                     prod=None):
         """Create the MIME multipart message that can feed directly into
         the POST construct of the Esendex RESTful API.
 
-        **Args:**
-            subject: the email subject
+        If current hostname matches *prod* then comms messages will be
+        prepended with a special ``TEST ONLY`` descriptor.
 
-            data: dictionary structure of items to expected by the HTML
+        **Args:**
+            *subject*: the email subject
+
+            *data*: dictionary structure of items to expected by the HTML
             email templates::
 
                 {'name': 'Auburn Newsagency',
@@ -196,8 +196,10 @@ class RestEmailer(nparcel.EmailerBase):
                  'item_nbr': '3456789012-item_nbr'}
 
         **Kwargs:**
-            base_dir: override the standard location to search for the
+            *base_dir*: override the standard location to search for the
             templates (default ``~user_home/.nparceld/templates``).
+
+            *prod*: hostname of the production instance machine
 
         **Returns:**
             MIME multipart-formatted serialised string
@@ -207,12 +209,12 @@ class RestEmailer(nparcel.EmailerBase):
         if base_dir is None:
             template_dir = self.template_base
         else:
-            template_dir = os.path.join(base_dir, 'templates')
+            template_dir = base_dir
 
         mime_msg = MIMEMultipart('related')
-        mime_msg['Subject'] = subject
         mime_msg['From'] = self.sender
         mime_msg['To'] = ", ".join(self.recipients)
+        mime_msg['Subject'] = self.check_subject(subject, prod)
 
         msgAlternative = MIMEMultipart('alternative')
         mime_msg.attach(msgAlternative)
@@ -223,27 +225,71 @@ class RestEmailer(nparcel.EmailerBase):
 
         html_template = os.path.join(template_dir, body_html)
         log.debug('Email body template: "%s"' % html_template)
-        f = open(html_template)
-        body_t = f.read()
-        f.close()
-        body_s = string.Template(body_t)
-        body = str()
+        body_t = None
         try:
-            body = body_s.substitute(**data)
-        except KeyError, err:
-            log.error('Template "%s" substitute failed: %s' %
-                      (html_template, err))
+            f = open(html_template)
+            body_t = f.read()
+            f.close()
+        except IOError, err:
+            log.error('Unable to source e-mail template at "%s"' %
+                      html_template)
 
-        f = open(os.path.join(template_dir, 'email_html.t'))
-        main_t = f.read()
-        f.close()
-        main_s = string.Template(main_t)
-        main = main_s.substitute(body=body)
+        body = str()
+        if body_t is not None:
+            body_s = string.Template(body_t)
+            try:
+                body = body_s.substitute(**data)
+            except KeyError, err:
+                log.error('Template "%s" substitute failed: %s' %
+                        (html_template, err))
 
-        main_text = MIMEText(main, 'html')
-        msgAlternative.attach(main_text)
+        main_t = None
+        try:
+            f = open(os.path.join(template_dir, 'email_html.t'))
+            main_t = f.read()
+            f.close()
+        except IOError, err:
+            log.error('Unable to source base e-mail template at "%s"' %
+                      html_template)
 
-        return mime_msg.as_string()
+        main = str()
+        if main_t is not None:
+            main_s = string.Template(main_t)
+            try:
+                main = main_s.substitute(body=body)
+            except KeyError, err:
+                log.error('Template "%s" substitute failed: %s' %
+                          (html_template, err))
+
+        mime_msg_string = None
+        if body_t is not None and main_t is not None:
+            main_text = MIMEText(main, 'html')
+            msgAlternative.attach(main_text)
+            mime_msg_string = mime_msg.as_string()
+
+        return mime_msg_string
+
+    def check_subject(self, subject, prod):
+        """Checks if current hostname matches *prod*.  If so, subject line
+        is prepended with a special ``TEST ONLY`` descriptor.
+
+        **Args:**
+            *subject*: the email subject
+
+            *prod*: hostname of the production instance machine
+
+        **Returns:**
+
+            subject line string based on context of PROD instance
+
+        """
+        new_subject = subject
+
+        if (prod is None or prod != self.hostname):
+            new_subject = 'TEST PLEASE IGNORE -- %s' % subject
+            log.debug('Added TEST token to subject: "%s"' % new_subject)
+
+        return new_subject
 
     def send(self, data, dry=False):
         """Send the *data*.

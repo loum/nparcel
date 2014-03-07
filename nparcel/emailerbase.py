@@ -3,6 +3,7 @@ __all__ = [
 ]
 import re
 import os
+import socket
 
 from nparcel.utils.log import log
 
@@ -13,8 +14,14 @@ class EmailerBase(object):
     .. attribute:: template_base
         directory where templates are read from
 
+    .. attribute:: hostname
+
+        string containing the hostname of the machine where the Python
+        interpreter is currently executing
+
     """
     _facility = None
+    _hostname = socket.gethostname()
     _template_base = os.path.join(os.path.expanduser('~'),
                                   '.nparceld',
                                   'templates')
@@ -28,13 +35,26 @@ class EmailerBase(object):
             self._template_base = template_base
 
     @property
+    def facility(self):
+        return self._facility
+
+    @property
     def template_base(self):
         return self._template_base
 
     def set_template_base(self, value):
         self._template_base = value
         log.debug('%s template_base set to "%s"' %
-                  (self._facility, self.template_base))
+                  (self.facility, self.template_base))
+
+    @property
+    def hostname(self):
+        return self._hostname
+
+    def set_hostname(self, value):
+        self._hostname = value
+        log.debug('%s hostname set to "%s"' %
+                  (self.facility, self.hostname))
 
     def validate(self, email):
         """Validate the *email* address.

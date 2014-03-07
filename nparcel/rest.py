@@ -36,6 +36,7 @@ class Rest(object):
 
     """
     _facility = None
+    _hostname = socket.gethostname()
 
     def __init__(self,
                  proxy=None,
@@ -43,7 +44,7 @@ class Rest(object):
                  api=None,
                  api_username=None,
                  api_password=None):
-        """rest initialiser.
+        """Rest initialiser.
 
         """
         self._facility = self.__class__.__name__
@@ -53,8 +54,6 @@ class Rest(object):
         self._api = api
         self._api_username = api_username
         self._api_password = api_password
-
-        self.set_hostname(socket.gethostname())
 
     @property
     def facility(self):
@@ -91,7 +90,8 @@ class Rest(object):
 
     def set_api_username(self, value):
         self._api_username = value
-        log.debug('%s api set to "%s"' % (self.facility, self.api_username))
+        log.debug('%s api_username set to "%s"' %
+                  (self.facility, self.api_username))
 
     @property
     def api_password(self):

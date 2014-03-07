@@ -78,7 +78,7 @@ class RestSmser(nparcel.Rest):
             *base_dir*: override the standard location to search for the
             SMS XML template (default ``~user_home/.nparceld/templates``).
 
-            *prod*: name of the production instance
+            *prod*: hostname of the production instance machine
 
         **Returns:**
             string representation of the message to send or ``None`` if
@@ -90,9 +90,9 @@ class RestSmser(nparcel.Rest):
             template_dir = base_dir
 
         sms_data = None
+        xml_file = os.path.join(template_dir, 'sms_%s_xml.t' % template)
+        log.debug('SMS template: "%s"' % xml_file)
         try:
-            xml_file = os.path.join(template_dir, 'sms_%s_xml.t' % template)
-            log.debug('SMS template: "%s"' % xml_file)
             f = open(xml_file)
             sms_t = f.read()
             f.close()
