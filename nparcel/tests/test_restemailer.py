@@ -168,6 +168,35 @@ class TestRestEmailer(unittest2.TestCase):
         # Clean up.
         self._re.set_recipients(None)
 
+    def test_send_non_prod_instance_error(self):
+        """Send an email message to the REST-based interface --
+        non-PROD / error.
+        """
+        dry = True
+
+        self._re.set_recipients(['loumar@tollgroup.com'])
+        d = {'name': 'Auburn Newsagency',
+             'address': '119 Auburn Road',
+             'suburb': 'HAWTHORN EAST',
+             'postcode': '3123',
+             'connote_nbr': '218501217863-connote',
+             'item_nbr': '3456789012-item_nbr',
+             'error_comms': 'Email',
+             'bu_id': 1,
+             'phone_nbr': '0431602145',
+             'bad_email_addr': 'loumar@tollgroup.com'}
+        encoded_msg = self._re.create_comms(data=d, err=True)
+
+        msg = 'Encoded e-mail message should not be None'
+        self.assertIsNotNone(encoded_msg, msg)
+
+        received = self._re.send(data=encoded_msg, dry=dry)
+        msg = 'Email send should return True'
+        self.assertTrue(received, msg)
+
+        # Clean up.
+        self._re.set_recipients(None)
+
     def test_get_subject_line(self):
         """Build the subject line from a template -- base scenario.
         """

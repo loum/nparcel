@@ -236,7 +236,8 @@ class TestFiles(unittest2.TestCase):
              'postcode': '3123',
              'connote_nbr': '218501217863-connote',
              'item_nbr': '3456789012-item_nbr',
-             'err': ''}
+             'err': '',
+             'non_prod': ''}
 
         received = templater(path_to_template_file, **d)
         fh = open(os.path.join('nparcel',

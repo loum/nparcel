@@ -232,6 +232,16 @@ class RestEmailer(nparcel.Emailer):
             err_html = str()
         data['err'] = err_html
 
+        non_prod_html = None
+        if prod != self.hostname:
+            path_to_non_prod_template = os.path.join(template_dir,
+                                                     'email_non_prod_html.t')
+            non_prod_html = templater(path_to_non_prod_template, **data)
+
+        if non_prod_html is None:
+            non_prod_html = str()
+        data['non_prod'] = non_prod_html
+
         # Build the email body portion.
         html_body_template = 'email_%s_html.t' % template
         path_to_template = os.path.join(template_dir, html_body_template)
