@@ -3,7 +3,6 @@ __all__ = [
 ]
 import re
 import os
-import string
 import base64
 from elementtree import ElementTree
 
@@ -90,15 +89,20 @@ class RestSmser(nparcel.Rest):
         if base_dir is not None:
             template_dir = base_dir
 
+        # Add TEST token to message if not production.
+        non_prod_string = None
+        if prod != self.hostname:
+            non_prod_template_file = os.path.join(template_dir,
+                                                  'sms_non_prod.t')
+            non_prod_string = templater(non_prod_template_file)
+        if non_prod_string is None:
+            non_prod_string = str()
+        data['non_prod'] = non_prod_string
+
         sms_data = None
         path_to_template = os.path.join(template_dir,
                                         'sms_%s_xml.t' % template)
         sms_xml = templater(path_to_template, **data)
-
-        # Add TEST token to message if not production.
-        if sms_xml is not None:
-            if prod != self.hostname:
-                sms_xml = self.add_test_string(sms_xml)
 
         return sms_xml
 
