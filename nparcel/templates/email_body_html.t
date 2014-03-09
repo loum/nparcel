@@ -1,3 +1,4 @@
+${err}
 <p>Hello,</p>
 <p>Toll Consumer Delivery attempted to deliver your parcel today, sorry we missed you.<br>
 For convenience, your parcel is awaiting collection at <b>${name}</b>, <b>${address}</b>, <b>${suburb}</b>, <b>${postcode}</b>.</p>

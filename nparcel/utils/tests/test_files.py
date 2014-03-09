@@ -10,7 +10,8 @@ from nparcel.utils.files import (load_template,
                                  gen_digest,
                                  copy_file,
                                  gen_digest_path,
-                                 xlsx_to_csv_converter)
+                                 xlsx_to_csv_converter,
+                                 templater)
 
 
 class TestFiles(unittest2.TestCase):
@@ -222,3 +223,64 @@ class TestFiles(unittest2.TestCase):
         expected = file
         msg = 'Straight through CSV should return itself'
         self.assertEqual(received, expected, msg)
+
+    def test_templater(self):
+        """Parse and substitute content-based template.
+        """
+        template_dir = os.path.join('nparcel', 'templates')
+        template_file = 'email_body_html.t'
+        path_to_template_file = os.path.join(template_dir, template_file)
+        d = {'name': 'Auburn Newsagency',
+             'address': '119 Auburn Road',
+             'suburb': 'HAWTHORN EAST',
+             'postcode': '3123',
+             'connote_nbr': '218501217863-connote',
+             'item_nbr': '3456789012-item_nbr',
+             'err': ''}
+
+        received = templater(path_to_template_file, **d)
+        fh = open(os.path.join('nparcel',
+                               'tests',
+                               'files',
+                               'email_body_html_template.t'))
+        expected = fh.read()
+        msg = 'Template string error'
+        self.assertEqual(received, expected, msg)
+
+    def test_templater_missing_template_dir(self):
+        """Parse and substitute content-based template -- no template dir.
+        """
+        template_file = 'email_body_html.t'
+        template_dir = tempfile.mkdtemp()
+        path_to_template_file = os.path.join(template_dir, template_file)
+        d = {'name': 'Auburn Newsagency',
+             'address': '119 Auburn Road',
+             'suburb': 'HAWTHORN EAST',
+             'postcode': '3123',
+             'connote_nbr': '218501217863-connote',
+             'item_nbr': '3456789012-item_nbr'}
+
+        received = templater(path_to_template_file, **d)
+        msg = 'Template string error -- template path missing'
+        self.assertIsNone(received, msg)
+
+        # Clean up.
+        os.rmdir(template_dir)
+
+    def test_templater_incomplete_data(self):
+        """Parse and substitute content-based template -- incomplete data.
+        """
+        template_dir = os.path.join('nparcel', 'templates')
+        template_file = 'email_body_html.t'
+        path_to_template_file = os.path.join(template_dir, template_file)
+
+        # Key 'postcode' is missing.
+        d = {'name': 'Auburn Newsagency',
+             'address': '119 Auburn Road',
+             'suburb': 'HAWTHORN EAST',
+             'connote_nbr': '218501217863-connote',
+             'item_nbr': '3456789012-item_nbr'}
+
+        received = templater(path_to_template_file, **d)
+        msg = 'Template string error -- incomplete data'
+        self.assertIsNone(received, msg)

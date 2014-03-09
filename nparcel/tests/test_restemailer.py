@@ -76,15 +76,13 @@ class TestRestEmailer(unittest2.TestCase):
     def test_create_comms(self):
         """Send an email message to the REST-based interface.
         """
-        subject = 'Test Message from Toll'
         d = {'name': 'Auburn Newsagency',
              'address': '119 Auburn Road',
              'suburb': 'HAWTHORN EAST',
              'postcode': '3123',
              'connote_nbr': '218501217863-connote',
              'item_nbr': '3456789012-item_nbr'}
-        received = self._re.create_comms(subject=subject,
-                                         data=d,
+        received = self._re.create_comms(data=d,
                                          prod=self._hostname)
 
         msg = 'Create comms should return a valid string'
@@ -96,15 +94,13 @@ class TestRestEmailer(unittest2.TestCase):
         dry = True
 
         self._re.set_recipients(['loumar@tollgroup.com'])
-        subject = 'Test Message from Toll'
         d = {'name': 'Auburn Newsagency',
              'address': '119 Auburn Road',
              'suburb': 'HAWTHORN EAST',
              'postcode': '3123',
              'connote_nbr': '218501217863-connote',
              'item_nbr': '3456789012-item_nbr'}
-        encoded_msg = self._re.create_comms(subject=subject,
-                                            data=d,
+        encoded_msg = self._re.create_comms(data=d,
                                             prod=self._hostname)
 
         msg = 'Encoded e-mail message should not be None'
@@ -116,7 +112,37 @@ class TestRestEmailer(unittest2.TestCase):
 
         # Clean up.
         self._re.set_recipients(None)
-        self._re._rest.set_proxy_scheme('http')
+
+    def test_send_error(self):
+        """Send an email message to the REST-based interface -- error.
+        """
+        dry = True
+
+        self._re.set_recipients(['loumar@tollgroup.com'])
+        d = {'bad_email_addr': 'loumar@tollgroup.com',
+             'error_comms': 'Email',
+             'name': 'Auburn Newsagency',
+             'address': '119 Auburn Road',
+             'suburb': 'HAWTHORN EAST',
+             'postcode': '3123',
+             'connote_nbr': '218501217863-connote',
+             'item_nbr': '3456789012-item_nbr',
+             'phone_nbr': '0431602145',
+             'email_addr': 'loumar@tollgroup.com',
+             'bu_id': 1}
+        encoded_msg = self._re.create_comms(data=d,
+                                            err=True,
+                                            prod=self._hostname)
+
+        msg = 'Encoded e-mail error message should not be None'
+        self.assertIsNotNone(encoded_msg, msg)
+
+        received = self._re.send(data=encoded_msg, dry=dry)
+        msg = 'Email send should return True'
+        self.assertTrue(received, msg)
+
+        # Clean up.
+        self._re.set_recipients(None)
 
     def test_send_non_prod_instance(self):
         """Send an email message to the REST-based interface -- non-PROD.
@@ -124,14 +150,13 @@ class TestRestEmailer(unittest2.TestCase):
         dry = True
 
         self._re.set_recipients(['loumar@tollgroup.com'])
-        subject = 'Test Message from Toll'
         d = {'name': 'Auburn Newsagency',
              'address': '119 Auburn Road',
              'suburb': 'HAWTHORN EAST',
              'postcode': '3123',
              'connote_nbr': '218501217863-connote',
              'item_nbr': '3456789012-item_nbr'}
-        encoded_msg = self._re.create_comms(subject=subject, data=d)
+        encoded_msg = self._re.create_comms(data=d)
 
         msg = 'Encoded e-mail message should not be None'
         self.assertIsNotNone(encoded_msg, msg)
@@ -142,13 +167,12 @@ class TestRestEmailer(unittest2.TestCase):
 
         # Clean up.
         self._re.set_recipients(None)
-        self._re._rest.set_proxy_scheme('http')
 
     def test_get_subject_line(self):
         """Build the subject line from a template -- base scenario.
         """
         d = {'connote_nbr': 'subject_connote'}
-        received = self._re.get_subject_line(d, base_dir='nparcel')
+        received = self._re.get_subject_line(d)
         expected = 'Toll Consumer Delivery tracking # subject_connote'
         msg = 'Base body subject line not as expected'
         self.assertEqual(received, expected, msg)
@@ -171,4 +195,5 @@ class TestRestEmailer(unittest2.TestCase):
     @classmethod
     def tearDownClass(cls):
         del cls._re
+        del cls._template_base
         del cls._hostname

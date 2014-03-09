@@ -1,3 +1,4 @@
+${err}
 <p>Hello,</p>
 <p>Toll Consumer Delivery is pleased to advise that your parcel has arrived at your nominated Alternate Delivery Point located at <b>${name}</b>, <b>${address}</b>, <b>${suburb}</b>, <b>${postcode}</b>.</p>
 <table style="width:45%;background-color:#f4f4f4">

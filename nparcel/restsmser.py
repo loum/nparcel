@@ -10,6 +10,7 @@ from elementtree import ElementTree
 import nparcel
 import nparcel.urllib2 as urllib2
 from nparcel.utils.log import log
+from nparcel.utils.files import templater
 
 
 class RestSmser(nparcel.Rest):
@@ -90,23 +91,16 @@ class RestSmser(nparcel.Rest):
             template_dir = base_dir
 
         sms_data = None
-        xml_file = os.path.join(template_dir, 'sms_%s_xml.t' % template)
-        log.debug('SMS template: "%s"' % xml_file)
-        try:
-            f = open(xml_file)
-            sms_t = f.read()
-            f.close()
-            sms_s = string.Template(sms_t)
-            sms_data = sms_s.substitute(**data)
-        except IOError, err:
-            log.error('Unable to source SMS template at "%s"' % xml_file)
+        path_to_template = os.path.join(template_dir,
+                                        'sms_%s_xml.t' % template)
+        sms_xml = templater(path_to_template, **data)
 
         # Add TEST token to message if not production.
-        if (sms_data is not None and
-            (prod is None or prod != self.hostname)):
-            sms_data = self.add_test_string(sms_data)
+        if sms_xml is not None:
+            if prod != self.hostname:
+                sms_xml = self.add_test_string(sms_xml)
 
-        return sms_data
+        return sms_xml
 
     def send(self, data, dry=False):
         """Send the SMS.

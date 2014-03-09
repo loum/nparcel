@@ -11,6 +11,7 @@ __all__ = [
     "gen_digest",
     "gen_digest_path",
     "xlsx_to_csv_converter",
+    "templater",
 ]
 import os
 import re
@@ -418,3 +419,55 @@ def xlsx_to_csv_converter(xlsx_file):
         log.info('"%s" is not an xlsx file' % xlsx_file)
 
     return target_file
+
+
+def templater(template_file, **kwargs):
+    """Attemptes to parse *template* file and substitute template
+    parameters with *kwargs* construct.
+
+    **Args**:
+        *template_file*: full path to the template file
+
+        *kwargs*: dictionary structure of items to expected by the HTML
+         email templates::
+
+            {'name': 'Auburn Newsagency',
+             'address': '119 Auburn Road',
+             'suburb': 'HAWTHORN EAST',
+             'postcode': '3123',
+             'barcode': '218501217863-barcode',
+             'item_nbr': '3456789012-item_nbr'}
+
+    **Returns**:
+        string representation of the template with parameters substition
+        or ``None`` if the process fails
+
+    **Raises**:
+        ``IOError`` if the template_file cannot be opened
+
+        ``KeyError`` if the template substitution fails
+
+    """
+    log.debug('Processing template: "%s"' % template_file)
+
+    t = None
+    try:
+        f = open(template_file)
+        t = f.read()
+        f.close()
+    except IOError, err:
+        log.error('Unable to source template file at "%s"' % template_file)
+
+    template_str = None
+    if t is not None:
+        s = string.Template(t)
+        try:
+            template_str = s.substitute(kwargs)
+        except KeyError, err:
+            log.error('Template "%s" substitute failed: %s' %
+                      (template_file, err))
+
+    log.debug('Template substitution (%s|%s) produced: "%s":' %
+              (template_file, str(kwargs), template_str))
+
+    return template_str

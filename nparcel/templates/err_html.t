@@ -2,6 +2,10 @@
 
 <table style="width:45%;background-color:#f4f4f4">
     <tr style="border:1px solid white">
+        <th style="white-space:nowrap;text-align:right;width:30%">Business Unit ID:</th>
+        <td>${bu_id}</td>
+    </tr>
+    <tr style="border:1px solid white">
         <th style="white-space:nowrap;text-align:right;width:30%">Mobile:</th>
         <td>${phone_nbr}</td>
     </tr>
@@ -9,9 +13,5 @@
         <th style="white-space:nowrap;text-align:right;width:30%">Email:</th>
         <td>${bad_email_addr}</td>
     </tr>
- </table>
+</table>
 
-<p>Hello,</p>
-<p>Thank you, your Returns has been receipted at <b>${name}</b>, <b>${address}</b>, <b>${suburb}</b>, <b>${postcode}</b> on ${created_ts}.</p>
-<p>Returns receipted #: ${reference_nbr}</p>
-<p class="fine-print">*** Please note that this is an automatically generated email - replies will not be answered</p>

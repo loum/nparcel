@@ -3,7 +3,6 @@ __all__ = [
 ]
 import os
 import urllib
-import string
 from email.MIMEText import MIMEText
 from email.MIMEMultipart import MIMEMultipart
 import getpass
@@ -12,12 +11,14 @@ import socket
 import nparcel
 import nparcel.urllib2 as urllib2
 from nparcel.utils.log import log
+from nparcel.utils.files import templater
 
 
 class RestEmailer(nparcel.Emailer):
     """RestEmailer class.
 
     """
+
     def __init__(self,
                  sender='no-reply@consumerdelivery.tollgroup.com',
                  recipients=None,
@@ -170,7 +171,6 @@ class RestEmailer(nparcel.Emailer):
         return status
 
     def create_comms(self,
-                     subject,
                      data,
                      base_dir=None,
                      template='body',
@@ -183,8 +183,6 @@ class RestEmailer(nparcel.Emailer):
         prepended with a special ``TEST ONLY`` descriptor.
 
         **Args:**
-            *subject*: the email subject
-
             *data*: dictionary structure of items to expected by the HTML
             email templates::
 
@@ -205,11 +203,17 @@ class RestEmailer(nparcel.Emailer):
             MIME multipart-formatted serialised string
 
         """
-        template_dir = None
-        if base_dir is None:
-            template_dir = self.template_base
-        else:
+        template_dir = self.template_base
+        if base_dir is not None:
             template_dir = base_dir
+
+        # Subject.
+        subject = self.get_subject_line(data,
+                                        template=template,
+                                        err=err)
+        if subject is None:
+            log.error('Subject email could not be generated')
+            subject = str()
 
         mime_msg = MIMEMultipart('related')
         mime_msg['From'] = self.sender
@@ -219,53 +223,35 @@ class RestEmailer(nparcel.Emailer):
         msgAlternative = MIMEMultipart('alternative')
         mime_msg.attach(msgAlternative)
 
-        body_html = 'email_%s_html.t' % template
+        err_html = None
         if err:
-            body_html = 'email_err_%s_html.t' % template
+            path_to_err_template = os.path.join(template_dir, 'err_html.t')
+            err_html = templater(path_to_err_template, **data)
 
-        html_template = os.path.join(template_dir, body_html)
-        log.debug('Email body template: "%s"' % html_template)
-        body_t = None
-        try:
-            f = open(html_template)
-            body_t = f.read()
-            f.close()
-        except IOError, err:
-            log.error('Unable to source e-mail template at "%s"' %
-                      html_template)
+        if err_html is None:
+            err_html = str()
+        data['err'] = err_html
 
-        body = str()
-        if body_t is not None:
-            body_s = string.Template(body_t)
-            try:
-                body = body_s.substitute(**data)
-            except KeyError, err:
-                log.error('Template "%s" substitute failed: %s' %
-                        (html_template, err))
+        # Build the email body portion.
+        html_body_template = 'email_%s_html.t' % template
+        path_to_template = os.path.join(template_dir, html_body_template)
+        body_html = templater(path_to_template, **data)
 
-        main_t = None
-        try:
-            f = open(os.path.join(template_dir, 'email_html.t'))
-            main_t = f.read()
-            f.close()
-        except IOError, err:
-            log.error('Unable to source base e-mail template at "%s"' %
-                      html_template)
+        # Plug the body into the main HTML container.
+        main_html = None
+        if body_html is not None:
+            path_to_main_template = os.path.join(template_dir,
+                                                 'email_html.t')
+            main_html = templater(path_to_main_template, body=body_html)
 
-        main = str()
-        if main_t is not None:
-            main_s = string.Template(main_t)
-            try:
-                main = main_s.substitute(body=body)
-            except KeyError, err:
-                log.error('Template "%s" substitute failed: %s' %
-                          (html_template, err))
-
+        # Build the MIME message.
         mime_msg_string = None
-        if body_t is not None and main_t is not None:
-            main_text = MIMEText(main, 'html')
-            msgAlternative.attach(main_text)
+        if main_html is not None:
+            mime_text = MIMEText(main_html, 'html')
+            msgAlternative.attach(mime_text)
             mime_msg_string = mime_msg.as_string()
+
+        log.debug('Complete Mime message: "%s"' % mime_msg_string)
 
         return mime_msg_string
 
@@ -285,7 +271,7 @@ class RestEmailer(nparcel.Emailer):
         """
         new_subject = subject
 
-        if (prod is None or prod != self.hostname):
+        if prod is None or prod != self.hostname:
             new_subject = 'TEST PLEASE IGNORE -- %s' % subject
             log.debug('Added TEST token to subject: "%s"' % new_subject)
 
@@ -363,35 +349,48 @@ class RestEmailer(nparcel.Emailer):
     def get_subject_line(self,
                          data,
                          base_dir=None,
-                         template='body'):
+                         template='body',
+                         err=False):
         """Construct email subject line from a template.
 
         **Args**:
             *data*: dictionary structure that features the tokens that feed
             into the template
 
+        **Kwargs**:
+            *base_dir*: override the :attr:`template_dir`
+
             *template*: template file that contains the subject line
             construct
+
+            *err*: message context is for error comms
 
         **Returns**:
             string representation of the subject
 
         """
-        if base_dir is None:
-            template_dir = self.template_base
-        else:
-            template_dir = os.path.join(base_dir, 'templates')
+        template_dir = self.template_base
+        if base_dir is not None:
+            template_dir = base_dir
+
+        # Check if this is error context.
+        err_string = None
+        if err:
+            log.debug('Altering subject line to error context ...')
+            err_template_file = os.path.join(template_dir, 'subject_err.t')
+            err_string = templater(err_template_file)
+            if err_string is not None:
+                err_string.rstrip()
+
+        if err_string is None:
+            err_string = str()
+        data['err'] = err_string
 
         subject_html = 'subject_%s_html.t' % template
+        subject_template_file = os.path.join(template_dir, subject_html)
+        subject = templater(subject_template_file, **data)
 
-        subject_template = os.path.join(template_dir, subject_html)
-        log.debug('Email subject template: "%s"' % subject_template)
-        f = open(subject_template)
-        subject_t = f.read()
-        f.close()
-        subject_s = string.Template(subject_t)
-        subject_string = subject_s.substitute(**data).rstrip()
+        if subject is not None:
+            subject = subject.rstrip()
 
-        log.debug('Email comms subject string: "%s"' % subject_string)
-
-        return subject_string
+        return subject

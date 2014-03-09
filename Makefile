@@ -101,5 +101,7 @@ test:
 
 clean:
 	$(GIT) clean -xdf
+	\rm -fr /tmp/tmp*
+	\rm -fr /tmp/v*
 
 .PHONY: docs rpm test
