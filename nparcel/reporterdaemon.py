@@ -144,9 +144,10 @@ class ReporterDaemon(nparcel.DaemonService):
                  dry=False,
                  batch=True,
                  config=None):
-        super(ReporterDaemon, self).__init__(pidfile=pidfile,
-                                             dry=dry,
-                                             batch=batch)
+        nparcel.DaemonService.__init__(self,
+                                       pidfile=pidfile,
+                                       dry=dry,
+                                       batch=batch)
 
         self._report_type = report
 
@@ -492,6 +493,13 @@ class ReporterDaemon(nparcel.DaemonService):
                 self._report = nparcel.Collected(self.db_kwargs,
                                                  self.bu_ids)
 
+        # Set the report PROD instance name.
+        try:
+            self._report.set_prod(self.config.prod)
+        except AttributeError, err:
+            log.debug('%s prod instance name not in config: %s ' %
+                      (self.facility, err))
+
         while not event.isSet():
             now = datetime.datetime.now().strftime(self.outfile_ts_format)
 
@@ -564,24 +572,28 @@ class ReporterDaemon(nparcel.DaemonService):
             *bu*: the Business Unit string description.  For example,
             ``Toll Priority``
 
+        **Returns:**
+            ``True`` for processing success
+
+            ``False`` for processing failure
+
         """
+        status = True
+
         title = self.ws.get('title')
         if date_ts is None:
             now = datetime.datetime.now().strftime('%d/%m/%Y %H:%M')
         else:
             now = date_ts.strftime('%d/%m/%Y')
-        subject_data = {'title': title,
-                        'bu': bu,
-                        'date': now}
-        subject = self._emailer.get_subject_line(data=subject_data,
-                                                 template='report')
-        subject = subject.rstrip()
 
         data = {'title': title,
+                'bu': bu,
                 'date': now}
-        self._emailer.send_comms(template='report',
-                                 subject_data=subject,
-                                 data=data,
-                                 recipients=self.recipients,
-                                 files=[self.report_filename],
-                                 dry=self.dry)
+        mime = self._emailer.create_comms(data=data,
+                                          template='report',
+                                          files=[self.report_filename],
+                                          prod=self._report.prod)
+        self._emailer.set_recipients(self.recipients)
+        status = self._emailer.send(mime_message=mime, dry=self.dry)
+
+        return status

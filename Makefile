@@ -44,8 +44,9 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestExporterIpec \
 	 nparcel.tests:TestExporterFast \
 	 nparcel.tests:TestConfig \
-	 nparcel.tests:TestB2CConfig \
-	 nparcel.tests:TestCommsB2CConfig \
+	 nparcel.b2cconfig.tests:TestB2CConfig \
+	 nparcel.b2cconfig.tests:TestCommsB2CConfig \
+	 nparcel.b2cconfig.tests:TestExporterB2CConfig \
 	 nparcel.tests:TestFtp \
 	 nparcel.tests:TestService \
 	 nparcel.tests:TestReminder \

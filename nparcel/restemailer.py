@@ -1,17 +1,11 @@
 __all__ = [
     "RestEmailer",
 ]
-import os
 import urllib
-from email.MIMEText import MIMEText
-from email.MIMEMultipart import MIMEMultipart
-import getpass
-import socket
 
 import nparcel
 import nparcel.urllib2 as urllib2
 from nparcel.utils.log import log
-from nparcel.utils.files import templater
 
 
 class RestEmailer(nparcel.Emailer):
@@ -31,23 +25,12 @@ class RestEmailer(nparcel.Emailer):
         """RestEmailer initialiser.
 
         """
-        nparcel.Emailer.__init__(self)
-
+        nparcel.Emailer.__init__(self, sender, recipients)
         self._rest = nparcel.Rest(proxy,
                                   proxy_scheme,
                                   api,
                                   api_username,
                                   api_password)
-
-        self._sender = sender
-        if self._sender is None:
-            self._sender = "%s@%s" % (getpass.getuser(), socket.getfqdn())
-            log.debug('Set sender as "%s"' % self._sender)
-
-        if recipients is None:
-            self._recipients = []
-        else:
-            self._recipients = recipients
 
         if support is None:
             self._support = []
@@ -60,16 +43,6 @@ class RestEmailer(nparcel.Emailer):
 
     def set_sender(self, value):
         self._sender = value
-
-    @property
-    def recipients(self):
-        return self._recipients
-
-    def set_recipients(self, values):
-        del self._recipients[:]
-
-        if values is not None:
-            self._recipients.extend(values)
 
     @property
     def support(self):
@@ -137,7 +110,7 @@ class RestEmailer(nparcel.Emailer):
             boolean ``False`` if the send fails
 
         """
-        log.info('Sending email comms ...')
+        log.info('Sending REST-based e-mail comms ...')
         status = True
 
         data = self.encode_params(subject=subject,
@@ -169,101 +142,6 @@ class RestEmailer(nparcel.Emailer):
                 log.warn('Email failure: %s' % e)
 
         return status
-
-    def create_comms(self,
-                     data,
-                     base_dir=None,
-                     template='body',
-                     err=False,
-                     prod=None):
-        """Create the MIME multipart message that can feed directly into
-        the POST construct of the Esendex RESTful API.
-
-        If current hostname matches *prod* then comms messages will be
-        prepended with a special ``TEST ONLY`` descriptor.
-
-        **Args:**
-            *data*: dictionary structure of items to expected by the HTML
-            email templates::
-
-                {'name': 'Auburn Newsagency',
-                 'address': '119 Auburn Road',
-                 'suburb': 'HAWTHORN EAST',
-                 'postcode': '3123',
-                 'barcode': '218501217863-barcode',
-                 'item_nbr': '3456789012-item_nbr'}
-
-        **Kwargs:**
-            *base_dir*: override the standard location to search for the
-            templates (default ``~user_home/.nparceld/templates``).
-
-            *prod*: hostname of the production instance machine
-
-        **Returns:**
-            MIME multipart-formatted serialised string
-
-        """
-        template_dir = self.template_base
-        if base_dir is not None:
-            template_dir = base_dir
-
-        # Subject.
-        subject = self.get_subject_line(data,
-                                        template=template,
-                                        err=err)
-        if subject is None:
-            log.error('Subject email could not be generated')
-            subject = str()
-
-        mime_msg = MIMEMultipart('related')
-        mime_msg['From'] = self.sender
-        mime_msg['To'] = ", ".join(self.recipients)
-        mime_msg['Subject'] = self.check_subject(subject, prod)
-
-        msgAlternative = MIMEMultipart('alternative')
-        mime_msg.attach(msgAlternative)
-
-        err_html = None
-        if err:
-            path_to_err_template = os.path.join(template_dir, 'err_html.t')
-            err_html = templater(path_to_err_template, **data)
-
-        if err_html is None:
-            err_html = str()
-        data['err'] = err_html
-
-        non_prod_html = None
-        if prod != self.hostname:
-            path_to_non_prod_template = os.path.join(template_dir,
-                                                     'email_non_prod_html.t')
-            non_prod_html = templater(path_to_non_prod_template, **data)
-
-        if non_prod_html is None:
-            non_prod_html = str()
-        data['non_prod'] = non_prod_html
-
-        # Build the email body portion.
-        html_body_template = 'email_%s_html.t' % template
-        path_to_template = os.path.join(template_dir, html_body_template)
-        body_html = templater(path_to_template, **data)
-
-        # Plug the body into the main HTML container.
-        main_html = None
-        if body_html is not None:
-            path_to_main_template = os.path.join(template_dir,
-                                                 'email_html.t')
-            main_html = templater(path_to_main_template, body=body_html)
-
-        # Build the MIME message.
-        mime_msg_string = None
-        if main_html is not None:
-            mime_text = MIMEText(main_html, 'html')
-            msgAlternative.attach(mime_text)
-            mime_msg_string = mime_msg.as_string()
-
-        log.debug('Complete Mime message: "%s"' % mime_msg_string)
-
-        return mime_msg_string
 
     def check_subject(self, subject, prod):
         """Checks if current hostname matches *prod*.  If so, subject line
@@ -302,7 +180,7 @@ class RestEmailer(nparcel.Emailer):
             dry: do not send, only report what would happen
 
         """
-        log.info('Sending email comms ...')
+        log.info('Sending REST-based e-mail comms ...')
         status = True
 
         if self._rest.api is None:
@@ -355,52 +233,3 @@ class RestEmailer(nparcel.Emailer):
                     log.error('Email failure: %s' % e)
 
         return status
-
-    def get_subject_line(self,
-                         data,
-                         base_dir=None,
-                         template='body',
-                         err=False):
-        """Construct email subject line from a template.
-
-        **Args**:
-            *data*: dictionary structure that features the tokens that feed
-            into the template
-
-        **Kwargs**:
-            *base_dir*: override the :attr:`template_dir`
-
-            *template*: template file that contains the subject line
-            construct
-
-            *err*: message context is for error comms
-
-        **Returns**:
-            string representation of the subject
-
-        """
-        template_dir = self.template_base
-        if base_dir is not None:
-            template_dir = base_dir
-
-        # Check if this is error context.
-        err_string = None
-        if err:
-            log.debug('Altering subject line to error context ...')
-            err_template_file = os.path.join(template_dir, 'subject_err.t')
-            err_string = templater(err_template_file)
-            if err_string is not None:
-                err_string.rstrip()
-
-        if err_string is None:
-            err_string = str()
-        data['err'] = err_string
-
-        subject_html = 'subject_%s_html.t' % template
-        subject_template_file = os.path.join(template_dir, subject_html)
-        subject = templater(subject_template_file, **data)
-
-        if subject is not None:
-            subject = subject.rstrip()
-
-        return subject

@@ -56,7 +56,6 @@ class CommsDaemon(nparcel.DaemonService):
 
     """
     _comms = None
-    _prod = None
     _comms_dir = None
     _q_warning = 100
     _q_error = 1000
@@ -81,13 +80,6 @@ class CommsDaemon(nparcel.DaemonService):
         if config is not None:
             self.config = nparcel.CommsB2CConfig(file=config)
             self.config.parse_config()
-
-        try:
-            self.set_prod(self.config.prod)
-        except AttributeError, err:
-            msg = ('%s prod instance name not defined in config. Using "%s"' %
-                   (self._facility, str(self.prod)))
-            log.debug(msg)
 
         try:
             self.set_support_emails(self.config.support_emails)
@@ -153,14 +145,6 @@ class CommsDaemon(nparcel.DaemonService):
     @property
     def comms(self):
         return self._comms
-
-    @property
-    def prod(self):
-        return self._prod
-
-    def set_prod(self, value=None):
-        self._prod = value
-        log.debug('%s prod set to "%s"' % (self.facility, self.prod))
 
     @property
     def comms_dir(self):

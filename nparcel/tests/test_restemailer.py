@@ -197,30 +197,6 @@ class TestRestEmailer(unittest2.TestCase):
         # Clean up.
         self._re.set_recipients(None)
 
-    def test_get_subject_line(self):
-        """Build the subject line from a template -- base scenario.
-        """
-        d = {'connote_nbr': 'subject_connote'}
-        received = self._re.get_subject_line(d)
-        expected = 'Toll Consumer Delivery tracking # subject_connote'
-        msg = 'Base body subject line not as expected'
-        self.assertEqual(received, expected, msg)
-
-    def test_check_subject(self):
-        """Check subject context based on PROD and non-PROD instance.
-        """
-        subject = 'Subject'
-
-        received = self._re.check_subject(subject, prod='banana')
-        expected = 'TEST PLEASE IGNORE -- Subject'
-        msg = 'Non-PROD subject error'
-        self.assertEqual(received, expected, msg)
-
-        received = self._re.check_subject(subject, prod=self._hostname)
-        expected = subject
-        msg = 'PROD subject error'
-        self.assertEqual(received, expected, msg)
-
     @classmethod
     def tearDownClass(cls):
         del cls._re

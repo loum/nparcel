@@ -221,24 +221,16 @@ class FilterDaemon(nparcel.DaemonService):
                 self.close(fhs)
 
                 if status and eof_found:
-                    log.info('%s processing OK.' % file)
-                    alerts = list(filter.alerts)
+                    self.send_table(recipients=self.support_emails,
+                                    table_data=list(filter.alerts),
+                                    dry=self.dry)
                     filter.set_alerts(None)
+
                     stats = self.reporter.report()
                     log.info(stats)
+
                     if not self.dry:
                         remove_files(file)
-
-                    if len(alerts):
-                        alert_table = self.create_table(alerts)
-                        del alerts[:]
-                        data = {'file': file,
-                                'facility': self.__class__.__name__,
-                                'err_table': alert_table}
-                        self.emailer.send_comms(template='proc_err',
-                                                data=data,
-                                                recipients=self.support_emails,
-                                                dry=self.dry)
                 else:
                     log.error('%s processing failed.' % file)
                     if not eof_found:

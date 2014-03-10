@@ -16,10 +16,6 @@ from nparcel.timezone import convert_timezone
 class Comms(nparcel.Service):
     """Nparcel Comms class.
 
-    .. attribute:: prod
-
-        hostname of the production instance
-
     .. attribute:: hold_period
 
         period (in seconds) that the uncollected parcel will be held for
@@ -36,8 +32,6 @@ class Comms(nparcel.Service):
         ``returns`` table (default ``[ret]``)
 
     """
-    _prod = None
-    _facility = None
     _hold_period = 691200
     _template_tokens = ['body']
     _returns_template_tokens = ['ret']
@@ -45,8 +39,6 @@ class Comms(nparcel.Service):
     def __init__(self, **kwargs):
         """Nparcel Comms initialisation.
         """
-        self._facility = self.__class__.__name__
-
         self._prod = kwargs.get('prod')
 
         db_kwargs = kwargs.get('db')
@@ -79,15 +71,6 @@ class Comms(nparcel.Service):
         self._emailer = nparcel.RestEmailer(proxy=proxy,
                                             proxy_scheme=proxy_scheme,
                                             **email_api)
-
-    @property
-    def prod(self):
-        return self._prod
-
-    def set_prod(self, value=None):
-        self._prod = value.lower()
-        log.debug('%s prod instance name set to "%s"' %
-                  (self.facility, self.prod))
 
     @property
     def hold_period(self):

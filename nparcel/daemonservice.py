@@ -2,7 +2,6 @@ __all__ = [
     "DaemonService",
 ]
 import nparcel
-
 from nparcel.utils.log import log
 
 
@@ -46,6 +45,10 @@ class DaemonService(nparcel.utils.Daemon):
 
         base directory where processed files are archived
 
+    .. attribute:: prod
+
+        hostname of the production instance
+
     """
     _facility = None
     _file = None
@@ -57,6 +60,7 @@ class DaemonService(nparcel.utils.Daemon):
     _loop = 30
     _support_emails = []
     _archive_base = None
+    _prod = None
 
     def __init__(self,
                  pidfile,
@@ -142,6 +146,15 @@ class DaemonService(nparcel.utils.Daemon):
         self._archive_base = value
         log.debug('Set archive base directory to "%s"' % self._archive_base)
 
+    @property
+    def prod(self):
+        return self._prod
+
+    def set_prod(self, value=None):
+        self._prod = value.lower()
+        log.debug('%s prod instance name set to "%s"' %
+                  (self.facility, self.prod))
+
     def create_table(self, items):
         """Takes a list of *items* and generates string based, variable
         table content that can feed into a static string template.
@@ -163,3 +176,57 @@ class DaemonService(nparcel.utils.Daemon):
             table_str.append(td_str)
 
         return "\n".join(table_str)
+
+    def send_table(self,
+                   recipients,
+                   table_data,
+                   files=None,
+                   template='proc_err',
+                   dry=False):
+        """Send an table-structured email message based on the list
+        *table_data*.
+
+        Acts as a wrapper that will create the MIME message including
+        a list of *files* to attach and send to the list of *recipients*.
+
+        E-mail is sent via the SMTP gateway.
+
+        E-mail message is based on the *template*..
+
+        **Args:**
+            *recipients*: list of email addresses to send e-mail to
+
+            *messages*: list of messages to be sent.  List will be
+            converted into a HTML table
+
+        **Kwargs:**
+            *files*: list of files to send as an attachment
+
+            *dry*: do not send, only report what would happen
+
+        **Returns:**
+
+            ``True`` for successful email send
+
+            ``False`` otherwise
+
+        """
+        log.debug('Received table_data list: "%s"' % table_data)
+        status = False
+
+        if len(table_data):
+            alert_table = self.create_table(table_data)
+            data = {'file': file,
+                    'facility': self.facility,
+                    'err_table': alert_table}
+            mime = self.emailer.create_comms(data=data,
+                                             template=template,
+                                             files=files,
+                                             prod=self.prod)
+            self.emailer.set_recipients(recipients)
+            status = self.emailer.send(mime_message=mime, dry=dry)
+
+        else:
+            log.debug('No table data generated -- suppressing comms')
+
+        return status

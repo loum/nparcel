@@ -49,7 +49,7 @@ def create_dir(dir):
                 status = False
                 log.error('Directory create error: %s' % err)
     else:
-        log.error('Invalid directory name supplied "%s"' % dir)
+        log.error('Create directory failed - invalid name "%s"' % dir)
 
     return status
 
