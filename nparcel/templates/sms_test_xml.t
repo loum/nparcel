@@ -3,6 +3,6 @@
   <accountreference>EX0111642</accountreference>
   <message>
     <to>${phone_nbr}</to>
-    <body>TEST COMMS</body>
+    <body>${non_prod}TEST COMMS</body>
   </message>
 </messages>

@@ -1,3 +1,5 @@
+${non_prod}
+${err}
 <p>Hello,</p>
 <p>This is a reminder that your parcel is awaiting collection at <b>${name}</b>, <b>${address}</b>, <b>${suburb}</b>, <b>${postcode}</b>.</p>
 <table style="width:45%;background-color:#f4f4f4">

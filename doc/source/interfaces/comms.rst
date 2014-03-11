@@ -154,6 +154,43 @@ As of *release v0.32*, the template tokens that are currently supported are:
 .. image:: ../_static/ret_templates_sms.png
     :alt: Comms ret SMS template
 
+Test Environment Identification and Disclaimer
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+As of *version 0.34*, all comms that are generated from a non-production
+instance of the Toll Parcel Portal middleware will have a special **TEST**
+token added to the comms content.  In the case of e-mail, the **TEST**
+token will be applied to the header *and* content.  E-mails will also feature a disclaimer:
+
+.. image:: ../_static/non_prod_sample_email.png
+    :align: center
+    :alt: Non-prouction Sample E-mail
+
+.. note::
+
+    Due to SMS character constraints, disclaimers will not be added to
+    non-production SMS messages.  Instead, a simple ``TEST PLS IGNORE``
+    string will be prepended to the message.
+
+The comms facility identifies test messages by comparing the
+:ref:`prod <prod>` configuration item with the hostname running the
+Toll Parcel Portal middleware.
+
+.. note::
+
+    It is very important in production that the :ref:`prod <prod>`
+    configuration is set correctly.  Otherwise, the system will
+    flag all comms with the **TEST** token.
+
+Identifying the name of your current server can be accomplished with
+the ``hostname`` utility::
+
+    $ hostname
+    faswbaup02
+
+In the example above, the string ``faswbaup02`` should be assigned to the
+:ref:`prod <prod>` configuration item.
+
 ``npcommsd`` Configuration Items
 --------------------------------
 
@@ -164,6 +201,13 @@ file to control processing workflow.
 
     all configuration settings are found under the ``[comms]`` section
     unless otherwise specified
+
+.. _prod:
+
+* ``prod`` (under the ``[environment]`` section)
+
+    hostname of the production instance.  This is used to flag **TEST**
+    comms messages
 
 * ``failed_email`` (under the ``[rest]`` section))
 

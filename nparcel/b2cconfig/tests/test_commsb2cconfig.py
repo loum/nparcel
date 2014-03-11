@@ -6,10 +6,6 @@ import nparcel
 
 class TestCommsB2CConfig(unittest2.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        cls._file = os.path.join('nparcel', 'conf', 'nparceld.conf')
-
     def setUp(self):
         self._c = nparcel.CommsB2CConfig()
 
@@ -22,7 +18,9 @@ class TestCommsB2CConfig(unittest2.TestCase):
     def test_parse_config(self):
         """Parse comms items from the config.
         """
-        self._c.set_config_file(self._file)
+        config_file = os.path.join('nparcel', 'conf', 'nparceld.conf')
+
+        self._c.set_config_file(config_file)
         self._c.parse_config()
 
         received = self._c.support_emails
@@ -71,10 +69,4 @@ class TestCommsB2CConfig(unittest2.TestCase):
         self.assertListEqual(received, expected, msg)
 
     def tearDown(self):
-        self._c = None
         del self._c
-
-    @classmethod
-    def tearDownClass(cls):
-        cls._file = None
-        del cls._file

@@ -26,25 +26,34 @@ class TestDaemonService(unittest2.TestCase):
         # email alerts are sent set dry to False.
         dry = True
 
-        err_file = 'err.txt'
-        fh = open('nparcel/tests/files/proc_err_table.out')
-        err_table = fh.read().rstrip()
-        fh.close()
-        data = {'file': err_file,
-                'facility': 'facility',
-                'err_table': err_table}
+        err_items = ['item 1', 'item 2', 'item 3']
+        received = self._ds.send_table(recipients=self._recipients,
+                                       table_data=err_items,
+                                       dry=dry)
+        msg = 'Sent e-mail alert should return True'
+        self.assertTrue(received, msg)
 
-        self._ds.emailer.send_comms(template='proc_err',
-                                    data=data,
-                                    recipients=self._recipients,
-                                    dry=dry)
+    def test_send_email_alert_empty_alerts_list(self):
+        """Send email with an empty alerts list.
+        """
+        dry = True
+
+        alerts = []
+        received = self._ds.send_table(self._recipients,
+                                       table_data=alerts,
+                                       dry=dry)
+        msg = 'E-mail alert not sent should return False'
+        self.assertFalse(received, msg)
 
     def test_create_table(self):
         """HTML table creation.
         """
         items = ['item 1', 'item 2', 'item 3']
         received = self._ds.create_table(items)
-        fh = open('nparcel/tests/files/proc_err_table.out')
+        fh = open(os.path.join('nparcel',
+                               'tests',
+                               'files',
+                               'proc_err_table.out'))
         expected = fh.read().rstrip()
         fh.close()
         msg = 'HTML table creation error'

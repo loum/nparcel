@@ -1,5 +1,6 @@
 import unittest2
 import os
+import socket
 
 import nparcel
 
@@ -9,8 +10,10 @@ class TestEmailer(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._e = nparcel.Emailer()
-        cls._recipients = ['loumar@tollgroup.com']
+        cls._e.set_recipients(['loumar@tollgroup.com'])
         cls._e.set_template_base(os.path.join('nparcel', 'templates'))
+
+        cls._hostname = socket.gethostname()
 
     def test_init(self):
         """Verify initialisation of an nparcel.Emailer object.
@@ -18,114 +21,77 @@ class TestEmailer(unittest2.TestCase):
         msg = 'Object is not an nparcel.Emailer'
         self.assertIsInstance(self._e, nparcel.Emailer, msg)
 
-    def test_send_without_sender_specified(self):
-        """Send message without sender specified.
+    def test_send(self):
+        """Send an email.
         """
-        self._e.set_recipients(['banana'])
-        self._e.send(subject='test subject', msg='banana msg', dry=True)
+        # To check that email alerts are sent set dry to False.
+        dry = True
 
-        msg = 'Sender should not be None'
-        self.assertIsNotNone(self._e.sender, msg)
-
-        # Clean up.
-        self._e.set_recipients(None)
+        received = self._e.send(subject='Test subject', msg='Test', dry=dry)
+        msg = 'Email send should return True'
+        self.assertTrue(received, msg)
 
     def test_send_without_recipients(self):
         """Send message without recipients specified.
         """
+        dry = True
+
+        old_recipients = self._e.recipients
+        self._e.set_recipients([])
         kwargs = {'subject': 'no recipients subject',
                   'msg': 'no recipients msg'}
-        self._e.send(**kwargs)
 
-    def test_send_with_empty_recipients_list(self):
-        """Send message with empty recipients list specified.
-        """
-        self._e.set_recipients([])
-        kwargs = {'subject': 'empty recipients list subject',
-                  'msg': 'empty recipients list msg'}
-        self._e.send(**kwargs)
+        received = self._e.send(**kwargs)
+        msg = 'E-mail send with no recipients should return False'
+        self.assertFalse(received, msg)
 
         # Clean up.
-        self._e.set_recipients(None)
+        self._e.set_recipients(old_recipients)
 
-    def test_send(self):
-        """Send an email.
+    def test_send_test_template(self):
+        """Test send -- test template.
         """
-        self._e.set_recipients(['loumar@tollgroup.com'])
-        received = self._e.send(subject='Test subject',
-                                msg='Test',
-                                dry=True)
-        msg = 'Email send should return True'
+        # We don't really test anything here.  But, to check that
+        # email alerts are sent set dry to False.
+        dry = True
+
+        data = {}
+        mime = self._e.create_comms(data, template='test')
+        self._e.send(mime_message=mime, dry=dry)
+
+    def test_send_with_attachment(self):
+        """Test send -- with attachment.
+        """
+        # We don't really test anything here.  But, to check that
+        # email alerts are sent set dry to False.
+        dry = True
+
+        data = {}
+        file = [os.path.join('nparcel', 'tests', 'files', 'test.xlsx')]
+        mime = self._e.create_comms(data, template='test', files=file)
+        received = self._e.send(mime_message=mime, dry=dry)
+        msg = 'E-mail send with attachment should return True'
         self.assertTrue(received, msg)
 
-        # Clean up.
-        self._e.set_recipients(None)
-
-    def test_send_comms(self):
-        """Test send_comms.
+    def test_send_with_attachment_prod(self):
+        """Test send -- with attachment (prod).
         """
         # We don't really test anything here.  But, to check that
         # email alerts are sent set dry to False.
         dry = True
+
         data = {}
+        file = [os.path.join('nparcel', 'tests', 'files', 'test.xlsx')]
+        mime = self._e.create_comms(data,
+                                    template='test',
+                                    files=file,
+                                    prod=self._hostname)
+        received = self._e.send(mime_message=mime, dry=dry)
+        msg = 'E-mail send with attachment should return True (prod)'
+        self.assertTrue(received, msg)
 
-        subject_data = {}
-        subject = self._e.get_subject_line(data=subject_data,
-                                           template='test')
-        subject = subject.rstrip()
-
-        received = subject
-        expected = 'TEST COMMS'
-        msg = 'Subject line error'
-        self.assertEqual(received, expected, msg)
-
-        self._e.send_comms(template='test',
-                           subject_data=subject,
-                           data=data,
-                           recipients=self._recipients,
-                           dry=dry)
-
-    def test_send_comms_with_attachment(self):
-        """Test send_comms -- with attachment.
-        """
-        # We don't really test anything here.  But, to check that
-        # email alerts are sent set dry to False.
-        dry = True
-        data = {}
-        attach_file = os.path.join('nparcel', 'tests', 'files', 'test.xlsx')
-
-        subject_data = {}
-        subject = self._e.get_subject_line(data=subject_data,
-                                           template='test')
-        subject = subject.rstrip()
-
-        received = subject
-        expected = 'TEST COMMS'
-        msg = 'Subject line error'
-        self.assertEqual(received, expected, msg)
-
-        self._e.send_comms(template='test',
-                           subject_data=subject,
-                           data=data,
-                           recipients=self._recipients,
-                           files=[attach_file],
-                           dry=dry)
-
-    def test_send_comms_subject_template(self):
-        """Test send_comms auto-find subject template.
-        """
-        # We don't really test anything here.  But, to check that
-        # email alerts are sent set dry to False.
-        dry = True
-        data = {}
-
-        self._e.send_comms(template='test',
-                           data=data,
-                           recipients=self._recipients,
-                           dry=dry)
-
-    def test_send_comms_with_subject(self):
-        """Test send_comms auto-find subject template.
+    def test_send_override_subject(self):
+        """Test send override subject.
         """
         # We don't really test anything here.  But, to check that
         # email alerts are sent set dry to False.
@@ -133,13 +99,38 @@ class TestEmailer(unittest2.TestCase):
 
         subject = 'Override subject'
         data = {}
-        self._e.send_comms(template='test',
-                           data=data,
-                           subject_data=subject,
-                           recipients=self._recipients,
-                           dry=dry)
+        mime = self._e.create_comms(data=data,
+                                    subject=subject,
+                                    template='test')
+        received = self._e.send(mime_message=mime, dry=dry)
+        msg = 'E-mail send override subject should return True'
+        self.assertTrue(received, msg)
+
+    def test_check_subject(self):
+        """Check subject context based on PROD and non-PROD instance.
+        """
+        subject = 'Subject'
+
+        received = self._e.check_subject(subject, prod='banana')
+        expected = 'TEST PLEASE IGNORE -- Subject'
+        msg = 'Non-PROD subject error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._e.check_subject(subject, prod=self._hostname)
+        expected = subject
+        msg = 'PROD subject error'
+        self.assertEqual(received, expected, msg)
+
+    def test_get_subject_line(self):
+        """Build the subject line from a template -- base scenario.
+        """
+        d = {'connote_nbr': 'subject_connote'}
+        received = self._e.get_subject_line(d)
+        expected = 'Toll Consumer Delivery tracking # subject_connote'
+        msg = 'Base body subject line not as expected'
+        self.assertEqual(received, expected, msg)
 
     @classmethod
     def tearDownClass(cls):
-        cls._e = None
-        del cls._recipients[:]
+        del cls._e
+        del cls._hostname

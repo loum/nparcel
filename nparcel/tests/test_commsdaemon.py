@@ -49,12 +49,17 @@ class TestCommsDaemon(unittest2.TestCase):
                            '<sms_pw>')
 
         # Proxy.
+        # Only uncomment when you need to send real messages.  Leaving it
+        # uncommented will break the tests.
         #cls._cd.config.add_section('proxy')
         #cls._cd.config.set('proxy', 'host', 'auproxy-farm.toll.com.au')
         #cls._cd.config.set('proxy', 'user', 'loumar')
         #cls._cd.config.set('proxy', 'password', '<passwd>')
         #cls._cd.config.set('proxy', 'port', '8080')
         #cls._cd.config.set('proxy', 'protocol', 'https')
+
+        # Prod instance.
+        cls._cd.config.set_prod('faswbaup02')
 
         # Call up front to pre-load the DB.
         cls._cd._comms = nparcel.Comms(**(cls._cd.comms_kwargs))
@@ -96,8 +101,6 @@ class TestCommsDaemon(unittest2.TestCase):
         old_skip_days = list(self._cd.skip_days)
         old_controlled_templates = list(self._cd.controlled_templates)
         old_uncontrolled_templates = list(self._cd.uncontrolled_templates)
-        old_template_tokens = self._cd.comms.template_tokens
-        old_returns_template_tokens = self._cd.comms.returns_template_tokens
 
         # job_item 1 collected.
         # job_item 6 uncollected/no notify
@@ -150,8 +153,6 @@ class TestCommsDaemon(unittest2.TestCase):
         self._cd.set_skip_days(old_skip_days)
         self._cd.set_controlled_templates(old_controlled_templates)
         self._cd.set_uncontrolled_templates(old_uncontrolled_templates)
-        self._cd.comms.set_template_tokens(old_template_tokens)
-        self._cd.comms.set_returns_template_tokens(old_returns_template_tokens)
         remove_files(get_directory_files_list(dir))
         os.removedirs(dir)
 
@@ -347,11 +348,12 @@ class TestCommsDaemon(unittest2.TestCase):
         remove_files(fs)
         os.removedirs(dir)
 
-    def test_comms_kwargs_no_config(self):
-        """Verify the comms kwarg initialiser structure -- no config.
+    def test_comms_kwargs_initialised_config(self):
+        """Verify the comms kwarg initialiser structure -- test config.
         """
         received = self._cd.comms_kwargs
         expected = {'db': None,
+                    'prod': 'faswbaup02',
                     'email_api': {'api': self._email_api,
                                   'api_password': '<email_pw>',
                                   'api_username': '<email_user>',
@@ -366,12 +368,32 @@ class TestCommsDaemon(unittest2.TestCase):
         msg = 'Comms kwargs initialiser with no config error'
         self.assertDictEqual(received, expected, msg)
 
+    def test_comms_kwargs_no_config(self):
+        """Verify the comms kwarg initialiser structure -- no config.
+        """
+        cd = nparcel.CommsDaemon(pidfile=None)
+        cd.config = nparcel.CommsB2CConfig()
+
+        received = cd.comms_kwargs
+        expected = {'db': None,
+                    'prod': None,
+                    'email_api': {},
+                    'proxy': None,
+                    'scheme': 'https',
+                    'sms_api': {},
+                    'templates': [],
+                    'returns_templates': []}
+        msg = 'Comms kwargs initialiser with no config error'
+        self.assertDictEqual(received, expected, msg)
+
     def test_comms_kwargs(self):
         """Verify the comms kwarg initialiser structure.
         """
-        # Proxy kwargs.
         cd = nparcel.CommsDaemon(pidfile=None)
         cd.config = nparcel.CommsB2CConfig()
+
+        # Environment.
+        cd.config.set_prod('faswbaup02')
 
         # DB.
         cd.config.add_section('db')
@@ -402,14 +424,12 @@ class TestCommsDaemon(unittest2.TestCase):
         proxy = 'loumar:<passwd>@auproxy-farm.toll.com.au:1442'
 
         # Templates.
-        cd.config.set_controlled_templates(['body',
-                                            'rem',
-                                            'delay',
-                                            'pe'])
+        cd.config.set_controlled_templates(['body', 'rem', 'delay', 'pe'])
         cd.config.set_uncontrolled_templates(['ret'])
 
         received = cd.comms_kwargs
-        expected = {'db': {'driver': 'FreeTDS',
+        expected = {'prod': 'faswbaup02',
+                    'db': {'driver': 'FreeTDS',
                            'host': 'SQVDBAUT07',
                            'database': 'Nparcel',
                            'user': 'user',
@@ -435,7 +455,10 @@ class TestCommsDaemon(unittest2.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls._cd = None
+        cls._cd.config.remove_section('db')
+        cls._cd.config.remove_section('rest')
+        cls._cd.config.remove_section('proxy')
+        cls._cd.config.remove_section('environment')
         del cls._cd
         del cls._email_api
         del cls._sms_api

@@ -10,20 +10,23 @@ from nparcel.utils.log import log
 
 
 class ExporterDaemon(nparcel.DaemonService):
-    """Daemoniser facility for the :class:`nparcel.Comms` class.
+    """Daemoniser facility for the :class:`nparcel.Exporter` class.
     """
+    _exporter = None
 
     def __init__(self,
                  pidfile,
                  dry=False,
                  batch=False,
-                 config='nparcel.conf'):
-        super(ExporterDaemon, self).__init__(pidfile=pidfile,
-                                             dry=dry,
-                                             batch=batch)
+                 config=None):
+        nparcel.DaemonService.__init__(self,
+                                       pidfile=pidfile,
+                                       dry=dry,
+                                       batch=batch)
 
-        self.config = nparcel.B2CConfig(file=config)
-        self.config.parse_config()
+        if config is not None:
+            self.config = nparcel.ExporterB2CConfig(file=config)
+            self.config.parse_config()
 
         try:
             if self.config.support_emails is not None:
@@ -33,9 +36,12 @@ class ExporterDaemon(nparcel.DaemonService):
                    str(self.support_emails))
             log.info(msg)
 
-    def _start(self, event):
-        signal.signal(signal.SIGTERM, self._exit_handler)
+    @property
+    def exporter(self):
+        return self._exporter
 
+    @property
+    def exporter_kwargs(self):
         kwargs = {}
         try:
             kwargs['db'] = self.config.db_kwargs()
@@ -78,58 +84,53 @@ class ExporterDaemon(nparcel.DaemonService):
         except AttributeError, err:
             log.debug('Item number header not in config: %s' % err)
 
-        exporter = nparcel.Exporter(**kwargs)
+        return kwargs
+
+    def _start(self, event):
+        signal.signal(signal.SIGTERM, self._exit_handler)
+
+        if self.exporter is None:
+            self._exporter = nparcel.Exporter(**(self.exporter_kwargs))
 
         while not event.isSet():
-            if exporter.db():
+            if self.exporter.db():
                 for bu, id in self.config.business_units.iteritems():
                     log.info('Starting collection report for BU "%s" ...' %
                              bu)
-                    exporter.set_out_dir(business_unit=bu)
+                    self.exporter.set_out_dir(business_unit=bu)
                     bu_file_code = self.config.bu_to_file(bu)
                     file_ctrl = self.config.get_pod_control(bu_file_code)
                     archive_ctrl = self.config.get_pod_control(bu_file_code,
                                                                'archive')
                     ignore_pe = self.config.condition(bu, 'pe_pods')
-                    items = exporter.process(int(id),
-                                             file_ctrl,
-                                             archive_ctrl,
-                                             ignore_pe,
-                                             dry=self.dry)
+                    items = self.exporter.process(int(id),
+                                                  file_ctrl,
+                                                  archive_ctrl,
+                                                  ignore_pe,
+                                                  dry=self.dry)
                     if self.dry:
-                        exporter.set_out_dir(None)
+                        self.exporter.set_out_dir(None)
                     seq = self.config.exporter_fields.get(bu_file_code)
                     identifier = bu[0].upper()
                     state_rep = self.config.condition(bu_file_code,
                                                       'state_reporting')
-                    exporter.report(items,
-                                    sequence=seq,
-                                    identifier=identifier,
-                                    state_reporting=state_rep)
-                    alerts = list(exporter.alerts)
-                    exporter.reset()
-                    if len(alerts):
-                        alert_table = self.create_table(alerts)
-                        del alerts[:]
-                        data = {'facility': self.__class__.__name__,
-                                'err_table': alert_table}
-                        self.emailer.send_comms(template='general_err',
-                                                data=data,
-                                                recipients=self.support_emails,
-                                                dry=self.dry)
+                    self.exporter.report(items,
+                                         sequence=seq,
+                                         identifier=identifier,
+                                         state_reporting=state_rep)
+                    self.send_table(recipients=self.support_emails,
+                                    table_data=list(self.exporter.alerts),
+                                    template='general_err',
+                                    dry=self.dry)
+                    self.exporter.reset()
+
                 # File based closures.
-                exporter.file_based_updates(dry=self.dry)
-                alerts = list(exporter.alerts)
-                exporter.reset()
-                if len(alerts):
-                    alert_table = self.create_table(alerts)
-                    del alerts[:]
-                    data = {'facility': self.__class__.__name__,
-                            'err_table': alert_table}
-                    self.emailer.send_comms(template='general_err',
-                                            data=data,
-                                            recipients=self.support_emails,
-                                            dry=self.dry)
+                self.exporter.file_based_updates(dry=self.dry)
+                self.send_table(recipients=self.support_emails,
+                                table_data=list(self.exporter.alerts),
+                                template='general_err',
+                                dry=self.dry)
+                self.exporter.reset()
             else:
                 log.error('ODBC connection failure -- aborting')
                 event.set()

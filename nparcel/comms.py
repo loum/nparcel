@@ -32,7 +32,6 @@ class Comms(nparcel.Service):
         ``returns`` table (default ``[ret]``)
 
     """
-    _facility = None
     _hold_period = 691200
     _template_tokens = ['body']
     _returns_template_tokens = ['ret']
@@ -40,7 +39,7 @@ class Comms(nparcel.Service):
     def __init__(self, **kwargs):
         """Nparcel Comms initialisation.
         """
-        self._facility = self.__class__.__name__
+        self._prod = kwargs.get('prod')
 
         db_kwargs = kwargs.get('db')
         comms_dir = kwargs.get('comms_dir')
@@ -271,8 +270,12 @@ class Comms(nparcel.Service):
 
             # OK, generate the SMS structure.
             sms_data = self._smser.create_comms(data=item_details,
-                                                template=template)
-            status = self._smser.send(data=sms_data, dry=dry)
+                                                template=template,
+                                                prod=self.prod)
+            if sms_data is None:
+                status = False
+            else:
+                status = self._smser.send(data=sms_data, dry=dry)
 
         return status
 
@@ -337,6 +340,8 @@ class Comms(nparcel.Service):
         **Kwargs:**
             *template*: the HTML body template to use
 
+            *err*: message context is for error comms
+
             *dry*: only report, do not actual execute
 
         **Returns:**
@@ -352,24 +357,20 @@ class Comms(nparcel.Service):
             log.error('No email recipients provided')
             status = False
 
-        item_nbr = item_details.get('item_nbr')
-        subject = ''
-        if status and item_details.keys() > 1:
-            subject = self._emailer.get_subject_line(item_details,
-                                                     template=template)
-            subject = subject.rstrip('\n')
+        if item_details.keys() <= 1:
+            log.error('Not enough keys in item_details.  Received "%s"' %
+                      str(item_details))
+            status = False
 
         if status:
             self._emailer.set_recipients(to_address.split(','))
             if err:
                 log.info('Sending comms failure notification to "%s"' %
                           str(self._emailer.support))
-                subject = 'FAILED NOTIFICATION - ' + subject
             else:
                 log.info('Sending customer email to "%s"' %
                          str(self._emailer.recipients))
-            encoded_msg = self._emailer.create_comms(subject=subject,
-                                                     data=item_details,
+            encoded_msg = self._emailer.create_comms(data=item_details,
                                                      template=template,
                                                      err=err)
             status = self._emailer.send(data=encoded_msg, dry=dry)
@@ -398,6 +399,11 @@ class Comms(nparcel.Service):
                  'item_nbr': '12345678',
                  'pickup_ts': '',
                  'created_ts': '2013-09-15 00:00:00'}
+
+            Refer to the
+            :method:`nparcel.table.jobitem.job_item_agent_details_sql` and
+            :method:`nparcel.table.returns_reference.reference_nbr_sql`
+            method
 
         """
         agent_details = []

@@ -32,21 +32,27 @@ class LoaderDaemon(nparcel.DaemonService):
                  dry=False,
                  batch=False,
                  config='nparcel.conf'):
-        super(LoaderDaemon, self).__init__(pidfile=pidfile,
-                                           file=file,
-                                           dry=dry,
-                                           batch=batch)
+        nparcel.DaemonService.__init__(self,
+                                       pidfile=pidfile,
+                                       file=file,
+                                       dry=dry,
+                                       batch=batch)
 
         self.config = nparcel.B2CConfig(file=config)
         self.config.parse_config()
 
         try:
-            if self.config.support_emails is not None:
-                self.set_support_emails(self.config.support_emails)
+            self.set_support_emails(self.config.support_emails)
         except AttributeError, err:
-            msg = ('Support emails not defined in config -- using %s' %
-                   str(self.support_emails))
+            msg = ('%s email.support not in config: %s. Using "%s"' %
+                   (self.facility, err, self.support_emails))
             log.info(msg)
+
+        try:
+            self.set_prod(self.config.prod)
+        except AttributeError, err:
+            log.debug('%s environment.prod not in config: %s. Using "%s"' %
+                      (self.facility, err, self.prod))
 
     @property
     def file_format(self):
@@ -72,7 +78,6 @@ class LoaderDaemon(nparcel.DaemonService):
 
         loader = nparcel.Loader(db=self.config.db_kwargs(),
                                 comms_dir=self.config.comms_dir)
-
         commit = True
         if self.dry:
             commit = False
@@ -139,25 +144,18 @@ class LoaderDaemon(nparcel.DaemonService):
 
                 # Report the results.
                 if status and eof_found:
-                    log.info('%s processing OK.' % file)
-                    alerts = list(loader.alerts)
+                    self.send_table(recipients=self.support_emails,
+                                    table_data=list(loader.alerts),
+                                    dry=self.dry)
                     loader.reset(commit=commit)
+
+                    # Aggregate the files for further processing.
                     if not self.dry and self.file is None:
                         aggregate = condition_map.get('aggregate_files')
                         self.distribute_file(file, aggregate)
 
                     stats = self.reporter.report()
                     log.info(stats)
-                    if len(alerts):
-                        alert_table = self.create_table(alerts)
-                        del alerts[:]
-                        data = {'file': file,
-                                'facility': self.__class__.__name__,
-                                'err_table': alert_table}
-                        self.emailer.send_comms(template='proc_err',
-                                                data=data,
-                                                recipients=self.support_emails,
-                                                dry=self.dry)
                 else:
                     log.error('%s processing failed.' % file)
 

@@ -10,7 +10,7 @@ FIELDS = {'Agent Id': {'offset': 453,
 
 
 class Filter(nparcel.Service):
-    """Nparcel Filter object.
+    """Filter class.
 
     """
     _parser = nparcel.Parser(fields=FIELDS)

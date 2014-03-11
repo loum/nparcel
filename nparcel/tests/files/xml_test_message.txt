@@ -2,8 +2,9 @@
 <messages>
   <accountreference>EX0111642</accountreference>
   <message>
-    <to>${phone_nbr}</to>
-    <body>${non_prod}Your Toll parcel tracking # ${connote_nbr} has been delivered to ${name}, ${address}, ${suburb}, ${postcode}.
+    <to>0431602145</to>
+    <body>TEST PLS IGNORE
+Your tracking # 1234567890_connote has been delivered to Auburn Newsagency, 119 Auburn Road, HAWTHORN EAST, 3123.
 
 Please bring your photo-ID for collection</body>
   </message>

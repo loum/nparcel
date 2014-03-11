@@ -9,9 +9,7 @@ from nparcel.utils.log import log
 
 
 class CommsB2CConfig(nparcel.B2CConfig):
-    """CommsB2CConfig class.
-
-    :class:`nparcel.CommsB2CConfig` captures the configuration items
+    """:class:`nparcel.CommsB2CConfig` captures the configuration items
     required for the ``npcommsd`` facility.
 
      .. attribute:: *comms*
@@ -74,7 +72,7 @@ class CommsB2CConfig(nparcel.B2CConfig):
 
     def set_comms_dir(self, value):
         self._comms = value
-        log.debug('%s -- dirs.comms set to "%s"' %
+        log.debug('%s comms_dir set to "%s"' %
                   (self.facility, self.comms_dir))
 
     @property
@@ -83,7 +81,7 @@ class CommsB2CConfig(nparcel.B2CConfig):
 
     def set_comms_loop(self, value):
         self._comms_loop = int(value)
-        log.debug('%s -- timeout.comms_loop set to: %s (sec)' %
+        log.debug('%s comms_loop set to: %s (sec)' %
                   (self.facility, self.comms_loop))
 
     @property
@@ -92,7 +90,7 @@ class CommsB2CConfig(nparcel.B2CConfig):
 
     def set_comms_q_warning(self, value):
         self._comms_q_warning = int(value)
-        log.debug('%s -- comms.comms_queue_warning set to: %d' %
+        log.debug('%s comms_q_warning set to: %d' %
                   (self.facility, self.comms_q_warning))
 
     @property
@@ -101,7 +99,7 @@ class CommsB2CConfig(nparcel.B2CConfig):
 
     def set_comms_q_error(self, value):
         self._comms_q_error = int(value)
-        log.debug('%s -- comms.comms_queue_error set to: %d' %
+        log.debug('%s comms_q_error set to: %d' %
                   (self.facility, self.comms_q_error))
 
     @property
@@ -114,7 +112,7 @@ class CommsB2CConfig(nparcel.B2CConfig):
 
         if values is not None:
             self._controlled_templates.extend(values)
-        log.debug('%s -- comms.controlled_templates set to: "%s"' %
+        log.debug('%s controlled_templates set to: "%s"' %
                   (self.facility, self.controlled_templates))
 
     @property
@@ -127,7 +125,7 @@ class CommsB2CConfig(nparcel.B2CConfig):
 
         if values is not None:
             self._uncontrolled_templates.extend(values)
-        log.debug('%s -- comms.uncontrolled_templates set to: "%s"' %
+        log.debug('%s uncontrolled_templates set to: "%s"' %
                   (self.facility, self.uncontrolled_templates))
 
     @property
@@ -140,7 +138,7 @@ class CommsB2CConfig(nparcel.B2CConfig):
 
         if values is not None:
             self._skip_days.extend(values)
-        log.debug('%s -- comms.skip_days set to: "%s"' %
+        log.debug('%s skip_days set to: "%s"' %
                   (self.facility, self.skip_days))
 
     @property
@@ -153,7 +151,7 @@ class CommsB2CConfig(nparcel.B2CConfig):
 
         if values is not None:
             self._send_time_ranges.extend(values)
-        log.debug('%s -- comms.send_time_ranges set to: "%s"' %
+        log.debug('%s send_time_ranges set to: "%s"' %
                   (self.facility, self.send_time_ranges))
 
     def parse_config(self):
@@ -168,13 +166,16 @@ class CommsB2CConfig(nparcel.B2CConfig):
             self.set_support_emails(self.get('email', 'support').split(','))
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
-            log.debug('%s -- email.support: %s' % (self.facility, err))
+            log.debug('%s email.support: %s. Using %s' %
+                      (self.facility, err, self.support_emails))
 
+        # These are the comms values that will remain
+        # after nparcel.B2CConfig is refactored.
         try:
             self.set_comms_dir(self.get('dirs', 'comms'))
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
-            log.critical('%s -- missing required config: %s' %
+            log.critical('%s dirs.comms is a required config item: %s' %
                          (self.facility, err))
             sys.exit(1)
 
@@ -182,7 +183,7 @@ class CommsB2CConfig(nparcel.B2CConfig):
             self.set_comms_loop(self.get('timeout', 'comms_loop'))
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
-            log.debug('%s -- timeout.comms_loop: %s.  Using %d (sec)' %
+            log.debug('%s timeout.comms_loop: %s.  Using %d (sec)' %
                       (self.facility, err, self.comms_loop))
 
         try:
@@ -190,7 +191,7 @@ class CommsB2CConfig(nparcel.B2CConfig):
             self.set_comms_q_warning(tmp)
         except (ConfigParser.NoSectionError,
                 ConfigParser.NoOptionError), err:
-            log.debug('%s -- comms.comms_queue_warning: %s  Using "%d"' %
+            log.debug('%s comms.comms_queue_warning: %s.  Using "%d"' %
                       (self.facility, err, self.comms_q_warning))
 
         try:
@@ -198,7 +199,7 @@ class CommsB2CConfig(nparcel.B2CConfig):
             self.set_comms_q_error(tmp)
         except (ConfigParser.NoSectionError,
                 ConfigParser.NoOptionError), err:
-            log.debug('%s -- comms.comms_queue_error: %s.  Using "%d"' %
+            log.debug('%s comms.comms_queue_error: %s.  Using "%d"' %
                       (self.facility, err, self.comms_q_error))
 
         try:
@@ -206,7 +207,7 @@ class CommsB2CConfig(nparcel.B2CConfig):
             self.set_controlled_templates(tmp)
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
-            log.debug('%s -- comms.controlled_templates: %s' %
+            log.debug('%s comms.controlled_templates: %s' %
                      (self.facility, err))
 
         try:
@@ -214,7 +215,7 @@ class CommsB2CConfig(nparcel.B2CConfig):
             self.set_uncontrolled_templates(tmp)
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
-            log.debug('%s -- comms.uncontrolled_templates: %s' %
+            log.debug('%s comms.uncontrolled_templates: %s' %
                       (self.facility, err))
 
         try:
@@ -222,7 +223,7 @@ class CommsB2CConfig(nparcel.B2CConfig):
             self.set_skip_days(tmp)
         except (ConfigParser.NoSectionError,
                 ConfigParser.NoOptionError), err:
-            log.debug('%s -- comms.skip_days: %s.  Using "%s"' %
+            log.debug('%s comms.skip_days: %s.  Using "%s"' %
                       (self.facility, err, self.skip_days))
 
         try:
@@ -230,5 +231,5 @@ class CommsB2CConfig(nparcel.B2CConfig):
             self.set_send_time_ranges(tmp)
         except (ConfigParser.NoSectionError,
                 ConfigParser.NoOptionError), err:
-            log.debug('%s -- comms.send_time_ranges: %s.  Using "%s"' %
+            log.debug('%s comms.send_time_ranges: %s.  Using "%s"' %
                       (self.facility, err, self.send_time_ranges))

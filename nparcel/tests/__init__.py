@@ -30,8 +30,6 @@ from test_exporter import TestExporter
 from test_exporter_ipec import TestExporterIpec
 from test_exporter_fast import TestExporterFast
 from test_config import TestConfig
-from test_b2cconfig import TestB2CConfig
-from test_commsb2cconfig import TestCommsB2CConfig
 from test_ftp import TestFtp
 from test_service import TestService
 from test_reminder import TestReminder

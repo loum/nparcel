@@ -26,6 +26,11 @@ class TestB2CConfig(unittest2.TestCase):
         self._c.set_config_file(self._file)
         self._c.parse_config()
 
+        msg = 'environment.prod not as expected'
+        received = self._c.prod
+        expected = 'faswbaup02'
+        self.assertEqual(received, expected, msg)
+
         msg = 'Business units not as expected'
         received = self._c.business_units
         expected = {'priority': '1', 'fast': '2', 'ipec': '3'}
@@ -119,19 +124,9 @@ class TestB2CConfig(unittest2.TestCase):
         expected = '/var/ftp/pub/nparcel'
         self.assertEqual(received, expected, msg)
 
-        msg = 'Signature directory not as expected'
-        received = self._c.signature_dir
-        expected = '/data/www/nparcel/data/signature'
-        self.assertEqual(received, expected, msg)
-
         msg = 'Aggregator directory not as expected'
         received = self._c.aggregator_dirs
         expected = ['/data/nparcel/aggregate']
-        self.assertListEqual(received, expected, msg)
-
-        msg = 'Exporter directories not as expected'
-        received = self._c.exporter_dirs
-        expected = ['/data/nparcel/exporter']
         self.assertListEqual(received, expected, msg)
 
         msg = 'ADP directories not as expected'
@@ -257,21 +252,6 @@ class TestB2CConfig(unittest2.TestCase):
         """
         self._c.set_config_file(self._file)
         self._c.parse_config()
-
-        received = self._c.exporter_file_formats
-        expected = ['.*_RE[PIF]_\d{14}\.txt$']
-        msg = 'Exporter exporter_file_formats value error'
-        self.assertListEqual(received, expected, msg)
-
-        received = self._c.connote_header
-        expected = 'REF1'
-        msg = 'Exporter connote header value error'
-        self.assertEqual(received, expected, msg)
-
-        received = self._c.item_nbr_header
-        expected = 'ITEM_NBR'
-        msg = 'Exporter item nbr header value error'
-        self.assertEqual(received, expected, msg)
 
     def test_parse_reporter(self):
         """Parse items from the config -- reporter.

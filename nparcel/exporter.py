@@ -20,7 +20,12 @@ STATES = ['NSW', 'VIC', 'QLD', 'SA', 'WA', 'ACT']
 
 
 class Exporter(nparcel.Service):
-    """Nparcel Exporter.
+    """Exporter class.
+
+    .. attribute:: signature_dir
+
+        directory where the Toll Parcel Portal places it's POD
+        signature files
 
     .. attribute:: archive_dir
 
@@ -63,11 +68,9 @@ class Exporter(nparcel.Service):
         """
         super(nparcel.Exporter, self).__init__(db=kwargs.get('db'))
 
-        self._signature_dir = kwargs.get('signature_dir')
-        self._staging_dir = kwargs.get('staging_dir')
-        create_dir(self._staging_dir)
-        self._archive_dir = kwargs.get('archive_dir')
-        create_dir(self._archive_dir)
+        self.set_signature_dir(kwargs.get('signature_dir'))
+        self.set_staging_dir(kwargs.get('staging_dir'))
+        self.set_archive_dir(kwargs.get('archive_dir'))
 
         self._out_dir = None
 
@@ -91,12 +94,13 @@ class Exporter(nparcel.Service):
     def staging_dir(self):
         return self._staging_dir
 
-    def set_staging_dir(self, value):
+    def set_staging_dir(self, value=None):
         self._staging_dir = value
 
-        if self._staging_dir is not None:
-            if not create_dir(self._staging_dir):
-                self._staging_dir = None
+        if not create_dir(self._staging_dir):
+            self._staging_dir = None
+        log.debug('%s staging_dir set to "%s"' %
+                  (self.facility, self.staging_dir))
 
     @property
     def out_dir(self):
@@ -140,9 +144,10 @@ class Exporter(nparcel.Service):
     def set_archive_dir(self, value):
         self._archive_dir = value
 
-        if self._archive_dir is not None:
-            if not create_dir(self._archive_dir):
-                self._archive_dir = None
+        if not create_dir(self._archive_dir):
+            self._archive_dir = None
+        log.debug('%s archive_dir set to "%s"' %
+                  (self.facility, self.archive_dir))
 
     @property
     def exporter_dirs(self):
@@ -153,8 +158,9 @@ class Exporter(nparcel.Service):
         self._exporter_dirs = []
 
         if values is not None:
-            log.debug('Set exporter in directories "%s"' % str(values))
             self._exporter_dirs.extend(values)
+        log.debug('%s exporter_dirs set to "%s"' %
+                  (self.facility, self.exporter_dirs))
 
     @property
     def exporter_file_formats(self):
@@ -166,8 +172,8 @@ class Exporter(nparcel.Service):
 
         if values is not None:
             self._exporter_file_formats.extend(values)
-            log.debug('Set exporter file format list: "%s"' %
-                      self.exporter_file_formats)
+        log.debug('%s exporter_file_formats set to "%s"' %
+                  (self.facility, self.exporter_file_formats))
 
     @property
     def connote_header(self):

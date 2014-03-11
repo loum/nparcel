@@ -1,5 +1,6 @@
 import unittest2
 import os
+import socket
 
 import nparcel
 
@@ -9,13 +10,21 @@ class TestRestSmser(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._rsms = nparcel.RestSmser()
-        conf = nparcel.B2CConfig()
-        conf.set_config_file('nparcel/conf/nparceld.conf')
-        conf.parse_config()
-        cls._proxy = conf.proxy_string()
-        cls._api = conf.rest.get('sms_api')
-        cls._api_username = conf.rest.get('sms_user')
-        cls._api_password = conf.rest.get('sms_pw')
+
+        # Uncomment these and set accordingly if you want to really send a
+        # message.  BE CAREFUL!
+        #proxy = 'loumar:<passwd>@auproxy-farm.toll.com.au:8080'
+        #cls._rsms.set_proxy(proxy)
+
+        sms_api = 'https://api.esendex.com/v1.0/messagedispatcher'
+        cls._rsms.set_api(sms_api)
+        cls._rsms.set_api_username('sms_user')
+        cls._rsms.set_api_password('<sms_pw>')
+
+        cls._template_base = os.path.join('nparcel', 'templates')
+        cls._rsms.set_template_base(cls._template_base)
+
+        cls._hostname = socket.gethostname()
 
     def test_init(self):
         """Verify initialisation of an nparcel.Emailer object.
@@ -26,11 +35,7 @@ class TestRestSmser(unittest2.TestCase):
     def test_send(self):
         """Send REST SMS.
         """
-        self._rsms.set_proxy(self._proxy)
-        self._rsms.set_proxy_scheme('https')
-        self._rsms.set_api(self._api)
-        self._rsms.set_api_username(self._api_username)
-        self._rsms.set_api_password(self._api_password)
+        dry = True
 
         d = {'name': 'Auburn Newsagency',
              'address': '119 Auburn Road',
@@ -39,18 +44,29 @@ class TestRestSmser(unittest2.TestCase):
              'connote_nbr': '1234567890_connote',
              'item_nbr': '1234567890_item_nbr',
              'phone_nbr': '0431602145'}
-        sms = self._rsms.create_comms(data=d, base_dir='nparcel')
+        sms = self._rsms.create_comms(data=d, prod=self._hostname)
 
-        received = self._rsms.send(sms, dry=True)
+        received = self._rsms.send(sms, dry=dry)
         msg = 'SMS send should return True'
         self.assertTrue(received, msg)
 
-        # Clean up.
-        self._rsms.set_proxy(None)
-        self._rsms.set_proxy_scheme('http')
-        self._rsms.set_api(None)
-        self._rsms.set_api_username(None)
-        self._rsms.set_api_password(None)
+    def test_send_non_prod_instance(self):
+        """Send REST SMS -- non-PROD.
+        """
+        dry = True
+
+        d = {'name': 'Auburn Newsagency',
+             'address': '119 Auburn Road',
+             'suburb': 'HAWTHORN EAST',
+             'postcode': '3123',
+             'connote_nbr': '1234567890_connote',
+             'item_nbr': '1234567890_item_nbr',
+             'phone_nbr': '0431602145'}
+        sms = self._rsms.create_comms(data=d)
+
+        received = self._rsms.send(sms, dry=dry)
+        msg = 'SMS send should return True'
+        self.assertTrue(received, msg)
 
     def test_mobile_validate(self):
         """Validate mobile number -- valid
@@ -163,7 +179,9 @@ class TestRestSmser(unittest2.TestCase):
         msg = 'SMS comms string should be None on XML input file error'
 
         d = {}
-        received = self._rsms.create_comms(data=d, base_dir='banana')
+        received = self._rsms.create_comms(data=d,
+                                           base_dir='banana',
+                                           prod=self._hostname)
         self.assertIsNone(received, msg)
 
     def test_create_comms_valid_data_structure(self):
@@ -178,8 +196,7 @@ class TestRestSmser(unittest2.TestCase):
              'connote_nbr': '1234567890_connote',
              'item_nbr': '1234567890_item_nbr',
              'phone_nbr': '0431602145'}
-        template_dir = os.path.join('nparcel', 'templates')
-        received = self._rsms.create_comms(data=d, base_dir=template_dir)
+        received = self._rsms.create_comms(data=d, prod=self._hostname)
 
         f = open(os.path.join('nparcel',
                               'tests',
@@ -188,15 +205,32 @@ class TestRestSmser(unittest2.TestCase):
         f.close()
         self.assertEqual(received, expected, msg)
 
+    def test_add_test_message(self):
+        """
+        """
+        xml_file = os.path.join('nparcel',
+                                'tests',
+                                'files',
+                                'xml_message.txt')
+        fh = open(xml_file)
+        xml_message = fh.read()
+        fh.close()
+
+        received = self._rsms.add_test_string(xml_message).rstrip()
+
+        xml_test_file = os.path.join('nparcel',
+                                     'tests',
+                                     'files',
+                                     'xml_test_message.txt')
+        fh = open(xml_test_file)
+        expected = fh.read().rstrip()
+        fh.close()
+
+        msg = 'SMS conversion for test error'
+        self.assertEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
-        cls._rsms = None
         del cls._rsms
-        cls._proxy = None
-        del cls._proxy
-        cls._api = None
-        del cls._api
-        cls._api_username = None
-        del cls._api_username
-        cls._api_proxy = None
-        del cls._api_proxy
+        del cls._template_base
+        del cls._hostname

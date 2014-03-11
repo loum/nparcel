@@ -14,6 +14,10 @@ from nparcel.utils.files import get_directory_files_list
 class CommsDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.Comms` class.
 
+    .. attribute:: prod
+
+         hostname of the production instance
+
     .. attribute:: *comms_dir*
 
          directory where comms files are read from for further processing
@@ -80,41 +84,41 @@ class CommsDaemon(nparcel.DaemonService):
         try:
             self.set_support_emails(self.config.support_emails)
         except AttributeError, err:
-            msg = ('%s support_emails not defined in config -- using %s' %
+            msg = ('%s support_emails not defined in config. Using %s' %
                    (self._facility, str(self.support_emails)))
             log.debug(msg)
 
         try:
             self.set_comms_dir(self.config.comms_dir)
         except AttributeError, err:
-            msg = ('%s comms_dir not in config -- using %s' %
+            msg = ('%s comms_dir not in config. Using %s' %
                    (self._facility, self.comms_dir))
             log.debug(msg)
 
         try:
             self.set_loop(self.config.comms_loop)
         except AttributeError, err:
-            log.debug('%s comms_loop not in config -- using %d sec' %
+            log.debug('%s comms_loop not in config. Using %d sec' %
                       (self._facility, self.loop))
 
         try:
             self.set_q_warning(self.config.comms_q_warning)
         except AttributeError, err:
-            msg = ('%s q_warning not in config -- using %s' %
+            msg = ('%s q_warning not in config. Using %s' %
                    (self._facility, self.q_warning))
             log.debug(msg)
 
         try:
             self.set_q_error(self.config.comms_q_error)
         except AttributeError, err:
-            msg = ('%s q_error not in config -- using %s' %
+            msg = ('%s q_error not in config. Using %s' %
                    (self._facility, self.q_error))
             log.debug(msg)
 
         try:
             self.set_controlled_templates(self.config.controlled_templates)
         except AttributeError, err:
-            msg = ('%s controlled_templates not in config -- using %s' %
+            msg = ('%s controlled_templates not in config. Using "%s"' %
                    (self._facility, self.controlled_templates))
             log.debug(msg)
 
@@ -122,20 +126,20 @@ class CommsDaemon(nparcel.DaemonService):
             tmp = self.config.uncontrolled_templates
             self.set_uncontrolled_templates(tmp)
         except AttributeError, err:
-            msg = ('%s uncontrolled_templates not in config -- using %s' %
+            msg = ('%s uncontrolled_templates not in config. Using "%s"' %
                    (self._facility, self.uncontrolled_templates))
             log.debug(msg)
 
         try:
             self.set_skip_days(self.config.skip_days)
         except AttributeError, err:
-            log.debug('%s skip_days not in config -- using %s' %
+            log.debug('%s skip_days not in config. Using "%s"' %
                       (self._facility, self.skip_days))
 
         try:
             self.set_send_time_ranges(self.config.send_time_ranges)
         except AttributeError, err:
-            log.debug('%s send_time_ranges not in config -- using %s' %
+            log.debug('%s send_time_ranges not in config. Using "%s"' %
                       (self._facility, self.send_time_ranges))
 
     @property
@@ -255,6 +259,13 @@ class CommsDaemon(nparcel.DaemonService):
     @property
     def comms_kwargs(self):
         kwargs = {}
+
+        try:
+            kwargs['prod'] = self.config.prod
+        except AttributeError, err:
+            log.debug('%s prod instance name not in config: %s ' %
+                      (self._facility, err))
+
         try:
             kwargs['db'] = self.config.db_kwargs()
         except AttributeError, err:

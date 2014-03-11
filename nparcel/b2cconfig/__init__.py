@@ -35,6 +35,10 @@ class B2CConfig(nparcel.Config):
     :class:`nparcel.B2CConfig` captures the configuration items required
     by the Nparcel B2C Replicator
 
+    .. attribute:: prod
+
+        hostname of the production instance
+
     .. attribute:: dirs_to_check (loader)
 
         list of directories to look for T1250 files
@@ -48,10 +52,6 @@ class B2CConfig(nparcel.Config):
         directory to place processed collected reports and signature files
         for further processing.
 
-    .. attribute:: signature (exporter)
-
-        directory where POD signature files are kept
-
     .. attribute:: comms (loader, primary elect)
 
         directory where comms files are kept for further processing
@@ -60,10 +60,6 @@ class B2CConfig(nparcel.Config):
 
         directory where T1250 loader files are aggregated for further
         processing
-
-    .. attribute:: exporter_dirs (Exporter processing)
-
-        directory list for file-based events to trigger a job_item closure
 
     .. attribute:: adp_dirs (ADP bulk load processing)
 
@@ -290,21 +286,6 @@ class B2CConfig(nparcel.Config):
 
         the names of the processes to include in the health check
 
-    .. attribute:: exporter_file_formats
-
-        list of regular expressions that represent the type of files that
-        can be parsed by the exporter
-
-    .. attribute:: connote_header
-
-       token used to identify the connote column in the Exporter report
-       file
-
-    .. attribute:: item_nbr_header
-
-       token used to identify the item number column in the Exporter report
-       file
-
     .. attribute:: adp_headers
 
         dictionary of ``agent`` table columns to column headers in the
@@ -330,14 +311,13 @@ class B2CConfig(nparcel.Config):
         dictionary of delivery partner default passwords
 
     """
+    _prod = None
     _dirs_to_check = []
     _mapper_in_dirs = []
     _archive = None
     _staging_base = None
-    _signature = None
     _comms = None
     _aggregator_dirs = []
-    _exporter_dirs = []
     _adp_dirs = []
     _loader_loop = 30
     _ondelivery_loop = 30
@@ -420,9 +400,6 @@ class B2CConfig(nparcel.Config):
     _report_collected_bu_based = False
     _report_bu_id_recipients = {}
     _health_processes = []
-    _exporter_file_formats = []
-    _connote_header = None
-    _item_nbr_header = None
     _adp_headers = {}
     _adp_file_formats = []
     _code_header = None
@@ -433,6 +410,15 @@ class B2CConfig(nparcel.Config):
         """B2CConfig initialisation.
         """
         nparcel.Config.__init__(self, file)
+
+    @property
+    def prod(self):
+        return self._prod
+
+    def set_prod(self, value=None):
+        self._prod = value
+        log.debug('%s environment.prod set to "%s"' %
+                  (self.facility, self.prod))
 
     @property
     def in_dirs(self):
@@ -452,15 +438,17 @@ class B2CConfig(nparcel.Config):
 
     def set_archive_dir(self, value):
         self._archive = value
-        log.debug('Set archive directory to "%s"' % self._archive)
+        log.debug('%s dirs.archive set to "%s"' %
+                  (self.facility, self.archive_dir))
 
     @property
     def staging_base(self):
         return self._staging_base
 
-    @property
-    def signature_dir(self):
-        return self._signature
+    def set_staging_base(self, value):
+        self._staging_base = value
+        log.debug('%s dirs.staging_base set to "%s"' %
+                  (self.facility, self.staging_base))
 
     @property
     def comms_dir(self):
@@ -482,19 +470,6 @@ class B2CConfig(nparcel.Config):
             log.debug('Set config aggregator in directories "%s"' %
                       str(values))
             self._aggregator_dirs.extend(values)
-
-    @property
-    def exporter_dirs(self):
-        return self._exporter_dirs
-
-    def set_exporter_dirs(self, values):
-        del self._exporter_dirs[:]
-        self._exporter_dirs = []
-
-        if values is not None:
-            log.debug('Set config exporter in directories "%s"' %
-                      str(values))
-            self._exporter_dirs.extend(values)
 
     @property
     def adp_dirs(self):
@@ -572,7 +547,7 @@ class B2CConfig(nparcel.Config):
 
         if values is not None:
             self._support_emails.extend(values)
-        log.debug('%s -- email.support "%s"' % (self.facility, values))
+        log.debug('%s email.support "%s"' % (self.facility, values))
 
     @property
     def cond(self):
@@ -682,14 +657,12 @@ class B2CConfig(nparcel.Config):
             log.debug('Config mapper directories to check %s' %
                       str(self.mapper_in_dirs))
 
-            self._archive = self.get('dirs', 'archive')
-            log.debug('Loader archive directory %s' % self._archive)
+            self.set_archive_dir(self.get('dirs', 'archive'))
 
-            self._staging_base = self.get('dirs', 'staging_base')
-            log.debug('Exporter staging base %s' % self._staging_base)
+            self.set_staging_base(self.get('dirs', 'staging_base'))
 
-            self._signature = self.get('dirs', 'signature')
-            log.debug('Exporter signature directory %s' % self._signature)
+            #self._signature = self.get('dirs', 'signature')
+            #log.debug('Exporter signature directory %s' % self._signature)
 
             self._comms = self.get('dirs', 'comms')
             log.debug('Comms file directory %s' % self._comms)
@@ -704,7 +677,13 @@ class B2CConfig(nparcel.Config):
             log.critical('Missing required config: %s' % err)
             sys.exit(1)
 
-        # The standard T1250 file (which shouldn't change much)
+        try:
+            self.set_prod(self.get('environment', 'prod'))
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('%s environment.prod not defined.  Using "%s"' %
+                      self.prod)
+
         try:
             self._t1250_file_format = self.get('files',
                                                't1250_file_format')
@@ -778,16 +757,6 @@ class B2CConfig(nparcel.Config):
                 ConfigParser.NoSectionError), err:
             log.debug('Using default Aggregator inbound directories: %s' %
                       self.aggregator_dirs)
-
-        # Exporter directories.
-        try:
-            tmp_vals = self.get('dirs', 'exporter_in').split(',')
-            self.set_exporter_dirs(tmp_vals)
-            log.debug('Exporter directories %s' % self.exporter_dirs)
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default Exporter inbound directories: %s' %
-                      self.exporter_dirs)
 
         # ADP directories.
         try:
@@ -1130,30 +1099,6 @@ class B2CConfig(nparcel.Config):
                 ConfigParser.NoOptionError), err:
             log.debug('Using default health process list: %s' %
                       str(self.health_processes))
-
-        # Exporter file formats.
-        try:
-            tmp_vals = self.get('exporter', 'file_formats')
-            self.set_exporter_file_formats(tmp_vals.split(','))
-        except (ConfigParser.NoSectionError,
-                ConfigParser.NoOptionError), err:
-            log.debug('Using default exporter file formats: %s' %
-                      str(self.exporter_file_formats))
-
-        # Exporter headers.
-        try:
-            self.set_connote_header(self.get('exporter', 'connote_header'))
-        except (ConfigParser.NoSectionError,
-                ConfigParser.NoOptionError), err:
-            log.debug('Using default exporter file connote header: %s' %
-                      str(self.connote_header))
-        try:
-            self.set_item_nbr_header(self.get('exporter',
-                                              'item_nbr_header'))
-        except (ConfigParser.NoSectionError,
-                ConfigParser.NoOptionError), err:
-            log.debug('Using default exporter file item nbr header: %s' %
-                      str(self.item_nbr_header))
 
         # ADP headers
         try:
@@ -2334,39 +2279,6 @@ class B2CConfig(nparcel.Config):
             self._health_processes.extend(values)
             log.debug('Config health check process list: "%s"' %
                       self.health_processes)
-
-    @property
-    def exporter_file_formats(self):
-        return self._exporter_file_formats
-
-    def set_exporter_file_formats(self, values=None):
-        del self._exporter_file_formats[:]
-        self._exporter_file_formats = []
-
-        if values is not None:
-            self._exporter_file_formats.extend(values)
-            log.debug('Config exporter file format list: "%s"' %
-                      self.exporter_file_formats)
-
-    @property
-    def connote_header(self):
-        return self._connote_header
-
-    def set_connote_header(self, value=None):
-        if value is not None:
-            self._connote_header = value
-            log.debug('Config set report file connote header to: "%s"' %
-                      self.connote_header)
-
-    @property
-    def item_nbr_header(self):
-        return self._item_nbr_header
-
-    def set_item_nbr_header(self, value=None):
-        if value is not None:
-            self.item_nbr_header = value
-            log.debug('Config set report file item nbr header to: "%s"' %
-                      self.item_nbr_header)
 
     @property
     def adp_headers(self):

@@ -9,7 +9,7 @@ from nparcel.utils.files import create_dir
 
 
 class Service(object):
-    """Nparcel base-Service class.
+    """Service-base class.
 
     .. attribute:: db
 
@@ -23,15 +23,23 @@ class Service(object):
 
         list if alerts that can be captured during the processing workflow
 
+    .. attribute:: prod
+
+        hostname of the production instance
+
     """
+    _prod = None
+    _facility = None
     _db = None
     _comms_dir = None
     _alerts = []
 
     def __init__(self, db=None, comms_dir=None):
-        """Nparcel Service initialisation.
+        """Service initialisation.
 
         """
+        self._facility = self.__class__.__name__
+
         if db is None:
             db = {}
         self.db = nparcel.DbSession(**db)
@@ -43,6 +51,19 @@ class Service(object):
     def __del__(self):
         if self.db is not None:
             self.db.disconnect()
+
+    @property
+    def facility(self):
+        return self._facility
+
+    @property
+    def prod(self):
+        return self._prod
+
+    def set_prod(self, value=None):
+        self._prod = value.lower()
+        log.debug('%s prod instance name set to "%s"' %
+                  (self.facility, self.prod))
 
     @property
     def comms_dir(self):

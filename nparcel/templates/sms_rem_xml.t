@@ -3,7 +3,7 @@
   <accountreference>EX0111642</accountreference>
   <message>
     <to>${phone_nbr}</to>
-    <body>Your tracking # $connote_nbr is awaiting collection at ${name}, ${address}, ${suburb}, ${postcode}.
+    <body>${non_prod}Your tracking # $connote_nbr is awaiting collection at ${name}, ${address}, ${suburb}, ${postcode}.
 
 Please bring your photo-ID for collection.
 
