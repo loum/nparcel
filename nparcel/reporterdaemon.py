@@ -41,18 +41,6 @@ class ReporterDaemon(nparcel.DaemonService):
 
         report filename extension
 
-    .. attribute:: db_kwargs
-
-        dictionary of connection string values for the Toll Parcel Point
-        database.  Typical format is::
-
-            {'driver': ...,
-             'host': ...,
-             'database': ...,
-             'user': ...,
-             'password': ...,
-             'port': ...}
-
     .. attribute:: display_hdrs
 
         list of column headers to display in the report
@@ -117,14 +105,11 @@ class ReporterDaemon(nparcel.DaemonService):
     _report_type = None
     _config = None
     _report = None
-    _bu_ids = {1: 'Toll Priority',
-               2: 'Toll Fast',
-               3: 'Toll IPEC'}
-    _outdir = '/data/nparcel/reports'
+    _bu_ids = {}
+    _outdir = os.path.join(os.sep, 'data', 'nparcel', 'reports')
     _outfile = 'Stocktake_uncollected_aged_report_'
     _outfile_ts_format = '%Y%m%d-%H:%M'
     _extension = 'xlsx'
-    _db_kwargs = None
     _display_hdrs = []
     _aliases = {}
     _header_widths = {}
@@ -149,119 +134,120 @@ class ReporterDaemon(nparcel.DaemonService):
                                        dry=dry,
                                        batch=batch)
 
-        self._report_type = report
+        self.set_report_type(report)
 
         if config is not None:
-            self.set_config(nparcel.B2CConfig(file=config))
+            self.set_config(nparcel.B2CConfig(file=config,
+                                              type=self.report_type))
             self.config.parse_config()
 
-        try:
-            if self.config.db_kwargs() is not None:
-                self.set_db_kwargs(self.config.db_kwargs())
-        except AttributeError, err:
-            msg = ('DB kwargs not defined in config')
-            log.info(msg)
-
-        try:
-            if self.config.report_bu_ids is not None:
-                self.set_bu_ids(self.config.report_bu_ids)
-        except AttributeError, err:
-            log.info('Report BU IDs (report_bu_ids) not defined in config')
-
+        log_msg = self.facility + '.%s not set via config: %s. Using "%s"'
         try:
             if self.config.report_outfile is not None:
                 self.set_outfile(self.config.report_outfile)
         except AttributeError, err:
-            log.info('Report outfile not defined in config')
+            log.debug(log_msg % ('outfile', err, self.outfile))
 
         try:
             if self.config.report_outfile_ts_format is not None:
                 tmp_ts_format = self.config.report_outfile_ts_format
                 self.set_outfile_ts_format(tmp_ts_format)
         except AttributeError, err:
-            log.info('Report outfile_ts_format not defined in config')
+            log.debug(log_msg % ('outfile_ts_format', err, self.outfile))
 
         try:
             if self.config.report_outdir is not None:
                 self.set_outdir(self.config.report_outdir)
         except AttributeError, err:
-            log.info('Report outdir not defined in config')
-        create_dir(self.outdir)
+            log.debug(log_msg % ('outdir', err, self.outdir))
 
         try:
             if self.config.report_extension is not None:
                 self.set_extension(self.config.report_extension)
         except AttributeError, err:
-            log.info('Report report_extension not defined in config')
+            log.debug(log_msg % ('report_extension', err, self.extension))
 
         # Generic report overrides.
-        methodname = 'report_%s_outfile' % report
+        log_msg = self.facility + '.%s not set via config: %s. Using "%s"'
         try:
-            method = getattr(self.config, methodname)
-            if method is not None:
-                self.set_outfile(method)
+            getter = getattr(self.config, 'report_type_outfile')
+            if getter is not None:
+                self.set_outfile(getter)
         except AttributeError, err:
-            log.info('Report (%s) outfile not defined in config' % report)
+            log.debug(log_msg % ('outfile', err, self.outfile))
 
-        methodname = 'report_%s_display_hdrs' % report
         try:
-            method = getattr(self.config, methodname)
-            if method is not None:
-                self.set_display_hdrs(method)
+            getter = getattr(self.config, 'report_type_display_hdrs')
+            if getter is not None:
+                self.set_display_hdrs(getter)
         except AttributeError, err:
-            log.info('Report (%s) display_hdrs not defined in config' %
-                     report)
+            log.debug(log_msg % ('display_hdrs', err, self.display_hdrs))
 
-        methodname = 'report_%s_aliases' % report
         try:
-            method = getattr(self.config, methodname)
-            if method is not None:
-                self.set_aliases(method)
+            getter = getattr(self.config, 'report_type_aliases')
+            if getter is not None:
+                self.set_aliases(getter)
         except AttributeError, err:
-            log.info('Report (%s) aliases not defined in config' % report)
+            log.debug(log_msg % ('report_type_aliases',
+                                 err,
+                                 self.aliases))
 
-        methodname = 'report_%s_widths' % report
         try:
-            method = getattr(self.config, methodname)
-            if method is not None:
-                self.set_header_widths(method)
+            getter = getattr(self.config, 'report_type_widths')
+            if getter is not None:
+                self.set_header_widths(getter)
         except AttributeError, err:
-            log.info('Report (%s) header widths not defined in config' %
-                     report)
+            log.debug(log_msg % ('header_widths',
+                                 err,
+                                 self.header_widths))
 
-        methodname = 'report_%s_ws' % report
         try:
-            method = getattr(self.config, methodname)
-            if method is not None:
-                self.set_ws(method)
+            getter = getattr(self.config, 'report_type_ws')
+            if getter is not None:
+                self.set_ws(getter)
         except AttributeError, err:
-            log.info('Report (%s) worksheet not defined in config' %
-                     report)
+            log.debug(log_msg % ('ws', err, self.ws))
 
-        methodname = 'report_%s_recipients' % report
         try:
-            method = getattr(self.config, methodname)
-            if method is not None:
-                self.set_recipients(method)
+            getter = getattr(self.config, 'report_type_recipients')
+            if getter is not None:
+                self.set_recipients(getter)
         except AttributeError, err:
-            log.info('Report (%s) recipients not defined in config' %
-                     report)
+            log.debug(log_msg % ('recipients', err, self.recipients))
 
-        methodname = 'report_%s_bu_based' % report
         try:
-            method = getattr(self.config, methodname)
-            if method is not None:
-                self.set_bu_based(method)
+            getter = getattr(self.config, 'report_type_bu_based')
+            if getter is not None:
+                self.set_bu_based(getter)
         except AttributeError, err:
-            log.info('Report (%s) BU-based not defined in config' %
-                     report)
+            log.debug(log_msg % ('bu_based', err, self.bu_based))
 
         try:
             if self.config.report_bu_id_recipients.keys() > 0:
                 tmp_bu_ids = self.config.report_bu_id_recipients
                 self.set_bu_id_recipients(tmp_bu_ids)
         except AttributeError, err:
-            log.info('Report BU ID recipients not defined in config')
+            log.debug(log_msg % ('bu_id_recipients',
+                                 err,
+                                 self.bu_id_recipients))
+
+        try:
+            if self.config.report_compliance_period is not None:
+                tmp_period = self.config.report_compliance_period
+                self.set_compliance_period(tmp_period)
+        except AttributeError, err:
+            log.debug(log_msg % ('report_compliance_period',
+                                 err,
+                                 self.compliance_period))
+
+    @property
+    def report_type(self):
+        return self._report_type
+
+    def set_report_type(self, value):
+        self._report_type = value
+        log.debug('%s report_type set to "%s"' %
+                  (self.facility, self.report_type))
 
     @property
     def config(self):
@@ -279,9 +265,7 @@ class ReporterDaemon(nparcel.DaemonService):
 
         if values is not None:
             self._bu_ids = values
-            log.debug('Set bu_ids to "%s"' % self._bu_ids)
-        else:
-            log.debug('Cleared bu_ids')
+        log.debug('%s.bu_ids set to "%s"' % (self.facility, self._bu_ids))
 
     @property
     def outdir(self):
@@ -289,8 +273,8 @@ class ReporterDaemon(nparcel.DaemonService):
 
     def set_outdir(self, value):
         self._outdir = value
-        log.debug('Set outbound directory to "%s"' % self.outdir)
         create_dir(self.outdir)
+        log.debug('%s.outdir set to "%s"' % (self.facility, self.outdir))
 
     @property
     def outfile(self):
@@ -298,7 +282,7 @@ class ReporterDaemon(nparcel.DaemonService):
 
     def set_outfile(self, value):
         self._outfile = value
-        log.debug('Set outfile base to "%s"' % self.outfile)
+        log.debug('%s.outfile set to "%s"' % (self.facility, self.outfile))
 
     @property
     def outfile_ts_format(self):
@@ -306,8 +290,8 @@ class ReporterDaemon(nparcel.DaemonService):
 
     def set_outfile_ts_format(self, value):
         self._outfile_ts_format = value
-        log.debug('Set outfile time stamp format to "%s"' %
-                  self.outfile_ts_format)
+        log.debug('%s.outfile_ts_format set to "%s"' %
+                  (self.facility, self.outfile_ts_format))
 
     @property
     def extension(self):
@@ -315,15 +299,8 @@ class ReporterDaemon(nparcel.DaemonService):
 
     def set_extension(self, value):
         self._extension = value
-        log.debug('Set extension to "%s"' % self.extension)
-
-    @property
-    def db_kwargs(self):
-        return self._db_kwargs
-
-    def set_db_kwargs(self, value):
-        if value is not None:
-            self._db_kwargs = value
+        log.debug('%s.extension set to "%s"' % (self.facility,
+                                                self.extension))
 
     @property
     def display_hdrs(self):
@@ -450,6 +427,31 @@ class ReporterDaemon(nparcel.DaemonService):
         log.debug('Set compliance period to %s (days)' %
                   self.compliance_period)
 
+    @property
+    def reporter_kwargs(self):
+        kwargs = {}
+        try:
+            kwargs['db'] = self.config.db_kwargs()
+        except AttributeError, err:
+            log.debug('%s db_kwargs not in config: %s ' %
+                      (self.facility, err))
+
+        if self.report_type in ['uncollected',
+                                'noncompliance',
+                                'totals',
+                                'collected']:
+            try:
+                if self.config.report_bu_ids is not None:
+                    self.set_bu_ids(self.config.report_bu_ids)
+            except AttributeError, err:
+                log.info('%s bu_ids not defined in config: %s. Using "%s"' %
+                        (self.facility, err, self.bu_ids))
+                kwargs['bu_ids'] = self.bu_ids
+
+        log.debug('%s reporter_kwargs: "%s"' % (self.facility, kwargs))
+
+        return kwargs
+
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
 
@@ -462,36 +464,21 @@ class ReporterDaemon(nparcel.DaemonService):
         signal.signal(signal.SIGTERM, self._exit_handler)
 
         # Initialise our report objects.
-        if self._report_type == 'uncollected':
-            if self._report is None:
-                self._report = nparcel.Uncollected(self.db_kwargs,
-                                                   self.bu_ids)
-        elif self._report_type == 'compliance':
-            if self._report is None:
-                self._report = nparcel.Compliance(self.db_kwargs)
-
-            # Parse "compliance" specific config items.
-            try:
-                if self.config.report_compliance_period is not None:
-                    tmp_period = self.config.report_compliance_period
-                    self.set_compliance_period(tmp_period)
-            except AttributeError, err:
-                log.info('Report (compliance) period not defined in config')
-            self._report.set_period(self.compliance_period)
-        elif self._report_type == 'noncompliance':
-            if self._report is None:
-                self._report = nparcel.NonCompliance(self.db_kwargs,
-                                                     self.bu_ids)
-        elif self._report_type == 'exception':
-            if self._report is None:
-                self._report = nparcel.Exception(self.db_kwargs)
-        elif self._report_type == 'totals':
-            if self._report is None:
-                self._report = nparcel.Totals(self.db_kwargs, self.bu_ids)
-        elif self._report_type == 'collected':
-            if self._report is None:
-                self._report = nparcel.Collected(self.db_kwargs,
-                                                 self.bu_ids)
+        if self._report is None:
+            kwargs = self.reporter_kwargs
+            if self.report_type == 'uncollected':
+                self._report = nparcel.Uncollected(**kwargs)
+            elif self.report_type == 'compliance':
+                self._report = nparcel.Compliance(**kwargs)
+                self._report.set_period(self.compliance_period)
+            elif self.report_type == 'noncompliance':
+                self._report = nparcel.NonCompliance(**kwargs)
+            elif self.report_type == 'exception':
+                self._report = nparcel.Exception(**kwargs)
+            elif self.report_type == 'totals':
+                self._report = nparcel.Totals(**kwargs)
+            elif self.report_type == 'collected':
+                self._report = nparcel.Collected(**kwargs)
 
         # Set the report PROD instance name.
         try:

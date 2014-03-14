@@ -12,7 +12,7 @@ class CommsB2CConfig(nparcel.B2CConfig):
     """:class:`nparcel.CommsB2CConfig` captures the configuration items
     required for the ``npcommsd`` facility.
 
-     .. attribute:: *comms*
+     .. attribute:: *comms_dir*
 
         directory where comms files are read from
 

@@ -24,6 +24,7 @@ from nparcel.config import Config
 from nparcel.b2cconfig import B2CConfig
 from nparcel.b2cconfig.commsb2cconfig import CommsB2CConfig
 from nparcel.b2cconfig.exporterb2cconfig import ExporterB2CConfig
+from nparcel.b2cconfig.reporterb2cconfig import ReporterB2CConfig
 from nparcel.ftp import Ftp
 from nparcel.reminder import Reminder
 from nparcel.ondelivery import OnDelivery

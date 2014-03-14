@@ -28,7 +28,10 @@ class TestReporterDaemonCollected(unittest2.TestCase):
         bu_ids = {1: 'Toll Priority',
                   2: 'Toll Fast',
                   3: 'Toll IPEC'}
-        cls._rd._report = nparcel.Collected(db_kwargs={}, bu_ids=bu_ids)
+        cls._rd.set_bu_ids(bu_ids)
+        cls._rd.set_recipients(['loumar@tollgroup.com'])
+        kwargs = cls._rd.reporter_kwargs
+        cls._rd._report = nparcel.Collected(**kwargs)
 
         # Prepare some sample data.
         db = cls._rd._report.db
@@ -70,7 +73,7 @@ SET job_ts = '%s'""" % cls._now
         self.assertIsInstance(self._rd, nparcel.ReporterDaemon, msg)
 
     def test_start(self):
-        """ReporterDaemon _start processing loop.
+        """ReporterDaemon _start processing loop -- collected.
         """
         dry = True
 

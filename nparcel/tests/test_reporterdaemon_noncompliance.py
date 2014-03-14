@@ -25,7 +25,13 @@ class TestReporterDaemonNonCompliance(unittest2.TestCase):
         cls._dir = tempfile.mkdtemp()
         cls._nc.set_outdir(cls._dir)
 
-        cls._nc._report = nparcel.NonCompliance(db_kwargs={}, bu_ids=bu_ids)
+        bu_ids = {1: 'Toll Priority',
+                  2: 'Toll Fast',
+                  3: 'Toll IPEC'}
+        cls._nc.set_bu_ids(bu_ids)
+        cls._nc.set_recipients(['loumar@tollgroup.com'])
+        kwargs = cls._nc.reporter_kwargs
+        cls._nc._report = nparcel.NonCompliance(**kwargs)
 
         # Prepare some sample data.
         db = cls._nc._report.db
@@ -72,7 +78,7 @@ WHERE id IN (7, 8)""" % cls._older_date
         db.commit()
 
     def test_start(self):
-        """ReporterDaemon _start processing loop.
+        """ReporterDaemon _start processing loop -- noncompliance.
         """
         dry = True
 

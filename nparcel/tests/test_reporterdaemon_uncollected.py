@@ -27,8 +27,8 @@ class TestReporterDaemonUncollected(unittest2.TestCase):
         bu_ids = {1: 'Toll Priority',
                   2: 'Toll Fast',
                   3: 'Toll IPEC'}
-        cls._ud._report = nparcel.Uncollected(db_kwargs={},
-                                              bu_ids=bu_ids)
+        cls._ud.set_bu_ids(bu_ids)
+        cls._ud._report = nparcel.Uncollected(**(cls._ud.reporter_kwargs))
 
         # Prepare some sample data.
         db = cls._ud._report.db
@@ -56,7 +56,7 @@ SET job_ts = '%s'""" % cls._now
         # "job_item" table timestamp updates.
         sql = """UPDATE job_item
 SET created_ts = '%s'
-WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
+WHERE id IN (15, 16, 19, 20, 22)""" % (cls._now - datetime.timedelta(10))
         db(sql)
 
         db.commit()
@@ -68,7 +68,7 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
         self.assertIsInstance(self._ud, nparcel.ReporterDaemon, msg)
 
     def test_start(self):
-        """ReporterDaemon _start processing loop.
+        """ReporterDaemon Uncollected _start processing loop.
         """
         dry = True
 

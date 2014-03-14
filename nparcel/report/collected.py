@@ -6,15 +6,17 @@ from nparcel.utils.log import log
 
 
 class Collected(nparcel.Auditer):
-    """Toll Parcel Portal base Collected class.
+    """Toll Parcel Portal Collected class.
 
     """
-    def __init__(self, db_kwargs=None, bu_ids=None):
+    def __init__(self, **kwargs):
         """Collected initialiser.
 
         """
-        super(nparcel.Collected, self).__init__(db_kwargs=db_kwargs,
-                                                bu_ids=bu_ids)
+        db_kwargs = kwargs.get('db')
+        bu_ids = kwargs.get('bu_ids')
+
+        nparcel.Auditer.__init__(self, db_kwargs=db_kwargs, bu_ids=bu_ids)
 
     def process(self, id=None, dry=False):
         """Checks ``agent_stocktake`` table for items that have already

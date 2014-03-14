@@ -22,7 +22,9 @@ class TestReporterDaemonException(unittest2.TestCase):
         cls._dir = tempfile.mkdtemp()
         cls._ud.set_outdir(cls._dir)
 
-        cls._ud._report = nparcel.Exception(db_kwargs={})
+        cls._ud.set_recipients(['loumar@tollgroup.com'])
+        kwargs = cls._ud.reporter_kwargs
+        cls._ud._report = nparcel.Exception(**kwargs)
 
         # Prepare some sample data.
         db = cls._ud._report.db
