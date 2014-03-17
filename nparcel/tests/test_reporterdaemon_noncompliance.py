@@ -25,11 +25,13 @@ class TestReporterDaemonNonCompliance(unittest2.TestCase):
         cls._dir = tempfile.mkdtemp()
         cls._nc.set_outdir(cls._dir)
 
+        cls._nc.set_recipients(['loumar@tollgroup.com'])
+
         bu_ids = {1: 'Toll Priority',
                   2: 'Toll Fast',
                   3: 'Toll IPEC'}
         cls._nc.set_bu_ids(bu_ids)
-        cls._nc.set_recipients(['loumar@tollgroup.com'])
+        cls._nc.set_delivery_partners(['Nparcel'])
         kwargs = cls._nc.reporter_kwargs
         cls._nc._report = nparcel.NonCompliance(**kwargs)
 

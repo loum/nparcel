@@ -22,14 +22,16 @@ class TestReporterDaemonCollected(unittest2.TestCase):
         cls._dir = tempfile.mkdtemp()
         cls._rd.set_outdir(cls._dir)
 
-        cls._rd.set_bu_id_recipient({1: ['loumar@tollgroup.com'],
-                                     2: ['lou.markovski@gmail.com'],
-                                     3: ['lou@triple20.com.au']})
+        cls._rd.set_bu_id_recipients({1: ['loumar@tollgroup.com'],
+                                      2: ['lou.markovski@gmail.com'],
+                                      3: ['lou@triple20.com.au']})
+        cls._rd.set_recipients(['loumar@tollgroup.com'])
+
         bu_ids = {1: 'Toll Priority',
                   2: 'Toll Fast',
                   3: 'Toll IPEC'}
         cls._rd.set_bu_ids(bu_ids)
-        cls._rd.set_recipients(['loumar@tollgroup.com'])
+        cls._rd.set_delivery_partners(['Nparcel'])
         kwargs = cls._rd.reporter_kwargs
         cls._rd._report = nparcel.Collected(**kwargs)
 

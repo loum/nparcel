@@ -58,6 +58,12 @@ class ReporterB2CConfig(nparcel.B2CConfig):
 
         flag to denote if the reports are to be based on Business Unit
 
+    .. attribute:: report_type_delivery_partners
+
+        string based list of Delivery Partner names to limit result set
+        against.  For example, ``['Nparcel', 'Toll']``.  The values supported
+        are as per the ``delivery_partner.name`` table set
+
     .. attribute:: report_bu_id_recipients
 
         list of Business Unit specific recipients
@@ -81,6 +87,7 @@ class ReporterB2CConfig(nparcel.B2CConfig):
     _report_type_ws = {}
     _report_type_recipients = []
     _report_type_bu_based = False
+    _report_type_delivery_partners = []
     _report_bu_id_recipients = {}
     _report_compliance_period = 7
 
@@ -231,6 +238,21 @@ class ReporterB2CConfig(nparcel.B2CConfig):
                    self.report_type_recipients))
 
     @property
+    def report_type_delivery_partners(self):
+        return self._report_type_delivery_partners
+
+    def set_report_type_delivery_partners(self, values=None):
+        del self._report_type_delivery_partners[:]
+        self._report_type_delivery_partners = []
+
+        if values is not None:
+            self._report_type_delivery_partners.extend(values)
+        log.debug('%s report_%s.delivery_partners set to "%s"' %
+                  (self.facility,
+                   self.report_type,
+                   self.report_type_delivery_partners))
+
+    @property
     def report_type_bu_based(self):
         return self._report_type_bu_based
 
@@ -240,6 +262,21 @@ class ReporterB2CConfig(nparcel.B2CConfig):
                   (self.facility,
                    self.report_type,
                    self.report_type_bu_based))
+
+    @property
+    def report_type_delivery_partners(self):
+        return self._report_type_delivery_partners
+
+    def set_report_type_delivery_partners(self, values=None):
+        del self._report_type_delivery_partners[:]
+        self._report_type_delivery_partners = []
+
+        if values is not None:
+            self._report_type_delivery_partners.extend(values)
+        log.debug('%s report_%s.delivery_partners set to "%s"' %
+                  (self.facility,
+                   self.report_type,
+                   self.report_type_delivery_partners))
 
     @property
     def report_bu_id_recipients(self):
@@ -312,14 +349,17 @@ class ReporterB2CConfig(nparcel.B2CConfig):
         for attr in ['outfile',
                      'display_hdrs',
                      'recipients',
-                     'bu_based']:
+                     'bu_based',
+                     'delivery_partners']:
             getter = 'report_type_%s' % attr
             get_method = getattr(self, getter)
             setter = 'set_%s' % getter
             set_method = getattr(self, setter)
             try:
                 val = self.get(report_section, attr)
-                if attr in ['display_hdrs', 'recipients']:
+                if attr in ['display_hdrs',
+                            'recipients',
+                            'delivery_partners']:
                     set_method(val.split(','))
                 else:
                     set_method(val)

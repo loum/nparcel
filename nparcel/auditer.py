@@ -42,12 +42,15 @@ class Auditer(nparcel.Service):
     _delta_time_column = 'JOB_TS'
     _delivery_partners = []
 
-    def __init__(self, db_kwargs=None, bu_ids=None):
+    def __init__(self, db_kwargs=None, bu_ids=None, delivery_partners=None):
         """Auditer initialiser.
 
         """
         if bu_ids is not None:
             self._bu_ids = bu_ids
+
+        if delivery_partners is not None:
+            self._delivery_partners = delivery_partners
 
         nparcel.Service.__init__(self, db=db_kwargs)
 

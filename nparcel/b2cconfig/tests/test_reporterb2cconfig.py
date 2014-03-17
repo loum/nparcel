@@ -114,6 +114,11 @@ class TestReporterB2CConfig(unittest2.TestCase):
         msg = 'report_uncollected_ws error'
         self.assertDictEqual(received, expected, msg)
 
+        received = self._rc.report_type_delivery_partners
+        expected = ['Nparcel']
+        msg = 'report_uncollected_delivery_partner error'
+        self.assertListEqual(received, expected, msg)
+
         # Clean up.
         self._rc.set_report_type(old_report_type)
 
@@ -193,6 +198,11 @@ class TestReporterB2CConfig(unittest2.TestCase):
         expected = 7
         msg = 'report_compliance.period error'
         self.assertEqual(received, expected, msg)
+
+        received = self._rc.report_type_delivery_partners
+        expected = ['Nparcel']
+        msg = 'report_compliance_delivery_partner error'
+        self.assertListEqual(received, expected, msg)
 
         # Clean up.
         self._rc.set_report_type(old_report_type)
@@ -290,6 +300,11 @@ class TestReporterB2CConfig(unittest2.TestCase):
         msg = 'report_noncompliance.bu_based error'
         self.assertFalse(received, msg)
 
+        received = self._rc.report_type_delivery_partners
+        expected = ['Nparcel']
+        msg = 'report_noncompliance_delivery_partner error'
+        self.assertListEqual(received, expected, msg)
+
         # Clean up.
         self._rc.set_report_type(old_report_type)
 
@@ -353,6 +368,11 @@ class TestReporterB2CConfig(unittest2.TestCase):
         msg = 'report_exception.bu_based error'
         self.assertFalse(received, msg)
 
+        received = self._rc.report_type_delivery_partners
+        expected = ['Nparcel']
+        msg = 'report_exception_delivery_partner error'
+        self.assertListEqual(received, expected, msg)
+
         # Clean up.
         self._rc.set_report_type(old_report_type)
 
@@ -414,6 +434,11 @@ class TestReporterB2CConfig(unittest2.TestCase):
         received = self._rc.report_type_bu_based
         msg = 'report_totals.bu_based error'
         self.assertFalse(received, msg)
+
+        received = self._rc.report_type_delivery_partners
+        expected = ['Nparcel']
+        msg = 'report_totals_delivery_partner error'
+        self.assertListEqual(received, expected, msg)
 
         # Clean up.
         self._rc.set_report_type(old_report_type)
@@ -485,6 +510,11 @@ class TestReporterB2CConfig(unittest2.TestCase):
         received = self._rc.report_type_bu_based
         msg = 'report_collected.bu_based error'
         self.assertFalse(received, msg)
+
+        received = self._rc.report_type_delivery_partners
+        expected = ['Nparcel']
+        msg = 'report_collected_delivery_partner error'
+        self.assertListEqual(received, expected, msg)
 
         # Clean up.
         self._rc.set_report_type(old_report_type)

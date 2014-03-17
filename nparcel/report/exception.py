@@ -9,11 +9,13 @@ class Exception(nparcel.Auditer):
     """Toll Parcel Portal Exception class.
 
     """
-    def __init__(self, db_kwargs=None):
+    def __init__(self, db_kwargs=None, delivery_partners=None):
         """Exception initialiser.
 
         """
-        nparcel.Auditer.__init__(self, db_kwargs=db_kwargs)
+        nparcel.Auditer.__init__(self,
+                                 db_kwargs=db_kwargs,
+                                 delivery_partners=delivery_partners)
 
     def process(self, id=None, dry=False):
         """Checks ``agent_stocktake`` table for scanned items that

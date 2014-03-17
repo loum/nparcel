@@ -21,13 +21,14 @@ class TestReporterDaemonUncollected(unittest2.TestCase):
         cls._dir = tempfile.mkdtemp()
         cls._ud.set_outdir(cls._dir)
 
-        cls._ud.set_bu_id_recipient({1: ['loumar@tollgroup.com'],
-                                     2: ['lou.markovski@gmail.com'],
-                                     3: ['lou@triple20.com.au']})
+        cls._ud.set_bu_id_recipients({1: ['loumar@tollgroup.com'],
+                                      2: ['lou.markovski@gmail.com'],
+                                      3: ['lou@triple20.com.au']})
         bu_ids = {1: 'Toll Priority',
                   2: 'Toll Fast',
                   3: 'Toll IPEC'}
         cls._ud.set_bu_ids(bu_ids)
+        cls._ud.set_delivery_partners(['Nparcel'])
         cls._ud._report = nparcel.Uncollected(**(cls._ud.reporter_kwargs))
 
         # Prepare some sample data.

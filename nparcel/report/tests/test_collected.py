@@ -16,8 +16,8 @@ class TestCollected(unittest2.TestCase):
                        2: 'Toll Fast',
                        3: 'Toll IPEC'}
 
-        cls._u = nparcel.Collected(bu_ids=cls._bu_ids)
-        cls._u.set_delivery_partners(['Nparcel'])
+        cls._u = nparcel.Collected(bu_ids=cls._bu_ids,
+                                   delivery_partners=['Nparcel'])
         db = cls._u.db
 
         # Prepare some sample data.

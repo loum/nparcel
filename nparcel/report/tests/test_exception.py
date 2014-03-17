@@ -12,8 +12,7 @@ class TestException(unittest2.TestCase):
         cls._now = datetime.datetime.now()
         cls.maxDiff = None
 
-        cls._c = nparcel.Exception()
-        cls._c.set_delivery_partners(['Nparcel'])
+        cls._c = nparcel.Exception(delivery_partners=['Nparcel'])
         db = cls._c.db
 
         # Prepare some sample data.

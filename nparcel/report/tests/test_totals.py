@@ -15,8 +15,8 @@ class TestTotals(unittest2.TestCase):
         bu_ids = {1: 'Toll Priority',
                   2: 'Toll Fast',
                   3: 'Toll IPEC'}
-        cls._c = nparcel.Totals(bu_ids=bu_ids)
-        cls._c.set_delivery_partners(['Nparcel'])
+        cls._c = nparcel.Totals(bu_ids=bu_ids,
+                                delivery_partners=['Nparcel'])
         db = cls._c.db
 
         # Prepare some sample data.

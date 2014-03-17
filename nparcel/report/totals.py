@@ -16,12 +16,17 @@ class Totals(nparcel.Auditer):
     """
     _period = 7
 
-    def __init__(self, db_kwargs=None, bu_ids=None):
+    def __init__(self,
+                 db_kwargs=None,
+                 bu_ids=None,
+                 delivery_partners=None):
         """Totals initialiser.
 
         """
-        super(nparcel.Totals, self).__init__(db_kwargs=db_kwargs,
-                                             bu_ids=bu_ids)
+        nparcel.Auditer.__init__(self,
+                                 db_kwargs=db_kwargs,
+                                 bu_ids=bu_ids,
+                                 delivery_partners=delivery_partners)
 
     @property
     def period(self):

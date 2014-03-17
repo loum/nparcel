@@ -16,11 +16,13 @@ class Compliance(nparcel.Auditer):
     """
     _period = 7
 
-    def __init__(self, db_kwargs=None):
+    def __init__(self, db_kwargs=None, delivery_partners=None):
         """Compliance initialiser.
 
         """
-        nparcel.Auditer.__init__(self, db_kwargs=db_kwargs)
+        nparcel.Auditer.__init__(self,
+                                 db_kwargs=db_kwargs,
+                                 delivery_partners=delivery_partners)
 
     @property
     def period(self):

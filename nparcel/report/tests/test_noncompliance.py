@@ -16,8 +16,8 @@ class TestNonCompliance(unittest2.TestCase):
 
         cls.maxDiff = None
 
-        cls._c = nparcel.NonCompliance(bu_ids=bu_ids)
-        cls._c.set_delivery_partners(['Nparcel'])
+        cls._c = nparcel.NonCompliance(bu_ids=bu_ids,
+                                       delivery_partners=['Nparcel'])
         db = cls._c.db
 
         # Prepare some sample data.

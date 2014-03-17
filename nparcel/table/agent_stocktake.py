@@ -80,7 +80,7 @@ WHERE processed_ts IS NULL""" % {'name': self.name,
             *period*: time (in days) from now that is the cut off for
             agent compliance (default 7 days)
 
-            *delivery_partners*: string based tuple of Delivery Partner
+            *delivery_partners*: string based list of Delivery Partner
             names to limit result set against.  For example,
             ``['Nparcel', 'Toll']``.  The values supported are as per
             the ``delivery_partner.name`` table set

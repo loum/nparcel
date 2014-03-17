@@ -22,11 +22,13 @@ class TestReporterDaemonTotals(unittest2.TestCase):
         cls._dir = tempfile.mkdtemp()
         cls._ud.set_outdir(cls._dir)
 
+        cls._ud.set_recipients(['loumar@tollgroup.com'])
+
         bu_ids = {1: 'Toll Priority',
                   2: 'Toll Fast',
                   3: 'Toll IPEC'}
         cls._ud.set_bu_ids(bu_ids)
-        cls._ud.set_recipients(['loumar@tollgroup.com'])
+        cls._ud.set_delivery_partners(['Nparcel'])
         kwargs = cls._ud.reporter_kwargs
         cls._ud._report = nparcel.Totals(**kwargs)
 

@@ -471,9 +471,9 @@ UNION
             that have been picked up if ``True``. Otherwise, will extract
             ``job_items`` that have not been picked up if ``False``.
 
-            *delivery_partners*: string based tuple of Delivery Partner
+            *delivery_partners*: string based list of Delivery Partner
             names to limit result set against.  For example,
-            ``['nparcel', 'toll']``.  The values supported are as per
+            ``['Nparcel', 'Toll']``.  The values supported are as per
             the ``delivery_partner.name`` table set
 
             *columns*: string prepresentation of the columns to query
@@ -600,7 +600,7 @@ AND %(alias)s.job_id IN
             that have been picked up if ``True``. Otherwise, will extract
             ``job_items`` that have not been picked up if ``False``.
 
-            *delivery_partners*: string based tuple of Delivery Partner
+            *delivery_partners*: string based list of Delivery Partner
             names to limit result set against.  For example,
             ``['Nparcel', 'Toll']``.  The values supported are as per
             the ``delivery_partner.name`` table set

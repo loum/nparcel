@@ -10,11 +10,17 @@ class NonCompliance(nparcel.Auditer):
 
     """
 
-    def __init__(self, db_kwargs=None, bu_ids=None):
+    def __init__(self,
+                 db_kwargs=None,
+                 bu_ids=None,
+                 delivery_partners=None):
         """NonCompliance initialiser.
 
         """
-        nparcel.Auditer.__init__(self, db_kwargs=db_kwargs, bu_ids=bu_ids)
+        nparcel.Auditer.__init__(self,
+                                 db_kwargs=db_kwargs,
+                                 bu_ids=bu_ids,
+                                 delivery_partners=delivery_partners)
 
     def process(self, id=None, dry=False):
         """Identifies list of ``job_items`` found in Toll Parcel Portal
@@ -38,7 +44,6 @@ class NonCompliance(nparcel.Auditer):
         date_delta_jobitems = []
 
         bu_ids = tuple(self.bu_ids.keys())
-        dps = self.delivery_partners
 
         if len(bu_ids):
             kwargs = {'bu_ids': bu_ids,

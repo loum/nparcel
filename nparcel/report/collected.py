@@ -15,9 +15,11 @@ class Collected(nparcel.Auditer):
         """
         db_kwargs = kwargs.get('db')
         bu_ids = kwargs.get('bu_ids')
+        delivery_partners = kwargs.get('delivery_partners')
         nparcel.Auditer.__init__(self,
                                  db_kwargs=db_kwargs,
-                                 bu_ids=bu_ids)
+                                 bu_ids=bu_ids,
+                                 delivery_partners=delivery_partners)
 
     def process(self, id=None, dry=False):
         """Checks ``agent_stocktake`` table for items that have already

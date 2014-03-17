@@ -23,6 +23,8 @@ class TestReporterDaemonException(unittest2.TestCase):
         cls._ud.set_outdir(cls._dir)
 
         cls._ud.set_recipients(['loumar@tollgroup.com'])
+
+        cls._ud.set_delivery_partners(['Nparcel'])
         kwargs = cls._ud.reporter_kwargs
         cls._ud._report = nparcel.Exception(**kwargs)
 

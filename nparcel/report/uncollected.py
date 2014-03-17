@@ -9,12 +9,17 @@ class Uncollected(nparcel.Auditer):
     """Parcel Portal Uncollected class.
 
     """
-    def __init__(self, db_kwargs=None, bu_ids=None):
+    def __init__(self,
+                 db_kwargs=None,
+                 bu_ids=None,
+                 delivery_partners=None):
         """Uncollected initialiser.
 
         """
-        super(nparcel.Uncollected, self).__init__(db_kwargs=db_kwargs,
-                                                  bu_ids=bu_ids)
+        nparcel.Auditer.__init__(self,
+                                 db_kwargs=db_kwargs,
+                                 bu_ids=bu_ids,
+                                 delivery_partners=delivery_partners)
 
     def process(self, id, dry=False):
         """Checks ``agent_stocktake`` table for items that exist
@@ -42,10 +47,9 @@ class Uncollected(nparcel.Auditer):
             self.db(sql)
             self.db.commit()
 
-        dps = self.delivery_partners
-
-        sql = self.db.jobitem.reference_sql(bu_ids=(id,),
-                                            delivery_partners=dps)
+        kwargs = {'bu_ids': (id,),
+                  'delivery_partners': self.delivery_partners}
+        sql = self.db.jobitem.reference_sql(**kwargs)
         self.db(sql)
 
         self.set_columns(self.db.columns())

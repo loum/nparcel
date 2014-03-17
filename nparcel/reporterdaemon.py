@@ -13,7 +13,7 @@ from nparcel.utils.files import create_dir
 class ReporterDaemon(nparcel.DaemonService):
     """Daemoniser facility for the reporting classes.
 
-    .. attribute:: bu_ids
+    .. attribute:: *bu_ids*
 
         dictionary mapping between Business Unit ID (``job.bu_id``
         column) and a human-readable format.  The default is::
@@ -22,32 +22,32 @@ class ReporterDaemon(nparcel.DaemonService):
              2: 'Toll Fast',
              3: 'Toll IPEC'}
 
-    .. attribute:: outfile
+    .. attribute:: *outfile*
 
         output filename base
         (default ``Stocktake_uncollected_aged_report_``)
 
-    .. attribute:: outfile_ts_format
+    .. attribute:: *outfile_ts_format*
 
         timestamp format to append to the *outfile*
         (default ``%Y%m%d-%H%M``)
 
-    .. attribute:: outdir
+    .. attribute:: *outdir*
 
         temporary working directory to where report files are
         staged to for further processing (default ``/data/nparcel/reports``)
 
-    .. attribute:: extension
+    .. attribute:: *extension*
 
         report filename extension
 
-    .. attribute:: display_hdrs
+    .. attribute:: *display_hdrs*
 
         list of column headers to display in the report
         This can control the order and appearance of the raw query column
         set
 
-    .. attribute:: aliases
+    .. attribute:: *aliases*
 
         dictionary of raw header names and the preferred alias
         to display in the report.  For example::
@@ -59,7 +59,7 @@ class ReporterDaemon(nparcel.DaemonService):
              'ITEM_NBR': 'Item Nbr',
              'PIECES': 'Pieces'}
 
-    .. attribute:: header_widths
+    .. attribute:: *header_widths*
 
         dictionary of aliased header names and prefered column width.
         For example::
@@ -69,7 +69,7 @@ class ReporterDaemon(nparcel.DaemonService):
                  'Item Nbr': 50,
                  'To': 30}
 
-    .. attribute:: ws
+    .. attribute:: *ws*
 
         dictionary of values to represent within the Excel worksheet.
         Notable values include::
@@ -78,25 +78,29 @@ class ReporterDaemon(nparcel.DaemonService):
              'subtitle': ...
              'sheet_title': ...}
 
-    .. attribute:: report_filename
+    .. attribute:: *report_filename*
 
         the generated report filename
 
-    .. attribute:: recipients
+    .. attribute:: *recipients*
 
         list of email recipients
 
-    .. attribute:: bu_id_recipients
+    .. attribute:: *bu_id_recipients*
 
         dictionary of Business Unit IDs and their email recipeints for
         finer-grained controlled of reporting query.  For example,
         uncollected reports are run on a per-BU basis
 
-    .. attribute:: bu_based
+    .. attribute:: *bu_based*
 
         boolean flag to run the report query on a per-Business Unit basis
 
-    .. attribute:: compliance_period
+    .. attribute:: *delivery_partners*
+
+        list of Agent Delivery Partners to limit query set against
+
+    .. attribute:: *compliance_period*
 
         time (in days) from now that is the cut off for agent compliance
         (default 7 days)
@@ -120,6 +124,7 @@ class ReporterDaemon(nparcel.DaemonService):
     _recipients = []
     _bu_id_recipients = {}
     _bu_based = False
+    _delivery_partners = []
     _compliance_period = 7
     _emailer = nparcel.Emailer()
 
@@ -223,6 +228,15 @@ class ReporterDaemon(nparcel.DaemonService):
             log.debug(log_msg % ('bu_based', err, self.bu_based))
 
         try:
+            getter = getattr(self.config, 'report_type_delivery_partners')
+            if getter is not None:
+                self.set_delivery_partners(getter)
+        except AttributeError, err:
+            log.debug(log_msg % ('delivery_partners',
+                                 err,
+                                 self.delivery_partners))
+
+        try:
             if self.config.report_bu_id_recipients.keys() > 0:
                 tmp_bu_ids = self.config.report_bu_id_recipients
                 self.set_bu_id_recipients(tmp_bu_ids)
@@ -299,8 +313,8 @@ class ReporterDaemon(nparcel.DaemonService):
 
     def set_extension(self, value):
         self._extension = value
-        log.debug('%s.extension set to "%s"' % (self.facility,
-                                                self.extension))
+        log.debug('%s.extension set to "%s"' %
+                  (self.facility, self.extension))
 
     @property
     def display_hdrs(self):
@@ -312,10 +326,8 @@ class ReporterDaemon(nparcel.DaemonService):
 
         if values is not None:
             self._display_hdrs.extend(values)
-            log.debug('Setting headers to display to "%s"' %
-                      self.display_hdrs)
-        else:
-            log.debug('Clearing headers to display list')
+        log.debug('%s.display_hdrs set to "%s"' %
+                  (self.facility, self.display_hdrs))
 
     @property
     def aliases(self):
@@ -326,9 +338,7 @@ class ReporterDaemon(nparcel.DaemonService):
 
         if values is not None:
             self._aliases = values
-            log.debug('Set aliases to "%s"' % self._aliases)
-        else:
-            log.debug('Cleared header alias list')
+        log.debug('%s.aliases set to "%s"' % (self.facility, self._aliases))
 
     @property
     def header_widths(self):
@@ -339,9 +349,8 @@ class ReporterDaemon(nparcel.DaemonService):
 
         if values is not None:
             self._header_widths = values
-            log.debug('Set header widths to "%s"' % self._header_widths)
-        else:
-            log.debug('Cleared header widths list')
+        log.debug('%s.header_widths set to "%s"' %
+                  (self.facility, self._header_widths))
 
     @property
     def ws(self):
@@ -352,12 +361,11 @@ class ReporterDaemon(nparcel.DaemonService):
 
         if values is not None:
             self._ws = values
-            log.debug('Set worksheet values to "%s"' % self._ws)
         else:
             self._ws = {'title': str(),
                         'sub_title': str(),
                         'sheet_title': str()}
-            log.debug('Cleared worksheet values')
+        log.debug('%s.ws set to "%s"' % (self.facility, self._ws))
 
     @property
     def report_filename(self):
@@ -365,7 +373,8 @@ class ReporterDaemon(nparcel.DaemonService):
 
     def set_report_filename(self, value):
         self._report_filename = value
-        log.debug('Set report filename to "%s"' % self._report_filename)
+        log.debug('%s.report_filename set to "%s"' %
+                  (self.facility, self._report_filename))
 
     @property
     def recipients(self):
@@ -377,38 +386,33 @@ class ReporterDaemon(nparcel.DaemonService):
 
         if values is not None:
             self._recipients.extend(values)
-            log.debug('Setting report recipients to "%s"' %
-                      self._recipients)
-        else:
-            log.debug('Clearing headers to display list')
+        log.debug('%s.recipients set to "%s"' %
+                  (self.facility, self._recipients))
 
     @property
     def bu_id_recipients(self):
         return self._bu_id_recipients
 
-    def set_bu_id_recipient(self, values):
+    def set_bu_id_recipients(self, values):
         self._bu_id_recipients.clear()
 
         if values is not None:
             self._bu_id_recipients = values
-            log.debug('Set BU ID recipients to "%s"' %
-                      self.bu_id_recipients)
-        else:
-            log.debug('Cleared BU ID recipients')
+        log.debug('%s.bu_id_recipients set to "%s"' %
+                   (self.facility, self.bu_id_recipients))
 
     @property
-    def bu_id_recipients(self):
-        return self._bu_id_recipients
+    def delivery_partners(self):
+        return self._delivery_partners
 
-    def set_bu_id_recipients(self, values=None):
-        self._bu_id_recipients.clear()
+    def set_delivery_partners(self, values=None):
+        del self._delivery_partners[:]
+        self._delivery_partners
 
         if values is not None:
-            self._bu_id_recipients = values
-            log.debug('Set BU ID recipients to "%s"' %
-                      self.bu_id_recipients)
-        else:
-            log.debug('Cleared BU ID recipients')
+            self._delivery_partners.extend(values)
+        log.debug('%s.delivery_partners set to "%s"' %
+                    (self.facility, self._delivery_partners))
 
     @property
     def bu_based(self):
@@ -416,7 +420,7 @@ class ReporterDaemon(nparcel.DaemonService):
 
     def set_bu_based(self, value):
         self._bu_based = (value == True)
-        log.debug('Set BU-based processing flag to "%s"' % self.bu_based)
+        log.debug('%s.bu_based set to "%s"' % (self.facility, self.bu_based))
 
     @property
     def compliance_period(self):
@@ -424,8 +428,8 @@ class ReporterDaemon(nparcel.DaemonService):
 
     def set_compliance_period(self, value):
         self._compliance_period = value
-        log.debug('Set compliance period to %s (days)' %
-                  self.compliance_period)
+        log.debug('%s.compliance_period set to %s (days)' %
+                  (self.facility, self.compliance_period))
 
     @property
     def reporter_kwargs(self):
@@ -444,11 +448,19 @@ class ReporterDaemon(nparcel.DaemonService):
                 if self.config.report_bu_ids is not None:
                     self.set_bu_ids(self.config.report_bu_ids)
             except AttributeError, err:
-                log.info('%s bu_ids not defined in config: %s. Using "%s"' %
-                        (self.facility, err, self.bu_ids))
+                log.debug('%s bu_ids not defined in config: %s. Using "%s"' %
+                          (self.facility, err, self.bu_ids))
                 kwargs['bu_ids'] = self.bu_ids
 
-        log.debug('%s reporter_kwargs: "%s"' % (self.facility, kwargs))
+        try:
+            if self.config.delivery_parters is not None:
+                self.set_bu_ids(self.config.delivery_partners)
+        except AttributeError, err:
+            msg = '%s delivery_partners not defined in config: %s. Using "%s"'
+            log.debug(msg % (self.facility, err, self.bu_ids))
+            kwargs['delivery_partners'] = self.delivery_partners
+
+        log.debug('%s.reporter_kwargs: "%s"' % (self.facility, kwargs))
 
         return kwargs
 
