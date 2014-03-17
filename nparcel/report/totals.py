@@ -45,9 +45,9 @@ class Totals(nparcel.Auditer):
         """
         log.info('Parcel totals query ...')
 
-        ids = tuple(self.bu_ids.keys())
-
-        sql = self.db.jobitem.total_agent_stocktake_parcel_count_sql(ids)
+        kwargs = {'bu_ids': tuple(self.bu_ids.keys()),
+                  'delivery_partners': self.delivery_partners}
+        sql = self.db.jobitem.total_agent_stocktake_parcel_count_sql(**kwargs)
         self.db(sql)
         self.set_columns(self.db.columns())
         agents = list(self.db.rows())

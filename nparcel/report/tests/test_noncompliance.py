@@ -17,6 +17,7 @@ class TestNonCompliance(unittest2.TestCase):
         cls.maxDiff = None
 
         cls._c = nparcel.NonCompliance(bu_ids=bu_ids)
+        cls._c.set_delivery_partners(['Nparcel'])
         db = cls._c.db
 
         # Prepare some sample data.
@@ -25,6 +26,8 @@ class TestNonCompliance(unittest2.TestCase):
                      'fixture': 'agent_stocktakes.py'},
                     {'db': db.agent,
                      'fixture': 'agents.py'},
+                    {'db': db.delivery_partner,
+                     'fixture': 'delivery_partners.py'},
                     {'db': db.identity_type,
                      'fixture': 'identity_type.py'},
                     {'db': db.job,

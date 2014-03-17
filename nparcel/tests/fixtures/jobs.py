@@ -66,4 +66,11 @@
         'job_ts': str(datetime.datetime.now() - datetime.timedelta(99)),
         'bu_id': 1,
     },
+    {
+        'id': 10,
+        'card_ref_nbr': 'PP_DELIVERY_PARTNER_JOB',
+        'agent_id': 7,
+        'job_ts': str(datetime.datetime.now()),
+        'bu_id': 1,
+    },
 ]

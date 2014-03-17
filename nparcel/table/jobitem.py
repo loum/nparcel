@@ -7,13 +7,13 @@ import nparcel
 
 
 class JobItem(nparcel.Table):
-    """Nparcel DB Job_Item table ORM.
+    """Toll Parcel Portal DB Job_Item table ORM.
     """
     _job = nparcel.Job()
     _agent_stocktake = nparcel.AgentStocktake()
 
     def __init__(self):
-        """Nparcel job_item table initialiser.
+        """Toll Parcel Portal job_item table initialiser.
         """
         super(JobItem, self).__init__('job_item')
 
@@ -358,6 +358,7 @@ AND ji.created_ts > '%s'""" % (self.name,
                       bu_ids,
                       reference_nbr=None,
                       picked_up=False,
+                      delivery_partners=None,
                       columns=None,
                       alias='ji'):
         """Extract connote_nbr/item_nbr against *reference_nbr*.
@@ -376,6 +377,11 @@ AND ji.created_ts > '%s'""" % (self.name,
             *picked_up*: boolean flag that will extract ``job_items``
             that have been picked up if ``True``. Otherwise, will extract
             ``job_items`` that have not been picked up if ``False``.
+
+            *delivery_partners*: string based list of Delivery Partner
+            names to limit result set against.  For example,
+            ``['Nparcel', 'Toll']``.  The values supported are as per
+            the ``delivery_partner.name`` table set
 
             *columns*: string prepresentation of the columns to query
             against
@@ -401,8 +407,27 @@ AND ji.created_ts > '%s'""" % (self.name,
         if reference_nbr is None:
             ref = self._agent_stocktake.reference_sql()
 
+        dp_sql = str()
+        if delivery_partners is not None:
+            dps = ', '.join(["'%s'" % x for x in delivery_partners])
+            dps = '(%s)' % dps
+            if len(delivery_partners) == 1:
+                dps = "('%s')" % delivery_partners[0]
+
+            dp_sql = """AND dp.name IN %s AND ag.dp_id = dp.id""" % dps
+
+        union_sql = self.job_based_reference_sql(bu_ids,
+                                                 ref,
+                                                 picked_up,
+                                                 delivery_partners,
+                                                 columns)
+
         sql = """SELECT DISTINCT %(columns)s
-FROM %(name)s as %(alias)s, job as j, agent as ag, agent_stocktake as st
+FROM %(name)s as %(alias)s,
+     job AS j,
+     agent AS ag,
+     agent_stocktake AS st,
+     delivery_partner AS dp
 WHERE %(alias)s.job_id = j.id
 AND ag.id = st.agent_id
 AND j.bu_id IN %(bu_ids)s
@@ -410,17 +435,16 @@ AND j.agent_id = ag.id
 AND (%(alias)s.connote_nbr IN (%(ref)s)
      OR %(alias)s.item_nbr IN (%(ref)s))
 AND %(alias)s.pickup_ts %(pickup_sql)s
+%(dp_sql)s
 UNION
 %(union)s""" % {'columns': columns,
                 'bu_ids': str(bu_ids),
                 'name': self.name,
                 'ref': ref,
                 'alias': alias,
-                'union': self.job_based_reference_sql(bu_ids=bu_ids,
-                                                      reference_nbr=ref,
-                                                      picked_up=picked_up,
-                                                      columns=columns),
-                'pickup_sql': pickup_sql}
+                'union': union_sql,
+                'pickup_sql': pickup_sql,
+                'dp_sql': dp_sql}
 
         return sql
 
@@ -428,6 +452,7 @@ UNION
                                 bu_ids,
                                 reference_nbr,
                                 picked_up=False,
+                                delivery_partners=None,
                                 columns=None,
                                 alias='ji'):
         """Extract connote_nbr/item_nbr against *reference_nbr* matched
@@ -445,6 +470,11 @@ UNION
             *picked_up*: boolean flag that will extract ``job_items``
             that have been picked up if ``True``. Otherwise, will extract
             ``job_items`` that have not been picked up if ``False``.
+
+            *delivery_partners*: string based tuple of Delivery Partner
+            names to limit result set against.  For example,
+            ``['nparcel', 'toll']``.  The values supported are as per
+            the ``delivery_partner.name`` table set
 
             *columns*: string prepresentation of the columns to query
             against
@@ -464,11 +494,27 @@ UNION
         else:
             pickup_sql += 'IS NOT NULL'
 
+        if len(bu_ids) == 1:
+            bu_ids = '(%d)' % bu_ids[0]
+
+        dp_sql = str()
+        if delivery_partners is not None:
+            dps = ', '.join(["'%s'" % x for x in delivery_partners])
+            dps = '(%s)' % dps
+            if len(delivery_partners):
+                dps = "('%s')" % delivery_partners[0]
+
+            dp_sql = """AND dp.name IN %s AND ag.dp_id = dp.id""" % dps
+
         sql = """SELECT DISTINCT %(columns)s
-FROM %(name)s as %(alias)s, job as j, agent as ag
+FROM %(name)s AS %(alias)s,
+     job AS j,
+     agent AS ag,
+     delivery_partner AS dp
 WHERE %(alias)s.job_id = j.id
 AND j.bu_id IN %(bu_ids)s
 AND j.agent_id = ag.id
+%(dp_sql)s
 AND %(alias)s.job_id IN
 (
 %(sql)s
@@ -478,7 +524,8 @@ AND %(alias)s.job_id IN
                      'name': self.name,
                      'sql': self._job.reference_sql(reference_nbr),
                      'alias': alias,
-                     'pickup_sql': pickup_sql}
+                     'pickup_sql': pickup_sql,
+                     'dp_sql': dp_sql}
 
         return sql
 
@@ -533,7 +580,11 @@ AND %(alias)s.job_id IN
 
         return columns
 
-    def non_compliance_sql(self, bu_ids, picked_up=False, alias='ji'):
+    def non_compliance_sql(self,
+                           bu_ids,
+                           picked_up=False,
+                           delivery_partners=None,
+                           alias='ji'):
         """Extract ``job_item`` detail of all items in the ``job_item``
         table that do not exist in the ``agent_stocktake`` table.
 
@@ -548,6 +599,11 @@ AND %(alias)s.job_id IN
             *picked_up*: boolean flag that will extract ``job_items``
             that have been picked up if ``True``. Otherwise, will extract
             ``job_items`` that have not been picked up if ``False``.
+
+            *delivery_partners*: string based tuple of Delivery Partner
+            names to limit result set against.  For example,
+            ``['Nparcel', 'Toll']``.  The values supported are as per
+            the ``delivery_partner.name`` table set
 
             *alias*: table alias (default ``ji``)
 
@@ -569,18 +625,30 @@ AND %(alias)s.job_id IN
         else:
             pickup_sql = 'IS NOT NULL'
 
-        sql = """SELECT %(columns)s
-FROM %(name)s as %(alias)s, job as j, agent as ag
+        dp_sql = str()
+        if delivery_partners is not None:
+            dps = ', '.join(["'%s'" % x for x in delivery_partners])
+            dps = '(%s)' % dps
+            if len(delivery_partners) == 1:
+                dps = "('%s')" % delivery_partners[0]
+
+            dp_sql = """AND dp.name IN %s AND ag.dp_id = dp.id""" % dps
+
+        sql = """SELECT DISTINCT %(columns)s
+FROM %(name)s AS %(alias)s, job AS j, agent AS ag, delivery_partner AS dp
 WHERE %(alias)s.job_id = j.id
 AND j.agent_id = ag.id
 AND %(alias)s.pickup_ts %(pickup_sql)s
+%(dp_sql)s
 AND ji.id NOT IN
 (%(sql)s)""" % {'columns': columns,
                 'alias': alias,
                 'name': self.name,
                 'pickup_sql': pickup_sql,
+                'dp_sql': dp_sql,
                 'sql': self.reference_sql(bu_ids=bu_ids,
                                           picked_up=picked_up,
+                                          delivery_partners=delivery_partners,
                                           columns=col)}
 
         return sql
@@ -589,6 +657,7 @@ AND ji.id NOT IN
                                                bu_ids,
                                                reference_nbr=None,
                                                picked_up=False,
+                                               delivery_partners=None,
                                                columns=None,
                                                alias='ji'):
         """Sum ``agent_stocktake`` based parcel counts per ADP based on
@@ -609,6 +678,11 @@ AND ji.id NOT IN
             that have been picked up if ``True``. Otherwise, will extract
             ``job_items`` that have not been picked up if ``False``.
 
+            *delivery_partners*: string based tuple of Delivery Partner
+            names to limit result set against.  For example,
+            ``['nparcel', 'toll']``.  The values supported are as per
+            the ``delivery_partner.name`` table set
+
             *columns*: string prepresentation of the columns to query
             against
 
@@ -628,6 +702,12 @@ AND ji.id NOT IN
 
         if len(bu_ids) == 1:
             bu_ids = '(%d)' % bu_ids[0]
+
+        dp_sql = str()
+        if delivery_partners is not None:
+            dps = '(%s)' % ', '.join(delivery_partners)
+            if len(delivery_partners):
+                dps = '(%s)' % delivery_partners[0]
 
         ref = reference_nbr
         if reference_nbr is None:
@@ -660,6 +740,7 @@ FROM (SELECT %(columns)s
  AND (%(alias)s.connote_nbr IN (%(ref)s)
       OR (%(alias)s.item_nbr IN (%(ref)s)))
  AND %(alias)s.pickup_ts %(pickup_sql)s
+ %(dp_sql)s
  UNION
  %(union)s) AS A
 GROUP BY A.DP_CODE,
@@ -672,19 +753,29 @@ A.AGENT_CODE""" % {'columns': columns,
                    'union': self.job_based_reference_sql(bu_ids,
                                                          ref,
                                                          picked_up,
+                                                         delivery_partners,
                                                          columns),
                    'job_item_count': self.total_parcel_count_sql(picked_up),
-                   'pickup_sql': pickup_sql}
+                   'pickup_sql': pickup_sql,
+                   'dp_sql': dp_sql}
 
         return sql
 
-    def total_parcel_count_sql(self, picked_up=False, alias='ji'):
+    def total_parcel_count_sql(self,
+                               picked_up=False,
+                               delivery_partners=None,
+                               alias='ji'):
         """Sum parcel counts per ADP based on *picked_up*.
 
         **Kwargs:**
             *picked_up*: boolean flag that will extract ``job_items``
             that have been picked up if ``True``. Otherwise, will extract
             ``job_items`` that have not been picked up if ``False``.
+
+            *delivery_partners*: string based tuple of Delivery Partner
+            names to limit result set against.  For example,
+            ``['Nparcel', 'Toll']``.  The values supported are as per
+            the ``delivery_partner.name`` table set
 
             *alias*: table alias (default ``ji``)
 
@@ -697,23 +788,42 @@ A.AGENT_CODE""" % {'columns': columns,
         else:
             pickup_sql = 'IS NOT NULL'
 
+        dp_sql = str()
+        if delivery_partners is not None:
+            dps = ', '.join(["'%s'" % x for x in delivery_partners])
+            dps = '(%s)' % dps
+            if len(delivery_partners) == 1:
+                dps = "('%s')" % delivery_partners[0]
+
+            dp_sql = """AND dp.name IN %s AND ag.dp_id = dp.id""" % dps
+
         sql = """SELECT SUM(%(alias)s.pieces)
-FROM %(name)s as %(alias)s, job as j, agent as ag
+FROM %(name)s AS %(alias)s, job AS j, agent AS ag, delivery_partner AS dp
 WHERE %(alias)s.job_id = j.id
 AND j.agent_id = ag.id
+%(dp_sql)s
 AND %(alias)s.pickup_ts %(pickup_sql)s""" % {'name': self.name,
+                                             'dp_sql': dp_sql,
                                              'pickup_sql': pickup_sql,
                                              'alias': alias}
 
         return sql
 
-    def agent_id_of_aged_parcels(self, period=7, alias='ji'):
+    def agent_id_of_aged_parcels(self,
+                                 period=7,
+                                 delivery_partners=None,
+                                 alias='ji'):
         """SQL to provide a distinct list of agents that have an
         aged parcel.
 
         **Kwargs:**
             *period*: time (in days) from now that is the cut off for
             agent compliance (default 7 days)
+
+            *delivery_partners*: string based tuple of Delivery Partner
+            names to limit result set against.  For example,
+            ``['nparcel', 'toll']``.  The values supported are as per
+            the ``delivery_partner.name`` table set
 
             *alias*: table alias (default ``ji``)
 
@@ -725,7 +835,9 @@ AND %(alias)s.pickup_ts %(pickup_sql)s""" % {'name': self.name,
         ts = now - datetime.timedelta(days=period)
         date = ts.strftime('%Y-%m-%d %H:%M:%S')
 
-        compliance_sql = self._agent_stocktake.compliance_sql(period=period)
+        dps = delivery_partners
+        compliance_sql = self._agent_stocktake.compliance_sql(period=period,
+                                                              delivery_partners=dps)
 
         sql = """%(compliance_sql)s
 AND ag.id IN

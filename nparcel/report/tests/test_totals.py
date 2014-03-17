@@ -16,6 +16,7 @@ class TestTotals(unittest2.TestCase):
                   2: 'Toll Fast',
                   3: 'Toll IPEC'}
         cls._c = nparcel.Totals(bu_ids=bu_ids)
+        cls._c.set_delivery_partners(['Nparcel'])
         db = cls._c.db
 
         # Prepare some sample data.
@@ -24,6 +25,8 @@ class TestTotals(unittest2.TestCase):
                      'fixture': 'agent_stocktakes.py'},
                     {'db': db.agent,
                      'fixture': 'agents.py'},
+                    {'db': db.delivery_partner,
+                     'fixture': 'delivery_partners.py'},
                     {'db': db.identity_type,
                      'fixture': 'identity_type.py'},
                     {'db': db.job,

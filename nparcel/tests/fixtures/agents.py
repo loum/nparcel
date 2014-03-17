@@ -2,6 +2,7 @@
     {
         'id': 1,
         'code': 'N031',
+        'dp_id': 1,
         'dp_code': 'NROS010',
         'state': 'VIC',
         'name': 'N031 Name',
@@ -13,6 +14,7 @@
     {
         'id': 2,
         'code': 'BAD1',
+        'dp_id': 1,
         'dp_code': 'BAD1000',
         'state': 'NSW',
         'name': 'BAD1 Name',
@@ -24,6 +26,7 @@
     {
         'id': 3,
         'code': 'V999',
+        'dp_id': 1,
         'dp_code': 'VIC999',
         'state': 'VIC',
         'name': 'VIC Test Newsagent 999',
@@ -36,6 +39,7 @@
     {
         'id': 4,
         'code': 'Q013',
+        'dp_id': 1,
         'dp_code': 'QBRI005',
         'state': 'QLD',
         'name': 'George Street News',
@@ -47,6 +51,7 @@
     {
         'id': 5,
         'code': 'W049',
+        'dp_id': 1,
         'dp_code': 'WVIC005',
         'state': 'WA',
         'name': 'Bunters We Never Sleep News + Deli',
@@ -58,12 +63,25 @@
     {
         'id': 6,
         'code': 'P031',
+        'dp_id': 1,
         'dp_code': 'PP1234',
         'state': 'VIC',
         'name': 'ParcelPoint Dodgies',
         'address': '21 Dodgy Street',
         'postcode': '3075',
         'suburb': 'Lalor',
+        'parcel_size_code': 2,
+    },
+    {
+        'id': 7,
+        'code': 'P032',
+        'dp_id': 2,
+        'dp_code': 'PP1235',
+        'state': 'VIC',
+        'name': 'ParcelPoint Doreen',
+        'address': '100 Test Street',
+        'postcode': '3754',
+        'suburb': 'Doreenn',
         'parcel_size_code': 2,
     },
 ]

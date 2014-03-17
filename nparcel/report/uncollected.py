@@ -42,7 +42,10 @@ class Uncollected(nparcel.Auditer):
             self.db(sql)
             self.db.commit()
 
-        sql = self.db.jobitem.reference_sql(bu_ids=(id,))
+        dps = self.delivery_partners
+
+        sql = self.db.jobitem.reference_sql(bu_ids=(id,),
+                                            delivery_partners=dps)
         self.db(sql)
 
         self.set_columns(self.db.columns())

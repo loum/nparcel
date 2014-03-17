@@ -12,7 +12,7 @@ from nparcel.utils import date_diff
 class Auditer(nparcel.Service):
     """Toll Parcel Portal base Auditer class.
 
-    .. attribute:: bu_id
+    .. attribute:: *bu_id*
 
         dictionary mapping between Business Unit ID (``job.bu_id``
         column) and a human-readable format.  The default is::
@@ -21,18 +21,26 @@ class Auditer(nparcel.Service):
              2: 'Toll Fast',
              3: 'Toll IPEC'}
 
-    .. attribute:: columns
+    .. attribute:: *columns*
 
         list of names of the query columns
 
-    .. attribute::
-        *delta_time_column*: raw column name to use for time delta
+    .. attribute:: *delta_time_column*
+
+        raw column name to use for time delta
         (default ``JOB_TS`` which relates to the ``job.job_ts`` column)
+
+    .. attribute:: *delivery_partners*
+
+        string based list of Delivery Partner names to limit result set
+        against.  For example, ``['Nparcel', 'Toll']``.  The values supported
+        are as per the ``delivery_partner.name`` table set
 
     """
     _bu_ids = {}
     _columns = []
     _delta_time_column = 'JOB_TS'
+    _delivery_partners = []
 
     def __init__(self, db_kwargs=None, bu_ids=None):
         """Auditer initialiser.
@@ -41,7 +49,7 @@ class Auditer(nparcel.Service):
         if bu_ids is not None:
             self._bu_ids = bu_ids
 
-        super(nparcel.Auditer, self).__init__(db=db_kwargs)
+        nparcel.Service.__init__(self, db=db_kwargs)
 
     @property
     def bu_ids(self):
@@ -52,9 +60,7 @@ class Auditer(nparcel.Service):
 
         if values is not None:
             self._bu_ids = values
-            log.debug('Set bu_ids to "%s"' % self._bu_ids)
-        else:
-            log.debug('Cleared bu_ids')
+        log.debug('%s.bu_ids set to "%s"' % (self.facility, self.bu_ids))
 
     @property
     def columns(self):
@@ -65,10 +71,8 @@ class Auditer(nparcel.Service):
         self._columns = []
 
         if values is not None:
-            log.debug('Setting columns to "%s"' % values)
             self._columns.extend(values)
-        else:
-            log.debug('Cleared columns list')
+        log.debug('%s.columns set to "%s"' % (self.facility, self.columns))
 
     @property
     def delta_time_column(self):
@@ -76,7 +80,21 @@ class Auditer(nparcel.Service):
 
     def set_delta_time_column(self, value):
         self._delta_time_column = value
-        log.debug('Set delta time column to "%s"' % self.delta_time_column)
+        log.debug('%s.delta_time_column set to "%s"' %
+                  (self.facility, self.delta_time_column))
+
+    @property
+    def delivery_partners(self):
+        return self._delivery_partners
+
+    def set_delivery_partners(self, values=None):
+        del self._delivery_partners[:]
+        self._delivery_partners = []
+
+        if values is not None:
+            self._delivery_partners.extend(values)
+        log.debug('%s.delivery_partners set to "%s"' %
+                  (self.facility, self.delivery_partners))
 
     def translate_bu(self, headers, row, bu_ids):
         """Translate the BU ID to the Business Unit name string.

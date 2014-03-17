@@ -17,6 +17,7 @@ class TestCollected(unittest2.TestCase):
                        3: 'Toll IPEC'}
 
         cls._u = nparcel.Collected(bu_ids=cls._bu_ids)
+        cls._u.set_delivery_partners(['Nparcel'])
         db = cls._u.db
 
         # Prepare some sample data.
@@ -25,6 +26,8 @@ class TestCollected(unittest2.TestCase):
                      'fixture': 'agent_stocktakes.py'},
                     {'db': db.agent,
                      'fixture': 'agents.py'},
+                    {'db': db.delivery_partner,
+                     'fixture': 'delivery_partners.py'},
                     {'db': db.identity_type,
                      'fixture': 'identity_type.py'},
                     {'db': db.job,
