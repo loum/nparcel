@@ -28,6 +28,8 @@ class TestJobItem(unittest2.TestCase):
                      'fixture': 'agent_stocktakes.py'},
                     {'db': db.agent,
                      'fixture': 'agents.py'},
+                    {'db': db.delivery_partner,
+                     'fixture': 'delivery_partners.py'},
                     {'db': db.identity_type,
                      'fixture': 'identity_type.py'},
                     {'db': db.job,
@@ -777,7 +779,10 @@ AND notify_ts IS NOT NULL""" % job_item_id
         """Verify the non_compliance_sql SQL -- uncollected.
         """
         bu_ids = (1, 2, 3)
-        sql = self._db.jobitem.non_compliance_sql(bu_ids)
+        dps = ['Nparcel']
+
+        sql = self._db.jobitem.non_compliance_sql(bu_ids,
+                                                  delivery_partners=dps)
         self._db(sql)
         received = [x[0] for x in list(self._db.rows())]
         expected = [2, 3, 4, 6, 8, 9, 10, 11, 12, 13, 14, 17, 18, 23, 24]
@@ -788,8 +793,11 @@ AND notify_ts IS NOT NULL""" % job_item_id
         """Verify the all_job_items_sql SQL -- collected.
         """
         bu_ids = (1, 2, 3)
+        dps = ['Nparcel']
+
         sql = self._db.jobitem.non_compliance_sql(bu_ids,
-                                                  picked_up=True)
+                                                  picked_up=True,
+                                                  delivery_partners=dps)
         self._db(sql)
         received = [x[0] for x in list(self._db.rows())]
         expected = [1, 5, 7]
@@ -853,7 +861,9 @@ WHERE agent_id = 3"""
     def test_total_parcel_count_sql_not_picked_up(self):
         """Verify the total_parcel_count_sql SQL -- not picked up.
         """
-        sql = self._db.jobitem.total_parcel_count_sql()
+        dps = ['Nparcel']
+
+        sql = self._db.jobitem.total_parcel_count_sql(delivery_partners=dps)
         self._db(sql)
 
         received = list(self._db.rows())
@@ -864,7 +874,10 @@ WHERE agent_id = 3"""
     def test_total_parcel_count_sql_picked_up(self):
         """Verify the total_parcel_count_sql SQL -- pickup up.
         """
-        sql = self._db.jobitem.total_parcel_count_sql(picked_up=True)
+        dps = ['Nparcel']
+
+        sql = self._db.jobitem.total_parcel_count_sql(picked_up=True,
+                                                      delivery_partners=dps)
         self._db(sql)
 
         received = list(self._db.rows())
@@ -881,7 +894,9 @@ SET created_ts = '%s'
 WHERE id IN (16, 19, 20, 21, 22)""" % (self._now - datetime.timedelta(20))
         self._db(sql)
 
-        sql = self._db.jobitem.agent_id_of_aged_parcels()
+        dps = ['Nparcel']
+
+        sql = self._db.jobitem.agent_id_of_aged_parcels(delivery_partners=dps)
         self._db(sql)
 
         received = list(self._db.rows())

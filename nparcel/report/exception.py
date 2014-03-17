@@ -6,14 +6,14 @@ from nparcel.utils.log import log
 
 
 class Exception(nparcel.Auditer):
-    """Toll Parcel Portal base Exception class.
+    """Toll Parcel Portal Exception class.
 
     """
     def __init__(self, db_kwargs=None):
         """Exception initialiser.
 
         """
-        super(nparcel.Exception, self).__init__(db_kwargs=db_kwargs)
+        nparcel.Auditer.__init__(self, db_kwargs=db_kwargs)
 
     def process(self, id=None, dry=False):
         """Checks ``agent_stocktake`` table for scanned items that
@@ -29,7 +29,8 @@ class Exception(nparcel.Auditer):
         """
         log.info('Stocktake exception query ...')
 
-        sql = self.db.agent_stocktake.reference_exception_sql()
+        kwargs = {'delivery_partners': self.delivery_partners}
+        sql = self.db.agent_stocktake.reference_exception_sql(**kwargs)
         self.db(sql)
         self.set_columns(self.db.columns())
         items = list(self.db.rows())

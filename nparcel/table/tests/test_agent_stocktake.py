@@ -23,6 +23,8 @@ class TestAgentStocktake(unittest2.TestCase):
                      'fixture': 'agent_stocktakes.py'},
                     {'db': db.agent,
                      'fixture': 'agents.py'},
+                    {'db': db.delivery_partner,
+                     'fixture': 'delivery_partners.py'},
                     {'db': db.identity_type,
                      'fixture': 'identity_type.py'},
                     {'db': db.job,
@@ -120,6 +122,8 @@ WHERE reference_nbr = '%s'""" % (cls._agent_stocktake_created_ts,
         old_date = self._now - datetime.timedelta(8)
         older_date = self._now - datetime.timedelta(10)
 
+        dps = ['Nparcel', 'bananas']
+
         sql = """UPDATE agent_stocktake
 SET created_ts = '%s'
 WHERE id IN (6)""" % old_date
@@ -130,7 +134,7 @@ SET created_ts = '%s'
 WHERE id IN (7, 8)""" % older_date
         self._db(sql)
 
-        sql = self._st.compliance_sql()
+        sql = self._st.compliance_sql(delivery_partners=dps)
         self._db(sql)
 
         received = list(self._db.rows())

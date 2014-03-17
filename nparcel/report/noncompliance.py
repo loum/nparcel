@@ -14,8 +14,7 @@ class NonCompliance(nparcel.Auditer):
         """NonCompliance initialiser.
 
         """
-        super(nparcel.NonCompliance, self).__init__(db_kwargs=db_kwargs,
-                                                    bu_ids=bu_ids)
+        nparcel.Auditer.__init__(self, db_kwargs=db_kwargs, bu_ids=bu_ids)
 
     def process(self, id=None, dry=False):
         """Identifies list of ``job_items`` found in Toll Parcel Portal
@@ -39,8 +38,12 @@ class NonCompliance(nparcel.Auditer):
         date_delta_jobitems = []
 
         bu_ids = tuple(self.bu_ids.keys())
+        dps = self.delivery_partners
+
         if len(bu_ids):
-            sql = self.db.jobitem.non_compliance_sql(bu_ids=bu_ids)
+            kwargs = {'bu_ids': bu_ids,
+                      'delivery_partners': self.delivery_partners}
+            sql = self.db.jobitem.non_compliance_sql(**kwargs)
             self.db(sql)
             self.set_columns(self.db.columns())
             jobitems = list(self.db.rows())
@@ -49,9 +52,10 @@ class NonCompliance(nparcel.Auditer):
                 cleansed_jobitems.append(self._cleanse(self.columns, i))
 
             for i in cleansed_jobitems:
-                xlated_jobitems.append(self.translate_bu(self.columns,
-                                                         i,
-                                                         self.bu_ids))
+                kwargs = {'headers': self.columns,
+                          'row': i,
+                          'bu_ids': self.bu_ids}
+                xlated_jobitems.append(self.translate_bu(**kwargs))
             for i in xlated_jobitems:
                 delta_row = self.add_date_diff(self.columns,
                                                i,

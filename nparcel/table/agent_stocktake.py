@@ -72,13 +72,18 @@ WHERE processed_ts IS NULL""" % {'name': self.name,
 
         return sql
 
-    def compliance_sql(self, period=7, alias='st'):
+    def compliance_sql(self, period=7, delivery_partners=None, alias='st'):
         """Select agent information of agents that have not performed
         a stocktake since *period* days prior.
 
         **Kwargs:**
             *period*: time (in days) from now that is the cut off for
             agent compliance (default 7 days)
+
+            *delivery_partners*: string based tuple of Delivery Partner
+            names to limit result set against.  For example,
+            ``['Nparcel', 'Toll']``.  The values supported are as per
+            the ``delivery_partner.name`` table set
 
             *alias*: table alias (default ``st``)
 
@@ -90,26 +95,45 @@ WHERE processed_ts IS NULL""" % {'name': self.name,
         compliance_ts = now - datetime.timedelta(days=period)
         compliance_date = compliance_ts.strftime('%Y-%m-%d %H:%M:%S')
 
-        sql = """SELECT ag.dp_code AS DP_CODE,
+        dp_sql = str()
+        if delivery_partners is not None:
+            dps = ', '.join(["'%s'" % x for x in delivery_partners])
+            dps = '(%s)' % dps
+            if len(delivery_partners) == 1:
+                dps = "('%s')" % delivery_partners[0]
+
+            dp_sql = """AND dp.name IN %s AND ag.dp_id = dp.id""" % dps
+
+        sql = """SELECT DISTINCT ag.dp_code AS DP_CODE,
        ag.code AS AGENT_CODE,
        ag.name AS AGENT_NAME,
        (SELECT MAX(st.created_ts)
         FROM agent_stocktake AS st
         WHERE st.agent_id = ag.id) AS CREATED_TS
-FROM agent as ag
+FROM agent AS ag, delivery_partner AS dp
 WHERE ag.id NOT IN
 (SELECT st.agent_id
  FROM agent_stocktake AS st
- WHERE st.created_ts > '%(date)s')""" % {'date': compliance_date}
+ WHERE st.created_ts > '%(date)s')
+%(dp_sql)s""" % {'date': compliance_date,
+                 'dp_sql': dp_sql}
 
         return sql
 
-    def reference_exception_sql(self, day_range=7, alias='st'):
+    def reference_exception_sql(self,
+                                day_range=7,
+                                delivery_partners=None,
+                                alias='st'):
         """Items in ``agent_stocktake`` table not found Toll Parcel Portal.
 
         **Kwargs:**
             *day_range*: number of days from current time to include
             in search (default 7.0 days)
+
+            *delivery_partners*: string based tuple of Delivery Partner
+            names to limit result set against.  For example,
+            ``['Nparcel', 'Toll']``.  The values supported are as per
+            the ``delivery_partner.name`` table set
 
             *alias*: table alias (default ``st``)
 
@@ -121,12 +145,21 @@ WHERE ag.id NOT IN
         start_ts = now - datetime.timedelta(days=day_range)
         start_date = start_ts.strftime('%Y-%m-%d %H:%M:%S')
 
+        dp_sql = str()
+        if delivery_partners is not None:
+            dps = ', '.join(["'%s'" % x for x in delivery_partners])
+            dps = '(%s)' % dps
+            if len(delivery_partners) == 1:
+                dps = "('%s')" % delivery_partners[0]
+
+            dp_sql = """AND dp.name IN %s AND ag.dp_id = dp.id""" % dps
+
         sql = """SELECT DISTINCT %(alias)s.id AS AG_ID,
        ag.code AS AGENT_CODE,
        %(alias)s.reference_nbr AS REFERENCE_NBR,
        ag.dp_code AS DP_CODE,
        ag.name AS AGENT_NAME
-FROM %(name)s AS %(alias)s, agent AS ag
+FROM %(name)s AS %(alias)s, agent AS ag, delivery_partner AS dp
 WHERE  ag.id = %(alias)s.agent_id
 AND %(alias)s.created_ts > '%(start_date)s'
 AND %(alias)s.reference_nbr NOT IN
@@ -138,9 +171,11 @@ AND %(alias)s.reference_nbr NOT IN
 AND %(alias)s.reference_nbr NOT IN
 (SELECT j.card_ref_nbr
  FROM job AS j, job_item AS ji
- WHERE ji.job_id = j.id)""" % {'name': self.name,
-                               'alias': alias,
-                               'start_date': start_date}
+ WHERE ji.job_id = j.id)
+%(dp_sql)s""" % {'name': self.name,
+                 'alias': alias,
+                 'start_date': start_date,
+                 'dp_sql': dp_sql}
 
         return sql
 

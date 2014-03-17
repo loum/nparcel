@@ -20,7 +20,7 @@ class Compliance(nparcel.Auditer):
         """Compliance initialiser.
 
         """
-        super(nparcel.Compliance, self).__init__(db_kwargs=db_kwargs)
+        nparcel.Auditer.__init__(self, db_kwargs=db_kwargs)
 
     @property
     def period(self):
@@ -44,7 +44,9 @@ class Compliance(nparcel.Auditer):
         """
         log.info('Agent compliance query ...')
 
-        sql = self.db.jobitem.agent_id_of_aged_parcels(period=self.period)
+        kwargs = {'period': self.period,
+                  'delivery_partners': self.delivery_partners}
+        sql = self.db.jobitem.agent_id_of_aged_parcels(**kwargs)
         self.db(sql)
         self.set_columns(self.db.columns())
         agents = list(self.db.rows())

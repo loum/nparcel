@@ -15,8 +15,9 @@ class Collected(nparcel.Auditer):
         """
         db_kwargs = kwargs.get('db')
         bu_ids = kwargs.get('bu_ids')
-
-        nparcel.Auditer.__init__(self, db_kwargs=db_kwargs, bu_ids=bu_ids)
+        nparcel.Auditer.__init__(self,
+                                 db_kwargs=db_kwargs,
+                                 bu_ids=bu_ids)
 
     def process(self, id=None, dry=False):
         """Checks ``agent_stocktake`` table for items that have already
@@ -40,7 +41,10 @@ class Collected(nparcel.Auditer):
         if id is None:
             id = tuple(self.bu_ids.keys())
 
-        sql = self.db.jobitem.reference_sql(bu_ids=id, picked_up=True)
+        dps = self.delivery_partners
+        sql = self.db.jobitem.reference_sql(bu_ids=id,
+                                            picked_up=True,
+                                            delivery_partners=dps)
         self.db(sql)
 
         self.set_columns(self.db.columns())
