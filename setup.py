@@ -4,7 +4,7 @@ import fnmatch
 import shutil
 from distutils.core import setup
 
-VERSION = '0.32'
+VERSION = '0.33'
 
 
 def opj(*args):
@@ -94,6 +94,7 @@ setup(name='python-nparcel',
                 'nparcel.table',
                 'nparcel.report',
                 'nparcel.utils',
+                'nparcel.b2cconfig',
                 'nparcel.openpyxl',
                 'nparcel.openpyxl.shared',
                 'nparcel.openpyxl.shared.compat',

@@ -19,3 +19,4 @@ the inbound and outbound processing.
     filter.rst
     ondelivery.rst
     adp.rst
+    stocktake_reporting.rst

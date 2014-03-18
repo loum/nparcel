@@ -6,5 +6,5 @@
 Comms B2CConfig
 ===============
 
-.. automodule:: nparcel.commsb2cconfig
+.. automodule:: nparcel.b2cconfig.commsb2cconfig
     :members:

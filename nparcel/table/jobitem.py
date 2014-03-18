@@ -213,7 +213,8 @@ AND reminder_ts IS NULL""" % (start_date, uncollected_period)
 
         * ``jobitem.connote_nbr``
         * ``jobitem.item_nbr``
-        * ``jobitem.create_ts``
+        * ``jobitem.notify_ts``
+        * ``jobitem.created_ts``
         * ``jobitem.email_addr``
         * ``jobitem.phone_nbr``
         * ``jobitem.pickup_ts``
@@ -233,6 +234,7 @@ AND reminder_ts IS NULL""" % (start_date, uncollected_period)
        ag.postcode,
        ji.connote_nbr,
        ji.item_nbr,
+       ji.notify_ts,
        ji.created_ts,
        ji.email_addr,
        ji.phone_nbr,

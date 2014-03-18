@@ -453,11 +453,14 @@ class ReporterDaemon(nparcel.DaemonService):
                 kwargs['bu_ids'] = self.bu_ids
 
         try:
-            if self.config.delivery_parters is not None:
-                self.set_bu_ids(self.config.delivery_partners)
+            if self.config.report_type_delivery_parters is not None:
+                self.set_bu_ids(self.config.report_type_delivery_partners)
         except AttributeError, err:
-            msg = '%s delivery_partners not defined in config: %s. Using "%s"'
-            log.debug(msg % (self.facility, err, self.bu_ids))
+            msg = '%s %s not defined in config: %s. Using "%s"'
+            log.debug(msg % (self.facility,
+                             'report_type_delivery_partner',
+                             err,
+                             self.bu_ids))
             kwargs['delivery_partners'] = self.delivery_partners
 
         log.debug('%s.reporter_kwargs: "%s"' % (self.facility, kwargs))

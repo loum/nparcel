@@ -256,6 +256,7 @@ WHERE id = 2""" % {'dt': delayed_dt}
                      '1234',
                      '218501217863',
                      'priority_item_nbr_001',
+                     None,
                      self._now.isoformat(' '),
                      'loumar@tollgroup.com',
                      '0431602145',

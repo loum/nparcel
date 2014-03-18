@@ -8,7 +8,7 @@ from nparcel.utils.log import log
 
 
 class Reminder(nparcel.Service):
-    """Nparcel Reminder class.
+    """Reminder class.
 
     .. attribute:: config
 

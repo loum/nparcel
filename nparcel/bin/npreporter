@@ -9,6 +9,13 @@ from nparcel.utils.log import (log,
                                set_console,
                                rollover)
 
+REPORTS = ['uncollected',
+           'compliance',
+           'noncompliance',
+           'exception',
+           'totals',
+           'collected']
+
 
 def main():
     config_file = os.path.join(os.path.expanduser('~'),
@@ -20,10 +27,8 @@ def main():
     script_name = inspect.getfile(inspect.currentframe())
     script_name = os.path.basename(script_name)
     based.set_script_name(script_name)
-    based.parser.set_usage('usage: %prog [options] <report>')
-    based.parser.add_option('-t', '--template_dir',
-                            dest='template_dir',
-                            help='location of SQL template files')
+    r = '<%s>' % '|'.join(REPORTS)
+    based.parser.set_usage('usage: %prog [options] ' + r)
     based.check_args()
 
     report = None
@@ -31,14 +36,7 @@ def main():
         report = based.args.pop(0)
     except IndexError, err:
         based.parser.error('No report defined')
-
-    reports = ['uncollected',
-               'compliance',
-               'noncompliance',
-               'exception',
-               'totals',
-               'collected']
-    if report not in reports:
+    if report not in REPORTS:
         based.parser.error('Report "%s" not supported' % report)
 
     if based.options.dry is not None:

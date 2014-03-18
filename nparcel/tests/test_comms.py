@@ -681,6 +681,7 @@ WHERE id = 6"""
         expected = {'address': 'N031 Address',
                     'bu_id': 1,
                     'connote_nbr': 'uncollected_connote_sc_1',
+                    'notify_ts': None,
                     'created_ts': '%s' % self._now_str,
                     'item_nbr': 'uncollected_connote_sc_1_item_nbr',
                     'email_addr': 'loumar@tollgroup.com',

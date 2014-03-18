@@ -6,7 +6,7 @@ from nparcel.utils.log import log
 
 
 class Uncollected(nparcel.Auditer):
-    """Parcel Portal Uncollected class.
+    """Toll Parcel Portal Uncollected class.
 
     """
     def __init__(self,

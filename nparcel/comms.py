@@ -14,19 +14,19 @@ from nparcel.timezone import convert_timezone
 
 
 class Comms(nparcel.Service):
-    """Nparcel Comms class.
+    """Comms class.
 
-    .. attribute:: hold_period
+    .. attribute:: *hold_period*
 
         period (in seconds) that the uncollected parcel will be held for
 
-    .. attribute:: template_tokens
+    .. attribute:: *template_tokens*
 
         list of template tokens that are currently supported.  Possible
         values include ``body``, ``rem``, ``delay``, ``pe`` and ``ret``.
         Default ``body``
 
-    .. attribute:: returns_template_tokens
+    .. attribute:: *returns_template_tokens*
 
         list of template tokens that extracts template detail from the
         ``returns`` table (default ``[ret]``)
@@ -159,7 +159,8 @@ class Comms(nparcel.Service):
             recipient = None
             created_ts = template_items.get('created_ts')
             if template == 'rem':
-                template_items['date'] = self.get_return_date(created_ts)
+                notify_ts = template_items.get('notify_ts')
+                template_items['date'] = self.get_return_date(notify_ts)
             elif template == 'ret':
                 state = template_items.get('state')
                 if state is not None:
@@ -279,14 +280,14 @@ class Comms(nparcel.Service):
 
         return status
 
-    def get_return_date(self, created_ts):
+    def get_return_date(self, ts):
         """Creates the return date in a nicely formatted output.
 
         Dates could be string based ("2013-09-19 08:52:13.308266") or
         a :class:`datetime.datetime` object.
 
         **Args:**
-            *created_ts*: the date the parcel was created
+            *ts*: the date the parcel was created
 
         **Returns:**
             string representation of the "return to sender" date in the
@@ -298,19 +299,19 @@ class Comms(nparcel.Service):
         """
         return_date = None
 
-        log.debug('Preparing return date against "%s" ...' % created_ts)
+        log.debug('Preparing return date against "%s" ...' % ts)
         created_str = None
-        if created_ts is not None:
+        if ts is not None:
             # Handle sqlite and MSSQL dates differently.
-            if isinstance(created_ts, str):
+            if isinstance(ts, str):
                 r = re.compile('(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\.\d*')
-                m = r.match(created_ts)
+                m = r.match(ts)
                 try:
                     created_str = m.group(1)
                 except AttributeError, err:
-                    log.error('Date not found "%s": %s' % (created_ts, err))
+                    log.error('Date not found "%s": %s' % (ts, err))
             else:
-                created_str = created_ts.strftime("%Y-%m-%d %H:%M:%S")
+                created_str = ts.strftime("%Y-%m-%d %H:%M:%S")
         if created_str is not None:
             ts = time.strptime(created_str, "%Y-%m-%d %H:%M:%S")
             dt = datetime.datetime.fromtimestamp(time.mktime(ts))
@@ -398,12 +399,12 @@ class Comms(nparcel.Service):
                  'connote': 'abcd',
                  'item_nbr': '12345678',
                  'pickup_ts': '',
+                 'notify_ts': '2013-09-15 12:00:00',
                  'created_ts': '2013-09-15 00:00:00'}
 
             Refer to the
-            :method:`nparcel.table.jobitem.job_item_agent_details_sql` and
-            :method:`nparcel.table.returns_reference.reference_nbr_sql`
-            method
+            :meth:`nparcel.table.jobitem.job_item_agent_details_sql` and
+            :meth:`nparcel.table.returns_reference.reference_nbr_sql` method
 
         """
         agent_details = []

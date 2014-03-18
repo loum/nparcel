@@ -1,4 +1,4 @@
-.. Nparcel B2C B2CConfig
+.. B2C B2CConfig
 
 .. toctree::
     :maxdepth: 2

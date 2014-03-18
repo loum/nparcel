@@ -38,6 +38,8 @@ class TestReporterDaemonUncollected(unittest2.TestCase):
                      'fixture': 'agent_stocktakes.py'},
                     {'db': db.agent,
                      'fixture': 'agents.py'},
+                    {'db': db.delivery_partner,
+                     'fixture': 'delivery_partners.py'},
                     {'db': db.identity_type,
                      'fixture': 'identity_type.py'},
                     {'db': db.job,
@@ -52,6 +54,11 @@ class TestReporterDaemonUncollected(unittest2.TestCase):
         # "job" table timestamp updates.
         sql = """UPDATE job
 SET job_ts = '%s'""" % cls._now
+        db(sql)
+
+        sql = """UPDATE job
+SET job_ts = '%s'
+WHERE id IN (6, 7, 8)""" % (cls._now - datetime.timedelta(10))
         db(sql)
 
         # "job_item" table timestamp updates.
