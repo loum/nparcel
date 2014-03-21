@@ -66,7 +66,7 @@ class Exporter(nparcel.Service):
     def __init__(self, **kwargs):
         """Exporter object initialiser.
         """
-        super(nparcel.Exporter, self).__init__(db=kwargs.get('db'))
+        nparcel.Service.__init__(self, db=kwargs.get('db'))
 
         self.set_signature_dir(kwargs.get('signature_dir'))
         self.set_staging_dir(kwargs.get('staging_dir'))

@@ -13,6 +13,7 @@ class ExporterDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.Exporter` class.
     """
     _exporter = None
+    _business_units = {}
 
     def __init__(self,
                  pidfile,
@@ -26,15 +27,31 @@ class ExporterDaemon(nparcel.DaemonService):
 
         if config is not None:
             self.config = nparcel.ExporterB2CConfig(file=config)
+            log.debug('Parsing ExporterB2CConfig config items')
             self.config.parse_config()
 
         try:
             if self.config.support_emails is not None:
                 self.set_support_emails(self.config.support_emails)
         except AttributeError, err:
-            msg = ('Support emails not defined in config -- using %s' %
-                   str(self.support_emails))
+            msg = ('%s support_emails not in config. Using "%s"' %
+                   (self.facility, self.support_emails))
             log.info(msg)
+
+        try:
+            self.set_business_units(self.config.business_units)
+        except AttributeError, err:
+            log.debug('%s business_units not in config: %s. Using "%s"' %
+                      (self.facility, err, self.business_units))
+
+    @property
+    def business_units(self):
+        return self._business_units
+
+    def set_business_units(self, values):
+        self._business_units = values
+        log.debug('%s business_units set to: "%s"' %
+                  (self.facility, self.business_units))
 
     @property
     def exporter(self):
@@ -94,15 +111,16 @@ class ExporterDaemon(nparcel.DaemonService):
 
         while not event.isSet():
             if self.exporter.db():
-                for bu, id in self.config.business_units.iteritems():
-                    log.info('Starting collection report for BU "%s" ...' %
-                             bu)
+                for bu, id in self.business_units.iteritems():
+                    log.info('Starting exporter for BU "%s" ...' % bu)
                     self.exporter.set_out_dir(business_unit=bu)
-                    bu_file_code = self.config.bu_to_file(bu)
+                    bu_id = self.business_units.get(bu)
+                    bu_file_code = self.config.bu_to_file(bu_id)
                     file_ctrl = self.config.get_pod_control(bu_file_code)
                     archive_ctrl = self.config.get_pod_control(bu_file_code,
                                                                'archive')
-                    ignore_pe = self.config.condition(bu, 'pe_pods')
+                    ignore_pe = self.config.condition(bu_file_code,
+                                                      'pe_pods')
                     items = self.exporter.process(int(id),
                                                   file_ctrl,
                                                   archive_ctrl,

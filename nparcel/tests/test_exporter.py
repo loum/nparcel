@@ -275,7 +275,7 @@ class TestExporter(unittest2.TestCase):
         received = get_directory_files_list(archive_digest_path)
         expected = [os.path.join(archive_digest_path, x) for x in dummy_files]
         msg = 'Signature file archive directory should succeed'
-        self.assertListEqual(received, expected, msg)
+        self.assertListEqual(sorted(received), sorted(expected), msg)
 
         # Cleanup
         self._e.reset()

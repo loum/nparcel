@@ -1,6 +1,7 @@
 import unittest2
 import os
 import tempfile
+import copy
 
 import nparcel
 from nparcel.utils.files import (copy_file,
@@ -13,7 +14,32 @@ class TestExporterDaemon(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._ed = nparcel.ExporterDaemon(pidfile=None)
+        cls._ed.set_business_units({'priority': 1, 'fast': 2, 'ipec': 3})
         cls._ed.config = nparcel.ExporterB2CConfig()
+        cls._ed.config.set_cond({'tolp': '000100000000010110',
+                                 'tolf': '000101100000010110',
+                                 'toli': '100010000000010110'})
+        cls._ed.config.set_file_bu({'tolp': 1,
+                                    'tolf': 2,
+                                    'tolf_nsw': 2,
+                                    'tolf_vic': 2,
+                                    'tolf_qld': 2,
+                                    'tolf_sa': 2,
+                                    'tolf_wa': 2,
+                                    'tolf_act': 2,
+                                    'toli': 3})
+
+        # Exporter file closure dirs.
+        cls._exporter_dir = tempfile.mkdtemp()
+        cls._ed.config.set_exporter_dirs([cls._exporter_dir])
+
+        # Staging base.
+        cls._staging_dir = tempfile.mkdtemp()
+        cls._ed.config.set_staging_base(cls._staging_dir)
+
+        # Archive directory.
+        cls._archive_dir = tempfile.mkdtemp()
+        cls._ed.config.set_archive_dir(cls._archive_dir)
 
         cls._ed.emailer.set_template_base(os.path.join('nparcel',
                                                        'templates'))
@@ -89,3 +115,7 @@ class TestExporterDaemon(unittest2.TestCase):
     @classmethod
     def tearDownClass(cls):
         cls._ed = None
+        os.removedirs(os.path.join(cls._archive_dir, 'signature'))
+        os.removedirs(cls._exporter_dir)
+        for dir in ['priority', 'fast', 'ipec']:
+            os.removedirs(os.path.join(cls._staging_dir, dir, 'out'))

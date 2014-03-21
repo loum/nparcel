@@ -394,6 +394,16 @@ class B2CConfig(nparcel.Config):
     def business_units(self):
         return self._business_units
 
+    def set_business_units(self, values=None):
+        self._business_units.clear()
+
+        if values is not None:
+            self._business_units = values
+            for k, v in self._business_units.iteritems():
+                self._business_units[k] = int(v)
+        log.debug('%s.business_units set to: "%s"' %
+                  (self.facility, self.business_units))
+
     @property
     def t1250_file_format(self):
         return self._t1250_file_format
@@ -401,6 +411,15 @@ class B2CConfig(nparcel.Config):
     @property
     def file_bu(self):
         return self._file_bu
+
+    def set_file_bu(self, values=None):
+        self._file_bu.clear()
+
+        if values is not None:
+            self._file_bu = values
+            for k, v in self._file_bu.iteritems():
+                self._file_bu[k] = int(v)
+        log.debug('%s.file_bu "%s"' % (self.facility, self.file_bu))
 
     @property
     def support_emails(self):
@@ -417,6 +436,13 @@ class B2CConfig(nparcel.Config):
     @property
     def cond(self):
         return self._cond
+
+    def set_cond(self, values=None):
+        self._cond.clear()
+
+        if values is not None:
+            self._cond = values
+        log.debug('%s conditions "%s"' % (self.facility, self.cond))
 
     @property
     def rest(self):
@@ -526,19 +552,13 @@ class B2CConfig(nparcel.Config):
 
             self.set_staging_base(self.get('dirs', 'staging_base'))
 
-            #self._signature = self.get('dirs', 'signature')
-            #log.debug('Exporter signature directory %s' % self._signature)
-
             self._comms = self.get('dirs', 'comms')
             log.debug('Comms file directory %s' % self._comms)
 
-            self._business_units = dict(self.items('business_units'))
-            log.debug('Exporter Business Units %s' %
-                      self._business_units.keys())
-
-            self._file_bu = dict(self.items('file_bu'))
-            log.debug('Exporter File Business Units %s' % self._file_bu)
-        except ConfigParser.NoOptionError, err:
+            self.set_business_units(dict(self.items('business_units')))
+            self.set_file_bu(dict(self.items('file_bu')))
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
             log.critical('Missing required config: %s' % err)
             sys.exit(1)
 
@@ -996,15 +1016,16 @@ class B2CConfig(nparcel.Config):
 
         return pod_control
 
-    def bu_to_file(self, bu):
+    def bu_to_file(self, bu_id):
         """Return the file_bu configuration option of a given *bu*.
 
         State-based BU to file translations are not supported.  For
         example, ``tolf_vic``.
 
         **Args:**
-            *bu*: business unit name as defined under the business_units
-            section of the config.  For example, 'priority'.
+            *bu_id*: business unit id as defined under the business_units
+            section of the config.  For example, 'priority' has a *bu_id*
+            of 1
 
         **Returns:**
             ``file_bu`` string such as ``TOLP``, ``TOLF`` or ``TOLI``
@@ -1012,14 +1033,12 @@ class B2CConfig(nparcel.Config):
         """
         file_code_for_bu = None
 
-        bu_value = self.business_units.get(bu)
-
-        if bu_value is not None:
+        if bu_id is not None:
             for file_bu in self.file_bu.keys():
                 if len(file_bu) > 4:
                     # Not interested in the state based BU's.
                     continue
-                if self.file_bu.get(file_bu) == bu_value:
+                if self.file_bu.get(file_bu) == bu_id:
                     file_code_for_bu = file_bu
                     break
 
@@ -1043,7 +1062,7 @@ class B2CConfig(nparcel.Config):
 
         set_bu_ids = []
         for bu_name, id in self.business_units.iteritems():
-            if self.condition(self.bu_to_file(bu_name), flag):
+            if self.condition(self.bu_to_file(id), flag):
                 set_bu_ids.append(int(id))
 
         set_bu_ids = tuple(sorted(set_bu_ids))

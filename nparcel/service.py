@@ -82,7 +82,7 @@ class Service(object):
             log.error(value)
             self.alerts.append(value)
         else:
-            log.info('Resetting %s alerts' % self.__class__.__name__)
+            log.debug('Resetting %s alerts' % self.__class__.__name__)
             del self._alerts[:]
             self._alerts = []
 

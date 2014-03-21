@@ -33,7 +33,7 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'Business units not as expected'
         received = self._c.business_units
-        expected = {'priority': '1', 'fast': '2', 'ipec': '3'}
+        expected = {'priority': 1, 'fast': 2, 'ipec': 3}
         self.assertDictEqual(received, expected, msg)
 
         msg = 'T1250 file name format not as expected'
@@ -43,15 +43,15 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'Filename Business units not as expected'
         received = self._c.file_bu
-        expected = {'tolp': '1',
-                    'tolf': '2',
-                    'tolf_nsw': '2',
-                    'tolf_vic': '2',
-                    'tolf_qld': '2',
-                    'tolf_sa': '2',
-                    'tolf_wa': '2',
-                    'tolf_act': '2',
-                    'toli': '3'}
+        expected = {'tolp': 1,
+                    'tolf': 2,
+                    'tolf_nsw': 2,
+                    'tolf_vic': 2,
+                    'tolf_qld': 2,
+                    'tolf_sa': 2,
+                    'tolf_wa': 2,
+                    'tolf_act': 2,
+                    'toli': 3}
         self.assertDictEqual(received, expected, msg)
 
         msg = 'Support emails not as expected'
@@ -548,17 +548,17 @@ class TestB2CConfig(unittest2.TestCase):
         self._c.set_config_file(self._file)
         self._c.parse_config()
 
-        received = self._c.bu_to_file('priority')
+        received = self._c.bu_to_file(1)
         expected = 'tolp'
         msg = 'Priority bu_to_file translation not as expected'
         self.assertEqual(received, expected, msg)
 
-        received = self._c.bu_to_file('fast')
+        received = self._c.bu_to_file(2)
         expected = 'tolf'
         msg = 'Fast bu_to_file translation not as expected'
         self.assertEqual(received, expected, msg)
 
-        received = self._c.bu_to_file('ipec')
+        received = self._c.bu_to_file(3)
         expected = 'toli'
         msg = 'Ipec bu_to_file translation not as expected'
         self.assertEqual(received, expected, msg)
