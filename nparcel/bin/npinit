@@ -11,8 +11,6 @@ from nparcel.utils.files import create_dir
 
 
 def main():
-    """Nparcel FTP push main sequence.
-    """
     usage = "usage: %prog [options]"
     parser = OptionParser(usage=usage)
     parser.add_option("-v", "--verbose",
@@ -73,12 +71,11 @@ def main():
         m = r.search(conf_file)
         if m is not None:
             log.debug('Found conditional config file "%s"' % conf_file)
-            init.copy_file(conf_file,
-                           dir='conf',
-                           dry=dry)
+            init.copy_file(conf_file, dir='conf', dry=dry)
 
     # Copy over the template files.
     r = re.compile('.t$')
+    log.debug('Template conditionals: %s' % init.conditionals)
     for t_file in init.conditionals:
         m = r.search(t_file)
         if m is not None:

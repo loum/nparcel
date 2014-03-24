@@ -11,7 +11,7 @@ from nparcel.utils.log import log
 
 
 class Init(object):
-    """Nparcel initialiser.
+    """Init initialiser.
 
     .. attribute:: base_dir
 
@@ -73,11 +73,10 @@ class Init(object):
 
     def set_unconditional_files(self, values):
         del self._unconditional_files[:]
+        self._unconditional_files = []
 
         if values and values is not None:
             self._unconditional_files.extend(values)
-        else:
-            self._unconditional_files = []
 
     @property
     def unconditional_dirs(self):
@@ -85,11 +84,10 @@ class Init(object):
 
     def set_unconditional_dirs(self, values):
         del self._unconditional_dirs[:]
+        self._unconditional_dirs = []
 
         if values and values is not None:
             self._unconditional_dirs.extend(values)
-        else:
-            self._unconditional_dirs = []
 
     @property
     def conditional_files(self):
@@ -97,11 +95,10 @@ class Init(object):
 
     def set_conditional_files(self, values):
         del self._conditional_files[:]
+        self._conditional_files = []
 
         if values and values is not None:
             self._conditional_files.extend(values)
-        else:
-            self._conditional_files = []
 
     @property
     def conditional_dirs(self):
@@ -109,15 +106,14 @@ class Init(object):
 
     def set_conditional_dirs(self, values):
         del self._conditional_dirs[:]
+        self._conditional_dirs = []
 
         if values and values is not None:
             self._conditional_dirs.extend(values)
-        else:
-            self._conditional_dirs = []
 
     @property
     def conditionals(self):
-        conditionals = self.conditional_files
+        conditionals = list(self.conditional_files)
 
         for dir in self.conditional_dirs:
             dir_file_list = os.listdir(os.path.join(self.path, dir))

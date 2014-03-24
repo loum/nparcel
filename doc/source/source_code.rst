@@ -21,7 +21,7 @@ may be missing ``git``.  This is presumably because CentOS 5 is based on
 RHEL 5, which was released in 2007, before ``git`` was considered a mature
 version control system.
 
-Installation of ``git`` on RedHat/CentOS 5 requires the following pacakges::
+Installation of ``git`` on RedHat/CentOS 5 requires the following packages::
 
     ========================================================================
     Package           Arch       Version              Repository     Size
@@ -38,7 +38,8 @@ To verify that you have ``git`` installed::
     git version 1.8.2.1
 
 ``unittest2``
--------------
+^^^^^^^^^^^^^
+
 ``unittest2`` is a backport of the new features added to the unittest
 testing framework in Python 2.7.  It is tested to run on Python 2.4 - 2.6::
 
@@ -49,7 +50,8 @@ testing framework in Python 2.7.  It is tested to run on Python 2.4 - 2.6::
     python-unittest2  noarch     0.5.1-1.el5.rf       rpmforge      183 k
 
 ``nose``
---------
+^^^^^^^^
+
 ``nose`` is a discovery-based unittest extension for Python::
 
     ========================================================================
@@ -76,7 +78,7 @@ or higher::
 pyodbc
 ^^^^^^
 
-::
+``pyodbc`` is a Python DB API 2 module for ODBC::
 
     ========================================================================
     Package           Arch        Version             Repository     Size
@@ -123,7 +125,7 @@ following commands:
     # rpm -ivh /var/tmp/cx_Oracle-5.1.2-10g-py24-1.x86_64.rpm
 
 ``python-sphinx``
------------------
+^^^^^^^^^^^^^^^^^
 
 Sphinx is a tool that makes it is used to create the documentation for the
 project::
@@ -135,7 +137,7 @@ project::
     python-sphinx     noarch      0.4.2-1.el5.1       epel          371 k
 
 ``rpm-build``
--------------
+^^^^^^^^^^^^^
 
 In order to build the project's RPM package, you will need to install
 the ``rpm-build`` package::
