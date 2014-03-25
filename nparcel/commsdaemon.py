@@ -14,10 +14,6 @@ from nparcel.utils.files import get_directory_files_list
 class CommsDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.Comms` class.
 
-    .. attribute:: prod
-
-         hostname of the production instance
-
     .. attribute:: *comms_dir*
 
          directory where comms files are read from for further processing

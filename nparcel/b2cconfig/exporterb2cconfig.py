@@ -130,6 +130,12 @@ class ExporterB2CConfig(nparcel.B2CConfig):
         # These are the generic values that can be removed
         # after nparcel.B2CConfig is refactored.
         try:
+            self.set_prod(self.get('environment', 'prod'))
+        except AttributeError, err:
+            log.debug('%s environment.prod not in config: %s. Using "%s"' %
+                      (self.facility, err, self.prod))
+
+        try:
             self.set_support_emails(self.get('email', 'support').split(','))
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:

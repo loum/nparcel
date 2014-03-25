@@ -27,6 +27,11 @@ class TestReporterB2CConfig(unittest2.TestCase):
         self._rc.set_config_file(config_file)
         self._rc.parse_config()
 
+        received = self._rc.prod
+        expected = 'faswbaup02'
+        msg = 'environment.prod not as expected'
+        self.assertEqual(received, expected, msg)
+
         received = self._rc.report_bu_ids
         expected = {1: 'Toll Priority',
                     2: 'Toll Fast',

@@ -133,14 +133,21 @@ class HealthDaemon(nparcel.DaemonService):
         nparcel.DaemonService.__init__(self, pidfile=pidfile, dry=dry)
 
         if config is not None:
-            self.set_config(nparcel.B2CConfig(file=config))
+            self.set_config(nparcel.HealthB2CConfig(file=config))
             self.config.parse_config()
+
+        try:
+            self.set_prod(self.config.prod)
+        except AttributeError, err:
+            log.debug('%s environment.prod not in config: %s. Using "%s"' %
+                      (self.facility, err, self.prod))
 
         try:
             if len(self.config.support_emails):
                 self.set_recipients(self.config.support_emails)
         except AttributeError, err:
-            log.info('Health recipient list not defined in config')
+            log.debug('%s recipients: %s. Using %s' %
+                      (self.facility, err, self.support_emails))
 
         try:
             if len(self.config.health_processes):
@@ -148,12 +155,6 @@ class HealthDaemon(nparcel.DaemonService):
         except AttributeError, err:
             log.info('%s health.process not in config: %s. Using "%s"' %
                      (self.facility, err, self.processes))
-
-        try:
-            self.set_prod(self.config.prod)
-        except AttributeError, err:
-            log.debug('%s environment.prod not in config: %s. Using "%s"' %
-                      (self.facility, err, self.prod))
 
     @property
     def recipients(self):

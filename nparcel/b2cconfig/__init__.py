@@ -196,10 +196,6 @@ class B2CConfig(nparcel.Config):
         list of :attr:`scan_desc_header` tokens to compare against
         (default ``IDS - TOLL FAST GRAYS ONLINE``)
 
-    .. attribute:: health_processes
-
-        the names of the processes to include in the health check
-
     .. attribute:: adp_headers
 
         dictionary of ``agent`` table columns to column headers in the
@@ -264,7 +260,6 @@ class B2CConfig(nparcel.Config):
     _delivered_event_key = 'delivered'
     _scan_desc_header = 'latest_scanner_description'
     _scan_desc_keys = ['IDS - TOLL FAST GRAYS ONLINE']
-    _health_processes = []
     _adp_headers = {}
     _adp_file_formats = []
     _code_header = None
@@ -811,15 +806,6 @@ class B2CConfig(nparcel.Config):
                   'totals',
                   'collected']:
             report_opt = 'report_%s' % r
-
-        # Health.
-        try:
-            health_procs = self.get('health', 'processes')
-            self.set_health_processes(health_procs.split(','))
-        except (ConfigParser.NoSectionError,
-                ConfigParser.NoOptionError), err:
-            log.debug('Using default health process list: %s' %
-                      str(self.health_processes))
 
         # ADP headers
         try:
@@ -1376,19 +1362,6 @@ class B2CConfig(nparcel.Config):
             self._scan_desc_keys.append(values)
             log.debug('Set scan_desc_keys to "%s"' %
                       str(self._scan_desc_keys))
-
-    @property
-    def health_processes(self):
-        return self._health_processes
-
-    def set_health_processes(self, values=None):
-        del self._health_processes[:]
-        self._health_processes = []
-
-        if values is not None:
-            self._health_processes.extend(values)
-            log.debug('Config health check process list: "%s"' %
-                      self.health_processes)
 
     @property
     def adp_headers(self):

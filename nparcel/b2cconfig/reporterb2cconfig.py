@@ -61,8 +61,8 @@ class ReporterB2CConfig(nparcel.B2CConfig):
     .. attribute:: report_type_delivery_partners
 
         string based list of Delivery Partner names to limit result set
-        against.  For example, ``['Nparcel', 'Toll']``.  The values supported
-        are as per the ``delivery_partner.name`` table set
+        against.  For example, ``['Nparcel', 'Toll']``.  The values
+        supported are as per the ``delivery_partner.name`` table set
 
     .. attribute:: report_bu_id_recipients
 
@@ -305,6 +305,15 @@ class ReporterB2CConfig(nparcel.B2CConfig):
         """
         nparcel.Config.parse_config(self)
 
+        # These are the generic values that can be removed
+        # after nparcel.B2CConfig is refactored.
+        try:
+            self.set_prod(self.get('environment', 'prod'))
+        except AttributeError, err:
+            log.debug('%s environment.prod not in config: %s. Using "%s"' %
+                      (self.facility, err, self.prod))
+
+        # Exporter specific.
         try:
             bu_ids = dict(self.items('report_bu_ids'))
             tmp_bu_ids = {}
