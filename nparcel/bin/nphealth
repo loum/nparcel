@@ -117,22 +117,20 @@ class HealthDaemon(nparcel.DaemonService):
 
     @property
     def processes(self):
-         return self._processes
+        return self._processes
 
     def set_processes(self, values=None):
         del self._processes[:]
-        self._processes
+        self._processes = []
 
         if values is not None:
             self._processes.extend(values)
-            log.debug('Health check process list: "%s"' % self.processes)
-        else:
-            log.debug('Cleared processes list')
+        log.debug('%s processes: "%s"' % (self.facility, self.processes))
 
     def __init__(self, pidfile, dry=False, config=None):
-        """HealtDaemon initialiser.
+        """HealthDaemon initialiser.
         """
-        super(HealthDaemon, self).__init__(pidfile=pidfile, dry=dry)
+        nparcel.DaemonService.__init__(self, pidfile=pidfile, dry=dry)
 
         if config is not None:
             self.set_config(nparcel.B2CConfig(file=config))
@@ -148,7 +146,14 @@ class HealthDaemon(nparcel.DaemonService):
             if len(self.config.health_processes):
                 self.set_processes(self.config.health_processes)
         except AttributeError, err:
-            log.info('Health process list not defined in config')
+            log.info('%s health.process not in config: %s. Using "%s"' %
+                     (self.facility, err, self.processes))
+
+        try:
+            self.set_prod(self.config.prod)
+        except AttributeError, err:
+            log.debug('%s environment.prod not in config: %s. Using "%s"' %
+                      (self.facility, err, self.prod))
 
     @property
     def recipients(self):
@@ -183,6 +188,7 @@ class HealthDaemon(nparcel.DaemonService):
             report date and time.
 
         """
+        # Generate the data for the subject line.
         if date_ts is None:
             now = datetime.datetime.now().strftime('%d/%m/%Y %H:%M')
         else:
@@ -193,14 +199,16 @@ class HealthDaemon(nparcel.DaemonService):
                                                  template='health')
         subject = subject.rstrip()
 
+        # Create the e-mail MIME message.
         data = {'pid_table': self.create_table(self._pid_table,
                                                self._headers),
                 'date': now}
-        self._emailer.send_comms(template='health',
-                                 subject_data=subject,
-                                 data=data,
-                                 recipients=self.recipients,
-                                 dry=self.dry)
+        mime = self._emailer.create_comms(data=data,
+                                          subject=subject,
+                                          template='health',
+                                          prod=self.prod)
+        self._emailer.set_recipients(self.recipients)
+        self._emailer.send(mime_message=mime, dry=self.dry)
 
     def create_table(self, items, headers=None):
         """Takes a list of *items* and generates string based, variable
@@ -251,6 +259,7 @@ def main():
     script_name = inspect.getfile(inspect.currentframe())
     script_name = os.path.basename(script_name)
     based.set_script_name(script_name)
+    based.parser.set_usage('usage: %prog [options]')
     based.check_args()
 
     if based.options.dry is not None:

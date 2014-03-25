@@ -567,7 +567,7 @@ class B2CConfig(nparcel.Config):
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
             log.debug('%s environment.prod not defined.  Using "%s"' %
-                      self.prod)
+                      (self.facility, self.prod))
 
         try:
             self._t1250_file_format = self.get('files',

@@ -12,8 +12,6 @@ from nparcel.utils.log import (log,
 
 
 def main():
-    """Nparcel FTP push main sequence.
-    """
     config = os.path.join(os.path.expanduser('~'),
                           '.nparceld',
                           'npftp.conf')

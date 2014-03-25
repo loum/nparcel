@@ -13,7 +13,7 @@ complete the end-to-end process flow.  POD reports are accompanied by
 signature files.
 
 The interface between the Exporter facility and the outbound FTP is
-defined by the Exporter's ``staging_base`` configuraton option (under the
+defined by the Exporter's ``staging_base`` configuration option (under the
 ``dirs`` section).  This is also referred to as the *Exporter staging
 directory*.
 

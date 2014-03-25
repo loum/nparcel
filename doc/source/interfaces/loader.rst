@@ -13,9 +13,10 @@ from the various upstream Business Units and extracts and loads parcel
 details into the Toll Parcel Portal in preparation for consumer pickup.
 
 The list of Business Units supported include:
-* Priority (``bu_id 1``)
-* Fast (``bu_id 2``)
-* IPEC (``bu_id 3``)
+
+* **Priority** (``bu_id 1``)
+* **Fast** (``bu_id 2``)
+* **IPEC** (``bu_id 3``)
 
 .. note::
 
@@ -122,9 +123,9 @@ via the configuration condition_maps::
     # Pos 18: 0 use default loader comms template if service_code 2
     #         1 use delayed pickup comms template if service_code 2
 
-..note::
+.. note::
 
-    Service Code 2 template selections was enables in version 0.28
+    Service Code 2 template selections was enabled in version 0.28
 
 Ignore Service Code 4
 *********************
@@ -143,7 +144,7 @@ configuration condition_map::
     conditon_map items
 
 ``nploaderd`` usage
-^^^^^^^^^^^^^^^^^^^
+-------------------
 
 ``nploaderd`` can be configured to run as a daemon as per the following::
 
@@ -157,5 +158,5 @@ configuration condition_map::
       -b, --batch           single pass batch mode
       -c CONFIG, --config=CONFIG
                             override default config
-                            "/home/guest/.nparceld/nparceld.conf"
+                            "/home/npprod/.nparceld/nparceld.conf"
       -f FILE, --file=FILE  file to process inline (start only)
