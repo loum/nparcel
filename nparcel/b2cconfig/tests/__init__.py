@@ -3,3 +3,4 @@ from test_commsb2cconfig import TestCommsB2CConfig
 from test_exporterb2cconfig import TestExporterB2CConfig
 from test_reporterb2cconfig import TestReporterB2CConfig
 from test_healthb2cconfig import TestHealthB2CConfig
+from test_reminderb2cconfig import TestReminderB2CConfig

@@ -155,7 +155,8 @@ The ``npondeliveryd`` utility uses the default ``nparceld.conf`` file to
 control processing workflows.
 
 .. note::
-    all configuration settings are found under the ``[primary_elect]``
+
+    All configuration settings are found under the ``[primary_elect]``
     section unless otherwise specified
 
 * ``tcd_in`` (under the ``[dirs]`` section)

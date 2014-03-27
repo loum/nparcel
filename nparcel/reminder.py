@@ -29,18 +29,27 @@ class Reminder(nparcel.Service):
         will hold the parcel before being returned
 
     """
-    def __init__(self,
-                 db=None,
-                 comms_dir=None,
-                 notification_delay=345600,
-                 start_date=datetime.datetime(2013, 10, 9, 0, 0, 0)):
-        """Nparcel Reminder initialisation.
+    _comms_dir = None
+    _notification_delay = 345600
+    _hold_period = 345600
+    _start_date = datetime.datetime(2013, 10, 9, 0, 0, 0)
+
+    def __init__(self, **kwargs):
+        """:class:`nparcel.Reminder` initialisation.
 
         """
-        super(nparcel.Reminder, self).__init__(db=db, comms_dir=comms_dir)
+        nparcel.Service.__init__(self,
+                                 db=kwargs.get('db'),
+                                 comms_dir=kwargs.get('comms_dir'))
 
-        self._notification_delay = notification_delay
-        self._start_date = start_date
+        if kwargs.get('notification_delay') is not None:
+            self.set_notification_delay(kwargs.get('notification_delay'))
+
+        if kwargs.get('hold_period') is not None:
+            self.set_hold_period(kwargs.get('hold_period'))
+
+        if kwargs.get('start_date') is not None:
+            self.set_start_date(kwargs.get('start_date'))
 
     @property
     def notification_delay(self):

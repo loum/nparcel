@@ -73,13 +73,9 @@ class B2CConfig(nparcel.Config):
 
         time (seconds) between on delivery processing iterations.
 
-    .. attribute reminder_loop (reminder)
+    .. attribute exporter_loop
 
         time (seconds) between primary elect processing iterations.
-
-    .. attribute:: exporter_loop (exporter)
-
-        time (seconds) between exporter processing iterations.
 
     .. attribute:: mapper_loop (mapper)
 
@@ -113,19 +109,6 @@ class B2CConfig(nparcel.Config):
     .. attribute:: rest (loader)
 
         dictionary of RESTful interfaces for SMS and email
-
-    .. attribute:: notification_period (reminder)
-
-        period (in seconds) that triggers a reminder notice
-
-    .. attribute:: start_date (reminder)
-
-        ignores records whose job_item.created_ts occurs before this date
-
-    .. attribute:: hold_period (reminder)
-
-        defines the time period (in seconds) since the job_item.created_ts
-        that the agent will hold the parcel before being returned
 
     .. attribute:: exporter_fields (exporter)
 
@@ -231,8 +214,7 @@ class B2CConfig(nparcel.Config):
     _adp_dirs = []
     _loader_loop = 30
     _ondelivery_loop = 30
-    _reminder_loop = 3600
-    _exporter_loop = 300
+    _exporter_loop = 3600
     _mapper_loop = 30
     _filter_loop = 30
     _adp_loop = 30
@@ -243,9 +225,6 @@ class B2CConfig(nparcel.Config):
     _cond = {}
     _support_emails = []
     _rest = {}
-    _notification_delay = 345600
-    _start_date = datetime.datetime(2013, 9, 10, 0, 0, 0)
-    _hold_period = 691200
     _exporter_fields = {}
     _pe_in_file_format = 'T1250_TOL[PIF]_\d{14}\.dat'
     _pe_in_file_archive_string = 'T1250_TOL[PIF]_(\d{8})\d{6}\.dat'
@@ -315,8 +294,9 @@ class B2CConfig(nparcel.Config):
         return self._comms
 
     def set_comms_dir(self, value):
-        log.info('Set config comms directory to "%s"' % value)
         self._comms = value
+        log.debug('%s dirs.comms comms set to "%s"' %
+                  (self.facility, self._comms))
 
     @property
     def aggregator_dirs(self):
@@ -364,10 +344,6 @@ class B2CConfig(nparcel.Config):
     @property
     def ondelivery_loop(self):
         return self._ondelivery_loop
-
-    @property
-    def reminder_loop(self):
-        return self._reminder_loop
 
     @property
     def exporter_loop(self):
@@ -506,27 +482,6 @@ class B2CConfig(nparcel.Config):
             self._filtering_rules.extend(values)
             log.debug('Config set filtering_rules to "%s"' %
                       str(self._filtering_rules))
-
-    @property
-    def notification_delay(self):
-        return self._notification_delay
-
-    def set_notification_delay(self, value):
-        self._notification_delay = value
-
-    @property
-    def start_date(self):
-        return self._start_date
-
-    def set_start_date(self, value):
-        self._start_date = value
-
-    @property
-    def hold_period(self):
-        return self._hold_period
-
-    def set_hold_period(self, value):
-        self._hold_period = value
 
     def parse_config(self):
         """Read config items from the configuration file.
@@ -678,12 +633,6 @@ class B2CConfig(nparcel.Config):
                       self.ondelivery_loop)
 
         try:
-            self._reminder_loop = int(self.get('timeout', 'reminder_loop'))
-        except ConfigParser.NoOptionError, err:
-            log.debug('Using default Reminder loop: %d (sec)' %
-                      self.reminder_loop)
-
-        try:
             self._exporter_loop = int(self.get('timeout', 'exporter_loop'))
         except ConfigParser.NoOptionError, err:
             log.debug('Using default Exporter loop: %d (sec)' %
@@ -735,36 +684,6 @@ class B2CConfig(nparcel.Config):
             log.debug('Exporter fields %s' % str(self._exporter_fields))
         except ConfigParser.NoSectionError, err:
             log.warn('No Exporter column output ordering in config')
-
-        # Reminder notification_delay.
-        try:
-            notification_delay = self.get('reminder', 'notification_delay')
-            self.set_notification_delay(int(notification_delay))
-            log.debug('Parsed reminder notification delay: "%s"' %
-                      notification_delay)
-        except ConfigParser.NoOptionError, err:
-            log.debug('Using default reminder notification delay: %d' %
-                      self.notification_delay)
-
-        # Reminder start_date.
-        try:
-            start_date = self.get('reminder', 'start_date')
-            start_time = time.strptime(start_date, "%Y-%m-%d %H:%M:%S")
-            dt = datetime.datetime.fromtimestamp(time.mktime(start_time))
-            self.set_start_date(dt)
-            log.debug('Parsed reminder start date: "%s"' % start_date)
-        except ConfigParser.NoOptionError, err:
-            log.debug('Using default reminder start date: %s' %
-                      self.start_date)
-
-        # Reminder hold_period.
-        try:
-            hold_period = self.get('reminder', 'hold_period')
-            self.set_hold_period(int(hold_period))
-            log.debug('Parsed reminder hold period: "%s"' % hold_period)
-        except ConfigParser.NoOptionError, err:
-            log.debug('Using default reminder hold period: %d' %
-                      self.hold_period)
 
         # Transend.
         try:

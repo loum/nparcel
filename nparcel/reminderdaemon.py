@@ -11,19 +11,63 @@ from nparcel.utils.log import log
 class ReminderDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.Remind` class.
     """
+    _reminder = None
 
     def __init__(self,
                  pidfile,
                  dry=False,
                  batch=False,
-                 config='nparcel.conf'):
-        super(ReminderDaemon, self).__init__(pidfile=pidfile,
-                                             file=file,
-                                             dry=dry,
-                                             batch=batch)
+                 config=None):
+        nparcel.DaemonService.__init__(self,
+                                       pidfile=pidfile,
+                                       file=file,
+                                       dry=dry,
+                                       batch=batch)
 
-        self.config = nparcel.B2CConfig(file=config)
-        self.config.parse_config()
+        if config is not None:
+            self.config = nparcel.ReminderB2CConfig(file=config)
+            log.debug('Parsing ReminderB2CConfig config items')
+            self.config.parse_config()
+
+        try:
+            self.set_loop(self.config.reminder_loop)
+        except AttributeError, err:
+            msg = ('%s loop not in config. Using %d' %
+                   (self.facility, self.loop))
+            log.debug(msg)
+
+    @property
+    def reminder(self):
+        return self._reminder
+
+    @property
+    def reminder_kwargs(self):
+        kwargs = {}
+        try:
+            kwargs['db'] = self.config.db_kwargs()
+        except AttributeError, err:
+            log.debug('DB kwargs not in config: %s ' % err)
+
+        try:
+            kwargs['comms_dir'] = self.config.comms_dir
+        except AttributeError, err:
+            log.debug('comms_dir not in config: %s ' % err)
+
+        try:
+            if self.config.notification_delay is not None:
+                kwargs['notification_delay'] = self.config.notification_delay
+        except AttributeError, err:
+            log.debug('%s notification_delay not in config: %s' %
+                      (self.facility, err))
+
+        try:
+            if self.config.start_date is not None:
+                kwargs['start_date'] = self.config.start_date
+        except AttributeError, err:
+            log.debug('%s start_date not in config: %s' %
+                      (self.facility, err))
+
+        return kwargs
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
@@ -38,19 +82,12 @@ class ReminderDaemon(nparcel.DaemonService):
         """
         signal.signal(signal.SIGTERM, self._exit_handler)
 
-        rem = nparcel.Reminder(db=self.config.db_kwargs(),
-                               comms_dir=self.config.comms_dir)
-
-        if self.config.notification_delay is not None:
-            rem.set_notification_delay(self.config.notification_delay)
-        if self.config.start_date is not None:
-            rem.set_start_date(self.config.start_date)
-        if self.config.hold_period is not None:
-            rem.set_hold_period(self.config.hold_period)
+        if self.reminder is None:
+            self._reminder = nparcel.Reminder(**(self.reminder_kwargs))
 
         while not event.isSet():
-            if rem.db():
-                rem.process(dry=self.dry)
+            if self.reminder.db():
+                self.reminder.process(dry=self.dry)
             else:
                 log.error('ODBC connection failure -- aborting')
                 event.set()
@@ -64,4 +101,4 @@ class ReminderDaemon(nparcel.DaemonService):
                     log.info('Batch run iteration complete -- aborting')
                     event.set()
                 else:
-                    time.sleep(self.config.reminder_loop)
+                    time.sleep(self.loop)

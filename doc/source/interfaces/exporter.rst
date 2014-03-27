@@ -74,6 +74,34 @@ Sample Exporter report::
     7179050166420|173357|2014-01-14 11:05:38|collected by home - simpson 2/2/2012|Manual POD|
     0000|00393403250082743890|Q081
 
+The list of possible columns that can be displayed include:
+
+* **REF1** - the job_item.connote_nbr value
+
+* **JOB_KEY** - the job_item table primary key value.  In the case of an
+  Alternate Delivery Partner such as ParcelPoint, this value is used to
+  associate the POD signatures by filename
+
+* **PICKUP_TIME** - the job_item.pickup_ts column value that represents
+  the time at which the parcel was picked up.  Time is represented by the
+  timezone relative to the supplying Alternate Delivery Point
+
+* **PICKUP_POD** - short description of pickup scenario
+
+* **IDENTITY_TYPE** - identification used to verify parcel recipient
+
+* **ITEM_NBR** - the job_item.item_nbr value
+
+* **AGENT_ID** - the agent.code value
+
+* **AGENT_STATE** - the state in which the Alternate Delivery Partner
+  resides in (agent.state)
+
+.. note::
+
+    Ordering and columns that are displayed can be controlled by the
+    :ref:`exporter_fields <exporter_fields>` configuration item.
+
 ``npexporterd`` Configuration Items
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -81,9 +109,11 @@ Sample Exporter report::
 control processing behaviour.  The following list details the required
 configuration options:
 
-* * ``exporter_loop``
+* ``exporter_loop``
 
     time (seconds) between ``npexporterd`` processing iterations
+
+.. _exporter_fields:
 
 * ``exporter_fields`` (the ``[exporter_fields]`` section)
 

@@ -8,8 +8,8 @@ from nparcel.utils.log import log
 
 
 class HealthB2CConfig(nparcel.B2CConfig):
-    """:class:`nparcel.CommsB2CConfig` captures the configuration items
-    required for the ``npcommsd`` facility.
+    """:class:`nparcel.HealthB2CConfig` captures the configuration items
+    required for the ``nphealth`` facility.
 
     .. attribute:: health_processes
 
@@ -32,7 +32,7 @@ class HealthB2CConfig(nparcel.B2CConfig):
                   (self.facility, self.health_processes))
 
     def __init__(self, file=None):
-        """HealthB2CConfig initialisation.
+        """:class:`nparcel.HealthB2CConfig` initialisation.
         """
         nparcel.B2CConfig.__init__(self, file)
 

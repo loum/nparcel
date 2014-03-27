@@ -5,68 +5,86 @@
 
 .. _reminders:
 
-Send Email/SMS Reminder Notifications
-=====================================
+Email/SMS Reminder Notifications
+================================
+
 Consumers are sent a reminder notification via Email and/or SMS if their
 parcel has not been collected for a defined period (for example, 4 days).
 
-.. image:: ../_static/sample_reminder.png
-    :width: 49% 
-    :alt: Nparcel B2C Uncollected Parcel Reminder email notification
+*Uncollected Parcel Reminder Email notifications*
+
+.. image:: ../_static/sample_reminder_email.png
+    :align: center
+    :alt: B2C Uncollected Parcel Reminder email notification
+
+*Uncollected Parcel Reminder SMS notifications*
 
 .. image:: ../_static/sample_reminder_sms.png
-    :alt: Nparcel B2C Uncollected Parcel Reminder SMS notification
+    :align: center
+    :alt: B2C Uncollected Parcel Reminder SMS notification
 
-*Uncollected Parcel Reminder notifications*
+Reminder Workflow
+-----------------
 
-``npremind`` Configuration Items
---------------------------------
-``npremind`` uses the generic ``nparceld.conf`` file to manage its
-configuration.
-
-``npremind`` specific
-^^^^^^^^^^^^^^^^^^^^^
-* ``[reminder]`` section
-
-  * ``notification_delay`` is the period (in seconds) that triggers a
-    reminder notice (default 345600 seconds -- 4 days)
-  * ``start_date`` ignores records whose ``job_item.created_ts`` occurs
-    before this date (default 2013-10-09 00:00:00)
-  * ``hold_period`` defines the time period (in seconds) since notifications
-    were first sent and the agent will hold the parcel before being
-    returned (default 691200 seconds -- 8 days)
-
-``npremind`` shared
-^^^^^^^^^^^^^^^^^^^
-* ``[db]`` section to connect to the database
-* ``[rest]`` section to interface to Esendex
-* ``[proxy]`` section if proxy tunnelling is required (optional)
-
-The ``npremind`` Interface
---------------------------
-``npremind`` queries the Nparcel database to identify items which match
-the following criteria:
-
-.. note:: all configuration items are defined in ``nparceld.conf``
+``npreminderd`` queries the Toll Parcel Portal database to identify items
+which match the following criteria:
 
 * ``job_item.created_ts`` column date occurs after the ``start_date``
   configuration item
+
 * ``job_item.notify_ts`` plus ``notification_delay`` period has elapsed
+
 * parcel has not been picked up
+
 * an email and/or mobile phone number exists
+
 * a reminder has not already been sent
 
 .. image:: ../_static/reminder_interface.png
     :width: 49% 
     :align: center
-    :alt: Nparcel B2C Uncollected Reminder interface
+    :alt: Toll Parcel Portal B2C Uncollected Reminder interface
 
-``npremind`` usage
-------------------
+``npreminderd`` Configuration Items
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``npreminderd`` uses the generic ``nparceld.conf`` file to manage its
+configuration.
 
-::
+.. note::
 
-    usage: npremind [options]
+    All configuration settings are found under the ``[primary_elect]``
+    section unless otherwise specified
+
+* ``notification_delay``
+
+    Period (in seconds) that triggers a reminder notice (default 345600
+    seconds -- 4 days)
+
+* ``start_date``
+
+    ignores records whose ``job_item.created_ts`` occurs before this date
+    (default 2013-10-09 00:00:00)
+
+* ``hold_period``
+
+    defines the time period (in seconds) since notifications
+    were first sent and the agent will hold the parcel before being
+    returned (default 691200 seconds -- 8 days)
+
+* ``comms`` (under the ``[dirs]`` section)
+
+    directory where comms files are staged for further processing
+
+* ``exporter_loop`` (under the ``[timeout]`` section)
+
+    time (seconds) between ``npreminderd`` processing iterations
+
+``npreminderd`` Usage
+---------------------
+
+``npreminderd`` can be configured to run as a daemon as per the following::
+
+    usage: npreminderd [options]
      
     options:
     -h, --help            show this help message and exit
@@ -75,11 +93,3 @@ the following criteria:
     -c CONFIG, --config=CONFIG
                             override default config
                             "/home/npprod/.nparceld/nparceld.conf"
-
-``npremind`` has been designed to run as a batch process and can be
-executed via cron with the following entry::
-
-    0 8 * * * /users/npprod/npremind
-
-.. note::
-    the above crontab entry will send notifications every day at 8AM
