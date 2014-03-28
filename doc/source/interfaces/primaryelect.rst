@@ -14,7 +14,7 @@ to nominate the Alternate Delivery Point from where they can pick up
 their parcels.
 
 Primary Elect jobs differ from the normal Toll Parcel Portal flow in that
-the jobs are not triggerred by a failed delivery event.  Instead, jobs are
+the jobs are not triggered by a failed delivery event.  Instead, jobs are
 sent directly from the vendor (for example, Grays Online)
 
 .. note::
@@ -22,23 +22,6 @@ sent directly from the vendor (for example, Grays Online)
     Current arrangement is a short-term solution to enable the Primary
     Elect service option whilst the various Business Units update their
     systems to accommodate such requests in the future.
-
-The following diagram describes various interfaces:
-
-.. image:: ../_static/pe_overview.png
-    :align: center
-    :alt: Toll Parcel Portal B2C Primary Elect Interfaces
-
-*The Toll Parcel Portal B2C Primary Elect workflow*
-
-Primary Elect jobs involve two additional interfaces to the normal
-Toll Parcel Portal workflow:
-
-* Raw WebMethods files from Toll GIS
-
-* TCD Database
-
-.. _primary_elect_workflow:
 
 Primary Elect Workflow
 ----------------------
@@ -50,12 +33,12 @@ Toll Parcel Portal receives a direct feed from the GIS-prepared WebMethods
 interface.  Toll Parcel Portal uses the :mod:`nparcel.mapper` middleware
 component to translate the WebMethods format into typical T1250 EDI files.
 
-The :mod:`mapper` workflow starts with the ``npmapperd`` script.
-First, ``npmapperd`` will check for WebMethods raw T1250 and attempts to
-translated these into T1250 EDI format.  From here, the translated
-T1250 files are deposited into the corresponding Business Unit inbound
-FTP resource directories where they enter into the normal Toll Parcel Portal
-workflow.
+The :mod:`nparcel.mapper` workflow starts with the ``npmapperd`` script.
+First, ``npmapperd`` will check for WebMethods raw ``*.dat`` files and
+attempts to translated these into T1250 EDI format.  From here, the
+translated T1250 files are deposited into the corresponding Business Unit
+inbound FTP resource directories where they enter into the normal Toll
+Parcel Portal workflow.
 
 .. note::
 
@@ -74,37 +57,61 @@ Some notable functionality provided by the translation process:
 file to define the WebMethods interface.  The following list details
 the required configuration options:
 
-* ``pe_in`` (default ``/var/ftp/pub/nparcel/gis/in``)
+.. note::
 
-    found under the ``[dirs]`` section, inbound file from GIS are transfered
-    via FTP into the ``pe_in`` directory.  ``pe_in`` represents the FTP
-    resource that files are deposited to and where the ``mapper`` looks
-    for files to process.
+    All configuration settings are found under the ``[primary_elect]``
+    section unless otherwise specified
+
+* ``mapper_loop``
+
+    Control mapper daemon facility sleep period between inbound file checks.
+    Default 30 (seconds)
+
+* ``pe_customer``
+
+    upstream provider of the T1250 files.  Default "gis"
+
+* ``mapper_in``
+
+    Found under the ``[dirs]`` section, inbound file from GIS are transfered
+    via FTP into the this directory.  ``mapper_in`` represents the FTP
+    resource that files are deposited to and where ``npmapperd`` looks
+    for files to process.  Default ``/var/ftp/pub/nparcel/gis/in``
 
     .. note::
 
         As with the other FTP interfaces, the FTP resource needs to be
         created as per `these instructions <vsftpd.html>`_
 
-* ``mapper_loop`` (default 30 (seconds))
-
-    Control mapper daemon facility sleep period between inbound file checks.
-
-* ``file_format`` (default ``T1250_TOL[PIF]_\d{14}\.dat``)
+* ``file_format``
 
     File format represents the filename structure to parse for Primary Elect
     inbound.  This was prepared during development so it may change later
-    on.  Better to adjust it via config then in code.
+    on.  Better to adjust it via config then in code.  Default
+    ``T1250_TOL[PIF]_\d{14}\.dat``
 
-* ``file_archive_string`` (default ``T1250_TOL[PIF]_(\d{8})\d{6}\.dat``)
+* ``file_archive_string``
+
     Each T1250 should contain a YYYYMMDD sequence that defines date.  This
     is used by the archiver.  The file_archive_string captures the regular
-    expression grouping that defines the date.
+    expression grouping that defines the date.  Default
+    ``T1250_TOL[PIF]_(\d{8})\d{6}\.dat``
 
-* ``customer`` (default ``gis``)
-    Upstream provider of the T1250 files.
+* ``archive_dir`` (under the ``[dirs]`` section)
 
-``npmapperd`` usage
+    Base directory where processed ``*.dat`` files are archived to.
+    Directory is expanded on to capture context of current file.
+    For example, if the source file is
+    ``<ftp_base>/nparcel/in/T1250_TOLI_20131011115618.dat`` then the
+    archive target would be similar to
+    ``<archive_dir>/gis/20131011/T1250_TOLI_20131011115618.dat``
+
+* ``support`` (under the ``[email]`` section)
+
+    comma separated list of email addresses to receive notifications
+    in case things go wrong
+
+``npmapperd`` Usage
 *******************
 
 ``npmapper`` can be configured to run as a daemon as per the following::
@@ -119,19 +126,8 @@ the required configuration options:
       -b, --batch           single pass batch mode
       -c CONFIG, --config=CONFIG
                               override default config
-                              "/home/guest/.nparceld/nparceld.conf"
+                              "/home/npprod/.nparceld/nparceld.conf"
       -f FILE, --file=FILE  file to process inline (start only)
-
-TCD Delivery Report Files
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. note::
-
-    TCD is targeted at Fast deliveries since Fast events are not
-    captured in TransSend.
-
-In order to generate customer notification comms the :mod:`mapper` needs
-to interogate the TCD Fast Delivery Report to capture job delivery times.
 
 Primary Elect Nofitications
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

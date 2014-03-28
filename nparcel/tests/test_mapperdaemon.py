@@ -44,7 +44,7 @@ class TestMapperDaemon(unittest2.TestCase):
         self._md.set_dry(old_dry)
         self._md.exit_event.clear()
 
-    def test_start_non_dry_loop(self):
+    def test_start_non_dry(self):
         """Start non-dry loop.
         """
         dry = False

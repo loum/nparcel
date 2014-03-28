@@ -25,7 +25,12 @@ class TestExporterB2CConfig(unittest2.TestCase):
 
         received = self._c.prod
         expected = 'faswbaup02'
-        msg = 'environment.prod not as expected'
+        msg = 'environment.prod error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.exporter_loop
+        expected = 300
+        msg = 'timeout.exporter error'
         self.assertEqual(received, expected, msg)
 
         received = self._c.signature_dir

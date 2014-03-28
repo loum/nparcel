@@ -20,13 +20,12 @@ class TestReminderB2CConfig(unittest2.TestCase):
         """Parse comms items from the config.
         """
         config_file = os.path.join('nparcel', 'conf', 'nparceld.conf')
-
         self._c.set_config_file(config_file)
         self._c.parse_config()
 
-        received = self._c.exporter_loop
+        received = self._c.reminder_loop
         expected = 3600
-        msg = 'timeout.exporter_loop error'
+        msg = 'timeout.reminder_loop error'
         self.assertEqual(received, expected, msg)
 
         received = self._c.prod

@@ -12,13 +12,13 @@ class CommsB2CConfig(nparcel.B2CConfig):
     """:class:`nparcel.CommsB2CConfig` captures the configuration items
     required for the ``npcommsd`` facility.
 
-     .. attribute:: *comms_dir*
+    .. attribute:: *comms_loop*
+
+        time (seconds) between comms notification iterations.
+
+    .. attribute:: *comms_dir*
 
         directory where comms files are read from
-
-    .. attribute *comms_loop*
-
-        time (seconds) between notification iterations.
 
     .. attribute:: comms_q_warning
 
@@ -52,8 +52,8 @@ class CommsB2CConfig(nparcel.B2CConfig):
         time ranges when comms can be sent
 
     """
-    _comms = None
     _comms_loop = 30
+    _comms = None
     _comms_q_warning = 100
     _comms_q_error = 1000
     _controlled_templates = []

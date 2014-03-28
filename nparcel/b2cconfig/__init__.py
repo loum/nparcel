@@ -73,14 +73,6 @@ class B2CConfig(nparcel.Config):
 
         time (seconds) between on delivery processing iterations.
 
-    .. attribute exporter_loop
-
-        time (seconds) between primary elect processing iterations.
-
-    .. attribute:: mapper_loop (mapper)
-
-        time (seconds) between mapper processing iterations.
-
     .. attribute:: filter_loop (filter)
 
         time (seconds) between filter processing iterations.
@@ -113,21 +105,6 @@ class B2CConfig(nparcel.Config):
     .. attribute:: exporter_fields (exporter)
 
         dictionary of business unit exporter ordered columns
-
-    .. attribute:: pe_in_file_format
-
-        filename structure to parse for Primary Elect inbound
-        (default 'T1250_TOL[PIF]_\d{14}\.dat')
-
-    .. attribute:: pe_in_file_archive_string
-
-        regular expression grouping structure for Primary Elect inbound
-        filenames that represent the YYYYMMDD date sequence (default
-        T1250_TOL[PIF]_(\d{8})\d{6}\.dat
-
-    .. attribute:: pe_customer
-
-        upstream provider of the T1250 files (default "gis")
 
     .. attribute:: inbound_tcd
 
@@ -206,7 +183,6 @@ class B2CConfig(nparcel.Config):
     """
     _prod = None
     _dirs_to_check = []
-    _mapper_in_dirs = []
     _archive = None
     _staging_base = None
     _comms = None
@@ -214,8 +190,6 @@ class B2CConfig(nparcel.Config):
     _adp_dirs = []
     _loader_loop = 30
     _ondelivery_loop = 30
-    _exporter_loop = 3600
-    _mapper_loop = 30
     _filter_loop = 30
     _adp_loop = 30
     _proxy_scheme = 'https'
@@ -226,9 +200,6 @@ class B2CConfig(nparcel.Config):
     _support_emails = []
     _rest = {}
     _exporter_fields = {}
-    _pe_in_file_format = 'T1250_TOL[PIF]_\d{14}\.dat'
-    _pe_in_file_archive_string = 'T1250_TOL[PIF]_(\d{8})\d{6}\.dat'
-    _pe_customer = 'gis'
     _inbound_tcd = ['/var/ftp/pub/nparcel/tcd/in']
     _tcd_filename_format = 'TCD_Deliveries_\d{14}\.DAT'
     _uncollected_day_range = 14.0
@@ -325,33 +296,12 @@ class B2CConfig(nparcel.Config):
             self._adp_dirs.extend(values)
 
     @property
-    def mapper_in_dirs(self):
-        return self._mapper_in_dirs
-
-    def set_mapper_in_dirs(self, values):
-        del self._mapper_in_dirs[:]
-        self._mapper_in_dirs = []
-
-        if values is not None:
-            log.debug('Set config mapper in directories "%s"' %
-                      str(values))
-            self._mapper_in_dirs.extend(values)
-
-    @property
     def loader_loop(self):
         return self._loader_loop
 
     @property
     def ondelivery_loop(self):
         return self._ondelivery_loop
-
-    @property
-    def exporter_loop(self):
-        return self._exporter_loop
-
-    @property
-    def mapper_loop(self):
-        return self._mapper_loop
 
     @property
     def filter_loop(self):
@@ -424,18 +374,6 @@ class B2CConfig(nparcel.Config):
         return self._exporter_fields
 
     @property
-    def pe_in_file_format(self):
-        return self._pe_in_file_format
-
-    @property
-    def pe_in_file_archive_string(self):
-        return self._pe_in_file_archive_string
-
-    @property
-    def pe_customer(self):
-        return self._pe_customer
-
-    @property
     def inbound_tcd(self):
         return self._inbound_tcd
 
@@ -493,11 +431,6 @@ class B2CConfig(nparcel.Config):
             self._dirs_to_check = self.get('dirs', 'in').split(',')
             log.debug('Loader directories to check %s' % str(self.in_dirs))
 
-            self.set_mapper_in_dirs(self.get('dirs',
-                                             'mapper_in').split(','))
-            log.debug('Config mapper directories to check %s' %
-                      str(self.mapper_in_dirs))
-
             self.set_archive_dir(self.get('dirs', 'archive'))
 
             self.set_staging_base(self.get('dirs', 'staging_base'))
@@ -527,28 +460,6 @@ class B2CConfig(nparcel.Config):
                 ConfigParser.NoSectionError), err:
             log.debug('Using default T1250 file format: %s' %
                       self.t1250_file_format)
-
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default Primary Elect file format: %s' %
-                      self.pe_in_file_format)
-
-        try:
-            archive_string = self.get('primary_elect',
-                                      'file_archive_string')
-
-            self._pe_in_file_archive_string = archive_string
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default Primary Elect archiving string: %s' %
-                      self.pe_in_file_archive_string)
-
-        try:
-            self._pe_customer = self.get('primary_elect', 'customer')
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default Primary Elect customer: %s' %
-                      self.pe_customer)
 
         try:
             self.set_inbound_tcd(self.get('dirs', 'tcd_in').split(','))
@@ -631,18 +542,6 @@ class B2CConfig(nparcel.Config):
         except ConfigParser.NoOptionError, err:
             log.debug('Using default On Delivery loop: %d (sec)' %
                       self.ondelivery_loop)
-
-        try:
-            self._exporter_loop = int(self.get('timeout', 'exporter_loop'))
-        except ConfigParser.NoOptionError, err:
-            log.debug('Using default Exporter loop: %d (sec)' %
-                      self.exporter_loop)
-
-        try:
-            self._mapper_loop = int(self.get('timeout', 'mapper_loop'))
-        except ConfigParser.NoOptionError, err:
-            log.debug('Using default Mapper loop: %d (sec)' %
-                      self.mapper_loop)
 
         try:
             self._filter_loop = int(self.get('timeout', 'filter_loop'))

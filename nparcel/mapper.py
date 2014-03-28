@@ -59,15 +59,9 @@ class Mapper(object):
     """
     _parser = nparcel.Parser(fields=FIELDS)
 
-    def __init__(self):
-        """Nparcel Mapper initialiser.
-
-        """
-        pass
-
     def process(self, raw):
         """Accepts an unformatted T1250 record *raw* and processes the
-        translation to Nparcel T1250 format.
+        translation to Toll Parcel Portal T1250 format.
 
         **Args:**
             *raw*: the source record to translate
@@ -100,7 +94,7 @@ class Mapper(object):
         return translated_line
 
     def translate(self, data):
-        """Translate source record into Nparcel T1250 format.
+        """Translate source record into Toll Parcel Portal T1250 format.
 
         Special characteristic here is that it will fudge a *Service Code*
         of "3" to denote a Primary Elect job.

@@ -124,19 +124,9 @@ class TestB2CConfig(unittest2.TestCase):
         self._c.set_config_file(self._file)
         self._c.parse_config()
 
-        msg = 'Primary Elect file format not as expected'
-        received = self._c.pe_in_file_format
-        expected = 'T1250_TOL[PIF]_\d{14}\.dat'
-        self.assertEqual(received, expected, msg)
-
         msg = 'Primary Elect archive string not as expected'
         received = self._c.pe_in_file_archive_string
         expected = 'T1250_TOL[PIF]_(\d{8})\d{6}\.dat'
-        self.assertEqual(received, expected, msg)
-
-        msg = 'Primary Elect customer not as expected'
-        received = self._c.pe_customer
-        expected = 'gis'
         self.assertEqual(received, expected, msg)
 
         msg = 'TCD inbound directory not as expected'
@@ -172,16 +162,6 @@ class TestB2CConfig(unittest2.TestCase):
         expected = 30
         self.assertEqual(received, expected, msg)
 
-        msg = 'Exporter loop not as expected'
-        received = self._c.exporter_loop
-        expected = 3600
-        self.assertEqual(received, expected, msg)
-
-        msg = 'Mapper loop not as expected'
-        received = self._c.mapper_loop
-        expected = 30
-        self.assertEqual(received, expected, msg)
-
         msg = 'Filter loop not as expected'
         received = self._c.filter_loop
         expected = 30
@@ -191,14 +171,6 @@ class TestB2CConfig(unittest2.TestCase):
         received = self._c.adp_loop
         expected = 30
         self.assertEqual(received, expected, msg)
-
-    def test_parse_config_mapper(self):
-        """Parse items from the config -- mapper
-        """
-        msg = 'Mapper inbound dir not as expected'
-        received = self._c.mapper_in_dirs
-        expected = []
-        self.assertListEqual(received, expected, msg)
 
     def test_parse_config_transsend(self):
         """Parse items from the config -- TransSend.

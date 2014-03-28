@@ -12,6 +12,10 @@ class ExporterB2CConfig(nparcel.B2CConfig):
     """:class:`nparcel.ExporterB2CConfig` captures the configuration items
     required for the ``npexporterd`` facility.
 
+    .. attribute:: exporter_loop
+
+        time (seconds) between exporter processing iterations
+
     .. attribute:: signature_dir
 
         directory where the Toll Parcel Portal places it's POD
@@ -42,12 +46,22 @@ class ExporterB2CConfig(nparcel.B2CConfig):
         the list of business units to query for collected items
 
     """
+    _exporter_loop = 3600
     _signature_dir = None
     _exporter_dirs = []
     _connote_header = None
     _exporter_file_formats = []
     _item_nbr_header = None
     _business_units = {}
+
+    @property
+    def exporter_loop(self):
+        return self._exporter_loop
+
+    def set_exporter_loop(self, value):
+        self._exporter_loop = int(value)
+        log.debug('%s exporter_loop set to %d' %
+                  (self.facility, self.exporter_loop))
 
     def __init__(self, file=None):
         """ExporterB2CConfig initialisation.
@@ -190,7 +204,14 @@ class ExporterB2CConfig(nparcel.B2CConfig):
             log.debug('%s dirs.exporter_in: %s. Using "%s"' %
                       (self.facility, err, self.exporter_dirs))
 
-        # These are the exporter specific config items.
+        # Exporter specific.
+        try:
+            self.set_exporter_loop(self.get('timeout', 'exporter_loop'))
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('%s timeout.exporter_loop: %s, Using %d' %
+                      (self.facility, err, self.exporter_loop))
+
         try:
             tmp_vals = self.get('exporter', 'file_formats')
             self.set_exporter_file_formats(tmp_vals.split(','))

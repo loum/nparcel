@@ -61,16 +61,21 @@ class MapperDaemon(nparcel.DaemonService):
                                        dry=dry,
                                        batch=batch)
         if config is not None:
-            self.config = nparcel.B2CConfig(file=config)
+            self.config = nparcel.MapperB2CConfig(file=config)
             self.config.parse_config()
+
+        try:
+            self.set_loop(self.config.mapper_loop)
+        except AttributeError, err:
+            log.debug('%s loop not in config: %s. Using %d (sec)' %
+                     (self.facility, err, self.loop))
 
         try:
             if self.config.pe_customer is not None:
                 self.set_customer(self.config.pe_customer)
         except AttributeError, err:
-            msg = ('%s -- customer not defined in config.  Using "%s"' %
-                   (self.facility, self.customer))
-            log.debug(msg)
+            log.debug('%s pe_customer not in config: %s. Using "%s"' %
+                      (self.facility, err, self.customer))
 
         try:
             if len(self.config.mapper_in_dirs):
@@ -78,40 +83,29 @@ class MapperDaemon(nparcel.DaemonService):
             if not len(self.in_dirs):
                 raise
         except AttributeError, err:
-            msg = ('%s -- inbound directory not in config -- using %s' %
-                   (self.facility, self.in_dirs))
-            log.info(msg)
-
-        try:
-            if self.config.mapper_loop is not None:
-                self.set_loop(self.config.mapper_loop)
-        except AttributeError, err:
-            log.info('Daemon loop not defined in config -- default %d sec' %
-                     self.loop)
+            log.debug('%s in_dirs not in config: %s. Using %s' %
+                      (self.facility, err, self.in_dirs))
 
         try:
             if self.config.pe_in_file_format is not None:
                 self.set_file_format(self.config.pe_in_file_format)
         except AttributeError, err:
-            msg = ('Inbound file format not defined in config -- using %s' %
-                   self.file_format)
-            log.info(msg)
+            log.debug('%s pe_file_format not in config: %s. Using %s' %
+                      (self.facility, err, self.file_format))
 
         try:
             if self.config.support_emails is not None:
                 self.set_support_emails(self.config.support_emails)
         except AttributeError, err:
-            msg = ('Support emails not defined in config -- using %s' %
-                   str(self.support_emails))
-            log.info(msg)
+            log.debug('%s support_emails not in config: %s. Using %s' %
+                      (self.facility, err, self.support_emails))
 
         try:
             if self.config.archive_dir is not None:
                 self.set_archive_base(self.config.archive_dir)
         except AttributeError, err:
-            msg = ('Archive base not defined in config -- using %s' %
-                   str(self.archive_base))
-            log.info(msg)
+            log.debug('%s archive_base not in config: %s. Using %s' %
+                      (self.facility, err, self.archive_base))
 
     @property
     def file_format(self):
@@ -228,8 +222,8 @@ class MapperDaemon(nparcel.DaemonService):
 
             if batch_ok:
                 closed_files = self.close(fhs)
-                log.info('Inbound T1250 files produced: "%s"' %
-                         str(closed_files))
+                log.debug('Inbound T1250 files produced: "%s"' %
+                          str(closed_files))
 
                 # Archive files.
                 for file in files:
@@ -276,7 +270,7 @@ class MapperDaemon(nparcel.DaemonService):
             dirs_to_check = dir
 
         for dir_to_check in dirs_to_check:
-            log.info('Looking for files at: %s ...' % dir_to_check)
+            log.debug('Looking for files at: %s ...' % dir_to_check)
             for file in get_directory_files(dir_to_check):
                 if (check_filename(file, self.file_format) and
                     check_eof_flag(file)):

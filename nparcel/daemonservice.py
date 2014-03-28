@@ -95,8 +95,8 @@ class DaemonService(nparcel.utils.Daemon):
         self._in_dirs = []
 
         if values is not None:
-            log.debug('Set inbound directory list "%s"' % str(values))
             self._in_dirs.extend(values)
+        log.debug('%s in_dirs set to "%s"' % (self.facility, self.in_dirs))
 
     @property
     def dry(self):
@@ -125,7 +125,8 @@ class DaemonService(nparcel.utils.Daemon):
         return self._loop
 
     def set_loop(self, value):
-        self._loop = value
+        self._loop = int(value)
+        log.debug('%s loop set to %d' % (self.facility, self.loop))
 
     @property
     def support_emails(self):
@@ -144,7 +145,8 @@ class DaemonService(nparcel.utils.Daemon):
 
     def set_archive_base(self, value):
         self._archive_base = value
-        log.debug('Set archive base directory to "%s"' % self._archive_base)
+        log.debug('%s archive_base set to "%s"' %
+                  (self.facility, self._archive_base))
 
     @property
     def prod(self):

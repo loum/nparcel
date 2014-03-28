@@ -14,6 +14,7 @@ Modules
     exporterb2cconfig.rst
     reporterb2cconfig.rst
     healthb2cconfig.rst
+    mapperb2cconfig.rst
 
     parser.rst
     dbsession.rst

@@ -31,6 +31,12 @@ class ExporterDaemon(nparcel.DaemonService):
             self.config.parse_config()
 
         try:
+            self.set_loop(self.config.exporter_loop)
+        except AttributeError, err:
+            msg = ('%s loop not in config. Using %d' %
+                   (self.facility, self.loop))
+
+        try:
             if self.config.support_emails is not None:
                 self.set_support_emails(self.config.support_emails)
         except AttributeError, err:
@@ -162,4 +168,4 @@ class ExporterDaemon(nparcel.DaemonService):
                     log.info('Batch run iteration complete -- aborting')
                     event.set()
                 else:
-                    time.sleep(self.config.exporter_loop)
+                    time.sleep(self.loop)
