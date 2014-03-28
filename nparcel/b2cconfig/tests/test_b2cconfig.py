@@ -124,11 +124,6 @@ class TestB2CConfig(unittest2.TestCase):
         self._c.set_config_file(self._file)
         self._c.parse_config()
 
-        msg = 'Primary Elect archive string not as expected'
-        received = self._c.pe_in_file_archive_string
-        expected = 'T1250_TOL[PIF]_(\d{8})\d{6}\.dat'
-        self.assertEqual(received, expected, msg)
-
         msg = 'TCD inbound directory not as expected'
         received = self._c.inbound_tcd
         expected = ['/var/ftp/pub/nparcel/tcd/in']
