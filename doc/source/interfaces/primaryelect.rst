@@ -23,6 +23,8 @@ sent directly from the vendor (for example, Grays Online)
     Elect service option whilst the various Business Units update their
     systems to accommodate such requests in the future.
 
+.. _primary_elect_workflow:
+
 Primary Elect Workflow
 ----------------------
 

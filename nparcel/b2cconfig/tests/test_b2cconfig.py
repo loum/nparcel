@@ -80,13 +80,6 @@ class TestB2CConfig(unittest2.TestCase):
                     'failed_email': 'loumar@tollgroup.com'}
         self.assertDictEqual(received, expected, msg)
 
-        msg = 'Exporter columns expected'
-        received = self._c.exporter_fields
-        expected = {'tolp': '0,1,2,3,4,5,6',
-                    'tolf': '0,1,2,3,4,5,6',
-                    'toli': '0,1,2,3,4,5,6,7'}
-        self.assertDictEqual(received, expected, msg)
-
     def test_parse_config_dirs(self):
         """Parse items from the config -- directories ([dirs]).
         """

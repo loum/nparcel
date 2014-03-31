@@ -11,8 +11,14 @@ from nparcel.utils.log import log
 
 class ExporterDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.Exporter` class.
+
+    .. attribute:: exporter_fields
+
+        dictionary of business unit exporter ordered columns
+
     """
     _exporter = None
+    _exporter_fields = {}
     _business_units = {}
 
     def __init__(self,
@@ -45,17 +51,38 @@ class ExporterDaemon(nparcel.DaemonService):
             log.info(msg)
 
         try:
+            self.set_exporter_fields(self.config.exporter_fields)
+        except AttributeError, err:
+            log.debug('%s exporter_fields not in config: %s. Using "%s"' %
+                      (self.facility, err, self.exporter_fields))
+
+        try:
             self.set_business_units(self.config.business_units)
         except AttributeError, err:
             log.debug('%s business_units not in config: %s. Using "%s"' %
                       (self.facility, err, self.business_units))
 
     @property
+    def exporter_fields(self):
+        return self._exporter_fields
+
+    def set_exporter_fields(self, values=None):
+        self._exporter_fields.clear()
+
+        if values is not None:
+            self._exporter_fields = values
+        log.debug('%s exporter_fields set to: "%s"' %
+                  (self.facility, self.exporter_fields))
+
+    @property
     def business_units(self):
         return self._business_units
 
-    def set_business_units(self, values):
-        self._business_units = values
+    def set_business_units(self, values=None):
+        self._business_units.clear()
+
+        if values is not None:
+            self._business_units = values
         log.debug('%s business_units set to: "%s"' %
                   (self.facility, self.business_units))
 
@@ -134,7 +161,7 @@ class ExporterDaemon(nparcel.DaemonService):
                                                   dry=self.dry)
                     if self.dry:
                         self.exporter.set_out_dir(None)
-                    seq = self.config.exporter_fields.get(bu_file_code)
+                    seq = self.exporter_fields.get(bu_file_code)
                     identifier = bu[0].upper()
                     state_rep = self.config.condition(bu_file_code,
                                                       'state_reporting')

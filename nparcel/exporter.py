@@ -89,6 +89,8 @@ class Exporter(nparcel.Service):
 
     def set_signature_dir(self, value):
         self._signature_dir = value
+        log.debug('%s signature_dir set to "%s"' %
+                  (self.facility, self.signature_dir))
 
     @property
     def staging_dir(self):

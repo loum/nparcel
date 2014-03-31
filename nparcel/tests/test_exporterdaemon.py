@@ -1,7 +1,6 @@
 import unittest2
 import os
 import tempfile
-import copy
 
 import nparcel
 from nparcel.utils.files import (copy_file,
@@ -29,6 +28,14 @@ class TestExporterDaemon(unittest2.TestCase):
                                     'tolf_act': 2,
                                     'toli': 3})
 
+        # Signature dir.
+        cls._signature_dir = tempfile.mkdtemp()
+        cls._ed.config.set_signature_dir(cls._signature_dir)
+        cls._sig_files = ['1.ps', '1.png', '5.ps', '5.png']
+        for f in cls._sig_files:
+            fh = open(os.path.join(cls._signature_dir, f), 'w')
+            fh.close()
+
         # Exporter file closure dirs.
         cls._exporter_dir = tempfile.mkdtemp()
         cls._ed.config.set_exporter_dirs([cls._exporter_dir])
@@ -46,10 +53,15 @@ class TestExporterDaemon(unittest2.TestCase):
 
         # Call up front to pre-load the DB.
         cls._ed._exporter = nparcel.Exporter(**(cls._ed.exporter_kwargs))
+        cls._ed.set_exporter_fields({'tolp': '0,1,2,3,4,5,6',
+                                     'tolf': '0,1,2,3,4,5,6',
+                                     'toli': '0,1,2,3,4,5,6,7'})
 
         db = cls._ed._exporter.db
         fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
         fixtures = [{'db': db.agent, 'fixture': 'agents.py'},
+                    {'db': db.identity_type,
+                     'fixture': 'identity_type.py'},
                     {'db': db.job, 'fixture': 'jobs.py'},
                     {'db': db.jobitem, 'fixture': 'jobitems.py'}]
         for i in fixtures:
@@ -100,7 +112,7 @@ class TestExporterDaemon(unittest2.TestCase):
         self._ed.config.set_exporter_dirs([dir])
         self._ed.config.set_exporter_file_formats(filters)
         # Add valid email address here if you want to verify support comms.
-        self._ed.set_support_emails(['lou.markovski@gmail.com'])
+        self._ed.set_support_emails([])
         self._ed._start(self._ed.exit_event)
 
         # Clean up.
@@ -114,8 +126,26 @@ class TestExporterDaemon(unittest2.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls._ed = None
-        os.removedirs(os.path.join(cls._archive_dir, 'signature'))
+        del cls._ed
+        # Hardwired for now until we can think of a better way ...
+        sig_dir_1 = os.path.join(cls._archive_dir,
+                                 'signature',
+                                 'c4',
+                                 'c4ca',
+                                 'c4ca42',
+                                 'c4ca4238')
+        remove_files(get_directory_files_list(sig_dir_1))
+        sig_dir_5 = os.path.join(cls._archive_dir,
+                                 'signature',
+                                 'e4',
+                                 'e4da',
+                                 'e4da3b',
+                                 'e4da3b7f')
+        remove_files(get_directory_files_list(sig_dir_5))
+        os.removedirs(sig_dir_1)
+        os.removedirs(sig_dir_5)
         os.removedirs(cls._exporter_dir)
         for dir in ['priority', 'fast', 'ipec']:
-            os.removedirs(os.path.join(cls._staging_dir, dir, 'out'))
+            out_dir = os.path.join(cls._staging_dir, dir, 'out')
+            remove_files(get_directory_files_list(out_dir))
+            os.removedirs(out_dir)

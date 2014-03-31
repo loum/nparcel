@@ -36,6 +36,10 @@ class ExporterB2CConfig(nparcel.B2CConfig):
         list of regular expressions that represent the type of files that
         can be parsed by the exporter
 
+    .. attribute:: exporter_fields
+
+        dictionary of business unit exporter ordered columns
+
     .. attribute:: item_nbr_header
 
         token used to identify the item number column in the Exporter report
@@ -51,6 +55,7 @@ class ExporterB2CConfig(nparcel.B2CConfig):
     _exporter_dirs = []
     _connote_header = None
     _exporter_file_formats = []
+    _exporter_fields = {}
     _item_nbr_header = None
     _business_units = {}
 
@@ -102,6 +107,18 @@ class ExporterB2CConfig(nparcel.B2CConfig):
             self._exporter_file_formats.extend(values)
         log.debug('%s exporter.file_formats set to "%s"' %
                   (self.facility, self.exporter_file_formats))
+
+    @property
+    def exporter_fields(self):
+        return self._exporter_fields
+
+    def set_exporter_fields(self, values=None):
+        self._exporter_fields.clear()
+
+        if values is not None:
+            self._exporter_fields = values
+        log.debug('%s exporter_fields set to: "%s"' %
+                  (self.facility, self.exporter_fields))
 
     @property
     def connote_header(self):
@@ -219,6 +236,13 @@ class ExporterB2CConfig(nparcel.B2CConfig):
                 ConfigParser.NoOptionError), err:
             log.debug('%s exporter.file_formats: %s. Using "%s"' %
                       (self.facility, err, self.exporter_file_formats))
+
+        try:
+            self.set_exporter_fields(dict(self.items('exporter_fields')))
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
+            log.debug('%s exporter_fields: %s. Using "%s"' %
+                      (self.facility, err, self.exporter_fields))
 
         try:
             self.set_connote_header(self.get('exporter', 'connote_header'))

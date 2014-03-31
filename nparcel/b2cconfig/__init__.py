@@ -47,7 +47,7 @@ class B2CConfig(nparcel.Config):
 
         base directory where working files are archived to
 
-    .. attribute:: staging_base (exporter)
+    .. attribute:: staging_base
 
         directory to place processed collected reports and signature files
         for further processing.
@@ -81,7 +81,7 @@ class B2CConfig(nparcel.Config):
 
         time (seconds) between filter processing iterations.
 
-    .. attribute:: business_units (exporter)
+    .. attribute:: business_units
 
         the list of business units to query for collected items
 
@@ -101,10 +101,6 @@ class B2CConfig(nparcel.Config):
     .. attribute:: rest (loader)
 
         dictionary of RESTful interfaces for SMS and email
-
-    .. attribute:: exporter_fields (exporter)
-
-        dictionary of business unit exporter ordered columns
 
     .. attribute:: inbound_tcd
 
@@ -199,7 +195,6 @@ class B2CConfig(nparcel.Config):
     _cond = {}
     _support_emails = []
     _rest = {}
-    _exporter_fields = {}
     _inbound_tcd = ['/var/ftp/pub/nparcel/tcd/in']
     _tcd_filename_format = 'TCD_Deliveries_\d{14}\.DAT'
     _uncollected_day_range = 14.0
@@ -286,14 +281,13 @@ class B2CConfig(nparcel.Config):
     def adp_dirs(self):
         return self._adp_dirs
 
-    def set_adp_dirs(self, values):
+    def set_adp_dirs(self, values=None):
         del self._adp_dirs[:]
         self._adp_dirs = []
 
         if values is not None:
-            log.debug('Set config exporter in directories "%s"' %
-                      str(values))
             self._adp_dirs.extend(values)
+        log.debug('adp_dirs set to "%s"' % self.adp_dirs)
 
     @property
     def loader_loop(self):
@@ -368,10 +362,6 @@ class B2CConfig(nparcel.Config):
     @property
     def rest(self):
         return self._rest
-
-    @property
-    def exporter_fields(self):
-        return self._exporter_fields
 
     @property
     def inbound_tcd(self):
@@ -575,14 +565,6 @@ class B2CConfig(nparcel.Config):
             log.debug('RESTful APIs %s' % str(self._rest))
         except ConfigParser.NoSectionError, err:
             log.warn('No RESTful APIs in config')
-
-        # Exporter business unit-based column output and ordering.
-        # Default is to simply display order as per query.
-        try:
-            self._exporter_fields = dict(self.items('exporter_fields'))
-            log.debug('Exporter fields %s' % str(self._exporter_fields))
-        except ConfigParser.NoSectionError, err:
-            log.warn('No Exporter column output ordering in config')
 
         # Transend.
         try:

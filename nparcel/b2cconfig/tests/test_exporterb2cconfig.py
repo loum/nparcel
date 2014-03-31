@@ -71,6 +71,13 @@ class TestExporterB2CConfig(unittest2.TestCase):
         msg = 'exporter.file_formats error'
         self.assertListEqual(received, expected, msg)
 
+        received = self._c.exporter_fields
+        expected = {'tolp': '0,1,2,3,4,5,6',
+                    'tolf': '0,1,2,3,4,5,6',
+                    'toli': '0,1,2,3,4,5,6,7'}
+        msg = 'exporter_fields error'
+        self.assertDictEqual(received, expected, msg)
+
         received = self._c.item_nbr_header
         expected = 'ITEM_NBR'
         msg = 'exporter.item_nbr header error'
