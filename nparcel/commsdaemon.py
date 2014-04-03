@@ -307,6 +307,7 @@ class CommsDaemon(nparcel.DaemonService):
             log.debug('%s returns_templates cannot be built from %s: %s ' %
                       (self._facility, 'comms.uncontrolled_templates', err))
 
+        log.debug('%s comms_kwargs: "%s"' % (self.facility, kwargs))
         return kwargs
 
     def _start(self, event):

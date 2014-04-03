@@ -453,6 +453,28 @@ class TestCommsDaemon(unittest2.TestCase):
         msg = 'Comms kwargs initialiser error'
         self.assertDictEqual(received, expected, msg)
 
+    def test_comms_kwargs(self):
+        """Verify the comms_kwargs property
+        """
+        received = self._cd.comms_kwargs
+        sa = 'https://apps.cinder.co/tollgroup/wsemail/emailservice.svc/sendemail'
+        ea = 'https://api.esendex.com/v1.0/messagedispatcher'
+        expected = {'db': None,
+                    'email_api': {'api': sa,
+                                  'api_password': '<email_pw>',
+                                  'api_username': '<email_user>',
+                                  'support': 'loumar@tollgroup.com'},
+                    'prod': 'faswbaup02',
+                    'proxy': None,
+                    'returns_templates': [],
+                    'scheme': 'https',
+                    'sms_api': {'api': ea,
+                                'api_password': '<sms_pw>',
+                                'api_username': '<sms_user>'},
+                                'templates': []}
+        msg = 'comms_kwargs structure error'
+        self.assertDictEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._cd.config.remove_section('db')

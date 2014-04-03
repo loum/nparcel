@@ -142,8 +142,8 @@ class ReporterDaemon(nparcel.DaemonService):
         self.set_report_type(report)
 
         if config is not None:
-            self.set_config(nparcel.B2CConfig(file=config,
-                                              type=self.report_type))
+            self.set_config(nparcel.ReporterB2CConfig(file=config,
+                                                      type=self.report_type))
             self.config.parse_config()
 
         log_msg = self.facility + '.%s not set via config: %s. Using "%s"'
@@ -435,7 +435,7 @@ class ReporterDaemon(nparcel.DaemonService):
     def reporter_kwargs(self):
         kwargs = {}
         try:
-            kwargs['db'] = self.config.db_kwargs()
+            kwargs['db_kwargs'] = self.config.db_kwargs()
         except AttributeError, err:
             log.debug('%s db_kwargs not in config: %s ' %
                       (self.facility, err))
@@ -448,23 +448,22 @@ class ReporterDaemon(nparcel.DaemonService):
                 if self.config.report_bu_ids is not None:
                     self.set_bu_ids(self.config.report_bu_ids)
             except AttributeError, err:
-                log.debug('%s bu_ids not defined in config: %s. Using "%s"' %
+                log.debug('%s bu_ids not in config: %s. Using "%s"' %
                           (self.facility, err, self.bu_ids))
-                kwargs['bu_ids'] = self.bu_ids
+            kwargs['bu_ids'] = self.bu_ids
 
         try:
             if self.config.report_type_delivery_parters is not None:
                 self.set_bu_ids(self.config.report_type_delivery_partners)
         except AttributeError, err:
-            msg = '%s %s not defined in config: %s. Using "%s"'
+            msg = '%s %s not in config: %s. Using "%s"'
             log.debug(msg % (self.facility,
                              'report_type_delivery_partner',
                              err,
                              self.bu_ids))
-            kwargs['delivery_partners'] = self.delivery_partners
+        kwargs['delivery_partners'] = self.delivery_partners
 
         log.debug('%s.reporter_kwargs: "%s"' % (self.facility, kwargs))
-
         return kwargs
 
     def _start(self, event):

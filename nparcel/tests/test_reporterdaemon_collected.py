@@ -173,6 +173,17 @@ SET job_ts = '%s'""" % cls._now
         self._rd.set_ws(old_ws)
         self._rd.set_recipients(old_recipients)
 
+    def test_reporter_kwargs(self):
+        """Verify the reporter_kwargs for the collected report.
+        """
+        received = self._rd.reporter_kwargs
+        expected = {'bu_ids': {1: 'Toll Priority',
+                               2: 'Toll Fast',
+                               3: 'Toll IPEC'},
+                    'delivery_partners': ['Nparcel']}
+        msg = 'reporter_kwargs structure error -- collected'
+        self.assertDictEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._rd = None

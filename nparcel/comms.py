@@ -37,13 +37,13 @@ class Comms(nparcel.Service):
     _returns_template_tokens = ['ret']
 
     def __init__(self, **kwargs):
-        """Nparcel Comms initialisation.
+        """:module:`nparcel.comms` initialisation.
         """
-        self._prod = kwargs.get('prod')
-
         db_kwargs = kwargs.get('db')
         comms_dir = kwargs.get('comms_dir')
         nparcel.Service.__init__(self, db=db_kwargs, comms_dir=comms_dir)
+
+        self.set_prod(kwargs.get('prod'))
 
         if kwargs.get('hold_period') is not None:
             self._hold_period = kwargs.get('hold_period')
@@ -373,6 +373,7 @@ class Comms(nparcel.Service):
                          str(self._emailer.recipients))
             encoded_msg = self._emailer.create_comms(data=item_details,
                                                      template=template,
+                                                     prod=self.prod,
                                                      err=err)
             status = self._emailer.send(data=encoded_msg, dry=dry)
 
