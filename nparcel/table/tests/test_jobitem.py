@@ -808,14 +808,24 @@ AND notify_ts IS NOT NULL""" % job_item_id
     def test_total_agent_stocktake_parcel_count_sql_not_picked_up(self):
         """Verify the total_agent_stocktake_parcel_count_sql SQL.
         """
+        # Agent Stocktake created_ts for "VIC Test Newsagent 999".
         sql = """SELECT MAX(created_ts)
 FROM agent_stocktake
 WHERE agent_id = 3"""
         self._db(sql)
         ts = list(self._db.rows())
 
-        ids = (1, 2, 3)
-        sql = self._db.jobitem.total_agent_stocktake_parcel_count_sql(ids)
+        # Agent Stocktake created_ts for "George Street News".
+        sql = """SELECT MAX(created_ts)
+FROM agent_stocktake
+WHERE agent_id = 4"""
+        self._db(sql)
+        george_ts = list(self._db.rows())
+
+        kwargs = {'bu_ids': (1, 2, 3),
+                  'delivery_partners': ['Nparcel']}
+        table = self._db.jobitem
+        sql = table.total_agent_stocktake_parcel_count_sql(**kwargs)
         self._db(sql)
 
         received = list(self._db.rows())
@@ -823,14 +833,14 @@ WHERE agent_id = 3"""
                      'V999',
                      'VIC Test Newsagent 999',
                      '%s' % ts[0][0],
-                     92,
-                     92),
-                    ('WVIC005',
-                     'W049',
-                     'Bunters We Never Sleep News + Deli',
-                     None,
-                     24,
-                     47)]
+                     4,
+                     5),
+                    ('QBRI005',
+                     'Q013',
+                     'George Street News',
+                     '%s' % george_ts[0][0],
+                     2,
+                     0)]
         msg = 'AgentStocktake-based parcel totals count error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -845,8 +855,10 @@ WHERE agent_id = 3"""
 
         ids = (1, 2, 3)
         table = self._db.jobitem
-        sql = table.total_agent_stocktake_parcel_count_sql(ids,
-                                                           picked_up=True)
+        kwargs = {'bu_ids': (1, 2, 3),
+                  'picked_up': True,
+                  'delivery_partners': ['Nparcel']}
+        sql = table.total_agent_stocktake_parcel_count_sql(**kwargs)
         self._db(sql)
 
         received = list(self._db.rows())
@@ -854,8 +866,8 @@ WHERE agent_id = 3"""
                      'V999',
                      'VIC Test Newsagent 999',
                      '%s' % max_date,
-                     21,
-                     21)]
+                     4,
+                     1)]
         msg = 'AgentStocktake-based parcel totals count error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 

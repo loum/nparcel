@@ -5,7 +5,7 @@ import nparcel
 
 
 class Job(nparcel.Table):
-    """Nparcel DB Job table ORM.
+    """Job table ORM.
     """
 
     def __init__(self):

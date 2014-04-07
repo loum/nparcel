@@ -46,7 +46,8 @@ class HealthB2CConfig(nparcel.B2CConfig):
         # after nparcel.B2CConfig is refactored.
         try:
             self.set_prod(self.get('environment', 'prod'))
-        except AttributeError, err:
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
             log.debug('%s environment.prod not in config: %s. Using "%s"' %
                       (self.facility, err, self.prod))
 

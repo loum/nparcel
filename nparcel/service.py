@@ -61,7 +61,8 @@ class Service(object):
         return self._prod
 
     def set_prod(self, value=None):
-        self._prod = value.lower()
+        if value is not None:
+            self._prod = value.lower()
         log.debug('%s prod instance name set to "%s"' %
                   (self.facility, self.prod))
 

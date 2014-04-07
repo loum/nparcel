@@ -2,6 +2,7 @@ __all__ = [
     "MapperB2CConfig",
 ]
 import ConfigParser
+import sys
 
 import nparcel
 from nparcel.utils.log import log
@@ -25,7 +26,7 @@ class MapperB2CConfig(nparcel.B2CConfig):
         for files to process
 
     .. attribute:: pe_in_file_format
- 
+
         filename structure to parse for Primary Elect inbound
         (default 'T1250_TOL[PIF]_\d{14}\.dat')
 
@@ -101,7 +102,8 @@ class MapperB2CConfig(nparcel.B2CConfig):
         # after nparcel.B2CConfig is refactored.
         try:
             self.set_prod(self.get('environment', 'prod'))
-        except AttributeError, err:
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
             log.debug('%s environment.prod not in config: %s. Using "%s"' %
                       (self.facility, err, self.prod))
 

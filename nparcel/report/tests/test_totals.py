@@ -79,20 +79,26 @@ WHERE id IN (7, 8)""" % cls._older_date
         self._c.db(date_sql)
         max_date = list(self._c.db.rows())[0][0]
 
+        date_sql = """SELECT MAX(created_ts)
+       FROM agent_stocktake
+       WHERE agent_id = 4"""
+        self._c.db(date_sql)
+        george_max_date = list(self._c.db.rows())[0][0]
+
         ids = (1, 2, 3)
         received = self._c.process(id=ids)
         expected = [('VIC999',
                      'V999',
                      'VIC Test Newsagent 999',
                      '%s' % max_date,
-                     92,
-                     92),
-                    ('WVIC005',
-                     'W049',
-                     'Bunters We Never Sleep News + Deli',
-                     None,
-                     24,
-                     47)]
+                     4,
+                     5),
+                    ('QBRI005',
+                     'Q013',
+                     'George Street News',
+                     '%s' % george_max_date,
+                     2,
+                     0)]
         msg = 'List of parcel counts incorrect'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
