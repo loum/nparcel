@@ -6,6 +6,7 @@ from nparcel.loader import Loader
 from nparcel.reporter import Reporter
 from nparcel.emailerbase import EmailerBase
 from nparcel.emailer import Emailer
+from nparcel.podtranslator import PodTranslator
 from nparcel.daemonservice import DaemonService
 from nparcel.loaderdaemon import LoaderDaemon
 from nparcel.exporterdaemon import ExporterDaemon

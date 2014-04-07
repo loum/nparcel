@@ -95,14 +95,14 @@ JOB_ITEM_MAP = {'Conn Note': {
 
 
 class Loader(nparcel.Service):
-    """Nparcel Loader object.
+    """:class:`nparcelLoader` object structure.
     """
 
     def __init__(self, db=None, comms_dir=None):
-        """Nparcel Loader initialiser.
+        """:class:`nparcel.Loader` initialiser.
 
         """
-        super(nparcel.Loader, self).__init__(db=db, comms_dir=comms_dir)
+        nparcel.Service.__init__(self, db=db, comms_dir=comms_dir)
 
         self.parser = nparcel.Parser(fields=FIELDS)
 

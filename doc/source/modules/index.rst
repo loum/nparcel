@@ -62,6 +62,8 @@ Modules
     filter.rst
     filterdaemon.rst
 
+    podtranslator.rst
+
     auditer.rst
 
     uncollected.rst
