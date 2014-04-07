@@ -12,7 +12,7 @@ EOF
 exit 1
 }
 
-FACILITIES="nploaderd npexporterd npfilterd npmapperd npondeliveryd npreminderd npcommsd"
+FACILITIES="nploaderd npexporterd npfilterd npmapperd npondeliveryd npreminderd npcommsd nppodd"
 BIN='/usr/local/bin'
 
 verbose=off

@@ -28,6 +28,11 @@ class TestHealthB2CConfig(unittest2.TestCase):
         msg = 'environment.prod not as expected'
         self.assertEqual(received, expected, msg)
 
+        received = self._c.support_emails
+        expected = ['loumar@tollgroup.com']
+        msg = 'email.support config error'
+        self.assertListEqual(received, expected, msg)
+
         received = self._c.health_processes
         expected = ['npcommsd',
                     'npexporterd',

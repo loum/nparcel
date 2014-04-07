@@ -51,6 +51,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.b2cconfig.tests:TestHealthB2CConfig \
 	 nparcel.b2cconfig.tests:TestReminderB2CConfig \
 	 nparcel.b2cconfig.tests:TestMapperB2CConfig \
+	 nparcel.b2cconfig.tests:TestPodB2CConfig \
 	 nparcel.tests:TestFtp \
 	 nparcel.tests:TestService \
 	 nparcel.tests:TestReminder \

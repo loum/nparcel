@@ -2,8 +2,6 @@ __all__ = [
     "B2CConfig",
 ]
 import sys
-import time
-import datetime
 
 import nparcel
 import ConfigParser
@@ -234,8 +232,8 @@ class B2CConfig(nparcel.Config):
         self._dirs_to_check = []
 
         if values is not None:
-            log.debug('Set inbound directory "%s"' % str(values))
             self._dirs_to_check.extend(values)
+        log.debug('%s in_dirs set to "%s"' % (self.facility, self.in_dirs))
 
     @property
     def archive_dir(self):

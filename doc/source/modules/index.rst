@@ -15,6 +15,7 @@ Modules
     reporterb2cconfig.rst
     healthb2cconfig.rst
     mapperb2cconfig.rst
+    podb2cconfig.rst
 
     parser.rst
     dbsession.rst

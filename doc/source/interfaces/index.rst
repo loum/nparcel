@@ -20,3 +20,4 @@ the inbound and outbound processing.
     ondelivery.rst
     adp.rst
     stocktake_reporting.rst
+    pod_translator.rst
