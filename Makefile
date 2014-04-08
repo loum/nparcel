@@ -34,6 +34,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestMapperDaemon \
 	 nparcel.tests:TestFilterDaemon \
 	 nparcel.tests:TestAdpDaemon \
+	 nparcel.tests:TestPodTranslatorDaemon \
 	 nparcel.tests:TestReporterDaemonUncollected \
 	 nparcel.tests:TestReporterDaemonCompliance \
 	 nparcel.tests:TestReporterDaemonNonCompliance \

@@ -17,6 +17,7 @@ from nparcel.mapperdaemon import MapperDaemon
 from nparcel.filterdaemon import FilterDaemon
 from nparcel.reporterdaemon import ReporterDaemon
 from nparcel.adpdaemon import AdpDaemon
+from nparcel.podtranslatordaemon import PodTranslatorDaemon
 from nparcel.rest import Rest
 from nparcel.restemailer import RestEmailer
 from nparcel.restsmser import RestSmser

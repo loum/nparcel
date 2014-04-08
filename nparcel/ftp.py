@@ -20,7 +20,7 @@ from nparcel.utils.files import (create_dir,
 
 
 class Ftp(ftplib.FTP):
-    """Nparcel FTP client.
+    """FTP client.
 
     .. attribute:: archive_dir
 

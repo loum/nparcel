@@ -54,7 +54,7 @@ MAP = {'Conn Note': {'offset': 0},
 
 
 class Mapper(object):
-    """Nparcel Mapper object.
+    """Mapper object.
 
     """
     _parser = nparcel.Parser(fields=FIELDS)

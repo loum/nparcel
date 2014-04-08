@@ -33,7 +33,6 @@ class ExporterDaemon(nparcel.DaemonService):
 
         if config is not None:
             self.config = nparcel.ExporterB2CConfig(file=config)
-            log.debug('Parsing ExporterB2CConfig config items')
             self.config.parse_config()
 
         try:

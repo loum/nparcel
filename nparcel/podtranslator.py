@@ -9,12 +9,9 @@ from nparcel.utils.log import log
 from nparcel.utils.files import copy_file
 
 
-class PodTranslator(nparcel.Service):
+class PodTranslator(object):
     """:class:`nparcelPodTranslator` object structure.
     """
-
-    def __init__(self):
-        nparcel.Service.__init__(self)
 
     def token_generator(self, dt=None):
         """Highly customised token generator that provides a unique,

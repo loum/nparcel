@@ -33,6 +33,11 @@ class TestPodB2CConfig(unittest2.TestCase):
         msg = 'email.support config error'
         self.assertListEqual(received, expected, msg)
 
+        received = self._c.pod_translator_loop
+        expected = 600
+        msg = 'pod_translator_loop config error'
+        self.assertEqual(received, expected, msg)
+
         received = self._c.pod_dirs
         expected = [os.path.join(os.sep,
                                  'var',

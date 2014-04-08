@@ -12,6 +12,10 @@ class PodB2CConfig(nparcel.B2CConfig):
     """:class:`nparcel.PodB2CConfig` captures the configuration items
     required for the ``nphealth`` facility.
 
+    .. attribute:: pod_translator_loop
+
+        time (seconds) between pod_translator_loop processing iterations
+
     .. attribute:: pod_dirs
 
         inbound directory location to look for exporter files to process
@@ -26,6 +30,7 @@ class PodB2CConfig(nparcel.B2CConfig):
         can be parsed by the POD translator
 
     """
+    _pod_translator_loop = 600
     _pod_dirs = []
     _out_dir = None
     _file_formats = []
@@ -34,6 +39,15 @@ class PodB2CConfig(nparcel.B2CConfig):
         """:class:`nparcel.PodB2CConfig` initialisation.
         """
         nparcel.B2CConfig.__init__(self, file)
+
+    @property
+    def pod_translator_loop(self):
+        return self._pod_translator_loop
+
+    def set_pod_translator_loop(self, value):
+        self._pod_translator_loop = int(value)
+        log.debug('%s pod_translator_loop set to %d' %
+                  (self.facility, self.pod_translator_loop))
 
     @property
     def pod_dirs(self):
@@ -93,6 +107,14 @@ class PodB2CConfig(nparcel.B2CConfig):
                       (self.facility, err, self.support_emails))
 
         # POD specific.
+        try:
+            self.set_pod_translator_loop(self.get('timeout',
+                                                  'pod_translator_loop'))
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.debug('%s timeout.pod_translator_loop: %s. Using %d' %
+                      (self.facility, err, self.pod_translator_loop))
+
         try:
             self.set_pod_dirs(self.get('dirs', 'pod_in').split(','))
         except (ConfigParser.NoOptionError,

@@ -3,6 +3,8 @@ __all__ = [
 ]
 import nparcel
 from nparcel.utils.log import log
+from nparcel.utils.files import (get_directory_files,
+                                 check_filename)
 
 
 class DaemonService(nparcel.utils.Daemon):
@@ -232,3 +234,38 @@ class DaemonService(nparcel.utils.Daemon):
             log.debug('No table data generated -- suppressing comms')
 
         return status
+
+    def get_files(self, dir=None, formats=None):
+        """Identifies files that are to be processed.
+
+        **Args:**
+            *dir*: override :attr:`in_dirs` for directories to search
+
+            *formats*: list of regular expressions to apply across
+            directory files
+
+        **Returns:**
+            list of files found
+
+        """
+        if formats is None:
+            formats = []
+
+        files_to_process = []
+
+        dirs_to_check = self.in_dirs
+        if dir is not None:
+            dirs_to_check = dir
+
+        for dir_to_check in dirs_to_check:
+            log.debug('Looking for files at: %s ...' % dir_to_check)
+            for file in get_directory_files(dir_to_check):
+                for format in formats:
+                    if (check_filename(file, self.file_format)):
+                        log.info('Found file: %s' % file)
+                        files_to_process.append(file)
+
+        files_to_process.sort()
+        log.debug('Files set to be processed: "%s"' % str(files_to_process))
+
+        return files_to_process

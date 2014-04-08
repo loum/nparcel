@@ -35,7 +35,13 @@ class AdpDaemon(nparcel.DaemonService):
 
     """
     _parser = nparcel.AdpParser()
-    _adp_in_dirs = ['/var/ftp/pub/nparcel/adp/in']
+    _adp_in_dirs = [os.path.join(os.sep,
+                                 'var',
+                                 'ftp',
+                                 'pub',
+                                 'nparcel',
+                                 'adp',
+                                 'in')]
     _adp_file_formats = []
     _archive_dir = None
 
@@ -45,10 +51,11 @@ class AdpDaemon(nparcel.DaemonService):
                  dry=False,
                  batch=False,
                  config=None):
-        super(AdpDaemon, self).__init__(pidfile=pidfile,
-                                        file=file,
-                                        dry=dry,
-                                        batch=batch)
+        nparcel.DaemonService.__init__(self,
+                                       pidfile=pidfile,
+                                       file=file,
+                                       dry=dry,
+                                       batch=batch)
 
         if config is not None:
             self.config = nparcel.B2CConfig(file=config)

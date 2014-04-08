@@ -20,6 +20,7 @@ from test_reminderdaemon import TestReminderDaemon
 from test_mapperdaemon import TestMapperDaemon
 from test_filterdaemon import TestFilterDaemon
 from test_adpdaemon import TestAdpDaemon
+from test_podtranslatordaemon import TestPodTranslatorDaemon
 from test_reporterdaemon_uncollected import TestReporterDaemonUncollected
 from test_reporterdaemon_compliance import TestReporterDaemonCompliance
 from test_reporterdaemon_noncompliance import TestReporterDaemonNonCompliance

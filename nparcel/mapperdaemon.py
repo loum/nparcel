@@ -236,15 +236,14 @@ class MapperDaemon(nparcel.DaemonService):
                     fh.close()
 
             if not event.isSet():
-                if not event.isSet():
-                    if self.dry:
-                        log.info('Dry run iteration complete -- aborting')
-                        event.set()
-                    elif self.batch:
-                        log.info('Batch run iteration complete -- aborting')
-                        event.set()
-                    else:
-                        time.sleep(self.loop)
+                if self.dry:
+                    log.info('Dry run iteration complete -- aborting')
+                    event.set()
+                elif self.batch:
+                    log.info('Batch run iteration complete -- aborting')
+                    event.set()
+                else:
+                    time.sleep(self.loop)
 
     def get_files(self, dir=None):
         """Identifies GIS-special WebMethod files that are to be processed.
