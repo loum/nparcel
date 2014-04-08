@@ -1,7 +1,12 @@
 import unittest2
 import datetime
+import tempfile
+import os
 
 import nparcel
+from nparcel.utils.files import (copy_file,
+                                 remove_files,
+                                 get_directory_files_list)
 
 
 class TestPodTranslator(unittest2.TestCase):
@@ -48,6 +53,56 @@ class TestPodTranslator(unittest2.TestCase):
         received = self._pt.token_generator()
         msg = 'token_generator using current time'
         self.assertIsNotNone(received, msg)
+
+    def test_process(self):
+        """Verify a processing loop.
+        """
+        # Place a copy of the test files in temp directory.
+        dir = tempfile.mkdtemp()
+        test_file = os.path.join('nparcel',
+                                 'tests',
+                                 'files',
+                                 'NSW_VANA_REF_20131121065550.txt')
+        proc_file = os.path.join(dir, os.path.basename(test_file))
+        copy_file(test_file, proc_file)
+
+        received = self._pt.process(file=proc_file, column='JOB_KEY')
+        expected = ['P3014R0-00007342', 'P3014R0-00007343']
+        msg = 'POD translation processing loop error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Check that the translated file was produced.
+        received = os.path.exists('%s.xlated' % proc_file)
+        msg = 'Translated file error'
+        self.assertTrue(received, msg)
+
+        remove_files(get_directory_files_list(dir))
+        os.removedirs(dir)
+
+    def test_process_missing_column(self):
+        """Verify a processing loop -- missing column.
+        """
+        # Place a copy of the test files in temp directory.
+        dir = tempfile.mkdtemp()
+        test_file = os.path.join('nparcel',
+                                 'tests',
+                                 'files',
+                                 'NSW_VANA_REF_20131121065550.txt')
+        proc_file = os.path.join(dir, os.path.basename(test_file))
+        copy_file(test_file, proc_file)
+
+        received = self._pt.process(file=proc_file, column='banana')
+        expected = []
+        msg = 'POD translation processing loop error -- bad column value'
+        self.assertListEqual(received, expected, msg)
+
+        # Check that the translated file was produced.
+        received = os.path.exists('%s.xlated' % proc_file)
+        msg = 'Translated file error'
+        self.assertFalse(received, msg)
+
+        remove_files(get_directory_files_list(dir))
+        os.removedirs(dir)
 
     @classmethod
     def tearDownClass(cls):

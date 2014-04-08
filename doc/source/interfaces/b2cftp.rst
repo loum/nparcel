@@ -119,7 +119,7 @@ ParcelPoint::
     host = ftp.parcelpoint.com.au
     port = 21
     user = tollftp
-    password = Xw87gwJF
+    password = <passwd>
     source = /outgoing/events
     filter = .*_VANA_RE[PFI]_\d{14}\.txt$
     target = /var/ftp/pub/nparcel/parcelpoint/in

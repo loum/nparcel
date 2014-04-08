@@ -34,12 +34,24 @@ class TestPodB2CConfig(unittest2.TestCase):
         self.assertListEqual(received, expected, msg)
 
         received = self._c.pod_dirs
-        expected = ['/var/ftp/pub/nparcel/parcelpoint/in']
+        expected = [os.path.join(os.sep,
+                                 'var',
+                                 'ftp',
+                                 'pub',
+                                 'nparcel',
+                                 'parcelpoint',
+                                 'in')]
         msg = 'dirs.pod_in config error'
         self.assertListEqual(received, expected, msg)
 
         received = self._c.out_dir
-        expected = '/var/ftp/pub/nparcel/fast/out'
+        expected = os.path.join(os.sep,
+                                'var',
+                                'ftp',
+                                'pub',
+                                'nparcel',
+                                'fast',
+                                'out')
         msg = 'pods.out_dir config error'
         self.assertEqual(received, expected, msg)
 

@@ -1,10 +1,12 @@
 __all__ = [
     "PodTranslator",
 ]
-import nparcel
+import tempfile
 import time
 
+import nparcel
 from nparcel.utils.log import log
+from nparcel.utils.files import copy_file
 
 
 class PodTranslator(nparcel.Service):
@@ -56,3 +58,58 @@ class PodTranslator(nparcel.Service):
 
         log.debug('Token value generated: "%s"' % token)
         return token
+
+    def process(self, file, column='JOB_KEY'):
+        """Will translated *column* values in *file* according to the
+        :meth:`token_generator` method.  Upon success, will created a new
+        file with the extension ``.xlated`` appended.
+
+        **Args:**
+            *file*: fully qualified name to the report file
+
+            *column*: the column header name that typically relates to the
+            signature file (default ``JOB_KEY``)
+
+        **Returns:**
+
+        """
+        log.info('Translating file "%s" for JOB_KEYs' % file)
+
+        # Create a temporary file that will hold our translated content.
+        temp_fh = tempfile.NamedTemporaryFile()
+        log.debug('Created temp file "%s"' % temp_fh.name)
+
+        # Open the existing report file.
+        fh = None
+        try:
+            fh = open(file)
+        except IOError, err:
+            log.error('Could not open file "%s"' % file)
+
+        keys = []
+        if fh is not None:
+            # Consume the header and dump unconditionally.
+            header = fh.readline().split('|')
+            temp_fh.write('|'.join(header))
+
+            try:
+                job_key_index = header.index(column)
+                for line in fh:
+                    token = self.token_generator()
+                    fields = line.rsplit('|')
+                    keys.append(fields[job_key_index])
+                    fields[job_key_index] = token
+                    temp_fh.write('|'.join(fields))
+            except ValueError, err:
+                log.error('Unable to source "%s" from header: %s' %
+                          (column, err))
+
+            fh.close()
+
+        # Only copy the translated file if there is content.
+        if len(keys):
+            temp_fh.flush()
+            copy_file(temp_fh.name, '%s.xlated' % file)
+        temp_fh.close()
+
+        return keys
