@@ -106,6 +106,14 @@ class PodB2CConfig(nparcel.B2CConfig):
             log.debug('%s email.support: %s. Using %s' %
                       (self.facility, err, self.support_emails))
 
+        try:
+            self.set_archive_dir(self.get('dirs', 'archive'))
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.critical('%s dirs.archive is a required item: %s' %
+                         (self.facility, err))
+            sys.exit(1)
+
         # POD specific.
         try:
             self.set_pod_translator_loop(self.get('timeout',

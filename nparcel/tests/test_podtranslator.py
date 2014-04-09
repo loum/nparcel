@@ -65,11 +65,16 @@ class TestPodTranslator(unittest2.TestCase):
                                  'NSW_VANA_REF_20131121065550.txt')
         proc_file = os.path.join(dir, os.path.basename(test_file))
         copy_file(test_file, proc_file)
+        sig_files = ['P3014R0-00007342.ps', 'P3014R0-00007343.ps']
+        for f in sig_files:
+            fh = open(os.path.join(dir, f), 'w')
+            fh.close()
 
+        # Original signature files should not exist.
         received = self._pt.process(file=proc_file, column='JOB_KEY')
-        expected = ['P3014R0-00007342', 'P3014R0-00007343']
         msg = 'POD translation processing loop error'
-        self.assertListEqual(sorted(received), sorted(expected), msg)
+        for f in sig_files:
+            self.assertFalse(os.path.exists(os.path.join(dir, f)))
 
         # Check that the translated file was produced.
         received = os.path.exists('%s.xlated' % proc_file)
@@ -102,6 +107,52 @@ class TestPodTranslator(unittest2.TestCase):
         self.assertFalse(received, msg)
 
         remove_files(get_directory_files_list(dir))
+        os.removedirs(dir)
+
+    def test_rename_signature_files(self):
+        """Rename signature files.
+        """
+        dir = tempfile.mkdtemp()
+        for f in ['P3014R0-00007342', 'P3014R0-00007343']:
+            for ext in ['ps', 'png']:
+                fh = open(os.path.join(dir, '%s.%s' % (f, ext)), 'w')
+                fh.close()
+
+        received = self._pt.rename_signature_files(dir,
+                                                   'P3014R0-00007342',
+                                                   '03969357938')
+        expected = [os.path.join(dir, '%s.%s' % ('03969357938', 'ps')),
+                    os.path.join(dir, '%s.%s' % ('03969357938', 'png'))]
+        msg = 'rename_signature_files error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Clean up.
+        remove_files(get_directory_files_list(dir))
+        os.removedirs(dir)
+
+    def test_rename_signature_files_dry_run(self):
+        """Rename signature files -- dry run.
+        """
+        dry = True
+
+        dir = tempfile.mkdtemp()
+        files = []
+        for f in ['P3014R0-00007342', 'P3014R0-00007343']:
+            for ext in ['ps', 'png']:
+                fh = open(os.path.join(dir, '%s.%s' % (f, ext)), 'w')
+                files.append(fh.name)
+                fh.close()
+
+        self._pt.rename_signature_files(dir,
+                                       'P3014R0-00007342',
+                                       '03969357938',
+                                       dry)
+        received = get_directory_files_list(dir)
+        msg = 'rename_signature_files dry run error'
+        self.assertListEqual(sorted(received), sorted(files), msg)
+
+        # Clean up.
+        remove_files(files)
         os.removedirs(dir)
 
     @classmethod

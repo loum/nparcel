@@ -261,7 +261,7 @@ class DaemonService(nparcel.utils.Daemon):
             log.debug('Looking for files at: %s ...' % dir_to_check)
             for file in get_directory_files(dir_to_check):
                 for format in formats:
-                    if (check_filename(file, self.file_format)):
+                    if (check_filename(file, format)):
                         log.info('Found file: %s' % file)
                         files_to_process.append(file)
 

@@ -3,9 +3,14 @@ __all__ = [
 ]
 import signal
 import time
+import os
+import datetime
 
 import nparcel
 from nparcel.utils.log import log
+from nparcel.utils.files import (move_file,
+                                 copy_file,
+                                 remove_files)
 
 
 class PodTranslatorDaemon(nparcel.DaemonService):
@@ -15,9 +20,50 @@ class PodTranslatorDaemon(nparcel.DaemonService):
 
         list of :mod:`re` format strings to match filter files against
 
+    .. attribute:: out_dir
+
+        outbound directory to place transposed files
+
+    .. attribute:: archive_dir
+
+        base directory where working files are archived to
+
     """
     _config = None
     _file_formats = []
+    _out_dir = None
+    _archive_dir = None
+
+    @property
+    def out_dir(self):
+        return  self._out_dir
+
+    def set_out_dir(self, value=None):
+        self._out_dir = value
+        log.debug('%s out_dir set to: "%s"' %
+                  (self.facility, str(self.out_dir)))
+
+    @property
+    def archive_dir(self):
+        return  self._archive_dir
+
+    def set_archive_dir(self, value=None):
+        self._archive_dir = value
+        log.debug('%s archive_dir set to: "%s"' %
+                  (self.facility, str(self.archive_dir)))
+
+    @property
+    def file_formats(self):
+        return self._file_formats
+
+    def set_file_formats(self, values=None):
+        del self._file_formats[:]
+        self._file_formats = []
+
+        if values is not None:
+            self._file_formats.extend(values)
+        log.debug('%s file_formats set to: "%s"' %
+                  (self.facility, self.file_formats))
 
     def __init__(self,
                  pidfile,
@@ -51,24 +97,24 @@ class PodTranslatorDaemon(nparcel.DaemonService):
                       (self.facility, err, self.in_dirs))
 
         try:
+            self.set_out_dir(self.config.out_dir)
+        except AttributeError, err:
+            log.debug('%s out dir not in config: %s. Using "%s"' %
+                      (self.facility, err, self.out_dir))
+
+        try:
+            self.set_archive_dir(os.path.join(self.config.archive_dir,
+                                              'podtranslated'))
+        except AttributeError, err:
+            log.debug('%s out dir not in config: %s. Using "%s"' %
+                      (self.facility, err, self.out_dir))
+
+        try:
             if self.config.file_formats is not None:
                 self.set_file_formats(self.config.file_format)
         except AttributeError, err:
             log.debug('%s file_formats not in config: %s. Using %s' %
                       (self.facility, err, self.file_formats))
-
-    @property
-    def file_formats(self):
-        return self._file_formats
-
-    def set_file_formats(self, values=None):
-        del self._file_formats[:]
-        self._file_formats = []
-
-        if values is not None:
-            self._file_formats.extend(values)
-        log.debug('%s file_formats set to: "%s"' %
-                  (self.facility, self.file_formats))
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
@@ -93,11 +139,41 @@ class PodTranslatorDaemon(nparcel.DaemonService):
                 files.append(self.file)
                 event.set()
             else:
-                files.extend(self.get_files())
+                files.extend(self.get_files(formats=self.file_formats))
 
             # Start processing files.
             for file in files:
                 log.info('Processing file: "%s" ...' % file)
+                keys = pt.process(file=file, dry=self.dry)
+
+                dir = os.path.dirname(file)
+                batch_status = True
+                for key in keys:
+                    status = self.move_signature_files(key,
+                                                       dir,
+                                                       self.out_dir,
+                                                       dry=self.dry)
+
+                    if not self.dry and not status:
+                        log.error('Token "%s" move failed' % key)
+                        batch_status = False
+
+                if batch_status and not self.dry:
+                    # If all OK, move the report file (atomically).
+                    copy_file('%s.xlated' % file,
+                              os.path.join(self.out_dir,
+                                           os.path.basename(file)))
+                    remove_files('%s.xlated' % file)
+
+                    # ... and archive.
+                    dmy = datetime.datetime.now().strftime('%Y%m%d')
+                    archive_dir = os.path.join(self.archive_dir, dmy)
+                    move_file(file, os.path.join(archive_dir,
+                                                 os.path.basename(file)))
+                else:
+                    log.error('POD translation failed for: "%s"' % file)
+                    # ... and move aside.
+                    move_file(file, '%s.err' % file)
 
             if not event.isSet():
                 if self.dry:
@@ -108,3 +184,41 @@ class PodTranslatorDaemon(nparcel.DaemonService):
                     event.set()
                 else:
                     time.sleep(self.loop)
+
+    def move_signature_files(self,
+                             token,
+                             source_dir,
+                             target_dir,
+                             dry=False):
+        """Move the signature files based on *token* from *source_dir*
+        to *target_dir*.  The search will assume a ``.ps`` and ``.png``
+        file extension.
+
+        **Args:**
+            *token*: string to use in the signature filename search
+
+            *source_dir*: directory to search for signature files
+
+            *target_dir*: directory to place signature files into (if found)
+
+            *dry*: only report, don't run
+
+        **Returns:**
+            boolean ``True`` if move was successful
+
+            boolean ``False`` if move failed (or was a dry run)
+
+        """
+        status = False
+
+        # Move to the outbound directory.
+        for ext in ['ps', 'png']:
+            key_file = os.path.join(source_dir, '%s.%s' % (token, ext))
+            if os.path.exists(key_file):
+                log.debug('Found signature file: "%s"' % key_file)
+                status = move_file(key_file,
+                                   os.path.join(target_dir,
+                                                os.path.basename(key_file)),
+                                   dry=dry)
+
+        return status
