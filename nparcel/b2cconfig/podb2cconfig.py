@@ -128,7 +128,7 @@ class PodB2CConfig(nparcel.B2CConfig):
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
             log.debug('%s dirs.pod_in: %s. Using %s' %
-                      (self.facility, err, self.pod_in))
+                      (self.facility, err, self.pod_dirs))
 
         try:
             self.set_out_dir(self.get('pod', 'out_dir'))

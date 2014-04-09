@@ -158,15 +158,15 @@ def move_file(source, target, err=False, dry=False):
 
     """
     log.info('Moving "%s" to "%s"' % (source, target))
-    status = False
+    status = True
 
     if os.path.exists(source):
         if not dry:
             if create_dir(os.path.dirname(target)):
                 try:
                     os.rename(source, target)
-                    status = True
                 except OSError, error:
+                    status = False
                     log.error('%s move to %s failed -- %s' % (source,
                                                               target,
                                                               error))

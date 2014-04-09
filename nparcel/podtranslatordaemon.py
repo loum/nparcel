@@ -111,7 +111,7 @@ class PodTranslatorDaemon(nparcel.DaemonService):
 
         try:
             if self.config.file_formats is not None:
-                self.set_file_formats(self.config.file_format)
+                self.set_file_formats(self.config.file_formats)
         except AttributeError, err:
             log.debug('%s file_formats not in config: %s. Using %s' %
                       (self.facility, err, self.file_formats))
@@ -142,8 +142,8 @@ class PodTranslatorDaemon(nparcel.DaemonService):
                 files.extend(self.get_files(formats=self.file_formats))
 
             # Start processing files.
+            self.reporter.reset(identifier=str())
             for file in files:
-                log.info('Processing file: "%s" ...' % file)
                 keys = pt.process(file=file, dry=self.dry)
 
                 dir = os.path.dirname(file)
@@ -154,7 +154,7 @@ class PodTranslatorDaemon(nparcel.DaemonService):
                                                        self.out_dir,
                                                        dry=self.dry)
 
-                    if not self.dry and not status:
+                    if not status:
                         log.error('Token "%s" move failed' % key)
                         batch_status = False
 
@@ -168,12 +168,18 @@ class PodTranslatorDaemon(nparcel.DaemonService):
                     # ... and archive.
                     dmy = datetime.datetime.now().strftime('%Y%m%d')
                     archive_dir = os.path.join(self.archive_dir, dmy)
+                    log.info('Archiving "%s"' % file)
                     move_file(file, os.path.join(archive_dir,
                                                  os.path.basename(file)))
-                else:
+                elif not batch_status:
                     log.error('POD translation failed for: "%s"' % file)
                     # ... and move aside.
-                    move_file(file, '%s.err' % file)
+                    move_file(file, '%s.err' % file, dry=self.dry)
+
+                self.reporter(batch_status)
+
+            if len(files):
+                log.info(self.reporter.report())
 
             if not event.isSet():
                 if self.dry:
@@ -214,11 +220,9 @@ class PodTranslatorDaemon(nparcel.DaemonService):
         # Move to the outbound directory.
         for ext in ['ps', 'png']:
             key_file = os.path.join(source_dir, '%s.%s' % (token, ext))
-            if os.path.exists(key_file):
-                log.debug('Found signature file: "%s"' % key_file)
-                status = move_file(key_file,
-                                   os.path.join(target_dir,
-                                                os.path.basename(key_file)),
-                                   dry=dry)
+            status = move_file(key_file,
+                               os.path.join(target_dir,
+                                            os.path.basename(key_file)),
+                               dry=dry)
 
         return status

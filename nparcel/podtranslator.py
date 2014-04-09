@@ -55,7 +55,7 @@ class PodTranslator(object):
             else:
                 log.error('Maximum seconds threshold breached: %d' % epoch)
 
-        log.debug('Token value generated: "%s"' % token)
+        log.info('Token value generated: "%s"' % token)
         return token
 
     def process(self, file, column='JOB_KEY', dry=False):
@@ -144,7 +144,7 @@ class PodTranslator(object):
         signature_files = []
 
         files = get_directory_files_list(dir, filter='%s\..*' % old_token)
-        log.debug('Found old signature files: "%s"' % files)
+        log.info('Found old signature files: "%s"' % files)
 
         for f in files:
             (fn, ext) = os.path.splitext(f)

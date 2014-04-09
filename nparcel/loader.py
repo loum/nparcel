@@ -405,8 +405,7 @@ class Loader(nparcel.Service):
             agent_id_row_id = agent_id_row_id[0]
             log.info('Agent Id "%s" found: %s' % (agent, agent_id_row_id))
         else:
-            err = 'Agent Id "%s" does not exist' % agent
-            self.set_alerts(err)
+            self.set_alerts('Agent Id "%s" does not exist' % agent)
 
             # For testing only, create the record.
             # First insert will fail the test -- subsequent checks should
