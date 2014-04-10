@@ -40,9 +40,10 @@ class TestHealthB2CConfig(unittest2.TestCase):
                     'nploaderd',
                     'npmapperd',
                     'npondeliveryd',
-                    'npreminderd']
+                    'npreminderd',
+                    'nppoderd']
         msg = 'health.processes not as expected'
-        self.assertListEqual(received, expected, msg)
+        self.assertListEqual(sorted(received), sorted(expected), msg)
 
     def tearDown(self):
         del self._c

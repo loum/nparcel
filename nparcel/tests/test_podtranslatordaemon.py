@@ -111,12 +111,12 @@ class TestPodTranslatorDaemon(unittest2.TestCase):
         self._ptd.set_batch(True)
         self._ptd._start(self._ptd.exit_event)
 
-        # Check that we DO NOT have a translated file in the target_dir.
-        out_file = os.path.join(self._ptd.out_dir,
-                                os.path.basename(target_file))
+        # Check that a translated file exists in the current_dir.
+        out_file = os.path.join(self._dir,
+                                '%s.xlated' % os.path.basename(target_file))
         received = os.path.exists(out_file)
         msg = 'Translated file error'
-        self.assertFalse(received, msg)
+        self.assertTrue(received, msg)
 
         # As this processing failed, original should not be archived.
         dmy = datetime.datetime.now().strftime('%Y%m%d')
@@ -160,12 +160,21 @@ class TestPodTranslatorDaemon(unittest2.TestCase):
                                                '03970006761.ps'))
         self.assertTrue(received, msg)
 
+        # Clean up.
         remove_files(get_directory_files_list(source_dir))
         remove_files(get_directory_files_list(target_dir))
+        os.removedirs(source_dir)
+        os.removedirs(target_dir)
 
-        # ... and a dry run.
+    def test_move_signature_files_dry_pass(self):
+        """Move signature files -- dry pass.
+        """
         dry = True
 
+        source_dir = tempfile.mkdtemp()
+        target_dir = tempfile.mkdtemp()
+        sig_files = [os.path.join(source_dir, '03970006761.ps'),
+                     os.path.join(source_dir, '03970006762.png')]
         for f in sig_files:
             fh = open(f, 'w')
             fh.close
@@ -175,7 +184,7 @@ class TestPodTranslatorDaemon(unittest2.TestCase):
                                                   target_dir,
                                                   dry=dry)
         msg = 'Signature file move error -- dry run'
-        self.assertFalse(received, msg)
+        self.assertTrue(received, msg)
 
         # Check the source file exists.
         received = os.path.exists(os.path.join(source_dir,

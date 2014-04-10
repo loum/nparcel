@@ -172,6 +172,7 @@ def move_file(source, target, err=False, dry=False):
                                                               error))
     else:
         log.warn('Source file "%s" does not exist' % str(source))
+        status = False
 
     if not status and err and not dry:
         try:

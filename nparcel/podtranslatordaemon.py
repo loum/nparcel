@@ -158,7 +158,7 @@ class PodTranslatorDaemon(nparcel.DaemonService):
                         log.error('Token "%s" move failed' % key)
                         batch_status = False
 
-                if batch_status and not self.dry:
+                if batch_status:
                     # If all OK, move the report file (atomically).
                     copy_file('%s.xlated' % file,
                               os.path.join(self.out_dir,
@@ -171,7 +171,7 @@ class PodTranslatorDaemon(nparcel.DaemonService):
                     log.info('Archiving "%s"' % file)
                     move_file(file, os.path.join(archive_dir,
                                                  os.path.basename(file)))
-                elif not batch_status:
+                else:
                     log.error('POD translation failed for: "%s"' % file)
                     # ... and move aside.
                     move_file(file, '%s.err' % file, dry=self.dry)
@@ -220,9 +220,10 @@ class PodTranslatorDaemon(nparcel.DaemonService):
         # Move to the outbound directory.
         for ext in ['ps', 'png']:
             key_file = os.path.join(source_dir, '%s.%s' % (token, ext))
-            status = move_file(key_file,
-                               os.path.join(target_dir,
-                                            os.path.basename(key_file)),
-                               dry=dry)
+            if os.path.exists(key_file):
+                status = move_file(key_file,
+                                os.path.join(target_dir,
+                                                os.path.basename(key_file)),
+                                dry=dry)
 
         return status

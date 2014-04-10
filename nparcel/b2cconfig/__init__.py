@@ -174,6 +174,11 @@ class B2CConfig(nparcel.Config):
 
         dictionary of delivery partner default passwords
 
+    .. attribute:: comms_delivery_partners
+
+        dictionary of Business Unit based list of Delivery Partners that
+        will have comms event files created during the load process
+
     """
     _prod = None
     _dirs_to_check = []
@@ -208,6 +213,7 @@ class B2CConfig(nparcel.Config):
     _code_header = None
     _delivery_partners = []
     _adp_default_passwords = {}
+    _comms_delivery_partners = {}
 
     def __init__(self, file=None):
         """B2CConfig initialisation.
@@ -408,6 +414,387 @@ class B2CConfig(nparcel.Config):
             self._filtering_rules.extend(values)
             log.debug('Config set filtering_rules to "%s"' %
                       str(self._filtering_rules))
+
+    @property
+    def pe_comms_ids(self):
+        return self.bu_ids_with_set_condition('pe_comms')
+
+    @property
+    def sc4_comms_ids(self):
+        return self.bu_ids_with_set_condition('on_del_sc_4')
+
+    @property
+    def proxy_scheme(self):
+        return self._proxy_scheme
+
+    def set_proxy_scheme(self, value):
+        self._proxy_scheme = value
+
+    @property
+    def sms_api_kwargs(self):
+        """Extract SMS API information from the configuration.
+
+        SMS API information is taken from the ``[rest]``
+        section in the configuration file.  A typical example is::
+
+            [rest]
+            sms_api = https://api.esendex.com/v1.0/messagedispatcher
+            sms_user = username
+            sms_pw = password
+
+        **Returns:**
+            dictionary-based data structure of the form::
+
+                kwargs = {'api': ...,
+                          'api_username': ...,
+                          'api_password': ...}
+
+        """
+        kwargs = {'api': None,
+                  'api_username': None,
+                  'api_password': None}
+
+        try:
+            kwargs['api'] = self.get('rest', 'sms_api')
+            kwargs['api_username'] = self.get('rest', 'sms_user')
+            kwargs['api_password'] = self.get('rest', 'sms_pw')
+
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.warn('Config proxy: %s' % err)
+
+        return kwargs
+
+    @property
+    def email_api_kwargs(self):
+        """Extract email API information from the configuration.
+
+        Email API information is taken from the ``[rest]``
+        section in the configuration file.  A typical example is::
+
+            [rest]
+            email_api = https://apps.cinder.co/tollgroup...
+            email_user = username
+            email_pw = password
+            failed_email = loumar@tollgroup.com
+
+        **Returns:**
+            dictionary-based data structure of the form::
+
+                kwargs = {'api': ...,
+                          'api_username': ...,
+                          'api_password': ...,
+                          'support': ...}
+
+        """
+        kwargs = {'api': None,
+                  'api_username': None,
+                  'api_password': None,
+                  'support': None}
+
+        try:
+            kwargs['api'] = self.get('rest', 'email_api')
+            kwargs['api_username'] = self.get('rest', 'email_user')
+            kwargs['api_password'] = self.get('rest', 'email_pw')
+            kwargs['support'] = self.get('rest', 'failed_email')
+
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.warn('Config proxy: %s' % err)
+
+        return kwargs
+
+    @property
+    def delivered_header(self):
+        return self._delivered_header
+
+    def set_delivered_header(self, value):
+        self._delivered_header = value
+
+    @property
+    def delivered_event_key(self):
+        return self._delivered_event_key
+
+    def set_delivered_event_key(self, value):
+        self._delivered_event_key = value
+
+    @property
+    def scan_desc_header(self):
+        return self._scan_desc_header
+
+    def set_scan_desc_header(self, value):
+        self._scan_desc_header = value
+
+    @property
+    def scan_desc_keys(self):
+        return self._scan_desc_keys
+
+    def set_scan_desc_keys(self, values):
+        del self._scan_desc_keys[:]
+        self._scan_desc_keys = []
+
+        if values is not None:
+            self._scan_desc_keys.append(values)
+            log.debug('Set scan_desc_keys to "%s"' %
+                      str(self._scan_desc_keys))
+
+    @property
+    def adp_headers(self):
+        return self._adp_headers
+
+    def set_adp_headers(self, values=None):
+        self._adp_headers.clear()
+
+        if values is not None:
+            self._adp_headers = values
+            log.debug('Config ADP headers set to: "%s"' %
+                      self.adp_headers)
+        else:
+            log.debug('Cleared ADP headers')
+
+    @property
+    def adp_file_formats(self):
+        return self._adp_file_formats
+
+    def set_adp_file_formats(self, values=None):
+        del self._adp_file_formats[:]
+        self._adp_file_formats = []
+
+        if values is not None:
+            self._adp_file_formats.extend(values)
+            log.debug('Config ADP file format list: "%s"' %
+                      self.adp_file_formats)
+
+    @property
+    def code_header(self):
+        return self._code_header
+
+    def set_code_header(self, value=None):
+        if value is not None:
+            self.code_header = value
+            log.debug('Config set code_header to: "%s"' %
+                      self.code_header)
+
+    @property
+    def delivery_partners(self):
+        return self._delivery_partners
+
+    def set_delivery_partners(self, values=None):
+        del self._delivery_partners[:]
+        self._delivery_partners = []
+
+        if values is not None:
+            self._delivery_partners.extend(values)
+            log.debug('Config delivery partners list: "%s"' %
+                      self.delivery_partners)
+
+    @property
+    def adp_default_passwords(self):
+        return self._adp_default_passwords
+
+    def set_adp_default_passwords(self, values=None):
+        self._adp_default_passwords.clear()
+
+        if values is not None:
+            self._adp_default_passwords = values
+            log.debug('Config ADP default passwords: "%s"' %
+                      self.adp_default_passwords)
+
+    @property
+    def comms_delivery_partners(self):
+        return self._comms_delivery_partners
+
+    def set_comms_delivery_partners(self, values):
+        self._comms_delivery_partners.clear()
+
+        if values is not None:
+            self._comms_delivery_partners = values
+        log.debug('%s comms_delivery_partners set to: "%s"' %
+                  (self.facility, self._comms_delivery_partners))
+
+    def db_kwargs(self):
+        """Extract database connectivity information from the config.
+
+        Database connectivity information is taken from the ``[db]``
+        section in the configuration file.  A typical example is::
+
+            [db]
+            driver = FreeTDS
+            host = SQVDBAUT07
+            database = Nparcel
+            user = npscript
+            password = <passwd>
+            port =  1442
+
+        Base assumptions on "host" keyword.  No "host" means this must be a
+        test scenario in which case the database session is a memory-based
+        sqlite instance.
+
+        **Returns:**
+            dictionary-based data structure of the form::
+
+                kwargs = {'driver': ...,
+                          'host': ...,
+                          'database': ...,
+                          'user': ...,
+                          'password': ...,
+                          'port': ...}
+
+        """
+        kwargs = None
+
+        try:
+            host = self.get('db', 'host')
+            driver = self.get('db', 'driver')
+            database = self.get('db', 'database')
+            user = self.get('db', 'user')
+            password = self.get('db', 'password')
+            port = self.get('db', 'port')
+            if port is not None and port:
+                port = int(port)
+            kwargs = {'driver': driver,
+                      'host': host,
+                      'database': database,
+                      'user': user,
+                      'password': password,
+                      'port': port}
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
+            log.debug('Missing DB key via config: %s' % err)
+
+        return kwargs
+
+    def ts_db_kwargs(self):
+        """Extract TransSend database connectivity information from the
+        config.
+
+        Database connectivity information is taken from the
+        ``[transsend_db]`` section in the configuration file.  A typical
+        example is::
+
+            [transsend_db]
+            host = SIEDBDOD04
+            user = nparcel
+            password = <passwd>
+            port = 1521
+            sid = TRCOPUAT
+
+        Base assumptions on "host" keyword.  No "host" means this must be a
+        test scenario in which case the database session is a memory-based
+        sqlite instance.
+
+        **Returns:**
+            dictionary-based data structure of the form::
+
+                kwargs = {'host': ...,
+                          'user': ...,
+                          'password': ...,
+                          'port': ...,
+                          'sid': ...}
+
+        """
+        kwargs = None
+
+        try:
+            host = self.get('transsend_db', 'host')
+            user = self.get('transsend_db', 'user')
+            password = self.get('transsend_db', 'password')
+            port = self.get('transsend_db', 'port')
+            if port is not None and port:
+                port = int(port)
+            sid = self.get('transsend_db', 'sid')
+            kwargs = {'host': host,
+                      'user': user,
+                      'password': password,
+                      'port': port,
+                      'sid': sid}
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
+            log.info('Missing TransSend DB key via config: %s' % err)
+
+        return kwargs
+
+    def proxy_kwargs(self):
+        """Extract proxy connectivity information from the configuration.
+
+        Proxy connectivity information is taken from the ``[proxy]``
+        section in the configuration file.  A typical example is::
+
+            [proxy]
+            host = itproxy-farm.toll.com.au
+            user = <username>
+            password = <passwd>
+            port = 8080
+            protocol = https
+
+        **Returns:**
+            dictionary-based data structure of the form::
+
+                kwargs = {'host': ...,
+                          'user': ...,
+                          'password': ...,
+                          'port': ...,
+                          'protocol': ...}
+
+        """
+        kwargs = None
+
+        try:
+            host = self.get('proxy', 'host')
+            user = self.get('proxy', 'user')
+            password = self.get('proxy', 'password')
+            port = self.get('proxy', 'port')
+            if port is not None and port:
+                port = int(port)
+            self._proxy_scheme = self.get('proxy', 'protocol')
+            kwargs = {'host': host,
+                      'user': user,
+                      'password': password,
+                      'port': port,
+                      'protocol': self._proxy_scheme}
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            log.warn('Config proxy: %s' % err)
+
+        return kwargs
+
+    def proxy_string(self, kwargs=None):
+        """Constructs a proxy string based on the *kwargs* dictionary
+        structure or :attr:`proxy` attribute (in that order if *kwargs* is
+        ``None``).
+
+        **Kwargs:**
+            *kwargs* as per the return value of the :meth:`proxy_kwargs`
+            method
+
+        **Returns:**
+            string that could be fed directly into a HTTP/S header
+            to handle proxy authentication in the request.  Example::
+
+                http://loumar:<passwd>@auproxy-farm.toll.com.aus:8080
+
+        """
+        values = None
+        if kwargs is not None:
+            values = kwargs
+        else:
+            values = self.proxy_kwargs()
+
+        proxy = None
+        if values is not None:
+            # Check if we have a username and password.
+            if (values.get('user') is not None and
+                values.get('password') is not None):
+                proxy = ("%s:%s@" % (values.get('user'),
+                                     values.get('password')))
+
+            if values.get('host') is not None:
+                proxy += values.get('host')
+
+            if values.get('port') is not None:
+                proxy += ':' + str(values.get('port'))
+
+        return proxy
 
     def parse_config(self):
         """Read config items from the configuration file.
@@ -647,6 +1034,17 @@ class B2CConfig(nparcel.Config):
             log.debug('Using default delivery partner passwords: %s' %
                       str(self.adp_default_passwords))
 
+        # Comms Delivery Partners.
+        try:
+            tmp_values = dict(self.items('comms_delivery_partners'))
+            for k, v in tmp_values.iteritems():
+                tmp_values[k] = v.split(',')
+            self.set_comms_delivery_partners(tmp_values)
+        except (ConfigParser.NoSectionError,
+                ConfigParser.NoOptionError), err:
+            log.debug('%s comms_delivery_partners: %s. Using "%s"' %
+                      (self.facility, err, self.comms_delivery_partners))
+
     def condition(self, bu, flag):
         """Return the *bu* condition *flag* value.
 
@@ -853,372 +1251,3 @@ class B2CConfig(nparcel.Config):
         log.debug('"%s" flag set BU ids: %s' % (flag, str(set_bu_ids)))
 
         return set_bu_ids
-
-    @property
-    def pe_comms_ids(self):
-        return self.bu_ids_with_set_condition('pe_comms')
-
-    @property
-    def sc4_comms_ids(self):
-        return self.bu_ids_with_set_condition('on_del_sc_4')
-
-    def db_kwargs(self):
-        """Extract database connectivity information from the config.
-
-        Database connectivity information is taken from the ``[db]``
-        section in the configuration file.  A typical example is::
-
-            [db]
-            driver = FreeTDS
-            host = SQVDBAUT07
-            database = Nparcel
-            user = npscript
-            password = <passwd>
-            port =  1442
-
-        Base assumptions on "host" keyword.  No "host" means this must be a
-        test scenario in which case the database session is a memory-based
-        sqlite instance.
-
-        **Returns:**
-            dictionary-based data structure of the form::
-
-                kwargs = {'driver': ...,
-                          'host': ...,
-                          'database': ...,
-                          'user': ...,
-                          'password': ...,
-                          'port': ...}
-
-        """
-        kwargs = None
-
-        try:
-            host = self.get('db', 'host')
-            driver = self.get('db', 'driver')
-            database = self.get('db', 'database')
-            user = self.get('db', 'user')
-            password = self.get('db', 'password')
-            port = self.get('db', 'port')
-            if port is not None and port:
-                port = int(port)
-            kwargs = {'driver': driver,
-                      'host': host,
-                      'database': database,
-                      'user': user,
-                      'password': password,
-                      'port': port}
-        except (ConfigParser.NoSectionError,
-                ConfigParser.NoOptionError), err:
-            log.debug('Missing DB key via config: %s' % err)
-
-        return kwargs
-
-    def ts_db_kwargs(self):
-        """Extract TransSend database connectivity information from the
-        config.
-
-        Database connectivity information is taken from the
-        ``[transsend_db]`` section in the configuration file.  A typical
-        example is::
-
-            [transsend_db]
-            host = SIEDBDOD04
-            user = nparcel
-            password = <passwd>
-            port = 1521
-            sid = TRCOPUAT
-
-        Base assumptions on "host" keyword.  No "host" means this must be a
-        test scenario in which case the database session is a memory-based
-        sqlite instance.
-
-        **Returns:**
-            dictionary-based data structure of the form::
-
-                kwargs = {'host': ...,
-                          'user': ...,
-                          'password': ...,
-                          'port': ...,
-                          'sid': ...}
-
-        """
-        kwargs = None
-
-        try:
-            host = self.get('transsend_db', 'host')
-            user = self.get('transsend_db', 'user')
-            password = self.get('transsend_db', 'password')
-            port = self.get('transsend_db', 'port')
-            if port is not None and port:
-                port = int(port)
-            sid = self.get('transsend_db', 'sid')
-            kwargs = {'host': host,
-                      'user': user,
-                      'password': password,
-                      'port': port,
-                      'sid': sid}
-        except (ConfigParser.NoSectionError,
-                ConfigParser.NoOptionError), err:
-            log.info('Missing TransSend DB key via config: %s' % err)
-
-        return kwargs
-
-    def proxy_kwargs(self):
-        """Extract proxy connectivity information from the configuration.
-
-        Proxy connectivity information is taken from the ``[proxy]``
-        section in the configuration file.  A typical example is::
-
-            [proxy]
-            host = itproxy-farm.toll.com.au
-            user = <username>
-            password = <passwd>
-            port = 8080
-            protocol = https
-
-        **Returns:**
-            dictionary-based data structure of the form::
-
-                kwargs = {'host': ...,
-                          'user': ...,
-                          'password': ...,
-                          'port': ...,
-                          'protocol': ...}
-
-        """
-        kwargs = None
-
-        try:
-            host = self.get('proxy', 'host')
-            user = self.get('proxy', 'user')
-            password = self.get('proxy', 'password')
-            port = self.get('proxy', 'port')
-            if port is not None and port:
-                port = int(port)
-            self._proxy_scheme = self.get('proxy', 'protocol')
-            kwargs = {'host': host,
-                      'user': user,
-                      'password': password,
-                      'port': port,
-                      'protocol': self._proxy_scheme}
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.warn('Config proxy: %s' % err)
-
-        return kwargs
-
-    def proxy_string(self, kwargs=None):
-        """Constructs a proxy string based on the *kwargs* dictionary
-        structure or :attr:`proxy` attribute (in that order if *kwargs* is
-        ``None``).
-
-        **Kwargs:**
-            *kwargs* as per the return value of the :meth:`proxy_kwargs`
-            method
-
-        **Returns:**
-            string that could be fed directly into a HTTP/S header
-            to handle proxy authentication in the request.  Example::
-
-                http://loumar:<passwd>@auproxy-farm.toll.com.aus:8080
-
-        """
-        values = None
-        if kwargs is not None:
-            values = kwargs
-        else:
-            values = self.proxy_kwargs()
-
-        proxy = None
-        if values is not None:
-            # Check if we have a username and password.
-            if (values.get('user') is not None and
-                values.get('password') is not None):
-                proxy = ("%s:%s@" % (values.get('user'),
-                                     values.get('password')))
-
-            if values.get('host') is not None:
-                proxy += values.get('host')
-
-            if values.get('port') is not None:
-                proxy += ':' + str(values.get('port'))
-
-        return proxy
-
-    @property
-    def proxy_scheme(self):
-        return self._proxy_scheme
-
-    def set_proxy_scheme(self, value):
-        self._proxy_scheme = value
-
-    @property
-    def sms_api_kwargs(self):
-        """Extract SMS API information from the configuration.
-
-        SMS API information is taken from the ``[rest]``
-        section in the configuration file.  A typical example is::
-
-            [rest]
-            sms_api = https://api.esendex.com/v1.0/messagedispatcher
-            sms_user = username
-            sms_pw = password
-
-        **Returns:**
-            dictionary-based data structure of the form::
-
-                kwargs = {'api': ...,
-                          'api_username': ...,
-                          'api_password': ...}
-
-        """
-        kwargs = {'api': None,
-                  'api_username': None,
-                  'api_password': None}
-
-        try:
-            kwargs['api'] = self.get('rest', 'sms_api')
-            kwargs['api_username'] = self.get('rest', 'sms_user')
-            kwargs['api_password'] = self.get('rest', 'sms_pw')
-
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.warn('Config proxy: %s' % err)
-
-        return kwargs
-
-    @property
-    def email_api_kwargs(self):
-        """Extract email API information from the configuration.
-
-        Email API information is taken from the ``[rest]``
-        section in the configuration file.  A typical example is::
-
-            [rest]
-            email_api = https://apps.cinder.co/tollgroup...
-            email_user = username
-            email_pw = password
-            failed_email = loumar@tollgroup.com
-
-        **Returns:**
-            dictionary-based data structure of the form::
-
-                kwargs = {'api': ...,
-                          'api_username': ...,
-                          'api_password': ...,
-                          'support': ...}
-
-        """
-        kwargs = {'api': None,
-                  'api_username': None,
-                  'api_password': None,
-                  'support': None}
-
-        try:
-            kwargs['api'] = self.get('rest', 'email_api')
-            kwargs['api_username'] = self.get('rest', 'email_user')
-            kwargs['api_password'] = self.get('rest', 'email_pw')
-            kwargs['support'] = self.get('rest', 'failed_email')
-
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.warn('Config proxy: %s' % err)
-
-        return kwargs
-
-    @property
-    def delivered_header(self):
-        return self._delivered_header
-
-    def set_delivered_header(self, value):
-        self._delivered_header = value
-
-    @property
-    def delivered_event_key(self):
-        return self._delivered_event_key
-
-    def set_delivered_event_key(self, value):
-        self._delivered_event_key = value
-
-    @property
-    def scan_desc_header(self):
-        return self._scan_desc_header
-
-    def set_scan_desc_header(self, value):
-        self._scan_desc_header = value
-
-    @property
-    def scan_desc_keys(self):
-        return self._scan_desc_keys
-
-    def set_scan_desc_keys(self, values):
-        del self._scan_desc_keys[:]
-        self._scan_desc_keys = []
-
-        if values is not None:
-            self._scan_desc_keys.append(values)
-            log.debug('Set scan_desc_keys to "%s"' %
-                      str(self._scan_desc_keys))
-
-    @property
-    def adp_headers(self):
-        return self._adp_headers
-
-    def set_adp_headers(self, values=None):
-        self._adp_headers.clear()
-
-        if values is not None:
-            self._adp_headers = values
-            log.debug('Config ADP headers set to: "%s"' %
-                      self.adp_headers)
-        else:
-            log.debug('Cleared ADP headers')
-
-    @property
-    def adp_file_formats(self):
-        return self._adp_file_formats
-
-    def set_adp_file_formats(self, values=None):
-        del self._adp_file_formats[:]
-        self._adp_file_formats = []
-
-        if values is not None:
-            self._adp_file_formats.extend(values)
-            log.debug('Config ADP file format list: "%s"' %
-                      self.adp_file_formats)
-
-    @property
-    def code_header(self):
-        return self._code_header
-
-    def set_code_header(self, value=None):
-        if value is not None:
-            self.code_header = value
-            log.debug('Config set code_header to: "%s"' %
-                      self.code_header)
-
-    @property
-    def delivery_partners(self):
-        return self._delivery_partners
-
-    def set_delivery_partners(self, values=None):
-        del self._delivery_partners[:]
-        self._delivery_partners = []
-
-        if values is not None:
-            self._delivery_partners.extend(values)
-            log.debug('Config delivery partners list: "%s"' %
-                      self.delivery_partners)
-
-    @property
-    def adp_default_passwords(self):
-        return self._adp_default_passwords
-
-    def set_adp_default_passwords(self, values=None):
-        self._adp_default_passwords.clear()
-
-        if values is not None:
-            self._adp_default_passwords = values
-            log.debug('Config ADP default passwords: "%s"' %
-                      self.adp_default_passwords)

@@ -1,5 +1,4 @@
 import unittest2
-import datetime
 import os
 
 import nparcel
@@ -247,6 +246,19 @@ class TestB2CConfig(unittest2.TestCase):
                     'toll': 'cccc',
                     'national storage': 'dddd'}
         msg = 'ADP delivery partners default passwords error'
+        self.assertDictEqual(received, expected, msg)
+
+    def test_parse_config_comms_delivery_partners(self):
+        """Parse items from the config -- comms_delivery_partners
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        received = self._c.comms_delivery_partners
+        expected = {'priority': ['Nparcel'],
+                    'ipec': ['Nparcel'],
+                    'fast': ['Nparcel']}
+        msg = 'comms_delivery_partners error'
         self.assertDictEqual(received, expected, msg)
 
     def test_condition_flag_item_excp_true(self):
