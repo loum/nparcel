@@ -29,7 +29,9 @@ class TestLoader(unittest2.TestCase):
 
         db = cls._ldr.db
         fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
-        fixtures = [{'db': db.agent, 'fixture': 'agents.py'}]
+        fixtures = [{'db': db.agent, 'fixture': 'agents.py'},
+                    {'db': db.delivery_partner,
+                     'fixture': 'delivery_partners.py'}]
         for i in fixtures:
             fixture_file = os.path.join(fixture_dir, i['fixture'])
             db.load_fixture(i['db'], fixture_file)
@@ -755,6 +757,14 @@ FROM job_item"""
         msg = 'Existing barcode should not return None'
         received = self._ldr.get_agent_id(test_agent_id)
         self.assertIsNotNone(received, msg)
+
+    def test_get_agent_delivery_partner(self):
+        """Return the Agent Delivery Partner.
+        """
+        received = self._ldr.get_agent_delivery_partner(agent_id=1)
+        expected = 'Nparcel'
+        msg = 'get_agent_delivery_partner error'
+        self.assertEqual(received, expected, msg)
 
     def test_match_connote_scenario_connote_lt_15_char(self):
         """Manufactured connote check -- connote < 15 chars.

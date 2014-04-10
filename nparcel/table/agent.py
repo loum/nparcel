@@ -50,18 +50,27 @@ class Agent(nparcel.Table):
 
         return sql
 
-    def agent_sql(self, id):
+    def agent_sql(self, id, alias='ag'):
         """SQL wrapper to return return Agent details of a given *id*.
 
         **Args:**
-            id: the Agent's "agent.id" private key
+            *id*: the Agent's "agent.id" private key
+
+        **Kwargs:**
+            *alias*: override the table alias (default ``ag``)
 
         **Returns:**
             the SQL command
 
         """
-        sql = """SELECT name, address, suburb, postcode
-FROM agent
-WHERE id=%d""" % id
+        sql = """SELECT %(alias)s.name,
+       %(alias)s.address,
+       %(alias)s.suburb,
+       %(alias)s.postcode,
+       dp.name AS DP_NAME
+FROM agent AS ag, delivery_partner AS dp
+WHERE %(alias)s.id=%(id)d
+AND ag.dp_id = dp.id""" % {'id': id,
+                      'alias': alias}
 
         return sql

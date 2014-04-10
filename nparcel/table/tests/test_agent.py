@@ -16,7 +16,9 @@ class TestAgent(unittest2.TestCase):
 
         db = cls._db
         fixtures = [{'db': db.agent, 'fixture': 'agents.py'},
-                    {'db': db.parcel_size, 'fixture': 'parcel_sizes.py'}]
+                    {'db': db.parcel_size, 'fixture': 'parcel_sizes.py'},
+                    {'db': db.delivery_partner,
+                     'fixture': 'delivery_partners.py'}]
         for i in fixtures:
             fixture_file = os.path.join(fixture_dir, i['fixture'])
             db.load_fixture(i['db'], fixture_file)
@@ -43,7 +45,7 @@ class TestAgent(unittest2.TestCase):
         # Restore DB state.
         self._db.connection.rollback()
 
-    def test_check_agent(self):
+    def test_agent_sql(self):
         """Agent details check.
         """
         self._db(self._agent.agent_sql(id=4))
@@ -51,7 +53,8 @@ class TestAgent(unittest2.TestCase):
         expected = [('George Street News',
                      '370 George Street',
                      'Brisbane',
-                     '4000')]
+                     '4000',
+                     'Nparcel')]
         msg = 'Agent details not as expected'
         self.assertListEqual(received, expected, msg)
 

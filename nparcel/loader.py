@@ -182,14 +182,14 @@ class Loader(nparcel.Service):
             agent_id_row_id = job_data.get('agent_id')
             job_item_id = None
             if job_id is not None:
-                log.info('Updating Nparcel barcode "%s" agent ID "%s"' %
+                log.info('Updating barcode "%s" agent ID "%s"' %
                             (barcode, agent_id))
                 job_item_id = self.update(job_id,
                                           agent_id_row_id,
                                           job_item_data,
                                           skip_jobitem_chk)
             else:
-                log.info('Creating Nparcel barcode "%s"' % barcode)
+                log.info('Creating job/job_item for barcode "%s"' % barcode)
                 job_item_id = self.create(job_data, job_item_data)
 
             # Send comms?
@@ -418,6 +418,38 @@ class Loader(nparcel.Service):
                 id = self.db.insert(sql)
 
         return agent_id_row_id
+
+    def get_agent_delivery_partner(self, agent_id):
+        """Helper method to retrieve an Agent ID's Delivery Partner.
+
+        **Args:**
+            *agent_id*: the raw agent ID (as per the ``agent.id`` table
+            column)
+
+        **Returns:**
+            on success, string representation of the Agent's Delivery
+            Partner (as per the ``delivery_partner.name`` column.
+            ``None`` otherwise
+
+        """
+        log.info('Get agent.id %d Delivery Partner ...' % agent_id)
+        sql = self.db._agent.agent_sql(agent_id)
+
+        self.db(sql)
+        columns = self.db.columns()
+        index = None
+        try:
+            index = columns.index('DP_NAME')
+        except ValueError, err:
+            log.error('Unable to find DP_NAME column in query results')
+
+        dp = None
+        if index is not None:
+            dp = self.db.row[index]
+
+        log.info('agent.id %d Delivery Partner: "%s"' % (agent_id, dp))
+
+        return dp
 
     def table_column_map(self, fields, map, condition_map):
         """Convert the parser fields to Nparcel table column names in
