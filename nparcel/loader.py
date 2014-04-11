@@ -106,8 +106,14 @@ class Loader(nparcel.Service):
 
         self.parser = nparcel.Parser(fields=FIELDS)
 
-    def process(self, time, raw_record, bu_id, cond_map, dry=False):
-        """Extracts, validates and inserts/updates an Nparcel record.
+    def process(self,
+                time,
+                raw_record,
+                bu_id,
+                cond_map,
+                delivery_partners=None,
+                dry=False):
+        """Extracts, validates and inserts/updates a TPP record.
 
         **Args:**
             *time*: as identified by the input file timestamp
@@ -120,6 +126,9 @@ class Loader(nparcel.Service):
             the Business Unit
 
         **Kwargs:**
+            *delivery_partners*: list of strings that represent the
+            delivery partners for which comms are to be sent
+
             *dry*: only report, do not execute
 
         **Returns:**
@@ -131,6 +140,9 @@ class Loader(nparcel.Service):
 
         """
         status = True
+
+        if delivery_partners is None:
+            delivery_partners = []
 
         # Parse the raw record and set the job timestamp.
         connote_literal = raw_record[0:20].rstrip()
@@ -192,53 +204,104 @@ class Loader(nparcel.Service):
                 log.info('Creating job/job_item for barcode "%s"' % barcode)
                 job_item_id = self.create(job_data, job_item_data)
 
+            # Does BU's Delivery Partner trigger comms?
+            args = [agent_id, delivery_partners]
+            dp_trigger_comms = self.delivery_partner_comms_trigger(*args)
+
             # Send comms?
-            if job_item_id is not None:
-                service_code = job_data.get('service_code')
+            if not dp_trigger_comms:
+                log.info('Agent ID %d Delivery Partner comms suppressed' %
+                         (agent_id))
+            else:
+                if job_item_id is not None:
+                    service_code = job_data.get('service_code')
+                    email_addr = job_item_data.get('email_addr')
+                    phone_nbr = job_item_data.get('phone_nbr')
 
-                send_email = cond_map.get('send_email')
-                email_addr = job_item_data.get('email_addr')
-                send_sc_1 = cond_map.get('send_sc_1')
-                send_sc_2 = cond_map.get('send_sc_2')
-                send_sc_4 = cond_map.get('send_sc_4')
-                ignore_sc_4 = cond_map.get('ignore_sc_4')
-                delay_template_sc_2 = cond_map.get('delay_template_sc_2')
-                delay_template_sc_4 = cond_map.get('delay_template_sc_4')
-                if self.trigger_comms(service_code,
-                                      send_email,
-                                      send_sc_1,
-                                      send_sc_2,
-                                      send_sc_4,
-                                      ignore_sc_4):
-                    template = self.get_template(service_code,
-                                                 delay_template_sc_2,
-                                                 delay_template_sc_4)
-                    self.comms('email',
-                                job_item_id,
-                                email_addr,
-                                template=template,
-                                dry=dry)
-
-                send_sms = cond_map.get('send_sms')
-                phone_nbr = job_item_data.get('phone_nbr')
-                if self.trigger_comms(service_code,
-                                      send_sms,
-                                      send_sc_1,
-                                      send_sc_2,
-                                      send_sc_4,
-                                      ignore_sc_4):
-                    template = self.get_template(service_code,
-                                                 delay_template_sc_2,
-                                                 delay_template_sc_4)
-                    self.comms('sms',
-                                job_item_id,
-                                phone_nbr,
-                                template=template,
-                                dry=dry)
+                    self.send_comms(job_item_id,
+                                    cond_map,
+                                    service_code,
+                                    email_addr,
+                                    phone_nbr,
+                                    dry=dry)
 
         log.info('Conn Note: "%s" parse complete' % connote_literal)
 
         return status
+
+    def delivery_partner_comms_trigger(self, agent_id, delivery_partners):
+        """Helper method to check whether the current Agent's Delivery
+        Partner and Business Unit are configured to trigger comms.
+
+        **Args:**
+            *agent_id*: Agent ID as per the ``agent.id`` column value
+
+            *delivery_partners*: list of strings that represent the
+            delivery partners for which comms are to be sent
+
+        """
+        trigger_comms = False
+
+        if not len(delivery_partners):
+            log.debug('delivery_partners list empty')
+            trigger_comms = True
+        else:
+            # Get the Agent's Delivery Partner.
+            agent_dp = self.get_agent_delivery_partner(agent_id)
+
+            # Match against the list of delivery_partners.
+            if agent_dp in delivery_partners:
+                trigger_comms = True
+
+        log.debug('Agent ID %d delivery Partner trigger?: "%s"' %
+                  (agent_id, trigger_comms))
+        return trigger_comms
+
+    def send_comms(self,
+                   job_item_id,
+                   cond_map,
+                   service_code,
+                   email_addr,
+                   phone_nbr,
+                   dry=False):
+        """
+        """
+        send_sc_1 = cond_map.get('send_sc_1')
+        send_sc_2 = cond_map.get('send_sc_2')
+        send_sc_4 = cond_map.get('send_sc_4')
+        ignore_sc_4 = cond_map.get('ignore_sc_4')
+        delay_template_sc_2 = cond_map.get('delay_template_sc_2')
+        delay_template_sc_4 = cond_map.get('delay_template_sc_4')
+
+        if self.trigger_comms(service_code,
+                              cond_map.get('send_email'),
+                              send_sc_1,
+                              send_sc_2,
+                              send_sc_4,
+                              ignore_sc_4):
+            template = self.get_template(service_code,
+                                         delay_template_sc_2,
+                                         delay_template_sc_4)
+            self.comms('email',
+                        job_item_id,
+                        email_addr,
+                        template=template,
+                        dry=dry)
+
+        if self.trigger_comms(service_code,
+                              cond_map.get('send_sms'),
+                              send_sc_1,
+                              send_sc_2,
+                              send_sc_4,
+                              ignore_sc_4):
+            template = self.get_template(service_code,
+                                         delay_template_sc_2,
+                                         delay_template_sc_4)
+            self.comms('sms',
+                        job_item_id,
+                        phone_nbr,
+                        template=template,
+                        dry=dry)
 
     def trigger_comms(self,
                       service_code,
@@ -445,7 +508,11 @@ class Loader(nparcel.Service):
 
         dp = None
         if index is not None:
-            dp = self.db.row[index]
+            try:
+                dp = self.db.row[index]
+            except TypeError, err:
+                log.error('Unable to extract DP_NAME from agent table: %s' %
+                          err)
 
         log.info('agent.id %d Delivery Partner: "%s"' % (agent_id, dp))
 

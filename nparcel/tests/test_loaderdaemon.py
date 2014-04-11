@@ -636,6 +636,43 @@ class TestLoaderDaemon(unittest2.TestCase):
         self._d.config.set_archive_dir(old_archive_dir)
         self._d.config.set_aggregator_dirs(old_agg_dir)
 
+    def test_get_comms_delivery_partners(self):
+        """Verify the comms delivery partners per BU.
+        """
+        old_dps = self._d.comms_delivery_partners
+
+        dps = {'priority': ['Nparcel'],
+               'fast': ['Nparcel', 'ParcelPoint'],
+               'ipec': ['Nparcel', 'ParcelPoint', 'Toll']}
+        self._d.set_comms_delivery_partners(dps)
+
+        bu_id = 1
+        received = self._d.get_comms_delivery_partners(bu_id)
+        expected = ['Nparcel']
+        msg = 'bu_id 1 -- Delivery Partner list error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        bu_id = 2
+        received = self._d.get_comms_delivery_partners(bu_id)
+        expected = ['Nparcel', 'ParcelPoint']
+        msg = 'bu_id 2 -- Delivery Partner list error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        bu_id = 3
+        received = self._d.get_comms_delivery_partners(bu_id)
+        expected = ['Nparcel', 'ParcelPoint', 'Toll']
+        msg = 'bu_id 3 -- Delivery Partner list error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        bu_id = 4
+        received = self._d.get_comms_delivery_partners(bu_id)
+        expected = []
+        msg = 'bu_id 4 -- Delivery Partner list error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Clean up.
+        self._d.set_comms_delivery_partners(old_dps)
+
     @classmethod
     def tearDownClass(cls):
         del cls._test_dir

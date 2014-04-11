@@ -26,32 +26,8 @@ The list of Business Units supported include:
 Loader Workflow
 ---------------
 
-``nploaderd`` Configuration Items
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-``nploaderd`` uses the standard ``nparceld.conf`` configuration file to
-control processing behaviour.  The following list details the required
-configuration options:
-
-* ``in``
-
-    found under the ``[dirs]`` section, the ``in`` config setting defines
-    the directories to search for new T1250 EDI files.  For example::
-
-        in = /var/ftp/pub/nparcel/priority/in,/var/ftp/pub/nparcel/ipec/in
-
-    These inbound directories typically align with the FTP inbound
-    directory structure defined at :ref:`b2cftp`.
-
-* ``archive`` (default ``/data/nparcel/comms``)
-
-    found under the ``[dirs]`` section, ``archive`` defines where
-    completed T1250 EDI files are deposited for archiving
-
-* ``comms`` (default ``/data/nparcel/comms``)
-
-    found under the ``[dirs]`` section, the comms outbound interface where
-    comms event files are deposited for further processing
+The T1250 EDI loading facility is managed by the ``nploaderd`` daemon.  It
+will source files from the inbound directories specified by :ref:`in <in>`.
 
 Enabling Comms
 ^^^^^^^^^^^^^^
@@ -77,10 +53,40 @@ for the required communication facility.  For example::
     #      1234567890123
     TOLP = 0111000000000
 
+As of *version 0.34*, a new configuration setting
+``comms_delivery_partners`` controls comms event file generation at the
+Delivery Partner level.  ``comms_delivery_partners`` is a comma separated
+list of Delivery Partners that will have comms event files created during
+the load process.  For example::
+
+    [comms_delivery_partners]
+    Priority = Nparcel,ParcelPoint
+    Fast = Nparcel
+    Ipec = Nparcel
+
+.. note::
+
+    Delivery Partner names as per the ``delivery_partner.name`` column
+    values.  For example include **Nparcel**, **ParcelPoint** and **Toll**
+
+If a Business Unit is not listed or has an empty list of Delivery Partners
+then comms will be triggered to be consistent with the original system
+design.
+
+The ``comms_delivery_partners`` section is used in conjunction with the
+``business_units`` section to create a lookup hash between Business Unit
+IDs and Delivery Partners::
+
+    # The Exporter uses these values to report against.
+    Priority = 1
+    Fast = 2
+    Ipec = 3
+
+
 .. note:: Restart ``nploaderd`` for the configuration updates to take effect
 
 Fine Tuning Comms via Service Code
-**********************************
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. note::
     Service Code-level comms will only work if the comms facility has
@@ -104,7 +110,7 @@ via the configuration::
     #         1 send comms if service_code 4
 
 Selecting Templates
-*******************
+^^^^^^^^^^^^^^^^^^^
 
 *New in version 0.18*
 
@@ -160,3 +166,62 @@ configuration condition_map::
                             override default config
                             "/home/npprod/.nparceld/nparceld.conf"
       -f FILE, --file=FILE  file to process inline (start only)
+
+``nploaderd`` Configuration Items
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+``nploaderd`` uses the standard ``nparceld.conf`` configuration file to
+control processing behaviour.  The following list details the required
+configuration options:
+
+.. _in:
+
+* ``in``
+
+    found under the ``[dirs]`` section, the ``in`` config setting defines
+    the directories to search for new T1250 EDI files.  For example::
+
+        in = /var/ftp/pub/nparcel/priority/in,/var/ftp/pub/nparcel/ipec/in
+
+    These inbound directories typically align with the FTP inbound
+    directory structure defined at :ref:`b2cftp`.
+
+* ``archive`` (under the ``[dirs]`` section)
+
+    ``archive`` defines where completed T1250 EDI files are deposited for
+    archiving
+
+* ``comms`` (under the ``[dirs]`` section)
+
+    comms outbound interface where comms event files are deposited for
+    further processing
+
+* ``business_units`` (the actual ``[business_units]`` section)
+
+    dictionary of business units names and their bu_ids as per the
+    ``business_units.id`` table column::
+
+        [business_units]
+        Priority = 1
+        Fast = 2
+        Ipec = 3
+
+* ``comms_delivery_partners`` (the actual ``[comms_delivery_partners]`` section)
+
+    a Business Unit based, comma separated list of Delivery Partners that
+    will have comms event files created during the load process::
+
+        [comms_delivery_partners]
+        Priority = Nparcel
+        Fast = Nparcel
+        Ipec = Nparcel
+
+    .. note::
+
+        Delivery Partner names as per the ``delivery_partner.name`` column
+        values which currently include Nparcel, ParcelPoint and Toll
+
+    This section relies on the values in the ``[business_units]``
+    section so make sure that if you add a Business Unit here that it is
+    also covered in the ``[business_units]`` section.  Otherwise, the
+    loader comms trigger will ignore it.

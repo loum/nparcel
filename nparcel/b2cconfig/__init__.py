@@ -81,7 +81,8 @@ class B2CConfig(nparcel.Config):
 
     .. attribute:: business_units
 
-        the list of business units to query for collected items
+        dictionary of business units names and their bu_ids as per the
+        business_units.id table column
 
     .. attribute:: t1250_file_format
 

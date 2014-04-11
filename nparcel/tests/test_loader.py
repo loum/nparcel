@@ -4,7 +4,8 @@ import tempfile
 import os
 
 import nparcel
-from nparcel.utils.files import remove_files
+from nparcel.utils.files import (remove_files,
+                                 get_directory_files_list)
 
 
 FILE_BU = {'tolp': '1', 'tolf': '2', 'toli': '3'}
@@ -64,7 +65,8 @@ class TestLoader(unittest2.TestCase):
         """Process valid raw T1250 line -- with comms and recipients.
         """
         # Seed the Agent Id.
-        agent_fields = {'code': 'N031'}
+        agent_fields = {'code': 'N031',
+                        'dp_id': 1}
         self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
         msg = 'Valid T1250 record should process OK'
@@ -86,6 +88,71 @@ FROM job_item"""
                             ('email', row[0], 'body'))
             expected.append(os.path.join(self._comms_dir, '%s.%d.%s') %
                             ('sms', row[0], 'body'))
+        msg = 'Comms directory file list error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Restore DB state and clean.
+        remove_files(received)
+        self._ldr.db.rollback()
+
+    def test_processor_valid_record_with_matched_dp_trigger(self):
+        """Process valid raw T1250 line -- matched delivery partner trigger.
+        """
+        # Seed the Agent Id.
+        agent_fields = {'code': 'N031',
+                        'dp_id': 1}
+        self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
+        dps = ['Nparcel']
+
+        msg = 'Valid T1250 record should process OK'
+        line = self._c.get('test_lines', 'VALID_LINE_WITH_RECIPIENTS')
+        self.assertTrue(self._ldr.process(self._job_ts,
+                                          line,
+                                          FILE_BU.get('tolp'),
+                                          COND_MAP_COMMS,
+                                          dps), msg)
+
+        # With comms enabled, we should have comms flag files.
+        received = get_directory_files_list(self._comms_dir)
+        sql = """SELECT id
+FROM job_item"""
+        self._ldr.db(sql)
+        expected = []
+        for row in self._ldr.db.rows():
+            expected.append(os.path.join(self._comms_dir, '%s.%d.%s') %
+                            ('email', row[0], 'body'))
+            expected.append(os.path.join(self._comms_dir, '%s.%d.%s') %
+                            ('sms', row[0], 'body'))
+        msg = 'Comms directory file list error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Restore DB state and clean.
+        remove_files(received)
+        self._ldr.db.rollback()
+
+    def test_processor_valid_record_with_no_dp_trigger(self):
+        """Process valid raw T1250 line -- no delivery partner trigger.
+        """
+        # Seed the Agent Id.
+        agent_fields = {'code': 'N031',
+                        'dp_id': 1}
+        self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
+        dps = ['ParcelPoint']
+
+        msg = 'Valid T1250 record should process OK'
+        line = self._c.get('test_lines', 'VALID_LINE_WITH_RECIPIENTS')
+        self.assertTrue(self._ldr.process(self._job_ts,
+                                          line,
+                                          FILE_BU.get('tolp'),
+                                          COND_MAP_COMMS,
+                                          dps), msg)
+
+        # With comms enabled, we should have comms flag files.
+        received = get_directory_files_list(self._comms_dir)
+        sql = """SELECT id
+FROM job_item"""
+        self._ldr.db(sql)
+        expected = []
         msg = 'Comms directory file list error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
@@ -259,7 +326,8 @@ FROM job_item"""
         """Process valid raw T1250 line.
         """
         # Seed the Agent Id.
-        agent_fields = {'code': 'V098'}
+        agent_fields = {'code': 'V098',
+                        'dp_id': 1}
         self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
         line = self._c.get('test_lines', 'SINGLE_QUOTE_LINE')
@@ -276,7 +344,8 @@ FROM job_item"""
         """Process valid raw T1250 line -- dodgy postcode.
         """
         # Seed the Agent Id.
-        agent_fields = {'code': 'Q067'}
+        agent_fields = {'code': 'Q067',
+                        'dp_id': 1}
         self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
         line = self._c.get('test_lines', 'DODGY_POSTCODE')
@@ -293,9 +362,11 @@ FROM job_item"""
         """Process valid raw T1250 line with a "job" item Agent Id update.
         """
         # Seed the Agent Ids.
-        agent_fields = {'code': 'N031'}
+        agent_fields = {'code': 'N031',
+                        'dp_id': 1}
         self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
-        agent_fields = {'code': 'N014'}
+        agent_fields = {'code': 'N014',
+                        'dp_id': 1}
         self._ldr.db(self._ldr.db._agent.insert_sql(agent_fields))
 
         line = self._c.get('test_lines', 'VALID_LINE')
@@ -1064,6 +1135,26 @@ SET state = 'VIC'"""
                     expected = 'body'
                 msg = "Service Code 4 template scenario expected 'body'"
                 self.assertEqual(received, expected, msg)
+
+    def test_delivery_partner_comms_trigger_matching_dp(self):
+        """Check Delivery Partner trigger -- matching DP.
+        """
+        agent_id = 1
+        dps = ['Nparcel']
+
+        received = self._ldr.delivery_partner_comms_trigger(agent_id, dps)
+        msg = 'check_delivery_partner_comms_trigger error'
+        self.assertTrue(received, msg)
+
+    def test_delivery_partner_comms_trigger_matching_dp(self):
+        """Check Delivery Partner trigger -- non matching DP.
+        """
+        agent_id = 1
+        dps = ['ParcelPoint']
+
+        received = self._ldr.delivery_partner_comms_trigger(agent_id, dps)
+        msg = 'check_delivery_partner_comms_trigger error'
+        self.assertFalse(received, msg)
 
     @classmethod
     def tearDownClass(cls):

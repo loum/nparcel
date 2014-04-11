@@ -23,8 +23,20 @@ class LoaderDaemon(nparcel.DaemonService):
 
         the :mod:`re` format string to match loader files against
 
+    .. attribute:: business_units
+
+        dictionary of business units names and their bu_ids as per the
+        business_units.id table column
+
+    .. attribute:: comms_delivery_partners
+
+        dictionary of Business Unit based list of Delivery Partners that
+        will have comms event files created during the load process
+
     """
     _file_format = 'T1250_TOL.*\.txt'
+    _business_units = {}
+    _comms_delivery_partners = {}
 
     def __init__(self,
                  pidfile,
@@ -54,12 +66,52 @@ class LoaderDaemon(nparcel.DaemonService):
             log.debug('%s environment.prod not in config: %s. Using "%s"' %
                       (self.facility, err, self.prod))
 
+        try:
+            self.set_business_units(self.config.business_units)
+        except AttributeError, err:
+            log.debug('%s business_units not in config: %s. Using "%s"' %
+                      (self.facility, err, self.business_units))
+
+        try:
+            tmp = self.config.comms_delivery_partners
+            self.set_comms_delivery_partners(tmp)
+        except AttributeError, err:
+            log.debug('%s %s not in config: %s. Using "%s"' %
+                      (self.facility,
+                       'comms_delivery_partners',
+                       err,
+                       self.comms_delivery_partners))
+
     @property
     def file_format(self):
         return self._file_format
 
     def set_file_format(self, value):
         self._file_format = value
+
+    @property
+    def comms_delivery_partners(self):
+        return self._comms_delivery_partners
+
+    def set_comms_delivery_partners(self, values):
+        self._comms_delivery_partners.clear()
+
+        if values is not None:
+            self._comms_delivery_partners = values
+        log.debug('%s comms_delivery_partners set to: "%s"' %
+                  (self.facility, self._comms_delivery_partners))
+
+    @property
+    def business_units(self):
+        return self._business_units
+
+    def set_business_units(self, values=None):
+        self._business_units.clear()
+
+        if values is not None:
+            self._business_units = values
+        log.debug('%s business_units set to: "%s"' %
+                  (self.facility, self.business_units))
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
@@ -83,9 +135,6 @@ class LoaderDaemon(nparcel.DaemonService):
             commit = False
 
         while not event.isSet():
-            subject = ('Nploaderd processing error: %s' %
-                       datetime.datetime.now().strftime("%Y/%m/%d %H:%M"))
-
             files = []
             if loader.db():
                 if self.file is not None:
@@ -131,11 +180,13 @@ class LoaderDaemon(nparcel.DaemonService):
                         eof_found = True
                         break
                     else:
+                        dps = self.get_comms_delivery_partners(bu_id)
                         self.reporter(loader.process(file_timestamp,
                                                      record,
                                                      bu_id,
                                                      condition_map,
-                                                     self.dry))
+                                                     dps,
+                                                     dry=self.dry))
                 f.close()
 
                 if not status and not eof_found:
@@ -150,6 +201,7 @@ class LoaderDaemon(nparcel.DaemonService):
                     loader.reset(commit=commit)
 
                     # Aggregate the files for further processing.
+                    log.debug('xxx: dry is: %s' % self.dry)
                     if not self.dry and self.file is None:
                         aggregate = condition_map.get('aggregate_files')
                         self.distribute_file(file, aggregate)
@@ -315,3 +367,33 @@ class LoaderDaemon(nparcel.DaemonService):
             self.aggregate_file(file)
 
         self.archive_file(file)
+
+    def get_comms_delivery_partners(self, bu_id):
+        """Lookup of Delivery Partners associated with *bu_id* that should
+        have comms sent.
+
+        **Args:**
+            *bu_id*: the Business Unit ID that typically relates to the
+            business_unit.id table column
+
+        **Returns**:
+            list of Delivery Partners that are enabled to have comms event
+            files triggered
+
+        """
+        dps = []
+
+        # Get the business_unit key whose value is bu_id.
+        # For duplicates, first in best dressed.
+        bu_key = None
+        for k, v in self.business_units.iteritems():
+            if v == bu_id:
+                bu_key = k.lower()
+                break
+
+        if bu_key is not None:
+            if self.comms_delivery_partners.get(bu_key) is not None:
+                dps = self.comms_delivery_partners.get(bu_key)
+
+        log.debug('Delivery Partners for bu_id %d: "%s"' % (bu_id, dps))
+        return dps
