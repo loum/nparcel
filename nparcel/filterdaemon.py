@@ -225,6 +225,7 @@ class FilterDaemon(nparcel.DaemonService):
                 if status and eof_found:
                     self.send_table(recipients=self.support_emails,
                                     table_data=list(filter.alerts),
+                                    identifier=file,
                                     dry=self.dry)
                     filter.set_alerts(None)
 

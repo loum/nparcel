@@ -206,6 +206,7 @@ class DaemonService(nparcel.utils.Daemon):
     def send_table(self,
                    recipients,
                    table_data,
+                   identifier=None,
                    files=None,
                    template='proc_err',
                    dry=False):
@@ -226,6 +227,11 @@ class DaemonService(nparcel.utils.Daemon):
             converted into a HTML table
 
         **Kwargs:**
+            *identifier*: identifying token that will be displayed in the
+            message.  For example, :mod:`nparcel.LoaderDaemon` processing
+            errors are usually identified by the T1250 EDI file that
+            caused the error
+
             *files*: list of files to send as an attachment
 
             *dry*: do not send, only report what would happen
@@ -243,6 +249,7 @@ class DaemonService(nparcel.utils.Daemon):
         if len(table_data):
             alert_table = self.create_table(table_data)
             data = {'file': file,
+                    'identifier': identifier,
                     'facility': self.facility,
                     'err_table': alert_table}
             mime = self.emailer.create_comms(data=data,

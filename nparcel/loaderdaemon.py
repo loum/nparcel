@@ -192,6 +192,7 @@ class LoaderDaemon(nparcel.DaemonService):
                 if status and eof_found:
                     self.send_table(recipients=self.support_emails,
                                     table_data=list(loader.alerts),
+                                    identifier=file,
                                     dry=self.dry)
                     loader.reset(commit=commit)
 
