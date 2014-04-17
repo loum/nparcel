@@ -3,7 +3,6 @@ __all__ = [
 ]
 import os
 import smtplib
-import string
 from email.MIMEText import MIMEText
 from email.MIMEMultipart import MIMEMultipart
 from email.MIMEBase import MIMEBase
@@ -146,42 +145,6 @@ class Emailer(nparcel.EmailerBase):
                 s.close()
 
         return status
-
-    def get_subject_line(self,
-                         data,
-                         template='body'):
-        """Construct email subject line from a template.
-
-        **Args**:
-            *data*: dictionary structure that features the tokens that feed
-            into the template
-
-            *template*: template file that contains the subject line
-            construct
-
-        **Returns**:
-            string representation of the subject
-
-        """
-        subject_html = 'subject_%s_html.t' % template
-
-        subject_template = os.path.join(self.template_base, subject_html)
-        log.debug('Email subject template: "%s"' % subject_template)
-        subject_string = str()
-        try:
-            f = open(subject_template)
-            subject_t = f.read()
-            f.close()
-            subject_s = string.Template(subject_t)
-            subject_string = subject_s.substitute(**data)
-        except IOError, e:
-            log.error('Unable to find subject template %s: %s' %
-                      (subject_template, e))
-
-        subject_string = subject_string.rstrip()
-        log.debug('Email comms subject string: "%s"' % subject_string)
-
-        return subject_string
 
     def create_comms(self,
                      data,
@@ -353,8 +316,6 @@ class Emailer(nparcel.EmailerBase):
             log.debug('Altering subject line to error context ...')
             err_template_file = os.path.join(template_dir, 'subject_err.t')
             err_string = templater(err_template_file)
-            if err_string is not None:
-                err_string.rstrip()
 
         if err_string is None:
             err_string = str()
@@ -363,8 +324,5 @@ class Emailer(nparcel.EmailerBase):
         subject_html = 'subject_%s_html.t' % template
         subject_template_file = os.path.join(template_dir, subject_html)
         subject = templater(subject_template_file, **data)
-
-        if subject is not None:
-            subject = subject.rstrip()
 
         return subject

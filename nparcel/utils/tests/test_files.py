@@ -244,7 +244,7 @@ class TestFiles(unittest2.TestCase):
                                'tests',
                                'files',
                                'email_body_html_template.t'))
-        expected = fh.read()
+        expected = fh.read().rstrip('\n')
         msg = 'Template string error'
         self.assertEqual(received, expected, msg)
 

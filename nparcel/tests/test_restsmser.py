@@ -187,7 +187,7 @@ class TestRestSmser(unittest2.TestCase):
     def test_create_comms_valid_data_structure(self):
         """Create SMS comms with valid data structure.
         """
-        msg = 'SMS comms string should be None on XML input file error'
+        msg = 'SMS comms string with valid data error'
 
         d = {'name': 'Auburn Newsagency',
              'address': '119 Auburn Road',

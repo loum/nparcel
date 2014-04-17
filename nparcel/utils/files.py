@@ -468,7 +468,10 @@ def templater(template_file, **kwargs):
             log.error('Template "%s" substitute failed: %s' %
                       (template_file, err))
 
-    log.debug('Template substitution (%s|%s) produced: "%s":' %
+    if template_str is not None:
+        template_str = template_str.rstrip('\n')
+
+    log.debug('Template substitution (%s|%s) produced: "%s"' %
               (template_file, str(kwargs), template_str))
 
     return template_str

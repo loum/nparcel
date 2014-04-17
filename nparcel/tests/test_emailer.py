@@ -130,6 +130,17 @@ class TestEmailer(unittest2.TestCase):
         msg = 'Base body subject line not as expected'
         self.assertEqual(received, expected, msg)
 
+    def test_get_subject_line_errored(self):
+        """Build the subject line from a template -- errored scenario.
+        """
+        d = {'connote_nbr': 'subject_connote'}
+        err_string = 'FAILED NOTIFICATION -- '
+        received = self._e.get_subject_line(d, err=True)
+        expected = ('%sToll Consumer Delivery tracking # subject_connote' %
+                    err_string)
+        msg = 'Errored subject line not as expected'
+        self.assertEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
         del cls._e
