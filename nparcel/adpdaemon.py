@@ -51,15 +51,15 @@ class AdpDaemon(nparcel.DaemonService):
                  dry=False,
                  batch=False,
                  config=None):
+        c = None
+        if config is not None:
+            c = nparcel.B2CConfig(config)
         nparcel.DaemonService.__init__(self,
                                        pidfile=pidfile,
                                        file=file,
                                        dry=dry,
-                                       batch=batch)
-
-        if config is not None:
-            self.config = nparcel.B2CConfig(file=config)
-            self.config.parse_config()
+                                       batch=batch,
+                                       config=c)
 
         try:
             if self.config.support_emails is not None:

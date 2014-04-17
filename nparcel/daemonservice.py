@@ -9,6 +9,9 @@ from nparcel.utils.files import (get_directory_files,
 
 class DaemonService(nparcel.utils.Daemon):
     """Common components for the Daemoniser facility.
+    .. attribute:: config
+
+        an :class:`nparcel.B2CConfig` type object
 
     .. attribute:: file
 
@@ -52,6 +55,7 @@ class DaemonService(nparcel.utils.Daemon):
         hostname of the production instance
 
     """
+    _config = None
     _facility = None
     _file = None
     _in_dirs = []
@@ -68,14 +72,30 @@ class DaemonService(nparcel.utils.Daemon):
                  pidfile,
                  file=None,
                  dry=False,
-                 batch=False):
+                 batch=False,
+                 config=None):
+        nparcel.utils.Daemon.__init__(self, pidfile=pidfile)
+
+        if config is not None:
+            self._config = config
+            self.config.parse_config()
+
         self._facility = self.__class__.__name__
 
-        nparcel.utils.Daemon.__init__(self, pidfile=pidfile)
+        # Grab the base configuration items required by all daemons.
+        try:
+            self.set_prod(self.config.prod)
+        except AttributeError, err:
+            log.debug('%s environment.prod not in config: %s. Using "%s"' %
+                      (self.facility, err, self.prod))
 
         self._file = file
         self._dry = dry
         self._batch = batch
+
+    @property
+    def config(self):
+        return self._config
 
     @property
     def facility(self):
@@ -140,6 +160,8 @@ class DaemonService(nparcel.utils.Daemon):
 
         if values is not None and isinstance(values, list):
             self._support_emails.extend(values)
+        log.debug('%s support_emails set to %s' %
+                  (self.facility, self.support_emails))
 
     @property
     def archive_base(self):

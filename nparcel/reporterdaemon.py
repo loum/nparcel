@@ -134,17 +134,15 @@ class ReporterDaemon(nparcel.DaemonService):
                  dry=False,
                  batch=True,
                  config=None):
+        c = None
+        if config is not None:
+            c = nparcel.ReporterB2CConfig(file=config, type=report)
         nparcel.DaemonService.__init__(self,
                                        pidfile=pidfile,
                                        dry=dry,
-                                       batch=batch)
-
+                                       batch=batch,
+                                       config=c)
         self.set_report_type(report)
-
-        if config is not None:
-            self.set_config(nparcel.ReporterB2CConfig(file=config,
-                                                      type=self.report_type))
-            self.config.parse_config()
 
         log_msg = self.facility + '.%s not set via config: %s. Using "%s"'
         try:

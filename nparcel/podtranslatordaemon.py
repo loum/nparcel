@@ -34,52 +34,21 @@ class PodTranslatorDaemon(nparcel.DaemonService):
     _out_dir = None
     _archive_dir = None
 
-    @property
-    def out_dir(self):
-        return  self._out_dir
-
-    def set_out_dir(self, value=None):
-        self._out_dir = value
-        log.debug('%s out_dir set to: "%s"' %
-                  (self.facility, str(self.out_dir)))
-
-    @property
-    def archive_dir(self):
-        return  self._archive_dir
-
-    def set_archive_dir(self, value=None):
-        self._archive_dir = value
-        log.debug('%s archive_dir set to: "%s"' %
-                  (self.facility, str(self.archive_dir)))
-
-    @property
-    def file_formats(self):
-        return self._file_formats
-
-    def set_file_formats(self, values=None):
-        del self._file_formats[:]
-        self._file_formats = []
-
-        if values is not None:
-            self._file_formats.extend(values)
-        log.debug('%s file_formats set to: "%s"' %
-                  (self.facility, self.file_formats))
-
     def __init__(self,
                  pidfile,
                  file=None,
                  dry=False,
                  batch=False,
                  config=None):
+        c = None
+        if config is not None:
+            c = nparcel.PodB2CConfig(config)
         nparcel.DaemonService.__init__(self,
                                        pidfile=pidfile,
                                        file=file,
                                        dry=dry,
-                                       batch=batch)
-
-        if config is not None:
-            self.config = nparcel.PodB2CConfig(file=config)
-            self.config.parse_config()
+                                       batch=batch,
+                                       config=c)
 
         try:
             self.set_loop(self.config.pod_translator_loop)
@@ -115,6 +84,37 @@ class PodTranslatorDaemon(nparcel.DaemonService):
         except AttributeError, err:
             log.debug('%s file_formats not in config: %s. Using %s' %
                       (self.facility, err, self.file_formats))
+
+    @property
+    def out_dir(self):
+        return  self._out_dir
+
+    def set_out_dir(self, value=None):
+        self._out_dir = value
+        log.debug('%s out_dir set to: "%s"' %
+                  (self.facility, str(self.out_dir)))
+
+    @property
+    def archive_dir(self):
+        return  self._archive_dir
+
+    def set_archive_dir(self, value=None):
+        self._archive_dir = value
+        log.debug('%s archive_dir set to: "%s"' %
+                  (self.facility, str(self.archive_dir)))
+
+    @property
+    def file_formats(self):
+        return self._file_formats
+
+    def set_file_formats(self, values=None):
+        del self._file_formats[:]
+        self._file_formats = []
+
+        if values is not None:
+            self._file_formats.extend(values)
+        log.debug('%s file_formats set to: "%s"' %
+                  (self.facility, self.file_formats))
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.

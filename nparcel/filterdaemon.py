@@ -44,7 +44,7 @@ class FilterDaemon(nparcel.DaemonService):
     _staging_base = os.curdir
     _customer = 'parcelpoint'
     _filtering_rules = ['P', 'R']
-    _in_dirs = ['/data/nparcel/aggregate']
+    _in_dirs = ['%s' % os.path.join(os.sep, 'data', 'nparcel', 'aggregate')]
 
     def __init__(self,
                  pidfile,
@@ -52,13 +52,15 @@ class FilterDaemon(nparcel.DaemonService):
                  dry=False,
                  batch=False,
                  config='nparcel.conf'):
-        super(FilterDaemon, self).__init__(pidfile=pidfile,
-                                           file=file,
-                                           dry=dry,
-                                           batch=batch)
-
-        self.config = nparcel.B2CConfig(file=config)
-        self.config.parse_config()
+        c = None
+        if config is not None:
+            c = nparcel.B2CConfig(config)
+        nparcel.DaemonService.__init__(self,
+                                       pidfile=pidfile,
+                                       file=file,
+                                       dry=dry,
+                                       batch=batch,
+                                       config=c)
 
         try:
             if self.config.filter_loop is not None:

@@ -66,16 +66,17 @@ class CommsDaemon(nparcel.DaemonService):
                  dry=False,
                  batch=False,
                  config=None):
-        self._facility = self.__class__.__name__
+        c = None
+        if config is not None:
+            c = nparcel.CommsB2CConfig(config)
         nparcel.DaemonService.__init__(self,
                                        pidfile=pidfile,
                                        file=file,
                                        dry=dry,
-                                       batch=batch)
+                                       batch=batch,
+                                       config=c)
 
-        if config is not None:
-            self.config = nparcel.CommsB2CConfig(file=config)
-            self.config.parse_config()
+        self._facility = self.__class__.__name__
 
         try:
             self.set_support_emails(self.config.support_emails)
@@ -257,7 +258,7 @@ class CommsDaemon(nparcel.DaemonService):
         kwargs = {}
 
         try:
-            kwargs['prod'] = self.config.prod
+            kwargs['prod'] = self.prod
         except AttributeError, err:
             log.debug('%s prod instance name not in config: %s ' %
                       (self._facility, err))

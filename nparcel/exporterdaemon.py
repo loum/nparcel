@@ -26,14 +26,14 @@ class ExporterDaemon(nparcel.DaemonService):
                  dry=False,
                  batch=False,
                  config=None):
+        c = None
+        if config is not None:
+            c = nparcel.ExporterB2CConfig(config)
         nparcel.DaemonService.__init__(self,
                                        pidfile=pidfile,
                                        dry=dry,
-                                       batch=batch)
-
-        if config is not None:
-            self.config = nparcel.ExporterB2CConfig(file=config)
-            self.config.parse_config()
+                                       batch=batch,
+                                       config=c)
 
         try:
             self.set_loop(self.config.exporter_loop)

@@ -31,7 +31,7 @@ class B2CConfig(nparcel.Config):
     """B2CConfig class.
 
     :class:`nparcel.B2CConfig` captures the configuration items required
-    by the Nparcel B2C Replicator
+    by the Toll Parcel Portal B2C middleware.
 
     .. attribute:: prod
 
@@ -821,12 +821,7 @@ class B2CConfig(nparcel.Config):
             log.critical('Missing required config: %s' % err)
             sys.exit(1)
 
-        try:
-            self.set_prod(self.get('environment', 'prod'))
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('%s environment.prod not defined.  Using "%s"' %
-                      (self.facility, self.prod))
+        self.parse_scalar_config('environment', 'prod')
 
         try:
             self._t1250_file_format = self.get('files',
@@ -1252,3 +1247,44 @@ class B2CConfig(nparcel.Config):
         log.debug('"%s" flag set BU ids: %s' % (flag, str(set_bu_ids)))
 
         return set_bu_ids
+
+    def parse_scalar_config(self, section, option, var=None):
+        """Helper method that can parse a scalar value based on
+        *section* and *option* in the :mod:`ConfigParser` based
+        configuration file and set *var* attribute with the value parsed.
+
+        **Args:**
+            *section*: the configuration file section.  For example
+            ``[environment]``
+
+            *option*: the configuration file section's options to
+            parse.
+
+        **Kwargs:**
+            *var*: the target attribute name.  This can be omitted if
+            the target attribute name is the same as *option*
+
+        **Returns:**
+            the value of the scalar option value parsed
+
+        """
+        value = None
+
+        if var is None:
+            var = option
+
+        try:
+            value = self.get(section, option)
+            setter = getattr(self, 'set_%s' % var)
+            setter(value)
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            try:
+                getter = getattr(self, var)
+                log.debug('%s %s.%s not defined.  Using "%s"' %
+                          (self.facility, section, option, getter))
+            except AttributeError, err:
+                log.debug('%s %s.%s not defined: %s.' %
+                          (self.facility, section, option, err))
+
+        return value

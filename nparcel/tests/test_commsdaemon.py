@@ -15,7 +15,7 @@ class TestCommsDaemon(unittest2.TestCase):
         cls.maxDiff = None
 
         cls._cd = nparcel.CommsDaemon(pidfile=None)
-        cls._cd.config = nparcel.CommsB2CConfig()
+        cls._cd._config = nparcel.CommsB2CConfig()
 
         # If you want to perform a real run, uncomment the following
         # according to your environment and provide the REST
@@ -353,7 +353,7 @@ class TestCommsDaemon(unittest2.TestCase):
         """
         received = self._cd.comms_kwargs
         expected = {'db': None,
-                    'prod': 'faswbaup02',
+                    'prod': None,
                     'email_api': {'api': self._email_api,
                                   'api_password': '<email_pw>',
                                   'api_username': '<email_user>',
@@ -372,7 +372,7 @@ class TestCommsDaemon(unittest2.TestCase):
         """Verify the comms kwarg initialiser structure -- no config.
         """
         cd = nparcel.CommsDaemon(pidfile=None)
-        cd.config = nparcel.CommsB2CConfig()
+        cd._config = nparcel.CommsB2CConfig()
 
         received = cd.comms_kwargs
         expected = {'db': None,
@@ -464,7 +464,7 @@ class TestCommsDaemon(unittest2.TestCase):
                                   'api_password': '<email_pw>',
                                   'api_username': '<email_user>',
                                   'support': 'loumar@tollgroup.com'},
-                    'prod': 'faswbaup02',
+                    'prod': None,
                     'proxy': None,
                     'returns_templates': [],
                     'scheme': 'https',

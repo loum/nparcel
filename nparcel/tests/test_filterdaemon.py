@@ -15,8 +15,8 @@ class TestFilterDaemon(unittest2.TestCase):
         cls._test_dir = os.path.join('nparcel', 'tests', 'files')
         cls._file = os.path.join(cls._test_dir,
                                  'T1250_TOLI_20130828202901.txt')
-        cls._fd = nparcel.FilterDaemon(pidfile=None,
-                                       config='nparcel/conf/nparceld.conf')
+        config = os.path.join('nparcel', 'conf', 'nparceld.conf')
+        cls._fd = nparcel.FilterDaemon(pidfile=None, config=config)
         cls._fd.emailer.set_template_base(os.path.join('nparcel',
                                                        'templates'))
 
@@ -58,7 +58,6 @@ class TestFilterDaemon(unittest2.TestCase):
         out_dir = tempfile.mkdtemp()
         self._fd.set_in_dirs([in_dir])
         self._fd.set_staging_base(out_dir)
-        self._fd.set_support_emails(None)
 
         # Copy over our test files.
         t_file_dir = os.path.join('nparcel', 'tests', 'files', 'filter')
@@ -69,6 +68,8 @@ class TestFilterDaemon(unittest2.TestCase):
         # Start processing.
         self._fd.set_dry(dry)
         self._fd.set_batch()
+        # Add valid email address here if you want to verify support comms.
+        self._fd.set_support_emails(None)
         self._fd._start(self._fd._exit_event)
 
         expected_out_dir = os.path.join(out_dir, 'parcelpoint', 'out')

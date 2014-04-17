@@ -44,14 +44,15 @@ class LoaderDaemon(nparcel.DaemonService):
                  dry=False,
                  batch=False,
                  config='nparcel.conf'):
+        c = None
+        if config is not None:
+            c = nparcel.B2CConfig(config)
         nparcel.DaemonService.__init__(self,
                                        pidfile=pidfile,
                                        file=file,
                                        dry=dry,
-                                       batch=batch)
-
-        self.config = nparcel.B2CConfig(file=config)
-        self.config.parse_config()
+                                       batch=batch,
+                                       config=c)
 
         try:
             self.set_support_emails(self.config.support_emails)
@@ -59,12 +60,6 @@ class LoaderDaemon(nparcel.DaemonService):
             msg = ('%s email.support not in config: %s. Using "%s"' %
                    (self.facility, err, self.support_emails))
             log.info(msg)
-
-        try:
-            self.set_prod(self.config.prod)
-        except AttributeError, err:
-            log.debug('%s environment.prod not in config: %s. Using "%s"' %
-                      (self.facility, err, self.prod))
 
         try:
             self.set_business_units(self.config.business_units)
@@ -201,7 +196,6 @@ class LoaderDaemon(nparcel.DaemonService):
                     loader.reset(commit=commit)
 
                     # Aggregate the files for further processing.
-                    log.debug('xxx: dry is: %s' % self.dry)
                     if not self.dry and self.file is None:
                         aggregate = condition_map.get('aggregate_files')
                         self.distribute_file(file, aggregate)

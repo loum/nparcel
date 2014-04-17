@@ -14,23 +14,23 @@ class TestExporterDaemon(unittest2.TestCase):
     def setUpClass(cls):
         cls._ed = nparcel.ExporterDaemon(pidfile=None)
         cls._ed.set_business_units({'priority': 1, 'fast': 2, 'ipec': 3})
-        cls._ed.config = nparcel.ExporterB2CConfig()
-        cls._ed.config.set_cond({'tolp': '000100000000010110',
-                                 'tolf': '000101100000010110',
-                                 'toli': '100010000000010110'})
-        cls._ed.config.set_file_bu({'tolp': 1,
-                                    'tolf': 2,
-                                    'tolf_nsw': 2,
-                                    'tolf_vic': 2,
-                                    'tolf_qld': 2,
-                                    'tolf_sa': 2,
-                                    'tolf_wa': 2,
-                                    'tolf_act': 2,
-                                    'toli': 3})
+        cls._ed._config = nparcel.ExporterB2CConfig()
+        cls._ed._config.set_cond({'tolp': '000100000000010110',
+                                  'tolf': '000101100000010110',
+                                  'toli': '100010000000010110'})
+        cls._ed._config.set_file_bu({'tolp': 1,
+                                     'tolf': 2,
+                                     'tolf_nsw': 2,
+                                     'tolf_vic': 2,
+                                     'tolf_qld': 2,
+                                     'tolf_sa': 2,
+                                     'tolf_wa': 2,
+                                     'tolf_act': 2,
+                                     'toli': 3})
 
         # Signature dir.
         cls._signature_dir = tempfile.mkdtemp()
-        cls._ed.config.set_signature_dir(cls._signature_dir)
+        cls._ed._config.set_signature_dir(cls._signature_dir)
         cls._sig_files = ['1.ps', '1.png', '5.ps', '5.png']
         for f in cls._sig_files:
             fh = open(os.path.join(cls._signature_dir, f), 'w')
@@ -38,15 +38,16 @@ class TestExporterDaemon(unittest2.TestCase):
 
         # Exporter file closure dirs.
         cls._exporter_dir = tempfile.mkdtemp()
-        cls._ed.config.set_exporter_dirs([cls._exporter_dir])
+        cls._ed._config.set_exporter_dirs([cls._exporter_dir])
+        cls._ed._config.set_exporter_file_formats(['.*_RE[PIF]_\d{14}\.txt$'])
 
         # Staging base.
         cls._staging_dir = tempfile.mkdtemp()
-        cls._ed.config.set_staging_base(cls._staging_dir)
+        cls._ed._config.set_staging_base(cls._staging_dir)
 
         # Archive directory.
         cls._archive_dir = tempfile.mkdtemp()
-        cls._ed.config.set_archive_dir(cls._archive_dir)
+        cls._ed._config.set_archive_dir(cls._archive_dir)
 
         cls._ed.emailer.set_template_base(os.path.join('nparcel',
                                                        'templates'))
@@ -96,32 +97,23 @@ class TestExporterDaemon(unittest2.TestCase):
         old_dry = self._ed.dry
         old_batch = self._ed.batch
         old_support_emails = list(self._ed.support_emails)
-        old_config_exporter_dirs = self._ed.config.exporter_dirs
-        old_config_file_formats = self._ed.config.exporter_file_formats
 
         test_file_dir = os.path.join('nparcel', 'tests', 'files')
         file = 'VIC_VANA_REP_20140214120000.txt'
-        dir = tempfile.mkdtemp()
         copy_file(os.path.join(test_file_dir, file),
-                  os.path.join(dir, file))
-        filters = [file]
+                  os.path.join(self._exporter_dir, file))
 
         # Start processing.
         self._ed.set_dry(dry)
         self._ed.set_batch()
-        self._ed.config.set_exporter_dirs([dir])
-        self._ed.config.set_exporter_file_formats(filters)
         # Add valid email address here if you want to verify support comms.
-        self._ed.set_support_emails([])
+        self._ed.set_support_emails(None)
         self._ed._start(self._ed.exit_event)
 
         # Clean up.
-        self._ed.config.set_exporter_dirs(old_config_exporter_dirs)
-        self._ed.config.set_exporter_file_formats(old_config_file_formats)
         self._ed.set_support_emails(old_support_emails)
         self._ed.set_dry(old_dry)
         self._ed.set_batch(old_batch)
-        remove_files(get_directory_files_list(dir))
         self._ed.exit_event.clear()
 
     @classmethod

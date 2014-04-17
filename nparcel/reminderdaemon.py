@@ -18,16 +18,15 @@ class ReminderDaemon(nparcel.DaemonService):
                  dry=False,
                  batch=False,
                  config=None):
+        c = None
+        if config is not None:
+            c = nparcel.ReminderB2CConfig(config)
         nparcel.DaemonService.__init__(self,
                                        pidfile=pidfile,
                                        file=file,
                                        dry=dry,
-                                       batch=batch)
-
-        if config is not None:
-            self.config = nparcel.ReminderB2CConfig(file=config)
-            log.debug('Parsing ReminderB2CConfig config items')
-            self.config.parse_config()
+                                       batch=batch,
+                                       config=c)
 
         try:
             self.set_loop(self.config.reminder_loop)

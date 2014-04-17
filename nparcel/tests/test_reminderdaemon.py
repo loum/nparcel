@@ -13,10 +13,10 @@ class TestReminderDaemon(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._rd = nparcel.ReminderDaemon(pidfile=None)
-        cls._rd.config = nparcel.ReminderB2CConfig()
+        cls._rd._config = nparcel.ReminderB2CConfig()
 
         cls._comms_dir = tempfile.mkdtemp()
-        cls._rd.config.set_comms_dir(cls._comms_dir)
+        cls._rd._config.set_comms_dir(cls._comms_dir)
 
         # Call up front to pre-load the DB.
         cls._rd._reminder = nparcel.Reminder(**(cls._rd.reminder_kwargs))
@@ -70,7 +70,7 @@ WHERE id = 8""" % str(ts - datetime.timedelta(days=10))
         self._rd._start(self._rd.exit_event)
 
         # Check that the reminder comms event files were created.
-        comms_dir = self._rd.config.comms_dir
+        comms_dir = self._rd._config.comms_dir
         received = get_directory_files_list(comms_dir)
         expected = [os.path.join(comms_dir, x) for x in comms_files]
         msg = 'List of reminder comms event files not as expected'

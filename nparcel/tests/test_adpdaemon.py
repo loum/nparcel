@@ -15,7 +15,7 @@ class TestAdpDaemon(unittest2.TestCase):
         cls._adpd = nparcel.AdpDaemon(pidfile=None)
         cls._adpd.emailer.set_template_base(os.path.join('nparcel',
                                                          'templates'))
-        cls._adpd.config = nparcel.B2CConfig()
+        cls._adpd._config = nparcel.B2CConfig()
         headers = {'agent.code': 'TP Code',
                    'agent.dp_code': 'DP Code',
                    'agent.name': 'ADP Name',
@@ -34,17 +34,17 @@ class TestAdpDaemon(unittest2.TestCase):
                    'delivery_partner.id': 'DP Id',
                    'login_account.username': 'Username',
                    'login_account.status': 'Login Status'}
-        cls._adpd.config.set_adp_headers(headers)
+        cls._adpd._config.set_adp_headers(headers)
         delivery_partners = ['Nparcel',
                              'ParcelPoint',
                              'Toll',
                              'National Storage']
-        cls._adpd.config.set_delivery_partners(delivery_partners)
+        cls._adpd._config.set_delivery_partners(delivery_partners)
         default_passwords = {'nparcel': 'aaaa',
                              'parcelpoint': 'bbbb',
                              'toll': 'cccc',
                              'national storage': 'dddd'}
-        cls._adpd.config.set_adp_default_passwords(default_passwords)
+        cls._adpd._config.set_adp_default_passwords(default_passwords)
 
         test_dir = os.path.join('nparcel', 'tests', 'files')
         xlsv_file = 'ADP-Bulk-Load.xlsx'

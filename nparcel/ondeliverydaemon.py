@@ -81,18 +81,15 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                  dry=False,
                  batch=False,
                  config=None):
-        super(OnDeliveryDaemon, self).__init__(pidfile=pidfile,
-                                               file=file,
-                                               dry=dry,
-                                               batch=batch)
-
-        config_file = None
+        c = None
         if config is not None:
-            config_file = config
-
-        if config_file is not None:
-            self.config = nparcel.B2CConfig(file=config_file)
-            self.config.parse_config()
+            c = nparcel.B2CConfig(config)
+        nparcel.DaemonService.__init__(self,
+                                       pidfile=pidfile,
+                                       file=file,
+                                       dry=dry,
+                                       batch=batch,
+                                       config=c)
 
         try:
             self.set_loop(self.config.ondelivery_loop)

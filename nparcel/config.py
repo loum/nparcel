@@ -9,7 +9,7 @@ from nparcel.utils.log import log
 
 
 class Config(ConfigParser.SafeConfigParser):
-    """Nparcel Config class.
+    """Config class.
 
     .. attribute:: *config_file*
 
@@ -19,7 +19,7 @@ class Config(ConfigParser.SafeConfigParser):
     _facility = None
 
     def __init__(self, config_file=None):
-        """Nparcel Config initialisation.
+        """Config initialisation.
         """
         self._facility = self.__class__.__name__
 

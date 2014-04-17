@@ -609,6 +609,75 @@ class TestB2CConfig(unittest2.TestCase):
                     'support': 'loumar@tollgroup.com'}
         self.assertDictEqual(received, expected, msg)
 
+    def test_parse_scalar_config(self):
+        """Parse a scalar from the configuration file.
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        section = 'environment'
+        option = 'prod'
+        var = 'prod'
+
+        received = self._c.parse_scalar_config(section, option, var)
+        expected = 'faswbaup02'
+        msg = 'Parsed config scalar error'
+        self.assertEqual(received, expected, msg)
+
+        # ... and check that the variable is set.
+        received = self._c.prod
+        expected = 'faswbaup02'
+        msg = 'Parsed config scalar -- set variable error'
+        self.assertEqual(received, expected, msg)
+
+    def test_parse_scalar_config_no_var(self):
+        """Parse a scalar from the configuration file.
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        section = 'environment'
+        option = 'prod'
+        var = 'prod'
+
+        received = self._c.parse_scalar_config(section, option)
+        expected = 'faswbaup02'
+        msg = 'Parsed config scalar error -- no var'
+        self.assertEqual(received, expected, msg)
+
+        # ... and check that the variable is set.
+        received = self._c.prod
+        expected = 'faswbaup02'
+        msg = 'Parsed config scalar -- no var -- set variable error'
+        self.assertEqual(received, expected, msg)
+
+    def test_parse_scalar_config_no_value_found(self):
+        """Parse a scalar from the configuration file -- no value found.
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        section = 'environment'
+        option = 'banana'
+        var = 'prod'
+
+        received = self._c.parse_scalar_config(section, option, var)
+        msg = 'Parsed config scalar error -- no value found/no var'
+        self.assertIsNone(received, msg)
+
+    def test_parse_scalar_config_no_value_found_no_var(self):
+        """Parse a scalar from the configuration file -- no value/var.
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        section = 'environment'
+        option = 'banana'
+
+        received = self._c.parse_scalar_config(section, option)
+        msg = 'Parsed config scalar error -- no value found/no var'
+        self.assertIsNone(received, msg)
+
     def tearDown(self):
         self._c = None
         del self._c
