@@ -6,3 +6,4 @@ from test_healthb2cconfig import TestHealthB2CConfig
 from test_reminderb2cconfig import TestReminderB2CConfig
 from test_mapperb2cconfig import TestMapperB2CConfig
 from test_podb2cconfig import TestPodB2CConfig
+from test_ondeliveryb2cconfig import TestOnDeliveryB2CConfig

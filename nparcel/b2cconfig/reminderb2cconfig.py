@@ -84,12 +84,6 @@ class ReminderB2CConfig(nparcel.B2CConfig):
         """
         nparcel.Config.parse_config(self)
 
-        # These are the generic values that can be removed
-        # after nparcel.B2CConfig is refactored.
-        self.parse_scalar_config('environment', 'prod')
-
-        # These are the comms values that will remain
-        # after nparcel.B2CConfig is refactored.
         try:
             self.set_comms_dir(self.get('dirs', 'comms'))
         except (ConfigParser.NoOptionError,

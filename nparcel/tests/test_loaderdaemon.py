@@ -108,7 +108,7 @@ class TestLoaderDaemon(unittest2.TestCase):
         self._d.set_batch()
         self._d.config.set_in_dirs([in_dir])
         # Add valid email address here if you want to verify support comms.
-        self._d.set_support_emails(None)
+        self._d.set_support_emails([])
         self._d.config.set_archive_dir(archive_dir)
         self._d.config.set_aggregator_dirs([agg_dir])
         self._d._start(self._d.exit_event)
@@ -180,7 +180,7 @@ class TestLoaderDaemon(unittest2.TestCase):
         self._d.set_batch()
         self._d.config.set_in_dirs([in_dir])
         # Add valid email address here if you want to verify support comms.
-        self._d.set_support_emails(None)
+        self._d.set_support_emails([])
         self._d.config.set_archive_dir(archive_dir)
         self._d._start(self._d.exit_event)
 
@@ -244,7 +244,7 @@ class TestLoaderDaemon(unittest2.TestCase):
         self._d.set_batch()
         self._d.config.set_in_dirs([in_dir])
         # Add valid email address here if you want to verify support comms.
-        self._d.set_support_emails(None)
+        self._d.set_support_emails([])
         self._d.config.set_archive_dir(archive_dir)
         self._d.config.set_aggregator_dirs([agg_dir])
         self._d._start(self._d.exit_event)
@@ -333,7 +333,7 @@ class TestLoaderDaemon(unittest2.TestCase):
         self._d.set_batch()
         self._d.config.set_in_dirs([in_dir])
         # Add valid email address here if you want to verify support comms.
-        self._d.set_support_emails(None)
+        self._d.set_support_emails([])
         self._d.config.set_archive_dir(archive_dir)
         self._d.config.set_aggregator_dirs([agg_dir])
         self._d._start(self._d.exit_event)
@@ -422,7 +422,7 @@ class TestLoaderDaemon(unittest2.TestCase):
         self._d.set_batch()
         self._d.config.set_in_dirs([in_dir])
         # Add valid email address here if you want to verify support comms.
-        self._d.set_support_emails(None)
+        self._d.set_support_emails([])
         self._d.config.set_archive_dir(archive_dir)
         self._d.config.set_aggregator_dirs([agg_dir])
         self._d._start(self._d.exit_event)
@@ -512,7 +512,7 @@ class TestLoaderDaemon(unittest2.TestCase):
         self._d.set_batch()
         self._d.config.set_in_dirs([in_dir])
         # Add valid email address here if you want to verify support comms.
-        self._d.set_support_emails(None)
+        self._d.set_support_emails([])
         self._d.config.set_archive_dir(archive_dir)
         self._d.config.set_aggregator_dirs([agg_dir])
         self._d._start(self._d.exit_event)

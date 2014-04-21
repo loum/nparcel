@@ -23,11 +23,6 @@ class TestExporterB2CConfig(unittest2.TestCase):
         self._c.set_config_file(config_file)
         self._c.parse_config()
 
-        received = self._c.prod
-        expected = 'faswbaup02'
-        msg = 'environment.prod error'
-        self.assertEqual(received, expected, msg)
-
         received = self._c.exporter_loop
         expected = 300
         msg = 'timeout.exporter error'

@@ -5,6 +5,8 @@ import nparcel
 from nparcel.utils.log import log
 from nparcel.utils.files import (get_directory_files,
                                  check_filename)
+from nparcel.utils.setter import (set_scalar,
+                                  set_list)
 
 
 class DaemonService(nparcel.utils.Daemon):
@@ -55,6 +57,8 @@ class DaemonService(nparcel.utils.Daemon):
         hostname of the production instance
 
     """
+    _prod = None
+    _support_emails = []
     _config = None
     _facility = None
     _file = None
@@ -64,9 +68,23 @@ class DaemonService(nparcel.utils.Daemon):
     _emailer = nparcel.Emailer()
     _reporter = nparcel.Reporter()
     _loop = 30
-    _support_emails = []
     _archive_base = None
-    _prod = None
+
+    @property
+    def prod(self):
+        return self._prod
+
+    @set_scalar
+    def set_prod(self, value=None):
+        pass
+
+    @property
+    def support_emails(self):
+        return self._support_emails
+
+    @set_list
+    def set_support_emails(self, values=None):
+        pass
 
     def __init__(self,
                  pidfile,
@@ -80,14 +98,12 @@ class DaemonService(nparcel.utils.Daemon):
             self._config = config
             self.config.parse_config()
 
-        self._facility = self.__class__.__name__
+            # Grab the base configuration items required by all daemons.
+            prod = self.config.parse_scalar_config('environment', 'prod')
+            if prod is not None:
+                self.set_prod(prod.lower())
 
-        # Grab the base configuration items required by all daemons.
-        try:
-            self.set_prod(self.config.prod)
-        except AttributeError, err:
-            log.debug('%s environment.prod not in config: %s. Using "%s"' %
-                      (self.facility, err, self.prod))
+        self._facility = self.__class__.__name__
 
         self._file = file
         self._dry = dry
@@ -151,19 +167,6 @@ class DaemonService(nparcel.utils.Daemon):
         log.debug('%s loop set to %d' % (self.facility, self.loop))
 
     @property
-    def support_emails(self):
-        return self._support_emails
-
-    def set_support_emails(self, values=None):
-        del self._support_emails[:]
-        self._support_emails = []
-
-        if values is not None and isinstance(values, list):
-            self._support_emails.extend(values)
-        log.debug('%s support_emails set to %s' %
-                  (self.facility, self.support_emails))
-
-    @property
     def archive_base(self):
         return self._archive_base
 
@@ -171,15 +174,6 @@ class DaemonService(nparcel.utils.Daemon):
         self._archive_base = value
         log.debug('%s archive_base set to "%s"' %
                   (self.facility, self._archive_base))
-
-    @property
-    def prod(self):
-        return self._prod
-
-    def set_prod(self, value=None):
-        self._prod = value.lower()
-        log.debug('%s prod instance name set to "%s"' %
-                  (self.facility, self.prod))
 
     def create_table(self, items):
         """Takes a list of *items* and generates string based, variable

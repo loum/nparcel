@@ -101,7 +101,7 @@ class TestAdpDaemon(unittest2.TestCase):
         self._adpd.set_file(test_file)
         self._adpd.set_archive_dir(archive_dir)
         # Add valid email address here if you want to verify support comms.
-        self._adpd.set_support_emails(None)
+        self._adpd.set_support_emails([])
         self._adpd._start(self._adpd.exit_event)
 
         # Clean up.

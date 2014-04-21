@@ -305,11 +305,6 @@ class ReporterB2CConfig(nparcel.B2CConfig):
         """
         nparcel.Config.parse_config(self)
 
-        # These are the generic values that can be removed
-        # after nparcel.B2CConfig is refactored.
-        self.parse_scalar_config('environment', 'prod')
-
-        # Exporter specific.
         try:
             bu_ids = dict(self.items('report_bu_ids'))
             tmp_bu_ids = {}

@@ -28,11 +28,6 @@ class TestReminderB2CConfig(unittest2.TestCase):
         msg = 'timeout.reminder_loop error'
         self.assertEqual(received, expected, msg)
 
-        received = self._c.prod
-        expected = 'faswbaup02'
-        msg = 'environment.prod error'
-        self.assertEqual(received, expected, msg)
-
         received = self._c.comms_dir
         expected = os.path.join(os.sep,
                                 'data',

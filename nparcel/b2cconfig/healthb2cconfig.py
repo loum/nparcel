@@ -51,8 +51,6 @@ class HealthB2CConfig(nparcel.B2CConfig):
             log.debug('%s email.support: %s. Using %s' %
                       (self.facility, err, self.support_emails))
 
-        self.parse_scalar_config('environment', 'prod')
-
         # Health specific.
         try:
             health_procs = self.get('health', 'processes')

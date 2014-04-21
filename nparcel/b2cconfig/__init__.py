@@ -2,6 +2,7 @@ __all__ = [
     "B2CConfig",
 ]
 import sys
+import __builtin__
 
 import nparcel
 import ConfigParser
@@ -189,7 +190,6 @@ class B2CConfig(nparcel.Config):
     _aggregator_dirs = []
     _adp_dirs = []
     _loader_loop = 30
-    _ondelivery_loop = 30
     _filter_loop = 30
     _adp_loop = 30
     _proxy_scheme = 'https'
@@ -297,10 +297,6 @@ class B2CConfig(nparcel.Config):
     @property
     def loader_loop(self):
         return self._loader_loop
-
-    @property
-    def ondelivery_loop(self):
-        return self._ondelivery_loop
 
     @property
     def filter_loop(self):
@@ -908,13 +904,6 @@ class B2CConfig(nparcel.Config):
                       self.loader_loop)
 
         try:
-            self._ondelivery_loop = int(self.get('timeout',
-                                                 'ondelivery_loop'))
-        except ConfigParser.NoOptionError, err:
-            log.debug('Using default On Delivery loop: %d (sec)' %
-                      self.ondelivery_loop)
-
-        try:
             self._filter_loop = int(self.get('timeout', 'filter_loop'))
         except ConfigParser.NoOptionError, err:
             log.debug('Using default Filter loop: %d (sec)' %
@@ -926,10 +915,10 @@ class B2CConfig(nparcel.Config):
             log.debug('Using default ADP loop: %d (sec)' %
                       self.adp_loop)
 
-        try:
-            self._support_emails = self.get('email', 'support').split(',')
-        except ConfigParser.NoOptionError, err:
-            log.warn('%s emails not provided: %s' % err)
+        self.parse_scalar_config('email',
+                                 'support',
+                                 'support_emails',
+                                 is_list=True)
 
         # Business unit conditons.  No probs if they are missing -- will
         # just default to '0' (False) for each flag.
@@ -1248,7 +1237,12 @@ class B2CConfig(nparcel.Config):
 
         return set_bu_ids
 
-    def parse_scalar_config(self, section, option, var=None):
+    def parse_scalar_config(self,
+                            section,
+                            option,
+                            var=None,
+                            cast_type=None,
+                            is_list=False):
         """Helper method that can parse a scalar value based on
         *section* and *option* in the :mod:`ConfigParser` based
         configuration file and set *var* attribute with the value parsed.
@@ -1261,8 +1255,14 @@ class B2CConfig(nparcel.Config):
             parse.
 
         **Kwargs:**
+            *cast_type*: cast the value parsed as *cast_type*.  If
+            ``None`` is specified, then parse as a string
+
             *var*: the target attribute name.  This can be omitted if
             the target attribute name is the same as *option*
+
+            *is_list*: boolean flag to indicate whether to parse the
+            option values as a list (default ``False``)
 
         **Returns:**
             the value of the scalar option value parsed
@@ -1275,8 +1275,19 @@ class B2CConfig(nparcel.Config):
 
         try:
             value = self.get(section, option)
-            setter = getattr(self, 'set_%s' % var)
-            setter(value)
+            if cast_type is not None:
+                caster = getattr(__builtin__, cast_type)
+                value = caster(value)
+            if is_list:
+                value = value.split(',')
+            setattr(self, '_%s' % var, value)
+
+            if isinstance(value, (int, long, float, complex)):
+                log.debug('%s %s.%s set to %s' %
+                          (self.facility, section, option, value))
+            else:
+                log.debug('%s %s.%s set to "%s"' %
+                          (self.facility, section, option, value))
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
             try:

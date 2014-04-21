@@ -66,7 +66,7 @@ class TestMapperDaemon(unittest2.TestCase):
         # Start processing.
         self._md._start(self._md.exit_event)
         # Add valid email address here if you want to verify support comms.
-        self._md.set_support_emails(None)
+        self._md.set_support_emails([])
 
         expected_archive_dir = os.path.join(self._archive_base,
                                             'gis',

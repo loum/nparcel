@@ -69,7 +69,7 @@ class TestFilterDaemon(unittest2.TestCase):
         self._fd.set_dry(dry)
         self._fd.set_batch()
         # Add valid email address here if you want to verify support comms.
-        self._fd.set_support_emails(None)
+        self._fd.set_support_emails([])
         self._fd._start(self._fd._exit_event)
 
         expected_out_dir = os.path.join(out_dir, 'parcelpoint', 'out')

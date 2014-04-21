@@ -23,11 +23,6 @@ class TestCommsB2CConfig(unittest2.TestCase):
         self._c.set_config_file(config_file)
         self._c.parse_config()
 
-        received = self._c.prod
-        expected = 'faswbaup02'
-        msg = 'environment.prod not as expected'
-        self.assertEqual(received, expected, msg)
-
         received = self._c.support_emails
         expected = ['loumar@tollgroup.com']
         msg = 'emails.support not as expected'

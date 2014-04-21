@@ -144,11 +144,6 @@ class TestB2CConfig(unittest2.TestCase):
         expected = 30
         self.assertEqual(received, expected, msg)
 
-        msg = 'On delivery loop not as expected'
-        received = self._c.ondelivery_loop
-        expected = 30
-        self.assertEqual(received, expected, msg)
-
         msg = 'Filter loop not as expected'
         received = self._c.filter_loop
         expected = 30
@@ -626,8 +621,28 @@ class TestB2CConfig(unittest2.TestCase):
 
         # ... and check that the variable is set.
         received = self._c.prod
-        expected = 'faswbaup02'
         msg = 'Parsed config scalar -- set variable error'
+        self.assertEqual(received, expected, msg)
+
+    def test_parse_scalar_config_as_int(self):
+        """Parse a scalar from the configuration file -- cast to int.
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        section = 'timeout'
+        option = 'loader_loop'
+
+        received = self._c.parse_scalar_config(section,
+                                               option,
+                                               cast_type='int')
+        expected = 30
+        msg = 'Parsed config scalar error -- cast to int'
+        self.assertEqual(received, expected, msg)
+
+        # ... and check that the variable is set.
+        received = self._c.loader_loop
+        msg = 'Parsed config scalar (cast to int) -- set variable error'
         self.assertEqual(received, expected, msg)
 
     def test_parse_scalar_config_no_var(self):
@@ -647,8 +662,7 @@ class TestB2CConfig(unittest2.TestCase):
 
         # ... and check that the variable is set.
         received = self._c.prod
-        expected = 'faswbaup02'
-        msg = 'Parsed config scalar -- no var -- set variable error'
+        msg = 'Parsed config scalar (no var) -- set variable error'
         self.assertEqual(received, expected, msg)
 
     def test_parse_scalar_config_no_value_found(self):
@@ -677,6 +691,29 @@ class TestB2CConfig(unittest2.TestCase):
         received = self._c.parse_scalar_config(section, option)
         msg = 'Parsed config scalar error -- no value found/no var'
         self.assertIsNone(received, msg)
+
+    def test_parse_scalar_config_as_list(self):
+        """Parse a scalar from the configuration file -- as list.
+        """
+        self._c.set_config_file(self._file)
+        self._c.parse_config()
+
+        section = 'email'
+        option = 'support'
+        var = 'support_emails'
+
+        received = self._c.parse_scalar_config(section,
+                                               option,
+                                               var,
+                                               is_list=True)
+        expected = ['loumar@tollgroup.com']
+        msg = 'Parsed config scalar error'
+        self.assertEqual(received, expected, msg)
+
+        # ... and check that the variable is set.
+        received = self._c.support_emails
+        msg = 'Parsed config scalar (list) -- set variable error'
+        self.assertEqual(received, expected, msg)
 
     def tearDown(self):
         self._c = None
