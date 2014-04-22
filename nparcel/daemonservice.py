@@ -103,6 +103,12 @@ class DaemonService(nparcel.utils.Daemon):
             if prod is not None:
                 self.set_prod(prod.lower())
 
+            support = self.config.parse_scalar_config('email',
+                                                      'support',
+                                                      var='support_emails',
+                                                      is_list=True)
+            self.set_support_emails(support)
+
         self._facility = self.__class__.__name__
 
         self._file = file
@@ -162,9 +168,9 @@ class DaemonService(nparcel.utils.Daemon):
     def loop(self):
         return self._loop
 
+    @set_scalar
     def set_loop(self, value):
-        self._loop = int(value)
-        log.debug('%s loop set to %d' % (self.facility, self.loop))
+        pass
 
     @property
     def archive_base(self):

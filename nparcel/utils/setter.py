@@ -43,8 +43,16 @@ def setter(f, attr_type):
     def wrapped(self, *args):
         # Test that the value is a scalar.
         value = args[0]
+        if attr_type == 'tuple' and value is None:
+            value = ()
+        elif attr_type == 'list' and value is None:
+            value = []
+        elif attr_type == 'dict' and value is None:
+            value = {}
+
         type_check = False
         if ((not isinstance(value, (list, dict)) and attr_type == 'scalar') or
+            (isinstance(value, tuple) and attr_type == 'tuple') or
             (isinstance(value, list) and attr_type == 'list') or
             (isinstance(value, dict) and attr_type == 'dict')):
             type_check = True
@@ -73,6 +81,10 @@ def setter(f, attr_type):
 
 def set_scalar(f):
     return(setter(f, attr_type='scalar'))
+
+
+def set_tuple(f):
+    return(setter(f, attr_type='tuple'))
 
 
 def set_list(f):

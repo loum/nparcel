@@ -7,6 +7,8 @@ import __builtin__
 import nparcel
 import ConfigParser
 from nparcel.utils.log import log
+from nparcel.utils.setter import (set_scalar,
+                                  set_list)
 
 FLAG_MAP = {'item_number_excp': 0,
             'send_email': 1,
@@ -102,27 +104,6 @@ class B2CConfig(nparcel.Config):
 
         dictionary of RESTful interfaces for SMS and email
 
-    .. attribute:: inbound_tcd
-
-        TCD Delivery Report inbound directory
-        (default ``/var/ftp/pub/nparcel/tcd/in``)
-
-    .. attribute:: tcd_filename_format
-
-        regular expression format string for TCD delivery
-        reports inbound filenames
-        (default ``TCD_Deliveries_\d{14}\.DAT``)
-
-    .. attribute:: uncollected_day_range
-
-        limit uncollected parcel search to within nominated day range
-        (default 14.0 days)
-
-    .. attribute:: file_cache_size
-
-        number of date-orderd TCD files to load during a processing loop
-        (default 5)
-
     .. attribute:: filter_customer
 
         downstream recipient of filtered T1250 files
@@ -186,7 +167,7 @@ class B2CConfig(nparcel.Config):
     _dirs_to_check = []
     _archive = None
     _staging_base = None
-    _comms = None
+    _comms_dir = None
     _aggregator_dirs = []
     _adp_dirs = []
     _loader_loop = 30
@@ -199,10 +180,6 @@ class B2CConfig(nparcel.Config):
     _cond = {}
     _support_emails = []
     _rest = {}
-    _inbound_tcd = ['/var/ftp/pub/nparcel/tcd/in']
-    _tcd_filename_format = 'TCD_Deliveries_\d{14}\.DAT'
-    _uncollected_day_range = 14.0
-    _file_cache_size = 5
     _filter_customer = 'parcelpoint'
     _filtering_rules = ['P', 'R']
     _delivered_header = 'latest_scan_event_action'
@@ -262,12 +239,11 @@ class B2CConfig(nparcel.Config):
 
     @property
     def comms_dir(self):
-        return self._comms
+        return self._comms_dir
 
+    @set_scalar
     def set_comms_dir(self, value):
-        self._comms = value
-        log.debug('%s dirs.comms comms set to "%s"' %
-                  (self.facility, self._comms))
+        pass
 
     @property
     def aggregator_dirs(self):
@@ -297,6 +273,10 @@ class B2CConfig(nparcel.Config):
     @property
     def loader_loop(self):
         return self._loader_loop
+
+    @set_scalar
+    def set_loader_loop(self, value):
+        pass
 
     @property
     def filter_loop(self):
@@ -341,13 +321,9 @@ class B2CConfig(nparcel.Config):
     def support_emails(self):
         return self._support_emails
 
-    def set_support_emails(self, values):
-        del self._support_emails[:]
-        self._support_emails = []
-
-        if values is not None:
-            self._support_emails.extend(values)
-        log.debug('%s email.support "%s"' % (self.facility, values))
+    @set_list
+    def set_support_emails(self, values=None):
+        pass
 
     @property
     def cond(self):
@@ -358,39 +334,11 @@ class B2CConfig(nparcel.Config):
 
         if values is not None:
             self._cond = values
-        log.debug('%s conditions "%s"' % (self.facility, self.cond))
+        log.debug('%s.conditions "%s"' % (self.facility, self.cond))
 
     @property
     def rest(self):
         return self._rest
-
-    @property
-    def inbound_tcd(self):
-        return self._inbound_tcd
-
-    def set_inbound_tcd(self, values):
-        del self._inbound_tcd[:]
-        self._inbound_tcd = []
-
-        if values is not None:
-            self._inbound_tcd.extend(values)
-
-    @property
-    def tcd_filename_format(self):
-        return self._tcd_filename_format
-
-    @property
-    def uncollected_day_range(self):
-        return self._uncollected_day_range
-
-    @property
-    def file_cache_size(self):
-        return self._file_cache_size
-
-    def set_file_cache_size(self, value):
-        self._file_cache_size = int(value)
-        log.debug('Set primary_elect:file_cache_size to "%s"' %
-                  self._file_cache_size)
 
     @property
     def filter_customer(self):
@@ -411,14 +359,6 @@ class B2CConfig(nparcel.Config):
             self._filtering_rules.extend(values)
             log.debug('Config set filtering_rules to "%s"' %
                       str(self._filtering_rules))
-
-    @property
-    def pe_comms_ids(self):
-        return self.bu_ids_with_set_condition('pe_comms')
-
-    @property
-    def sc4_comms_ids(self):
-        return self.bu_ids_with_set_condition('on_del_sc_4')
 
     @property
     def proxy_scheme(self):
@@ -804,11 +744,8 @@ class B2CConfig(nparcel.Config):
             log.debug('Loader directories to check %s' % str(self.in_dirs))
 
             self.set_archive_dir(self.get('dirs', 'archive'))
-
             self.set_staging_base(self.get('dirs', 'staging_base'))
-
-            self._comms = self.get('dirs', 'comms')
-            log.debug('Comms file directory %s' % self._comms)
+            self.parse_scalar_config('dirs', 'comms', var='comms_dir')
 
             self.set_business_units(dict(self.items('business_units')))
             self.set_file_bu(dict(self.items('file_bu')))
@@ -827,39 +764,6 @@ class B2CConfig(nparcel.Config):
                 ConfigParser.NoSectionError), err:
             log.debug('Using default T1250 file format: %s' %
                       self.t1250_file_format)
-
-        try:
-            self.set_inbound_tcd(self.get('dirs', 'tcd_in').split(','))
-            log.debug('Inbound TCD directories %s' % str(self.inbound_tcd))
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default TCD inbound directory: %s' %
-                      self.inbound_tcd)
-
-        try:
-            self._tcd_filename_format = self.get('primary_elect',
-                                                 'tcd_filename_format')
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default TCD file format: %s' %
-                      self.tcd_filename_format)
-
-        try:
-            uncollected_day_range = self.get('primary_elect',
-                                             'uncollected_day_range')
-            self._uncollected_day_range = float(uncollected_day_range)
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default On Delivery day range: %s' %
-                      self.uncollected_day_range)
-
-        try:
-            tmp_val = self.get('primary_elect', 'file_cache_size')
-            self.set_file_cache_size(tmp_val)
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default TCD file cache size: %s' %
-                      self.file_cache_size)
 
         # Aggregator directories.
         try:
@@ -923,10 +827,10 @@ class B2CConfig(nparcel.Config):
         # Business unit conditons.  No probs if they are missing -- will
         # just default to '0' (False) for each flag.
         try:
-            self._cond = dict(self.items('conditions'))
-            log.debug('Business Unit conditions %s' % self.cond.keys())
+            self.set_cond(dict(self.items('conditions')))
         except ConfigParser.NoSectionError, err:
-            log.warn('Missing Business Unit conditions in config')
+            log.debug('%s.conditions: "%s". Using "%s"' %
+                      (self.facility, err, self.cond))
 
         # RESTful APIs.  May not need these if facility is not required
         # by any of the BU's
@@ -1280,14 +1184,8 @@ class B2CConfig(nparcel.Config):
                 value = caster(value)
             if is_list:
                 value = value.split(',')
-            setattr(self, '_%s' % var, value)
-
-            if isinstance(value, (int, long, float, complex)):
-                log.debug('%s %s.%s set to %s' %
-                          (self.facility, section, option, value))
-            else:
-                log.debug('%s %s.%s set to "%s"' %
-                          (self.facility, section, option, value))
+            setter = getattr(self, 'set_%s' % var)
+            setter(value)
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
             try:

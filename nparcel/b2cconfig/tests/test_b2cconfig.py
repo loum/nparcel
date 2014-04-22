@@ -110,30 +110,9 @@ class TestB2CConfig(unittest2.TestCase):
         expected = ['/var/ftp/pub/nparcel/adp/in']
         self.assertListEqual(received, expected, msg)
 
-    def test_parse_config_pe(self):
-        """Parse items from the config -- Primary Elect.
-        """
-        self._c.set_config_file(self._file)
-        self._c.parse_config()
-
-        msg = 'TCD inbound directory not as expected'
-        received = self._c.inbound_tcd
-        expected = ['/var/ftp/pub/nparcel/tcd/in']
-        self.assertListEqual(received, expected, msg)
-
-        msg = 'TCD filename error'
-        received = self._c.tcd_filename_format
-        expected = 'TCD_Deliveries_\d{14}\.DAT'
-        self.assertEqual(received, expected, msg)
-
-        msg = 'On Delivery uncollected day range error'
-        received = self._c.uncollected_day_range
-        expected = 14.0
-        self.assertEqual(received, expected, msg)
-
-        msg = 'TCD file cache size error'
-        received = self._c.file_cache_size
-        expected = 5
+        msg = 'Comms directory not as expected'
+        received = self._c.comms_dir
+        expected = '/data/nparcel/comms'
         self.assertEqual(received, expected, msg)
 
     def test_parse_config_timeout(self):
@@ -543,7 +522,6 @@ class TestB2CConfig(unittest2.TestCase):
         """Produce a proxy connection dictionary structure.
         """
         self._c.set_config_file(self._file)
-        self._c.parse_config()
 
         msg = 'Proxy kwargs should produce a populated dictionary'
         received = self._c.proxy_kwargs()
@@ -578,7 +556,6 @@ class TestB2CConfig(unittest2.TestCase):
         """Produce a REST SMS API dictionary structure.
         """
         self._c.set_config_file(self._file)
-        self._c.parse_config()
 
         msg = 'SMS API kwargs should produce a populated dictionary'
         received = self._c.sms_api_kwargs
@@ -591,7 +568,6 @@ class TestB2CConfig(unittest2.TestCase):
         """Produce a REST email API dictionary structure.
         """
         self._c.set_config_file(self._file)
-        self._c.parse_config()
 
         msg = 'Email API kwargs should produce a populated dictionary'
         received = self._c.email_api_kwargs
@@ -608,7 +584,6 @@ class TestB2CConfig(unittest2.TestCase):
         """Parse a scalar from the configuration file.
         """
         self._c.set_config_file(self._file)
-        self._c.parse_config()
 
         section = 'environment'
         option = 'prod'
@@ -628,7 +603,6 @@ class TestB2CConfig(unittest2.TestCase):
         """Parse a scalar from the configuration file -- cast to int.
         """
         self._c.set_config_file(self._file)
-        self._c.parse_config()
 
         section = 'timeout'
         option = 'loader_loop'
@@ -649,7 +623,6 @@ class TestB2CConfig(unittest2.TestCase):
         """Parse a scalar from the configuration file.
         """
         self._c.set_config_file(self._file)
-        self._c.parse_config()
 
         section = 'environment'
         option = 'prod'
@@ -669,7 +642,6 @@ class TestB2CConfig(unittest2.TestCase):
         """Parse a scalar from the configuration file -- no value found.
         """
         self._c.set_config_file(self._file)
-        self._c.parse_config()
 
         section = 'environment'
         option = 'banana'
@@ -683,7 +655,6 @@ class TestB2CConfig(unittest2.TestCase):
         """Parse a scalar from the configuration file -- no value/var.
         """
         self._c.set_config_file(self._file)
-        self._c.parse_config()
 
         section = 'environment'
         option = 'banana'
@@ -696,7 +667,6 @@ class TestB2CConfig(unittest2.TestCase):
         """Parse a scalar from the configuration file -- as list.
         """
         self._c.set_config_file(self._file)
-        self._c.parse_config()
 
         section = 'email'
         option = 'support'

@@ -93,13 +93,6 @@ class PodB2CConfig(nparcel.B2CConfig):
         # These are the generic values that can be removed
         # after nparcel.B2CConfig is refactored.
         try:
-            self.set_support_emails(self.get('email', 'support').split(','))
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('%s email.support: %s. Using %s' %
-                      (self.facility, err, self.support_emails))
-
-        try:
             self.set_archive_dir(self.get('dirs', 'archive'))
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:

@@ -8,6 +8,10 @@ import nparcel
 from nparcel.utils.log import log
 from nparcel.utils.files import (get_directory_files_list,
                                  remove_files)
+from nparcel.utils.setter import (set_scalar,
+                                  set_tuple,
+                                  set_list,
+                                  set_dict)
 
 
 class OnDeliveryDaemon(nparcel.DaemonService):
@@ -65,15 +69,47 @@ class OnDeliveryDaemon(nparcel.DaemonService):
 
     """
     _config = None
-    _report_in_dirs = ['/data/nparcel/tcd']
+    _report_in_dirs = []
     _report_file_format = 'TCD_Deliveries_\d{14}\.DAT'
-    _comms_dir = '/data/nparcel/comms'
+    _comms_dir = None
     _db_kwargs = None
     _od = None
     _pe_bu_ids = ()
     _sc4_bu_ids = ()
     _day_range = 14
     _file_cache_size = 5
+
+    @property
+    def report_in_dirs(self):
+        return self._report_in_dirs
+
+    @set_list
+    def set_report_in_dirs(self, values=None):
+        pass
+
+    @property
+    def report_file_format(self):
+        return self._report_file_format
+
+    @set_scalar
+    def set_report_file_format(self, value):
+        pass
+
+    @property
+    def comms_dir(self):
+        return self._comms_dir
+
+    @set_scalar
+    def set_comms_dir(self, value):
+        pass
+
+    @property
+    def db_kwargs(self):
+        return self._db_kwargs
+
+    @set_dict
+    def set_db_kwargs(self, value):
+        pass
 
     def __init__(self,
                  pidfile,
@@ -91,102 +127,16 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                                        batch=batch,
                                        config=c)
 
-        try:
+        if self.config is not None:
+            self.set_comms_dir(self.config.comms_dir)
             self.set_loop(self.config.ondelivery_loop)
-        except AttributeError, err:
-            log.debug('Daemon loop not in config -- default %d sec' %
-                      self.loop)
-
-        try:
             self.set_report_in_dirs(self.config.inbound_tcd)
-        except AttributeError, err:
-            msg = ('Report inbound dir not in config -- using %s' %
-                   self.report_in_dirs)
-            log.debug(msg)
-
-        try:
             self.set_report_file_format(self.config.tcd_filename_format)
-        except AttributeError, err:
-            msg = ('Report file format not in config -- using %s' %
-                   self.report_file_format)
-            log.debug(msg)
-
-        try:
-            if self.config.comms_dir is not None:
-                self.set_comms_dir(self.config.comms_dir)
-        except AttributeError, err:
-            msg = ('Comms dir not defined in config -- using %s' %
-                   self.comms_dir)
-            log.debug(msg)
-
-        try:
-            if self.config.db_kwargs() is not None:
-                self.set_db_kwargs(self.config.db_kwargs())
-        except AttributeError, err:
-            log.debug('DB kwargs not defined in config')
-
-        try:
+            self.set_db_kwargs(self.config.db_kwargs())
             self.set_pe_bu_ids(self.config.pe_comms_ids)
-        except AttributeError, err:
-            msg = ('PE comms IDs not in config -- using %s' %
-                   str(self.pe_bu_ids))
-            log.debug(msg)
-
-        try:
             self.set_sc4_bu_ids(self.config.sc4_comms_ids)
-        except AttributeError, err:
-            msg = ('SC 4 comms IDs not in config -- using %s' %
-                   str(self.sc4_bu_ids))
-            log.debug(msg)
-
-        try:
             self.set_day_range(self.config.uncollected_day_range)
-        except AttributeError, err:
-            msg = ('Day range not in config -- using %s' %
-                   str(self.day_range))
-            log.debug(msg)
-
-        try:
             self.set_file_cache_size(self.config.file_cache_size)
-        except AttributeError, err:
-            log.debug('file_cache_size not in config -- default %d' %
-                      self.file_cache_size)
-
-    @property
-    def report_in_dirs(self):
-        return self._report_in_dirs
-
-    def set_report_in_dirs(self, values):
-        del self._report_in_dirs[:]
-        self._report_in_dirs = []
-
-        if values is not None:
-            log.debug('Setting inbound report directory to "%s"' % values)
-            self._report_in_dirs.extend(values)
-
-    @property
-    def report_file_format(self):
-        return self._report_file_format
-
-    def set_report_file_format(self, value):
-        log.debug('Setting report file format to "%s"' % value)
-        self._report_file_format = value
-
-    @property
-    def comms_dir(self):
-        return self._comms_dir
-
-    def set_comms_dir(self, value):
-        log.debug('Setting comms dir to "%s"' % value)
-        self._comms_dir = value
-
-    @property
-    def db_kwargs(self):
-        return self._db_kwargs
-
-    def set_db_kwargs(self, value):
-        if value is not None:
-            self._db_kwargs = value
 
     @property
     def od(self):
@@ -196,8 +146,9 @@ class OnDeliveryDaemon(nparcel.DaemonService):
     def pe_bu_ids(self):
         return self._pe_bu_ids
 
+    @set_tuple
     def set_pe_bu_ids(self, values):
-        self._pe_bu_ids = values
+        pass
 
     @property
     def sc4_bu_ids(self):
@@ -210,17 +161,17 @@ class OnDeliveryDaemon(nparcel.DaemonService):
     def day_range(self):
         return self._day_range
 
+    @set_scalar
+    def set_day_range(self, value):
+        pass
+
     @property
     def file_cache_size(self):
         return self._file_cache_size
 
+    @set_scalar
     def set_file_cache_size(self, value):
-        self._file_cache_size = int(value)
-        log.debug('Set daemon file_cache_size to "%s"' %
-                  self._file_cache_size)
-
-    def set_day_range(self, value):
-        self._day_range = value
+        pass
 
     def set_on_delivery(self, db=None, ts_db_kwargs=None, comms_dir=None):
         """Create a OnDelivery object,

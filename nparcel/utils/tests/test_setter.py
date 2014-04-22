@@ -1,38 +1,52 @@
 import unittest2
 
 from nparcel.utils.setter import (set_scalar,
+                                  set_tuple,
                                   set_list,
                                   set_dict)
 
 
 class Bogus(object):
     _bogus_scalar = None
+    _bogus_tuple = ()
     _bogus_list = []
     _bogus_dict = {}
+
+    @property
+    def bogus_tuple(self):
+        return self._bogus_tuple
+
+    @set_tuple
+    def set_bogus_tuple(self, value):
+        pass
 
     @property
     def bogus_scalar(self):
         return self._bogus_scalar
 
     @set_scalar
-    def set_bogus_scalar(self, value): pass
+    def set_bogus_scalar(self, value):
+        pass
 
     @property
     def bogus_list(self):
         return self._bogus_list
 
     @set_list
-    def set_bogus_list(self, values): pass
+    def set_bogus_list(self, values):
+        pass
 
     @property
     def bogus_dict(self):
         return self._bogus_dict
 
     @set_dict
-    def set_bogus_dict(self, values): pass
+    def set_bogus_dict(self, values):
+        pass
 
     @set_scalar
-    def set_missing_attr(self, value): pass
+    def set_missing_attr(self, value):
+        pass
 
     def __str__(self):
         return self.__class__.__name__
@@ -61,6 +75,32 @@ class TestSetter(unittest2.TestCase):
         # Clean up.
         self._bogus.set_bogus_scalar(old_bogus_value)
 
+    def test_set_tuple(self):
+        """Set a tuple value.
+        """
+        old_bogus_value = self._bogus.bogus_tuple
+
+        values = ('tuple item 1', 'tuple item 2')
+        self._bogus.set_bogus_tuple(values)
+
+        # ... and check the attribute value.
+        received = self._bogus.bogus_tuple
+        expected = values
+        msg = 'Attribute bogus_tuple set error'
+        self.assertTupleEqual(received, expected, msg)
+
+        values = ('tuple item 3', 'tuple item 4')
+        self._bogus.set_bogus_tuple(values)
+
+        # ... and check the attribute value.
+        received = self._bogus.bogus_tuple
+        expected = values
+        msg = 'Attribute bogus_tuple set error'
+        self.assertTupleEqual(received, expected, msg)
+
+        # Clean up.
+        self._bogus.set_bogus_tuple(old_bogus_value)
+
     def test_set_list(self):
         """Set a list value.
         """
@@ -81,11 +121,71 @@ class TestSetter(unittest2.TestCase):
         # ... and check the attribute value.
         received = self._bogus.bogus_list
         expected = values
-        msg = 'Attribute bogus_scalar set error'
+        msg = 'Attribute bogus_list set error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
         # Clean up.
         self._bogus.set_bogus_list(old_bogus_value)
+
+    def test_set_list_with_none(self):
+        """Set a list value -- None value.
+        """
+        old_bogus_value = self._bogus.bogus_list
+
+        values = None
+        self._bogus.set_bogus_list(values)
+
+        # ... and check the attribute value.
+        received = self._bogus.bogus_list
+        expected = []
+        msg = 'Attribute bogus_list (None value) set error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+        # Clean up.
+        self._bogus.set_bogus_list(old_bogus_value)
+
+    def test_set_dict_with_none(self):
+        """Set a dict value -- None value.
+        """
+        old_bogus_value = self._bogus.bogus_dict
+
+        values = None
+        self._bogus.set_bogus_dict(values)
+
+        # ... and check the attribute value.
+        received = self._bogus.bogus_dict
+        expected = {}
+        msg = 'Attribute bogus_dict (None value) set error'
+        self.assertDictEqual(received, expected, msg)
+
+        # Clean up.
+        self._bogus.set_bogus_dict(old_bogus_value)
+
+    def test_set_dict(self):
+        """Set a dict value.
+        """
+        old_bogus_value = self._bogus.bogus_dict
+
+        values = {'dict item 1': 1, 'dict item 2': 2}
+        self._bogus.set_bogus_dict(values)
+
+        # ... and check the attribute value.
+        received = self._bogus.bogus_dict
+        expected = values
+        msg = 'Attribute bogus_scalar set error'
+        self.assertDictEqual(received, expected, msg)
+
+        values = {'dict item 3': 3, 'dict item 4': 4}
+        self._bogus.set_bogus_dict(values)
+
+        # ... and check the attribute value.
+        received = self._bogus.bogus_dict
+        expected = values
+        msg = 'Attribute bogus_scalar set error'
+        self.assertDictEqual(received, expected, msg)
+
+        # Clean up.
+        self._bogus.set_bogus_dict(old_bogus_value)
 
     def test_set_dict(self):
         """Set a dict value.
@@ -117,8 +217,9 @@ class TestSetter(unittest2.TestCase):
         """Set a scalar value -- missing attribute.
         """
         value = 'Bogus Value'
+        err_msg = "'Bogus' object has no attribute '_missing_attr'"
         self.assertRaisesRegexp(AttributeError,
-                                "Bogus' object has no attribute '_missing_attr'",
+                                err_msg,
                                 self._bogus.set_missing_attr,
                                 value)
 
