@@ -352,8 +352,28 @@ AND notify_ts IS NOT NULL""" % job_item_id
     def test_uncollected_primary_elect_jobitems_sql(self):
         """Verify uncollected_primary_elect_jobitems SQL string.
         """
-        bu_ids = (1, 2, 3)
-        sql = self._db.jobitem.uncollected_jobitems_sql(bu_ids=bu_ids)
+        kwargs = {'bu_ids': (1, 2, 3),
+                  'delivery_partners': ('Nparcel', 'ParcelPoint')}
+        sql = self._db.jobitem.uncollected_jobitems_sql(**kwargs)
+        self._db(sql)
+
+        received = []
+        for row in self._db.rows():
+            received.append(row)
+        expected = [(3, 'pe_connote', 'pe_item_nbr'),
+                    (10, 'ARTZ124110', '00393403250085050506'),
+                    (12, 'ANWD011307', 'ANWD011307001'),
+                    (13, 'IANZ012764', 'IANZ012764'),
+                    (25, 'pp_dp_connote_nbr', 'pp_dp_item_nbr')]
+        msg = 'uncollected_primary_elect_jobitems_sql return list incorrect'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_uncollected_primary_elect_jobitems_sql_nparcel_dp(self):
+        """uncollected_primary_elect_jobitems SQL (Nparcel - PE).
+        """
+        kwargs = {'bu_ids': (1, 2, 3),
+                  'delivery_partners': ('Nparcel', )}
+        sql = self._db.jobitem.uncollected_jobitems_sql(**kwargs)
         self._db(sql)
 
         received = []
@@ -363,7 +383,54 @@ AND notify_ts IS NOT NULL""" % job_item_id
                     (10, 'ARTZ124110', '00393403250085050506'),
                     (12, 'ANWD011307', 'ANWD011307001'),
                     (13, 'IANZ012764', 'IANZ012764')]
-        msg = 'uncollected_primary_elect_jobitems_sql return list incorrect'
+        msg = 'uncollected_primary_elect_jobitems_sql error (Nparcel PE)'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_uncollected_primary_elect_jobitems_sql_nparcel_sc4(self):
+        """uncollected_primary_elect_jobitems SQL (Nparcel - SC4).
+        """
+        kwargs = {'bu_ids': (1, ),
+                  'service_code': 4,
+                  'delivery_partners': ('Nparcel', )}
+        sql = self._db.jobitem.uncollected_jobitems_sql(**kwargs)
+        self._db(sql)
+
+        received = []
+        for row in self._db.rows():
+            received.append(row)
+        expected = [(14, 'TWAD358893', 'TWAD358893001')]
+        msg = 'uncollected_primary_elect_jobitems_sql error (Nparcel PE)'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_uncollected_primary_elect_jobitems_sql_parcelpoint_sc4(self):
+        """uncollected_primary_elect_jobitems SQL (ParcelPoint - SC4).
+        """
+        kwargs = {'bu_ids': (1, ),
+                  'service_code': 4,
+                  'delivery_partners': ('ParcelPoint', )}
+        sql = self._db.jobitem.uncollected_jobitems_sql(**kwargs)
+        self._db(sql)
+
+        received = []
+        for row in self._db.rows():
+            received.append(row)
+        expected = [(26, 'pp_dp_sc_4_connote_nbr', 'pp_dp_sc_4_item_nbr')]
+        msg = 'uncollected_primary_elect_jobitems_sql error (PP SC4)'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
+
+    def test_uncollected_primary_elect_jobitems_sql_parcelpoint_dp(self):
+        """uncollected_primary_elect_jobitems SQL (ParcelPoint - PE).
+        """
+        kwargs = {'bu_ids': (1, ),
+                  'delivery_partners': ('ParcelPoint', )}
+        sql = self._db.jobitem.uncollected_jobitems_sql(**kwargs)
+        self._db(sql)
+
+        received = []
+        for row in self._db.rows():
+            received.append(row)
+        expected = [(25, 'pp_dp_connote_nbr', 'pp_dp_item_nbr')]
+        msg = 'uncollected_primary_elect_jobitems_sql list incorrect (PP DP)'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
     def test_uncollected_service_code_jobitems_sql_no_bu_ids(self):
@@ -371,8 +438,11 @@ AND notify_ts IS NOT NULL""" % job_item_id
         """
         bu_ids = ()
         service_code = 1
-        sql = self._db.jobitem.uncollected_jobitems_sql(service_code,
-                                                        bu_ids)
+        dps = ('Nparcel', 'ParcelPoint')
+        kwargs = {'bu_ids': (),
+                  'service_code': 1,
+                  'delivery_partners': ('Nparcel', 'ParcelPoint')}
+        sql = self._db.jobitem.uncollected_jobitems_sql(**kwargs)
         self._db(sql)
 
         received = []
@@ -385,10 +455,10 @@ AND notify_ts IS NOT NULL""" % job_item_id
     def test_uncollected_service_code_jobitems_sql_bu_1(self):
         """Verify uncollected_service_code_jobitems SQL string.
         """
-        bu_ids = (1,)
-        service_code = 1
-        sql = self._db.jobitem.uncollected_jobitems_sql(service_code,
-                                                        bu_ids)
+        kwargs = {'bu_ids': (1, ),
+                  'service_code': 1,
+                  'delivery_partners': ('Nparcel', 'ParcelPoint')}
+        sql = self._db.jobitem.uncollected_jobitems_sql(**kwargs)
         self._db(sql)
 
         received = []
@@ -403,10 +473,10 @@ AND notify_ts IS NOT NULL""" % job_item_id
     def test_uncollected_service_code_jobitems_sql_bu_2(self):
         """Verify uncollected_service_code_jobitems SQL string.
         """
-        bu_ids = (1, 2)
-        service_code = 4
-        sql = self._db.jobitem.uncollected_jobitems_sql(service_code,
-                                                        bu_ids)
+        kwargs = {'bu_ids': (1, 2),
+                  'service_code': 4,
+                  'delivery_partners': ('Nparcel', 'ParcelPoint')}
+        sql = self._db.jobitem.uncollected_jobitems_sql(**kwargs)
         self._db(sql)
 
         received = []
@@ -415,17 +485,18 @@ AND notify_ts IS NOT NULL""" % job_item_id
         expected = [(9,
                      'uncollected_connote_sc_4',
                      'uncollected_connote_sc_4_item_nbr'),
-                    (14, 'TWAD358893', 'TWAD358893001')]
+                    (14, 'TWAD358893', 'TWAD358893001'),
+                    (26, 'pp_dp_sc_4_connote_nbr', 'pp_dp_sc_4_item_nbr')]
         msg = 'Uncollected service code with bu_ids 4 error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
     def test_uncollected_service_code_jobitems_sql_no_recipients(self):
         """Verify uncollected_service_code_jobitems SQL -- no recipients.
         """
-        bu_ids = (2, )
-        service_code = 4
-        sql = self._db.jobitem.uncollected_jobitems_sql(service_code,
-                                                        bu_ids)
+        kwargs = {'bu_ids': (2, ),
+                  'service_code': 4,
+                  'delivery_partners': ('Nparcel', 'ParcelPoint')}
+        sql = self._db.jobitem.uncollected_jobitems_sql(**kwargs)
         self._db(sql)
 
         received = list(self._db.rows())
@@ -874,9 +945,8 @@ WHERE agent_id = 4"""
     def test_total_parcel_count_sql_not_picked_up(self):
         """Verify the total_parcel_count_sql SQL -- not picked up.
         """
-        dps = ['Nparcel']
-
-        sql = self._db.jobitem.total_parcel_count_sql(delivery_partners=dps)
+        kwargs = {'delivery_partners': ['Nparcel']}
+        sql = self._db.jobitem.total_parcel_count_sql(**kwargs)
         self._db(sql)
 
         received = list(self._db.rows())
@@ -887,10 +957,9 @@ WHERE agent_id = 4"""
     def test_total_parcel_count_sql_picked_up(self):
         """Verify the total_parcel_count_sql SQL -- pickup up.
         """
-        dps = ['Nparcel']
-
-        sql = self._db.jobitem.total_parcel_count_sql(picked_up=True,
-                                                      delivery_partners=dps)
+        kwargs = {'picked_up': True,
+                  'delivery_partners': ['Nparcel']}
+        sql = self._db.jobitem.total_parcel_count_sql(**kwargs)
         self._db(sql)
 
         received = list(self._db.rows())
@@ -907,9 +976,8 @@ SET created_ts = '%s'
 WHERE id IN (16, 19, 20, 21, 22)""" % (self._now - datetime.timedelta(20))
         self._db(sql)
 
-        dps = ['Nparcel']
-
-        sql = self._db.jobitem.agent_id_of_aged_parcels(delivery_partners=dps)
+        kwargs = {'delivery_partners': ['Nparcel']}
+        sql = self._db.jobitem.agent_id_of_aged_parcels(**kwargs)
         self._db(sql)
 
         received = list(self._db.rows())

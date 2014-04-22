@@ -601,7 +601,7 @@ class Exporter(nparcel.Service):
         """
         time = self.db.date_now()
 
-        log.info('Updating extracted timestamp for job_item.id')
+        log.info('Updating extracted timestamp for job_item.id: %d' % id)
         sql = self.db.jobitem.upd_collected_sql(id, time)
         self.db(sql)
         if not dry:

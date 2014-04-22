@@ -32,6 +32,8 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
 
         db = cls._odd.od.db
         fixtures = [{'db': db.agent, 'fixture': 'agents.py'},
+                    {'db': db.delivery_partner,
+                     'fixture': 'delivery_partners.py'},
                     {'db': db.parcel_size, 'fixture': 'parcel_sizes.py'},
                     {'db': db.job, 'fixture': 'jobs.py'},
                     {'db': db.identity_type, 'fixture': 'identity_type.py'},

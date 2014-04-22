@@ -90,6 +90,7 @@ TEST=nparcel.tests:TestLoader \
 	 nparcel.tests:TestOraDbSession \
 	 nparcel.utils.tests:TestFiles \
 	 nparcel.utils.tests:TestUtils \
+	 nparcel.utils.tests:TestSetter \
 	 nparcel.tests:TestPostcode \
 	 nparcel.tests:TestTimezone \
 	 nparcel.tests:TestPodTranslator

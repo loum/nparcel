@@ -139,6 +139,7 @@ class OnDelivery(nparcel.Service):
     def get_uncollected_job_items(self,
                                   service_code=3,
                                   bu_ids=None,
+                                  delivery_partners=None,
                                   day_range=14):
         """Generator that returns the ``jobitem.id``,
         ``jobitem.connote_nbr`` and ``jobitem.item_nbr`` of uncollected
@@ -148,6 +149,11 @@ class OnDelivery(nparcel.Service):
             *service_code*: integer of ``job.service_code`` columns
 
             *bu_ids*: tuple of Business Unit ID integers to search against
+
+            *delivery_partners*: tuple of strings relating to the Delivery
+            Partner names to filter the uncollected ``job_items`` against.
+            Delivery Partner relates to the ``delivery_partner.name``
+            column values.  For example ``('Nparcel', 'ParcelPoint')``.
 
             *day_range*: number of days from current time to include
             in search (default 14.0 days)
@@ -162,9 +168,11 @@ class OnDelivery(nparcel.Service):
         if bu_ids is None:
             bu_ids = (1, 2, 3)
 
-        sql = self.db.jobitem.uncollected_jobitems_sql(service_code,
-                                                       bu_ids,
-                                                       day_range)
+        kwargs = {'service_code': service_code,
+                  'bu_ids': bu_ids,
+                  'delivery_partners': delivery_partners,
+                  'day_range': day_range}
+        sql = self.db.jobitem.uncollected_jobitems_sql(**kwargs)
         self.db(sql)
         for row in self.db.rows():
             yield row
@@ -176,6 +184,7 @@ class OnDelivery(nparcel.Service):
                 job_items=None,
                 in_files=None,
                 day_range=14,
+                delivery_partners=None,
                 dry=False):
         """Checks whether an On Delivery parcel item has had comms sent.
 
@@ -195,8 +204,13 @@ class OnDelivery(nparcel.Service):
 
             *in_files*: list of paths to the input file
 
-            *day_range*: imit uncollected parcel search to within nominated
+            *day_range*: limit uncollected parcel search to within nominated
             value
+
+            *delivery_partners*: tuple of strings relating to the Delivery
+            Partner names to filter the uncollected ``job_items`` against.
+            Delivery Partner relates to the ``delivery_partner.name``
+            column values.  For example ``('Nparcel', 'ParcelPoint')``.
 
             *dry*: only report, do not execute
 
@@ -208,14 +222,21 @@ class OnDelivery(nparcel.Service):
         """
         processed_ids = []
 
+        # Just in case, maintain backward compatibility with original
+        # solution.
+        if delivery_partners is None:
+            delivery_partners = ('Nparcel', )
+
         if in_files is not None:
             self.parser.set_in_files(in_files)
             self.parser.read()
 
         if job_items is None:
-            job_items = self.get_uncollected_job_items(service_code,
-                                                       bu_ids,
-                                                       day_range)
+            kwargs = {'service_code': service_code,
+                      'bu_ids': bu_ids,
+                      'day_range': day_range,
+                      'delivery_partners': delivery_partners}
+            job_items = self.get_uncollected_job_items(**kwargs)
         else:
             log.debug('Received job_items list inline')
 

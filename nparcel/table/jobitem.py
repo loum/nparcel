@@ -306,6 +306,7 @@ AND j.service_code = 3""" % (self.name, connote)
     def uncollected_jobitems_sql(self,
                                  service_code=3,
                                  bu_ids=None,
+                                 delivery_partners=None,
                                  day_range=14):
         """SQL wrapper to extract uncollected Service Code-based jobs.
 
@@ -333,26 +334,34 @@ AND j.service_code = 3""" % (self.name, connote)
         """
         if bu_ids is None:
             bu_ids = tuple()
-
         if len(bu_ids) == 1:
             bu_ids = '(%d)' % bu_ids[0]
+
+        if delivery_partners is None:
+            delivery_partners = tuple()
+        if len(delivery_partners) == 1:
+            delivery_partners = "('%s')" % delivery_partners[0]
 
         now = datetime.datetime.now()
         start_ts = now - datetime.timedelta(days=day_range)
         start_date = start_ts.strftime('%Y-%m-%d %H:%M:%S')
 
         sql = """SELECT ji.id, ji.connote_nbr, ji.item_nbr
-FROM job as j, %s as ji
+FROM job AS j, %(name)s AS ji, agent AS ag, delivery_partner AS dp
 WHERE ji.job_id = j.id
-AND ji.pickup_ts is NULL
-AND ji.notify_ts is NULL
+AND j.agent_id = ag.id
+AND ag.dp_id = dp.id
+AND dp.name IN %(dps)s
+AND ji.pickup_ts IS NULL
+AND ji.notify_ts IS NULL
 AND (ji.email_addr NOT IN ('', '.') OR ji.phone_nbr NOT IN ('', '.'))
-AND j.bu_id IN %s
-AND j.service_code = %d
-AND ji.created_ts > '%s'""" % (self.name,
-                               str(bu_ids),
-                               service_code,
-                               start_date)
+AND j.bu_id IN %(bu_ids)s
+AND j.service_code = %(sc)d
+AND ji.created_ts > '%(start_date)s'""" % {'name': self.name,
+                                           'dps': str(delivery_partners),
+                                           'bu_ids': str(bu_ids),
+                                           'sc': service_code,
+                                           'start_date': start_date}
 
         return sql
 
@@ -816,8 +825,9 @@ AND %(alias)s.pickup_ts %(pickup_sql)s""" % {'name': self.name,
         date = ts.strftime('%Y-%m-%d %H:%M:%S')
 
         dps = delivery_partners
-        compliance_sql = self._agent_stocktake.compliance_sql(period=period,
-                                                              delivery_partners=dps)
+        kwargs = {'period': period,
+                  'delivery_partners': dps}
+        compliance_sql = self._agent_stocktake.compliance_sql(**kwargs)
 
         sql = """%(compliance_sql)s
 AND ag.id IN

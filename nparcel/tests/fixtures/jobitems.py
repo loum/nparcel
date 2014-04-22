@@ -306,4 +306,16 @@
         'pieces': 25,
         'consumer_name': 'Con Sumertwentyfive',
     },
+    {
+        # ParcelPoint delivery_partner.
+        'id': 26,
+        'connote_nbr': 'pp_dp_sc_4_connote_nbr',
+        'item_nbr': 'pp_dp_sc_4_item_nbr',
+        'job_id': 11,
+        'created_ts': str(datetime.datetime.now()),
+        'email_addr': 'loumar@tollgroup.com',
+        'phone_nbr': '0431602145',
+        'pieces': 26,
+        'consumer_name': 'Con Sumertwentysix',
+    },
 ]

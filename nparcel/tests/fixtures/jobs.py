@@ -72,5 +72,14 @@
         'agent_id': 7,
         'job_ts': str(datetime.datetime.now()),
         'bu_id': 1,
+        'service_code': 3,
+    },
+    {
+        'id': 11,
+        'card_ref_nbr': 'PP_DELIVERY_PARTNER_SC_4_JOB',
+        'agent_id': 7,
+        'job_ts': str(datetime.datetime.now()),
+        'bu_id': 1,
+        'service_code': 4,
     },
 ]

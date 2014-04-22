@@ -261,12 +261,13 @@ class OnDeliveryDaemon(nparcel.DaemonService):
 
             log.debug('Attempting On Delivery Primary Elect check ...')
             if len(self.pe_bu_ids):
-                processed_ids = self.od.process(template='pe',
-                                                service_code=3,
-                                                bu_ids=self.pe_bu_ids,
-                                                in_files=tcd_files,
-                                                day_range=self.day_range,
-                                                dry=self.dry)
+                kwargs = {'template': 'pe',
+                          'service_code': 3,
+                          'bu_ids': self.pe_bu_ids,
+                          'in_files': tcd_files,
+                          'day_range': self.day_range,
+                          'dry': self.dry}
+                processed_ids = self.od.process(**kwargs)
                 log.debug('PE job_items.id comms files created: "%s"' %
                           processed_ids)
             else:
@@ -274,12 +275,13 @@ class OnDeliveryDaemon(nparcel.DaemonService):
 
             log.debug('Attempting Service Code 4 On Delivery check ...')
             if len(self.sc4_bu_ids):
-                processed_ids = self.od.process(template='body',
-                                                service_code=4,
-                                                bu_ids=self.sc4_bu_ids,
-                                                in_files=tcd_files,
-                                                day_range=self.day_range,
-                                                dry=self.dry)
+                kwargs = {'template': 'body',
+                          'service_code': 4,
+                          'bu_ids': self.sc4_bu_ids,
+                          'in_files': tcd_files,
+                          'day_range': self.day_range,
+                          'dry': self.dry}
+                processed_ids = self.od.process(**kwargs)
                 log.debug('SC 4 job_items.id comms files created: "%s"' %
                           processed_ids)
             else:

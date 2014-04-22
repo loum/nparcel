@@ -81,7 +81,7 @@
         'name': 'ParcelPoint Doreen',
         'address': '100 Test Street',
         'postcode': '3754',
-        'suburb': 'Doreenn',
+        'suburb': 'Doreen',
         'parcel_size_code': 2,
     },
 ]
