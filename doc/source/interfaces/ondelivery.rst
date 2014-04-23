@@ -50,6 +50,26 @@ are extracted via the SQL query provided by
 :meth:`nparcel.table.jobitem.uncollected_jobitems_sql`.  From here,
 ``npondeliveryd`` will poll the alternate interfaces for a delivered event.
 
+Delivery Partner Aware
+^^^^^^^^^^^^^^^^^^^^^^
+
+As of **version 0.36**, On Delivery can be further controlled at the
+Alternate Delivery Point Delivery Partner level.
+
+.. note::
+
+    See the :ref:`comms_delivery_partners <comms_delivery_partners>`
+    configuration option on how to add Delivery Partners per Business
+    Unit.
+
+For example, if Priority is configured to trigger comms for
+Delivery Partner **Nparcel**, then all other parcels pending delivery
+to another Delivery Partner (for example, **ParcelPoint**) will be
+suppressed.  The configuration setting required for this behaviour is::
+
+    [comms_delivery_partners]
+    Priority = Nparcel
+
 ``npondeliveryd`` Interfaces
 ----------------------------
 
@@ -61,14 +81,14 @@ The alternate interfaces used include:
 
 .. note::
 
-    MTS was deprecated as part of release 0.28
+    MTS was deprecated as part of **version 0.28**
 
 All interfaces are polled by default.
 
 .. _transsend:
 
 TransSend
-+++++++++
+^^^^^^^^^
 
 TransSend is an Oracle DB interface that can be used to identify
 delivered parcels for **Priority** and **IPEC** (not **Fast**).  A typical
@@ -235,3 +255,26 @@ control processing workflows.
 
     list of scan_desc_header tokens to compare against
     (default ``IDS – TOLL FAST GRAYS ONLINE``)
+
+.. _comms_delivery_partners:
+
+* ``comms_delivery_partners`` (the actual ``[comms_delivery_partners]``
+  section)
+
+    a Business Unit based, comma separated list of Delivery Partners that
+    will have comms event files created during the load process::
+
+        [comms_delivery_partners]
+        Priority = Nparcel
+        Fast = Nparcel
+        Ipec = Nparcel
+
+    .. note::
+
+        Delivery Partner names as per the ``delivery_partner.name`` column
+        values which currently include Nparcel, ParcelPoint and Toll
+
+    This section relies on the values in the ``[business_units]``
+    section so make sure that if you add a Business Unit here that it is
+    also covered in the ``[business_units]`` section.  Otherwise, the
+    loader comms trigger will ignore it.
