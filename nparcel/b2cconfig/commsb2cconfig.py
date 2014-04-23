@@ -20,13 +20,13 @@ class CommsB2CConfig(nparcel.B2CConfig):
 
         directory where comms files are read from
 
-    .. attribute:: comms_q_warning
+    .. attribute:: *comms_q_warning*
 
         comms queue warning threshold.  If number of messages exceeds this
         threshold (and is under the :attr:`comms_q_error` threshold then a
         warning email notification is triggered
 
-    .. attribute:: comms_q_error
+    .. attribute:: *comms_q_error*
 
         comms queue error threshold.  If number of messages exceeds this
         threshold then an error email notification is triggered and
@@ -47,7 +47,7 @@ class CommsB2CConfig(nparcel.B2CConfig):
 
         list of days ['Saturday', 'Sunday'] to not send messages
 
-    .. attribute:: send_time_ranges
+    .. attribute:: *send_time_ranges*
 
         time ranges when comms can be sent
 

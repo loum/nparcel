@@ -8,7 +8,8 @@ import nparcel
 import ConfigParser
 from nparcel.utils.log import log
 from nparcel.utils.setter import (set_scalar,
-                                  set_list)
+                                  set_list,
+                                  set_dict)
 
 FLAG_MAP = {'item_number_excp': 0,
             'send_email': 1,
@@ -290,15 +291,9 @@ class B2CConfig(nparcel.Config):
     def business_units(self):
         return self._business_units
 
+    @set_dict
     def set_business_units(self, values=None):
-        self._business_units.clear()
-
-        if values is not None:
-            self._business_units = values
-            for k, v in self._business_units.iteritems():
-                self._business_units[k] = int(v)
-        log.debug('%s.business_units set to: "%s"' %
-                  (self.facility, self.business_units))
+        pass
 
     @property
     def t1250_file_format(self):
@@ -541,13 +536,9 @@ class B2CConfig(nparcel.Config):
     def comms_delivery_partners(self):
         return self._comms_delivery_partners
 
-    def set_comms_delivery_partners(self, values):
-        self._comms_delivery_partners.clear()
-
-        if values is not None:
-            self._comms_delivery_partners = values
-        log.debug('%s comms_delivery_partners set to: "%s"' %
-                  (self.facility, self._comms_delivery_partners))
+    @set_dict
+    def set_comms_delivery_partners(self, values=None):
+        pass
 
     def db_kwargs(self):
         """Extract database connectivity information from the config.
@@ -746,8 +737,7 @@ class B2CConfig(nparcel.Config):
             self.set_archive_dir(self.get('dirs', 'archive'))
             self.set_staging_base(self.get('dirs', 'staging_base'))
             self.parse_scalar_config('dirs', 'comms', var='comms_dir')
-
-            self.set_business_units(dict(self.items('business_units')))
+            self.parse_dict_config('business_units', cast_type='int')
             self.set_file_bu(dict(self.items('file_bu')))
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
@@ -924,15 +914,7 @@ class B2CConfig(nparcel.Config):
                       str(self.adp_default_passwords))
 
         # Comms Delivery Partners.
-        try:
-            tmp_values = dict(self.items('comms_delivery_partners'))
-            for k, v in tmp_values.iteritems():
-                tmp_values[k] = v.split(',')
-            self.set_comms_delivery_partners(tmp_values)
-        except (ConfigParser.NoSectionError,
-                ConfigParser.NoOptionError), err:
-            log.debug('%s comms_delivery_partners: %s. Using "%s"' %
-                      (self.facility, err, self.comms_delivery_partners))
+        self.parse_dict_config('comms_delivery_partners', is_list=True)
 
     def condition(self, bu, flag):
         """Return the *bu* condition *flag* value.
@@ -1159,11 +1141,11 @@ class B2CConfig(nparcel.Config):
             parse.
 
         **Kwargs:**
-            *cast_type*: cast the value parsed as *cast_type*.  If
-            ``None`` is specified, then parse as a string
-
             *var*: the target attribute name.  This can be omitted if
             the target attribute name is the same as *option*
+
+            *cast_type*: cast the value parsed as *cast_type*.  If
+            ``None`` is specified, then parse as a string
 
             *is_list*: boolean flag to indicate whether to parse the
             option values as a list (default ``False``)
@@ -1195,5 +1177,70 @@ class B2CConfig(nparcel.Config):
             except AttributeError, err:
                 log.debug('%s %s.%s not defined: %s.' %
                           (self.facility, section, option, err))
+
+        return value
+
+    def parse_dict_config(self,
+                          section,
+                          var=None,
+                          cast_type=None,
+                          is_list=False):
+        """Helper method that can parse a :mod:`ConfigParser` *section*
+        and set the *var* attribute with the value parsed.
+
+        :mod:`ConfigParser` sections will produce a dictionary structure.
+        If *is_list* is ``True`` the section's options values will be
+        treated as a list.  This will produce a dictionary of lists.
+
+        **Args:**
+            *section*: the configuration file section.  For example
+            ``[comms_delivery_partners]``
+
+        **Kwargs:**
+            *var*: the target attribute name.  This can be omitted if
+            the target attribute name is the same as *option*
+
+            *cast_type*: cast the value parsed as *cast_type*.  If
+            ``None`` is specified, then parse as a string
+
+            *is_list*: boolean flag to indicate whether to parse the
+            option values as a list (default ``False``)
+
+        **Returns:**
+            the value of the :mod:`ConfigParser` section as a dict
+            structure
+
+        """
+        value = None
+
+        if var is None:
+            var = section
+
+        try:
+            tmp_value = dict(self.items(section))
+            if is_list:
+                for k, v in tmp_value.iteritems():
+                    tmp_value[k] = v.split(',')
+
+            if cast_type is not None:
+                caster = getattr(__builtin__, cast_type)
+                for k, v in tmp_value.iteritems():
+                    if isinstance(v, (list)):
+                        tmp_value[k] = [caster(x) for x in v]
+                    else:
+                        tmp_value[k] = caster(v)
+
+            value = tmp_value
+            setter = getattr(self, 'set_%s' % var)
+            setter(value)
+        except (ConfigParser.NoOptionError,
+                ConfigParser.NoSectionError), err:
+            try:
+                getter = getattr(self, var)
+                log.debug('%s %s not defined.  Using "%s"' %
+                          (self.facility, section, getter))
+            except AttributeError, err:
+                log.debug('%s %s not defined: %s.' %
+                          (self.facility, section, err))
 
         return value

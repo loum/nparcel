@@ -96,17 +96,17 @@ class DaemonService(nparcel.utils.Daemon):
 
         if config is not None:
             self._config = config
-            self.config.parse_config()
 
             # Grab the base configuration items required by all daemons.
             prod = self.config.parse_scalar_config('environment', 'prod')
-            if prod is not None:
-                self.set_prod(prod.lower())
-
             support = self.config.parse_scalar_config('email',
                                                       'support',
                                                       var='support_emails',
                                                       is_list=True)
+            # Now, parse the daemon-specific config items.
+            self.config.parse_config()
+            if prod is not None:
+                self.set_prod(prod.lower())
             self.set_support_emails(support)
 
         self._facility = self.__class__.__name__

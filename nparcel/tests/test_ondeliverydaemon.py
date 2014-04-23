@@ -19,6 +19,13 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
 
         cls._comms_dir = tempfile.mkdtemp()
         cls._odd.set_comms_dir(cls._comms_dir)
+        cls._odd.set_business_units({'priority': 1,
+                                     'fast': 2,
+                                     'ipec': 3})
+        dps = {'priority': ['Nparcel'],
+               'fast': ['Nparcel'],
+               'ipec': ['Nparcel', 'ParcelPoint']}
+        cls._odd.set_comms_delivery_partners(dps)
 
         # Call up front to pre-load the DB.
         cls._odd.set_on_delivery(ts_db_kwargs=None)
@@ -233,6 +240,31 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
         expected = []
         msg = 'Report files from get_files() error'
         self.assertListEqual(received, expected, msg)
+
+    def test_delivery_partner_lookup(self):
+        """Delivery partner map lookups.
+        """
+        received = self._odd.delivery_partner_lookup(1)
+        expected = ('Nparcel', )
+        msg = 'Priority Delivery Partner lookup error'
+        self.assertTupleEqual(received, expected, msg)
+
+        received = self._odd.delivery_partner_lookup(3)
+        expected = ('Nparcel', 'ParcelPoint')
+        msg = 'IPEC Delivery Partner lookup error'
+        self.assertTupleEqual(received, expected, msg)
+
+        # No business units.
+        old_bus = self._odd.business_units
+        self._odd.set_business_units(None)
+
+        received = self._odd.delivery_partner_lookup(3)
+        expected = ()
+        msg = 'Empty Business Units Delivery Partner lookup error'
+        self.assertTupleEqual(received, expected, msg)
+
+        # Clean up.
+        self._odd.set_business_units(old_bus)
 
     @classmethod
     def tearDownClass(cls):

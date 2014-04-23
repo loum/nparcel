@@ -7,7 +7,7 @@ import nparcel
 
 
 class JobItem(nparcel.Table):
-    """Toll Parcel Portal DB Job_Item table ORM.
+    """job_item table ORM.
     """
     _job = nparcel.Job()
     _agent_stocktake = nparcel.AgentStocktake()

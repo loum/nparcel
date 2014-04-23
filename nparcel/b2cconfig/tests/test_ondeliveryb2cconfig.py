@@ -23,6 +23,18 @@ class TestOnDeliveryB2CConfig(unittest2.TestCase):
         self._c.set_config_file(config_file)
         self._c.parse_config()
 
+        received = self._c.business_units
+        expected = {'priority': 1, 'fast': 2, 'ipec': 3}
+        msg = 'OnDelivery business_units error'
+        self.assertDictEqual(received, expected, msg)
+
+        received = self._c.comms_delivery_partners
+        expected = {'priority': ['Nparcel'],
+                    'fast': ['Nparcel'],
+                    'ipec': ['Nparcel']}
+        msg = 'OnDelivery comms_delivery_partners error'
+        self.assertDictEqual(received, expected, msg)
+
         received = self._c.comms_dir
         expected = '/data/nparcel/comms'
         msg = 'OnDelivery comms_dir error'

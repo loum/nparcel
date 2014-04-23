@@ -107,7 +107,8 @@ class OnDeliveryB2CConfig(nparcel.B2CConfig):
         # Parse the generic items that are used across the daemon
         # suite first (these will be refactored later).
         self.parse_scalar_config('dirs', 'comms', var='comms_dir')
-        self.set_business_units(dict(self.items('business_units')))
+        self.parse_dict_config('business_units', cast_type='int')
+        self.parse_dict_config('comms_delivery_partners', is_list=True)
         self.set_file_bu(dict(self.items('file_bu')))
 
         # Business unit conditons.  No probs if they are missing -- will

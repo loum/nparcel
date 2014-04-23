@@ -685,6 +685,56 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Parsed config scalar (list) -- set variable error'
         self.assertEqual(received, expected, msg)
 
+    def test_parse_dict_config(self):
+        """Parse a dict (section) from the configuration file.
+        """
+        self._c.set_config_file(self._file)
+
+        section = 'business_units'
+        received = self._c.parse_dict_config(section)
+        expected = {'priority': '1', 'fast': '2', 'ipec': '3'}
+        msg = 'Parsed config dict (business_units) error'
+        self.assertEqual(received, expected, msg)
+
+        # ... and check that the variable is set.
+        received = self._c.business_units
+        msg = 'Parsed config dict set variable error'
+        self.assertEqual(received, expected, msg)
+
+    def test_parse_dict_config_as_int(self):
+        """Parse a dict (section) from the configuration file (as int).
+        """
+        self._c.set_config_file(self._file)
+
+        section = 'business_units'
+        received = self._c.parse_dict_config(section, cast_type='int')
+        expected = {'priority': 1, 'fast': 2, 'ipec': 3}
+        msg = 'Parsed config dict (business_units) error'
+        self.assertEqual(received, expected, msg)
+
+        # ... and check that the variable is set.
+        received = self._c.business_units
+        msg = 'Parsed config dict set variable error'
+        self.assertEqual(received, expected, msg)
+
+    def test_parse_dict_config_list_values(self):
+        """Parse a dict (section) from the configuration file -- as list.
+        """
+        self._c.set_config_file(self._file)
+
+        section = 'comms_delivery_partners'
+        received = self._c.parse_dict_config(section, is_list=True)
+        expected = {'priority': ['Nparcel'],
+                    'fast': ['Nparcel'],
+                    'ipec': ['Nparcel']}
+        msg = 'Parsed config dict (comms_delivery_partners) error (as list)'
+        self.assertEqual(received, expected, msg)
+
+        # ... and check that the variable is set.
+        received = self._c.comms_delivery_partners
+        msg = 'Parsed config dict set variable error (as list)'
+        self.assertEqual(received, expected, msg)
+
     def tearDown(self):
         self._c = None
         del self._c

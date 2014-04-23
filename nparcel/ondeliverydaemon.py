@@ -67,6 +67,16 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         number of date-orderd TCD files to load during a processing loop
         (default 5)
 
+    .. attribute:: business_units
+
+         dictionary of business units names and their bu_ids as per the
+         business_units.id table column
+
+    .. attribute:: comms_delivery_partners
+
+        dictionary of Business Unit based list of Delivery Partners that
+        will have comms event files created during the load process
+
     """
     _config = None
     _report_in_dirs = []
@@ -78,6 +88,8 @@ class OnDeliveryDaemon(nparcel.DaemonService):
     _sc4_bu_ids = ()
     _day_range = 14
     _file_cache_size = 5
+    _business_units = {}
+    _comms_delivery_partners = {}
 
     @property
     def report_in_dirs(self):
@@ -111,6 +123,22 @@ class OnDeliveryDaemon(nparcel.DaemonService):
     def set_db_kwargs(self, value):
         pass
 
+    @property
+    def business_units(self):
+        return self._business_units
+
+    @set_dict
+    def set_business_units(self, values=None):
+        pass
+
+    @property
+    def comms_delivery_partners(self):
+        return self._comms_delivery_partners
+
+    @set_dict
+    def set_comms_delivery_partners(self, values=None):
+        pass
+
     def __init__(self,
                  pidfile,
                  file=None,
@@ -119,7 +147,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                  config=None):
         c = None
         if config is not None:
-            c = nparcel.B2CConfig(config)
+            c = nparcel.OnDeliveryB2CConfig(config)
         nparcel.DaemonService.__init__(self,
                                        pidfile=pidfile,
                                        file=file,
@@ -137,6 +165,8 @@ class OnDeliveryDaemon(nparcel.DaemonService):
             self.set_sc4_bu_ids(self.config.sc4_comms_ids)
             self.set_day_range(self.config.uncollected_day_range)
             self.set_file_cache_size(self.config.file_cache_size)
+            self.set_business_units(self.config.business_units)
+            self.set_comms_delivery_partners(self.config.comms_delivery_partners)
 
     @property
     def od(self):
@@ -147,15 +177,16 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         return self._pe_bu_ids
 
     @set_tuple
-    def set_pe_bu_ids(self, values):
+    def set_pe_bu_ids(self, values=None):
         pass
 
     @property
     def sc4_bu_ids(self):
         return self._sc4_bu_ids
 
-    def set_sc4_bu_ids(self, values):
-        self._sc4_bu_ids = values
+    @set_tuple
+    def set_sc4_bu_ids(self, values=None):
+        pass
 
     @property
     def day_range(self):
@@ -260,32 +291,34 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                     tcd_files.extend(self.get_files(dry=self.dry))
 
             log.debug('Attempting On Delivery Primary Elect check ...')
-            if len(self.pe_bu_ids):
+            for bu_id in self.pe_bu_ids:
+                log.debug('PE check for bu_id: %d' % bu_id)
+                dps = self.delivery_partner_lookup(bu_id)
                 kwargs = {'template': 'pe',
                           'service_code': 3,
-                          'bu_ids': self.pe_bu_ids,
+                          'bu_ids': (bu_id, ),
                           'in_files': tcd_files,
                           'day_range': self.day_range,
+                          'delivery_partners': dps,
                           'dry': self.dry}
                 processed_ids = self.od.process(**kwargs)
-                log.debug('PE job_items.id comms files created: "%s"' %
-                          processed_ids)
-            else:
-                log.debug("No Primary Elect BU ID's defined -- skipping")
+                log.debug('PE (BU: %d) job_items.id comms created: "%s"' %
+                          (bu_id, processed_ids))
 
             log.debug('Attempting Service Code 4 On Delivery check ...')
-            if len(self.sc4_bu_ids):
+            for bu_id in self.sc4_bu_ids:
+                log.debug('SC4 check for bu_id: %d' % bu_id)
+                dps = self.delivery_partner_lookup(bu_id)
                 kwargs = {'template': 'body',
                           'service_code': 4,
-                          'bu_ids': self.sc4_bu_ids,
+                          'bu_ids': (bu_id, ),
                           'in_files': tcd_files,
                           'day_range': self.day_range,
+                          'delivery_partners': dps,
                           'dry': self.dry}
                 processed_ids = self.od.process(**kwargs)
-                log.debug('SC 4 job_items.id comms files created: "%s"' %
-                          processed_ids)
-            else:
-                log.debug("No Service Code 4 BU ID's defined -- skipping")
+                log.debug('SC4 (BU: %d) job_items.id comms created: "%s"' %
+                          (bu_id, processed_ids))
 
             if not event.isSet():
                 if self.dry:
@@ -335,3 +368,37 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                 remove_files(f)
 
         return files_to_parse
+
+    def delivery_partner_lookup(self, bu_id):
+        """Lookup method that identifies the business unit name associated
+        with *bu_id* and returns a tuple of Delivery Partners to filter
+        uncollected parcels against.
+
+        **Args:**
+            *bu_id*: the Business Unit ID that typically relates to the
+             business_unit.id table column
+
+        **Returns**:
+            tuple of Delivery Partners that are enabled to have comms event
+            files triggered
+
+        """
+        dps = ()
+
+        bu = None
+        for k, v in self.business_units.iteritems():
+            if v == bu_id:
+                bu = k
+                break
+
+        if bu is not None:
+            tmp_dps = self.comms_delivery_partners.get(bu)
+            if tmp_dps is not None:
+                dps = tuple(tmp_dps)
+        else:
+            log.warn('BU name for ID %d was not identified' % bu_id)
+
+        log.debug('BU ID: %d Delivery Partner lookup produced: %s' %
+                  (bu_id, str(dps)))
+
+        return dps
