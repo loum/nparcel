@@ -3,6 +3,8 @@ __all__ = [
 ]
 import nparcel
 from nparcel.utils.log import log
+from nparcel.utils.setter import (set_scalar,
+                                  set_list)
 
 
 class OnDelivery(nparcel.Service):
@@ -88,29 +90,33 @@ class OnDelivery(nparcel.Service):
     def delivered_header(self):
         return self._delivered_header
 
+    @set_scalar
+    def set_delivered_header(self, value):
+        pass
+
     @property
     def delivered_event_key(self):
         return self._delivered_event_key
+
+    @set_scalar
+    def set_delivered_event_key(self, value):
+        pass
 
     @property
     def scan_desc_header(self):
         return self._scan_desc_header
 
+    @set_scalar
     def set_scan_desc_header(self, value):
-        self._scan_desc_header = value
-        log.debug('Set scan_desc_header to "%s"' % self._scan_desc_header)
+        pass
 
     @property
     def scan_desc_keys(self):
         return self._scan_desc_keys
 
-    def set_scan_desc_keys(self, values):
-        del self._scan_desc_keys[:]
-        self._scan_desc_keys = []
-
-        if values is not None:
-            log.debug('Set scan description keys "%s"' % str(values))
-            self._scan_desc_keys.extend(values)
+    @set_list
+    def set_scan_desc_keys(self, values=None):
+        pass
 
     @property
     def ts_db(self):

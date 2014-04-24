@@ -43,6 +43,17 @@ class OnDeliveryDaemon(nparcel.DaemonService):
              'password': ...,
              'port': ...}
 
+    .. attribute:: ts_db_kwargs
+
+        dictionary of connection string values for the TransSend database.
+        Typical format is::
+
+            {'host': ...,
+             'user': ...,
+             'password': ...,
+             'port': ...,
+             'sid': ...}
+
     .. attribute od
 
         :mod:`nparcel.OnDelivery` object
@@ -83,6 +94,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
     _report_file_format = 'TCD_Deliveries_\d{14}\.DAT'
     _comms_dir = None
     _db_kwargs = None
+    _ts_db_kwargs = None
     _od = None
     _pe_bu_ids = ()
     _sc4_bu_ids = ()
@@ -124,6 +136,14 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         pass
 
     @property
+    def ts_db_kwargs(self):
+        return self._ts_db_kwargs
+
+    @set_dict
+    def set_ts_db_kwargs(self, value):
+        pass
+
+    @property
     def business_units(self):
         return self._business_units
 
@@ -138,35 +158,6 @@ class OnDeliveryDaemon(nparcel.DaemonService):
     @set_dict
     def set_comms_delivery_partners(self, values=None):
         pass
-
-    def __init__(self,
-                 pidfile,
-                 file=None,
-                 dry=False,
-                 batch=False,
-                 config=None):
-        c = None
-        if config is not None:
-            c = nparcel.OnDeliveryB2CConfig(config)
-        nparcel.DaemonService.__init__(self,
-                                       pidfile=pidfile,
-                                       file=file,
-                                       dry=dry,
-                                       batch=batch,
-                                       config=c)
-
-        if self.config is not None:
-            self.set_comms_dir(self.config.comms_dir)
-            self.set_loop(self.config.ondelivery_loop)
-            self.set_report_in_dirs(self.config.inbound_tcd)
-            self.set_report_file_format(self.config.tcd_filename_format)
-            self.set_db_kwargs(self.config.db_kwargs())
-            self.set_pe_bu_ids(self.config.pe_comms_ids)
-            self.set_sc4_bu_ids(self.config.sc4_comms_ids)
-            self.set_day_range(self.config.uncollected_day_range)
-            self.set_file_cache_size(self.config.file_cache_size)
-            self.set_business_units(self.config.business_units)
-            self.set_comms_delivery_partners(self.config.comms_delivery_partners)
 
     @property
     def od(self):
@@ -204,6 +195,37 @@ class OnDeliveryDaemon(nparcel.DaemonService):
     def set_file_cache_size(self, value):
         pass
 
+    def __init__(self,
+                 pidfile,
+                 file=None,
+                 dry=False,
+                 batch=False,
+                 config=None):
+        c = None
+        if config is not None:
+            c = nparcel.OnDeliveryB2CConfig(config)
+        nparcel.DaemonService.__init__(self,
+                                       pidfile=pidfile,
+                                       file=file,
+                                       dry=dry,
+                                       batch=batch,
+                                       config=c)
+
+        if self.config is not None:
+            self.set_comms_dir(self.config.comms_dir)
+            self.set_loop(self.config.ondelivery_loop)
+            self.set_report_in_dirs(self.config.inbound_tcd)
+            self.set_report_file_format(self.config.tcd_filename_format)
+            self.set_db_kwargs(self.config.db_kwargs())
+            self.set_ts_db_kwargs(self.config.ts_db_kwargs())
+            self.set_pe_bu_ids(self.config.pe_comms_ids)
+            self.set_sc4_bu_ids(self.config.sc4_comms_ids)
+            self.set_day_range(self.config.uncollected_day_range)
+            self.set_file_cache_size(self.config.file_cache_size)
+            self.set_business_units(self.config.business_units)
+            dps = self.config.comms_delivery_partners
+            self.set_comms_delivery_partners(dps)
+
     def set_on_delivery(self, db=None, ts_db_kwargs=None, comms_dir=None):
         """Create a OnDelivery object,
 
@@ -222,10 +244,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
             db = self.db_kwargs
 
         if ts_db_kwargs is None:
-            try:
-                ts_db_kwargs = self.config.ts_db_kwargs()
-            except AttributeError, err:
-                log.debug('TransSend DB kwargs not defined in config')
+            ts_db_kwargs = self.ts_db_kwargs
 
         if comms_dir is None:
             comms_dir = self.comms_dir
@@ -235,30 +254,12 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                                           ts_db_kwargs=ts_db_kwargs,
                                           comms_dir=comms_dir)
 
-            try:
+            if self.config is not None:
                 self._od.set_delivered_header(self.config.delivered_header)
-            except AttributeError, err:
-                log.debug('Using default delivered_header: "%s"' %
-                          self._od.delivered_header)
-
-            try:
                 event_key = self.config.delivered_event_key
                 self._od.set_delivered_event_key(event_key)
-            except AttributeError, err:
-                log.debug('Using default delivered_event_key: "%s"' %
-                          self._od.delivered_event_key)
-
-            try:
                 self._od.set_scan_desc_header(self.config.scan_desc_header)
-            except AttributeError, err:
-                log.debug('Using default scan_desc_header: "%s"' %
-                          self._od.scan_desc_header)
-
-            try:
                 self._od.set_scan_desc_keys(self.config.scan_desc_keys)
-            except AttributeError, err:
-                log.debug('Using default scan_desc_keys: "%s"' %
-                          self._od.scan_desc_keys)
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.

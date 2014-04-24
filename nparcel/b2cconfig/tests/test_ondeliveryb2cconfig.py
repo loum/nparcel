@@ -80,5 +80,25 @@ class TestOnDeliveryB2CConfig(unittest2.TestCase):
         msg = 'OnDelivery file_cache_size error'
         self.assertEqual(received, expected, msg)
 
+        received = self._c.delivered_header
+        expected = 'latest_scan_event_action'
+        msg = 'OnDelivery delivered_header error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.delivered_event_key
+        expected = 'delivered'
+        msg = 'OnDelivery delivered_event_key error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.scan_desc_header.lower()
+        expected = 'latest_scanner_description'
+        msg = 'OnDelivery scan_desc_header error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.scan_desc_keys
+        expected = ['IDS - TOLL FAST GRAYS ONLINE']
+        msg = 'OnDelivery scan_desc_keys error'
+        self.assertListEqual(received, expected, msg)
+
     def tearDown(self):
         del self._c

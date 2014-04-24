@@ -38,12 +38,35 @@ class OnDeliveryB2CConfig(nparcel.B2CConfig):
         number of date-orderd TCD files to load during a processing loop
         (default 5)
 
+    .. attribute:: delivered_header
+
+        string that represents the TransSend column header name for
+        a delivered item (default ``latest_scan_event_action``)
+
+    .. attribute:: delivered_event_key
+
+        string that represents a delivered event (default ``delivered``)
+
+    .. attribute:: scan_desc_header
+
+         the scanned description column header in TransSend
+         (default ``latest_scanner_description``)
+
+    .. attribute:: scan_desc_keys
+
+        list of :attr:`scan_desc_header` tokens to compare against
+        (default ``IDS - TOLL FAST GRAYS ONLINE``)
+
     """
     _ondelivery_loop = 30
     _inbound_tcd = []
     _tcd_filename_format = None
     _uncollected_day_range = 14.0
     _file_cache_size = 5
+    _delivered_header = 'latest_scan_event_action'
+    _delivered_event_key = None
+    _scan_desc_header = None
+    _scan_desc_keys = []
 
     @property
     def ondelivery_loop(self):
@@ -93,6 +116,38 @@ class OnDeliveryB2CConfig(nparcel.B2CConfig):
     def set_file_cache_size(self, value):
         pass
 
+    @property
+    def delivered_header(self):
+        return self._delivered_header
+
+    @set_scalar
+    def set_delivered_header(self, value):
+        pass
+
+    @property
+    def delivered_event_key(self):
+        return self._delivered_event_key
+
+    @set_scalar
+    def set_delivered_event_key(self, value):
+        pass
+
+    @property
+    def scan_desc_header(self):
+        return self._scan_desc_header
+
+    @set_scalar
+    def set_scan_desc_header(self, value):
+        pass
+
+    @property
+    def scan_desc_keys(self):
+        return self._scan_desc_keys
+
+    @set_list
+    def set_scan_desc_keys(self, values=None):
+        pass
+
     def __init__(self, file=None):
         """OnDeliveryB2CConfig initialisation.
         """
@@ -110,6 +165,12 @@ class OnDeliveryB2CConfig(nparcel.B2CConfig):
         self.parse_dict_config('business_units', cast_type='int')
         self.parse_dict_config('comms_delivery_partners', is_list=True)
         self.set_file_bu(dict(self.items('file_bu')))
+        self.parse_scalar_config('transsend', 'delivered_header')
+        self.parse_scalar_config('transsend', 'delivered_event_key')
+        self.parse_scalar_config('transsend', 'scan_desc_header')
+        self.parse_scalar_config('transsend',
+                                 'scan_desc_keys',
+                                 is_list=True)
 
         # Business unit conditons.  No probs if they are missing -- will
         # just default to '0' (False) for each flag.

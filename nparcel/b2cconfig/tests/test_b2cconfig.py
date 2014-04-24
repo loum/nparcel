@@ -133,32 +133,6 @@ class TestB2CConfig(unittest2.TestCase):
         expected = 30
         self.assertEqual(received, expected, msg)
 
-    def test_parse_config_transsend(self):
-        """Parse items from the config -- TransSend.
-        """
-        self._c.set_config_file(self._file)
-        self._c.parse_config()
-
-        received = self._c.delivered_header
-        expected = 'latest_scan_event_action'
-        msg = 'TransSend delivered_header value error'
-        self.assertEqual(received, expected, msg)
-
-        received = self._c.delivered_event_key
-        expected = 'delivered'
-        msg = 'TransSend delivered_event_key value error'
-        self.assertEqual(received, expected, msg)
-
-        received = self._c.scan_desc_header.lower()
-        expected = 'latest_scanner_description'
-        msg = 'TransSend scan_desc_header value error'
-        self.assertEqual(received, expected, msg)
-
-        received = self._c.scan_desc_keys
-        expected = ['IDS - TOLL FAST GRAYS ONLINE']
-        msg = 'TransSend scan_desc_keys value error'
-        self.assertListEqual(received, expected, msg)
-
     def test_parse_config_filter(self):
         """Parse items from the config -- filter.
         """

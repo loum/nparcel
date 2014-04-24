@@ -114,26 +114,6 @@ class B2CConfig(nparcel.Config):
 
         list of tokens to match against the start of the agent code field
 
-    .. attribute:: delivered_header
-
-        string that represents the TransSend column header name for
-        a delivered item (default ``latest_scan_event_action``)
-
-    .. attribute:: delivered_event_key
-
-        string that represents a delivered event
-        (default ``delivered``)
-
-    .. attribute:: scan_desc_header
-
-        the scanned description column header in TransSend
-        (default ``latest_scanner_description``)
-
-    .. attribute:: scan_desc_keys
-
-        list of :attr:`scan_desc_header` tokens to compare against
-        (default ``IDS - TOLL FAST GRAYS ONLINE``)
-
     .. attribute:: adp_headers
 
         dictionary of ``agent`` table columns to column headers in the
@@ -183,10 +163,6 @@ class B2CConfig(nparcel.Config):
     _rest = {}
     _filter_customer = 'parcelpoint'
     _filtering_rules = ['P', 'R']
-    _delivered_header = 'latest_scan_event_action'
-    _delivered_event_key = 'delivered'
-    _scan_desc_header = 'latest_scanner_description'
-    _scan_desc_keys = ['IDS - TOLL FAST GRAYS ONLINE']
     _adp_headers = {}
     _adp_file_formats = []
     _code_header = None
@@ -435,40 +411,6 @@ class B2CConfig(nparcel.Config):
             log.warn('Config proxy: %s' % err)
 
         return kwargs
-
-    @property
-    def delivered_header(self):
-        return self._delivered_header
-
-    def set_delivered_header(self, value):
-        self._delivered_header = value
-
-    @property
-    def delivered_event_key(self):
-        return self._delivered_event_key
-
-    def set_delivered_event_key(self, value):
-        self._delivered_event_key = value
-
-    @property
-    def scan_desc_header(self):
-        return self._scan_desc_header
-
-    def set_scan_desc_header(self, value):
-        self._scan_desc_header = value
-
-    @property
-    def scan_desc_keys(self):
-        return self._scan_desc_keys
-
-    def set_scan_desc_keys(self, values):
-        del self._scan_desc_keys[:]
-        self._scan_desc_keys = []
-
-        if values is not None:
-            self._scan_desc_keys.append(values)
-            log.debug('Set scan_desc_keys to "%s"' %
-                      str(self._scan_desc_keys))
 
     @property
     def adp_headers(self):
@@ -829,47 +771,6 @@ class B2CConfig(nparcel.Config):
             log.debug('RESTful APIs %s' % str(self._rest))
         except ConfigParser.NoSectionError, err:
             log.warn('No RESTful APIs in config')
-
-        # Transend.
-        try:
-            self._delivered_header = self.get('transsend',
-                                              'delivered_header')
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default delivered_header: %s' %
-                      self.delivered_header)
-
-        try:
-            self._delivered_header = self.get('transsend',
-                                              'delivered_event_key')
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default delivered_event_key: %s' %
-                      self.delivered_event_key)
-
-        try:
-            self._scan_desc_header = self.get('transsend',
-                                              'scan_desc_header')
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default scan_desc_header: %s' %
-                      self.scan_desc_header)
-
-        try:
-            tmp_vals = self.get('transsend', 'scan_desc_keys')
-            self._scan_desc_keys = tmp_vals.split(',')
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default scan_desc_keys: %s' %
-                      self.scan_desc_keys)
-
-        for r in ['uncollected',
-                  'compliance',
-                  'noncompliance',
-                  'exception',
-                  'totals',
-                  'collected']:
-            report_opt = 'report_%s' % r
 
         # ADP headers
         try:
