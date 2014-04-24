@@ -144,10 +144,14 @@ the comms events files generated include::
     $ email.12345.pe
     $ sms.12345.pe
 
-**Priority Transfer out to V123** defaults to the standard ``body``
-template.  However, as of *release 0.26* is behavior can be altered
-to use the ``delay`` template as detailed in the
-:ref:`sc4_template_selection`
+Service Code 4 Template Selection
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+As of **version 0.36**, Service Code 4 On Delivery template selection
+can be controlled via the :ref:`comms_sc4_template_control` configuration
+condition map setting.  If the **delay** template is preferred over the
+default **body** template then set position 12 of the ``conditions`` map for
+the appropriate Business Unit.
 
 ``npondeliveryd`` Usage
 -----------------------

@@ -55,6 +55,21 @@ flags::
     # Pos 11: 0 do not send comms if service_code 4
     #         1 send comms if service_code 4
 
+.. _comms_sc4_template_control:
+
+Comms Service Code 4 Template Control
++++++++++++++++++++++++++++++++++++++
+
+Service Code 4 jobs are a special scenario whose comms could be suppressed
+by the :ref:`loader` and triggered via the :ref:`on_delivery_trigger`
+facility.  As such, the comms message context could be different and an
+alternate template may be used instead of the default **body** template::
+
+    # Pos 12: 0 use default loader comms template if service_code 4
+    #         1 use delayed pickup comms template if service_code 4
+
+If the flag is set, comms will be registered against the **delay** template.
+
 .. _pod_file_processing:
 
 POD File Processing
@@ -109,17 +124,6 @@ was associated with a Primary Elect delivery scenario.
 .. note::
 
     This was a requirement for **Fast**
-
-.. _sc4_template_selection:
-
-Service Code 4 Template Selection
-+++++++++++++++++++++++++++++++++
-
-Service Code 4 job records can selectively use either the default ``body``
-comms templates or the ``delay`` variant::
-
-    # Pos 12: 0 use default loader comms template if service_code 4
-    #         1 use delayed pickup comms template if service_code 4
 
 .. _primary_elect_ondelivery:
 
