@@ -100,5 +100,10 @@ class TestOnDeliveryB2CConfig(unittest2.TestCase):
         msg = 'OnDelivery scan_desc_keys error'
         self.assertListEqual(received, expected, msg)
 
+        received = self._c.sc4_delay_ids
+        expected = ()
+        msg = 'OnDelivery sc4_delay_ids error'
+        self.assertTupleEqual(received, expected, msg)
+
     def tearDown(self):
         del self._c

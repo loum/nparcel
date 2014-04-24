@@ -172,6 +172,43 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
         self._odd.set_sc4_bu_ids(old_sc4_ids)
         self._odd._exit_event.clear()
 
+    def test_start_non_dry_loop_with_transsend_with_sc4_comms_delay(self):
+        """Start non-dry loop -- transsend and SC4 comms (delay template).
+        """
+        dry = False
+
+        old_dry = self._odd.dry
+        old_batch = self._odd.batch
+        old_support_emails = self._odd.support_emails
+        old_sc4_ids = self._odd.sc4_bu_ids
+        old_sc4_delay_ids = self._odd.sc4_delay_bu_ids
+        copy_file(os.path.join(self._test_dir, self._test_file),
+                  os.path.join(self._report_in_dirs, self._test_file))
+
+        # Start processing.
+        self._odd.set_dry(dry)
+        self._odd.set_batch()
+        self._odd.set_sc4_bu_ids((1,))
+        self._odd.set_sc4_delay_bu_ids((1,))
+        self._odd._start(self._odd._exit_event)
+
+        received = get_directory_files_list(self._comms_dir)
+        comms_files = ['email.14.delay',
+                       'sms.14.delay']
+        expected = [os.path.join(self._comms_dir, x) for x in comms_files]
+        msg = 'On Delivery (SC 4) comms file error'
+        self.assertListEqual(sorted(expected), sorted(received), msg)
+
+        # Clean up.
+        remove_files(expected)
+        remove_files(os.path.join(self._report_in_dirs, self._test_file))
+        self._odd.set_dry(old_dry)
+        self._odd.set_batch(old_batch)
+        self._odd.set_support_emails(old_support_emails)
+        self._odd.set_sc4_bu_ids(old_sc4_ids)
+        self._odd.set_sc4_delay_bu_ids(old_sc4_delay_ids)
+        self._odd._exit_event.clear()
+
     def test_get_files(self):
         """Get report files.
         """
@@ -242,7 +279,7 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
         self.assertListEqual(received, expected, msg)
 
     def test_delivery_partner_lookup(self):
-        """Delivery partner map lookups.
+        """Delivery partner lookups.
         """
         received = self._odd.delivery_partner_lookup(1)
         expected = ('Nparcel', )
@@ -265,6 +302,38 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
 
         # Clean up.
         self._odd.set_business_units(old_bus)
+
+    def test_template_lookup(self):
+        """Template lookups.
+        """
+        old_delay_templates = self._odd.sc4_delay_bu_ids
+
+        self._odd.set_sc4_delay_bu_ids(None)
+        received = self._odd.template_lookup(1)
+        expected = 'body'
+        msg = 'Priority template lookup error (SC4 tuple empty)'
+        self.assertEqual(received, expected, msg)
+
+        self._odd.set_sc4_delay_bu_ids((1,))
+        received = self._odd.template_lookup(1)
+        expected = 'delay'
+        msg = 'Priority template lookup error (SC4 Priority set)'
+        self.assertEqual(received, expected, msg)
+
+        self._odd.set_sc4_delay_bu_ids((1, 2, 3))
+        received = self._odd.template_lookup(1)
+        expected = 'delay'
+        msg = 'Priority template lookup error (SC4 all set)'
+        self.assertEqual(received, expected, msg)
+
+        self._odd.set_sc4_delay_bu_ids((1, 2, 3))
+        received = self._odd.template_lookup(4)
+        expected = 'body'
+        msg = 'Priority template lookup error (SC4 all set)'
+        self.assertEqual(received, expected, msg)
+
+        # Clean up.
+        self._odd.set_sc4_delay_bu_ids(old_delay_templates)
 
     @classmethod
     def tearDownClass(cls):

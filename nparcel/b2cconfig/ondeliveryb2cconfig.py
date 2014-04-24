@@ -101,6 +101,10 @@ class OnDeliveryB2CConfig(nparcel.B2CConfig):
         return self.bu_ids_with_set_condition('on_del_sc_4')
 
     @property
+    def sc4_delay_ids(self):
+        return self.bu_ids_with_set_condition('delay_template_sc_4')
+
+    @property
     def uncollected_day_range(self):
         return self._uncollected_day_range
 

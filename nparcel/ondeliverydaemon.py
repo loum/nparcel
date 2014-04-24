@@ -68,6 +68,11 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         Business Unit IDs to use in the Service Code 4 on delivery
         ``job_items`` table extraction
 
+    .. attribute:: sc4_delay_bu_ids
+
+        Business Unit IDs that use the delay template for Service Code 4
+        on delivery comms
+
     .. attribute:: day_range
 
         Limit uncollected parcel search to within nominated day range
@@ -98,6 +103,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
     _od = None
     _pe_bu_ids = ()
     _sc4_bu_ids = ()
+    _sc4_delay_bu_ids = ()
     _day_range = 14
     _file_cache_size = 5
     _business_units = {}
@@ -180,6 +186,14 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         pass
 
     @property
+    def sc4_delay_bu_ids(self):
+        return self._sc4_delay_bu_ids
+
+    @set_tuple
+    def set_sc4_delay_bu_ids(self, values=None):
+        pass
+
+    @property
     def day_range(self):
         return self._day_range
 
@@ -220,6 +234,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
             self.set_ts_db_kwargs(self.config.ts_db_kwargs())
             self.set_pe_bu_ids(self.config.pe_comms_ids)
             self.set_sc4_bu_ids(self.config.sc4_comms_ids)
+            self.set_sc4_delay_bu_ids(self.config.sc4_delay_ids)
             self.set_day_range(self.config.uncollected_day_range)
             self.set_file_cache_size(self.config.file_cache_size)
             self.set_business_units(self.config.business_units)
@@ -310,7 +325,8 @@ class OnDeliveryDaemon(nparcel.DaemonService):
             for bu_id in self.sc4_bu_ids:
                 log.debug('SC4 check for bu_id: %d' % bu_id)
                 dps = self.delivery_partner_lookup(bu_id)
-                kwargs = {'template': 'body',
+                template = self.template_lookup(bu_id)
+                kwargs = {'template': template,
                           'service_code': 4,
                           'bu_ids': (bu_id, ),
                           'in_files': tcd_files,
@@ -403,3 +419,26 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                   (bu_id, str(dps)))
 
         return dps
+
+    def template_lookup(self, bu_id):
+        """Lookup method that checks if *bu_id* has its SC4 delay template
+        flag set.
+
+        **Args:**
+            *bu_id*: the Business Unit ID that typically relates to the
+             business_unit.id table column
+
+        **Returns**:
+            string 'delay' if *bu_id* has its delay template flag set
+
+            string 'body' otherwise
+
+        """
+        template = 'body'
+
+        if bu_id in self.sc4_delay_bu_ids:
+            template = 'delay'
+
+        log.debug('BU ID|delay_flags: %d|%s using template: %s' %
+                  (bu_id, str(self.sc4_delay_bu_ids), template))
+        return template
