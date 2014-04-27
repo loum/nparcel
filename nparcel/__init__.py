@@ -32,6 +32,7 @@ from nparcel.b2cconfig.reminderb2cconfig import ReminderB2CConfig
 from nparcel.b2cconfig.mapperb2cconfig import MapperB2CConfig
 from nparcel.b2cconfig.podb2cconfig import PodB2CConfig
 from nparcel.b2cconfig.ondeliveryb2cconfig import OnDeliveryB2CConfig
+from nparcel.b2cconfig.filterb2cconfig import FilterB2CConfig
 from nparcel.ftp import Ftp
 from nparcel.reminder import Reminder
 from nparcel.ondelivery import OnDelivery

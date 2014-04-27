@@ -41,7 +41,7 @@ class B2CConfig(nparcel.Config):
 
         hostname of the production instance
 
-    .. attribute:: dirs_to_check (loader)
+    .. attribute:: in_dirs
 
         list of directories to look for T1250 files
 
@@ -75,10 +75,6 @@ class B2CConfig(nparcel.Config):
 
         time (seconds) between on delivery processing iterations.
 
-    .. attribute:: filter_loop (filter)
-
-        time (seconds) between filter processing iterations.
-
     .. attribute:: adp_loop (ADP bulk load)
 
         time (seconds) between filter processing iterations.
@@ -104,15 +100,6 @@ class B2CConfig(nparcel.Config):
     .. attribute:: rest (loader)
 
         dictionary of RESTful interfaces for SMS and email
-
-    .. attribute:: filter_customer
-
-        downstream recipient of filtered T1250 files
-        (default ``parcelpoint``)
-
-    .. attribute:: filtering_rules
-
-        list of tokens to match against the start of the agent code field
 
     .. attribute:: adp_headers
 
@@ -145,14 +132,13 @@ class B2CConfig(nparcel.Config):
 
     """
     _prod = None
-    _dirs_to_check = []
-    _archive = None
+    _in_dirs = []
+    _archive_dir = None
     _staging_base = None
     _comms_dir = None
     _aggregator_dirs = []
     _adp_dirs = []
     _loader_loop = 30
-    _filter_loop = 30
     _adp_loop = 30
     _proxy_scheme = 'https'
     _business_units = {}
@@ -161,8 +147,6 @@ class B2CConfig(nparcel.Config):
     _cond = {}
     _support_emails = []
     _rest = {}
-    _filter_customer = 'parcelpoint'
-    _filtering_rules = ['P', 'R']
     _adp_headers = {}
     _adp_file_formats = []
     _code_header = None
@@ -186,33 +170,27 @@ class B2CConfig(nparcel.Config):
 
     @property
     def in_dirs(self):
-        return self._dirs_to_check
+        return self._in_dirs
 
-    def set_in_dirs(self, values):
-        del self._dirs_to_check[:]
-        self._dirs_to_check = []
-
-        if values is not None:
-            self._dirs_to_check.extend(values)
-        log.debug('%s in_dirs set to "%s"' % (self.facility, self.in_dirs))
+    @set_list
+    def set_in_dirs(self, values=None):
+        pass
 
     @property
     def archive_dir(self):
-        return self._archive
+        return self._archive_dir
 
+    @set_scalar
     def set_archive_dir(self, value):
-        self._archive = value
-        log.debug('%s dirs.archive set to "%s"' %
-                  (self.facility, self.archive_dir))
+        pass
 
     @property
     def staging_base(self):
         return self._staging_base
 
+    @set_scalar
     def set_staging_base(self, value):
-        self._staging_base = value
-        log.debug('%s dirs.staging_base set to "%s"' %
-                  (self.facility, self.staging_base))
+        pass
 
     @property
     def comms_dir(self):
@@ -226,14 +204,9 @@ class B2CConfig(nparcel.Config):
     def aggregator_dirs(self):
         return self._aggregator_dirs
 
-    def set_aggregator_dirs(self, values):
-        del self._aggregator_dirs[:]
-        self._aggregator_dirs = []
-
-        if values is not None:
-            log.debug('Set config aggregator in directories "%s"' %
-                      str(values))
-            self._aggregator_dirs.extend(values)
+    @set_list
+    def set_aggregator_dirs(self, values=None):
+        pass
 
     @property
     def adp_dirs(self):
@@ -256,10 +229,6 @@ class B2CConfig(nparcel.Config):
         pass
 
     @property
-    def filter_loop(self):
-        return self._filter_loop
-
-    @property
     def adp_loop(self):
         return self._adp_loop
 
@@ -275,18 +244,17 @@ class B2CConfig(nparcel.Config):
     def t1250_file_format(self):
         return self._t1250_file_format
 
+    @set_scalar
+    def set_t1250_file_format(self, value):
+        pass
+
     @property
     def file_bu(self):
         return self._file_bu
 
+    @set_dict
     def set_file_bu(self, values=None):
-        self._file_bu.clear()
-
-        if values is not None:
-            self._file_bu = values
-            for k, v in self._file_bu.iteritems():
-                self._file_bu[k] = int(v)
-        log.debug('%s.file_bu "%s"' % (self.facility, self.file_bu))
+        pass
 
     @property
     def support_emails(self):
@@ -310,26 +278,6 @@ class B2CConfig(nparcel.Config):
     @property
     def rest(self):
         return self._rest
-
-    @property
-    def filter_customer(self):
-        return self._filter_customer
-
-    def set_filter_customer(self, value):
-        self._filter_customer = value
-
-    @property
-    def filtering_rules(self):
-        return self._filtering_rules
-
-    def set_filtering_rules(self, values):
-        del self._filtering_rules[:]
-        self._filtering_rules = []
-
-        if values is not None:
-            self._filtering_rules.extend(values)
-            log.debug('Config set filtering_rules to "%s"' %
-                      str(self._filtering_rules))
 
     @property
     def proxy_scheme(self):
@@ -672,40 +620,48 @@ class B2CConfig(nparcel.Config):
         """
         nparcel.Config.parse_config(self)
 
-        try:
-            self._dirs_to_check = self.get('dirs', 'in').split(',')
-            log.debug('Loader directories to check %s' % str(self.in_dirs))
+        kwargs = [{'section': 'dirs',
+                   'option': 'comms',
+                   'var': 'comms_dir',
+                   'is_required': True},
+                  {'section': 'dirs',
+                   'option': 'staging_base',
+                   'is_required': True},
+                  {'section': 'dirs',
+                   'option': 'staging_base',
+                   'is_required': True},
+                  {'section': 'dirs',
+                   'option': 'archive',
+                   'var': 'archive_dir',
+                   'is_required': True},
+                  {'section': 'dirs',
+                   'option': 'in',
+                   'var': 'in_dirs',
+                   'is_list': True,
+                   'is_required': True},
+                   {'section': 'environment',
+                    'option': 'prod'},
+                   {'section': 'files',
+                    'option': 't1250_file_format'},
+                   {'section': 'dirs',
+                    'option': 'aggregator',
+                    'var': 'aggregator_dirs',
+                    'is_list': True},
+                   {'section': 'email',
+                    'option': 'support',
+                     'var': 'support_emails',
+                     'is_list': True}]
+        for kw in kwargs:
+            self.parse_scalar_config(**kw)
 
-            self.set_archive_dir(self.get('dirs', 'archive'))
-            self.set_staging_base(self.get('dirs', 'staging_base'))
-            self.parse_scalar_config('dirs', 'comms', var='comms_dir')
-            self.parse_dict_config('business_units', cast_type='int')
-            self.set_file_bu(dict(self.items('file_bu')))
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.critical('Missing required config: %s' % err)
-            sys.exit(1)
-
-        self.parse_scalar_config('environment', 'prod')
-
-        try:
-            self._t1250_file_format = self.get('files',
-                                               't1250_file_format')
-            log.debug('T1250 file format %s' % self.t1250_file_format)
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default T1250 file format: %s' %
-                      self.t1250_file_format)
-
-        # Aggregator directories.
-        try:
-            agg_dirs = self.get('dirs', 'aggregator').split(',')
-            self.set_aggregator_dirs(agg_dirs)
-            log.debug('Aggregator directories %s' % self.aggregator_dirs)
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default Aggregator inbound directories: %s' %
-                      self.aggregator_dirs)
+        kwargs = [{'section': 'business_units',
+                   'cast_type': 'int',
+                   'is_required': True},
+                  {'section': 'file_bu',
+                   'cast_type': 'int',
+                   'is_required': True}]
+        for kw in kwargs:
+            self.parse_dict_config(**kw)
 
         # ADP directories.
         try:
@@ -717,21 +673,6 @@ class B2CConfig(nparcel.Config):
             log.debug('Using default ADP inbound directories: %s' %
                       self.adp_dirs)
 
-        # Filter processing.
-        try:
-            self._filter_customer = self.get('filter', 'customer')
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default Filter customer: %s' %
-                      self.filter_customer)
-        try:
-            tmp_vals = self.get('filter', 'fitering_rules')
-            self._filtering_rules = tmp_vals.split(',')
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default Filtering rules: %s' %
-                      self.filtering_rules)
-
         # Optional items (defaults provided).
         try:
             self.loader_loop = int(self.get('timeout', 'loader_loop'))
@@ -740,21 +681,10 @@ class B2CConfig(nparcel.Config):
                       self.loader_loop)
 
         try:
-            self._filter_loop = int(self.get('timeout', 'filter_loop'))
-        except ConfigParser.NoOptionError, err:
-            log.debug('Using default Filter loop: %d (sec)' %
-                      self.filter_loop)
-
-        try:
             self._adp_loop = int(self.get('timeout', 'adp_loop'))
         except ConfigParser.NoOptionError, err:
             log.debug('Using default ADP loop: %d (sec)' %
                       self.adp_loop)
-
-        self.parse_scalar_config('email',
-                                 'support',
-                                 'support_emails',
-                                 is_list=True)
 
         # Business unit conditons.  No probs if they are missing -- will
         # just default to '0' (False) for each flag.
@@ -1029,10 +959,14 @@ class B2CConfig(nparcel.Config):
                             option,
                             var=None,
                             cast_type=None,
-                            is_list=False):
+                            is_list=False,
+                            is_required=False):
         """Helper method that can parse a scalar value based on
         *section* and *option* in the :mod:`ConfigParser` based
         configuration file and set *var* attribute with the value parsed.
+
+        If *is_required* is set and configuration value is missing then
+        the process will exit.
 
         **Args:**
             *section*: the configuration file section.  For example
@@ -1050,6 +984,9 @@ class B2CConfig(nparcel.Config):
 
             *is_list*: boolean flag to indicate whether to parse the
             option values as a list (default ``False``)
+
+            *is_required*: boolean flag to indicate whether the
+            value is required.
 
         **Returns:**
             the value of the scalar option value parsed
@@ -1071,6 +1008,10 @@ class B2CConfig(nparcel.Config):
             setter(value)
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
+            if is_required:
+                log.critical('Missing required config: %s' % err)
+                sys.exit(1)
+
             try:
                 getter = getattr(self, var)
                 log.debug('%s %s.%s not defined.  Using "%s"' %
@@ -1085,7 +1026,8 @@ class B2CConfig(nparcel.Config):
                           section,
                           var=None,
                           cast_type=None,
-                          is_list=False):
+                          is_list=False,
+                          is_required=False):
         """Helper method that can parse a :mod:`ConfigParser` *section*
         and set the *var* attribute with the value parsed.
 
@@ -1106,6 +1048,9 @@ class B2CConfig(nparcel.Config):
 
             *is_list*: boolean flag to indicate whether to parse the
             option values as a list (default ``False``)
+
+            *is_required*: boolean flag to indicate whether the
+            value is required.
 
         **Returns:**
             the value of the :mod:`ConfigParser` section as a dict
@@ -1136,6 +1081,10 @@ class B2CConfig(nparcel.Config):
             setter(value)
         except (ConfigParser.NoOptionError,
                 ConfigParser.NoSectionError), err:
+            if is_required:
+                log.critical('Missing required config: %s' % err)
+                sys.exit(1)
+
             try:
                 getter = getattr(self, var)
                 log.debug('%s %s not defined.  Using "%s"' %

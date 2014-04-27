@@ -123,28 +123,10 @@ class TestB2CConfig(unittest2.TestCase):
         expected = 30
         self.assertEqual(received, expected, msg)
 
-        msg = 'Filter loop not as expected'
-        received = self._c.filter_loop
-        expected = 30
-        self.assertEqual(received, expected, msg)
-
         msg = 'ADP loop not as expected'
         received = self._c.adp_loop
         expected = 30
         self.assertEqual(received, expected, msg)
-
-    def test_parse_config_filter(self):
-        """Parse items from the config -- filter.
-        """
-        msg = 'Filter customer not as expected'
-        received = self._c.filter_customer
-        expected = 'parcelpoint'
-        self.assertEqual(received, expected, msg)
-
-        msg = 'Filtering rules list not as expected'
-        received = self._c.filtering_rules
-        expected = ['P', 'R']
-        self.assertListEqual(received, expected, msg)
 
     def test_parse_config_adp(self):
         """Parse items from the config -- adp_headers
@@ -573,6 +555,27 @@ class TestB2CConfig(unittest2.TestCase):
         msg = 'Parsed config scalar -- set variable error'
         self.assertEqual(received, expected, msg)
 
+    def test_parse_scalar_config_is_required(self):
+        """Parse a required scalar from the configuration file.
+        """
+        self._c.set_config_file(self._file)
+
+        section = 'dirs'
+        option = 'banana'
+
+        kwargs = {'section': section,
+                  'option': option,
+                  'is_required': True}
+        #received = self._c.parse_scalar_config(**kwargs)
+        #expected = 'faswbaup02'
+        #msg = 'Parsed config scalar error'
+        self.assertRaises(SystemExit, self._c.parse_scalar_config, **kwargs)
+
+        # ... and check that the variable is set.
+        #received = self._c.prod
+        #msg = 'Parsed config scalar -- set variable error'
+        #self.assertEqual(received, expected, msg)
+
     def test_parse_scalar_config_as_int(self):
         """Parse a scalar from the configuration file -- cast to int.
         """
@@ -674,6 +677,15 @@ class TestB2CConfig(unittest2.TestCase):
         received = self._c.business_units
         msg = 'Parsed config dict set variable error'
         self.assertEqual(received, expected, msg)
+
+    def test_parse_dict_config_is_required(self):
+        """Parse a required dict (section) from the configuration file.
+        """
+        self._c.set_config_file(self._file)
+
+        kwargs = {'section': 'banana',
+                  'is_required': True}
+        self.assertRaises(SystemExit, self._c.parse_dict_config, **kwargs)
 
     def test_parse_dict_config_as_int(self):
         """Parse a dict (section) from the configuration file (as int).

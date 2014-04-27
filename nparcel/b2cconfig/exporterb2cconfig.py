@@ -192,13 +192,11 @@ class ExporterB2CConfig(nparcel.B2CConfig):
                          (self.facility, err))
             sys.exit(1)
 
-        try:
-            self.set_file_bu(dict(self.items('file_bu')))
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.critical('%s file_bu section is a required item: %s' %
-                         (self.facility, err))
-            sys.exit(1)
+        kwargs = [{'section': 'file_bu',
+                   'cast_type': 'int',
+                   'is_required': True}]
+        for kw in kwargs:
+            self.parse_dict_config(**kw)
 
         try:
             tmp_vals = self.get('dirs', 'exporter_in').split(',')
