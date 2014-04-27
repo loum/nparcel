@@ -1,4 +1,5 @@
 import unittest2
+import os
 
 import nparcel
 
@@ -7,9 +8,9 @@ class TestFilter(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        test_conf = 'nparcel/tests/test_loader.conf'
+        test_conf = os.path.join('nparcel', 'tests', 'test_loader.conf')
         cls._c = nparcel.Config(config_file=test_conf)
-        cls._fltr = nparcel.Filter(rules=['P', 'R'])
+        cls._fltr = nparcel.Filter()
 
     def test_init(self):
         """Initialise a Filter object.
@@ -21,7 +22,7 @@ class TestFilter(unittest2.TestCase):
         """Process valid record.
         """
         line = self._c.get('test_lines', 'PP')
-        received = self._fltr.process(line)
+        received = self._fltr.process(line, rules=['P', 'R'])
         msg = 'Valid ParcelPoint record should return True'
         self.assertTrue(received, msg)
 
@@ -29,7 +30,7 @@ class TestFilter(unittest2.TestCase):
         """Process valid record -- missing Agent Id.
         """
         line = self._c.get('test_lines', 'PP_MISSING_AGENT_ID')
-        received = self._fltr.process(line)
+        received = self._fltr.process(line, rules=['P', 'R'])
         msg = 'Valid ParcelPoint -- missing Agent Id should return False'
         self.assertFalse(received, msg)
 
@@ -37,7 +38,7 @@ class TestFilter(unittest2.TestCase):
         """Process valid record - not parcel point.
         """
         line = self._c.get('test_lines', 'VALID_LINE')
-        received = self._fltr.process(line)
+        received = self._fltr.process(line, rules=['P', 'R'])
         msg = 'Valid ParcelPoint -- not ParcelPoint should return None'
         self.assertIsNone(received, msg)
 
@@ -45,7 +46,7 @@ class TestFilter(unittest2.TestCase):
         """Process valid record - ParcelPoint R-type agent code.
         """
         line = self._c.get('test_lines', 'PP_R_TYPE_AGENT_CODE')
-        received = self._fltr.process(line)
+        received = self._fltr.process(line, rules=['P', 'R'])
         msg = 'Valid ParcelPoint -- ParcelPoint R-type agent code'
         self.assertTrue(received, msg)
 

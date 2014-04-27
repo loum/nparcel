@@ -37,12 +37,16 @@ def main():
     if based.options.file:
         file = based.options.file
 
+    config = None
+    if based.options.config is not None:
+        config = nparcel.FilterB2CConfig(based.options.config)
+
     # OK, start processing.
     fd = nparcel.FilterDaemon(pidfile=based.pidfile,
                               file=file,
                               dry=based.dry,
                               batch=based.batch,
-                              config=based.options.config)
+                              config=config)
 
     based.launch_command(fd, script_name)
 

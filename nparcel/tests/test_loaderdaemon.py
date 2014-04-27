@@ -500,18 +500,15 @@ class TestLoaderDaemon(unittest2.TestCase):
         os.removedirs(agg_dir)
         self._d.exit_event.clear()
 
-    def test_distribute_file(self):
-        """Distribute the T1250 file.
+    def test_distribute_file_archive(self):
+        """Distribute the T1250 file (archive).
         """
         base_dir = tempfile.mkdtemp()
         source_dir = os.path.join(base_dir, 'ipec', 'in')
         create_dir(source_dir)
         archive_dir = tempfile.mkdtemp()
-        agg_dir = tempfile.mkdtemp()
         old_archive_dir = self._d.config.archive_dir
         self._d.config.set_archive_dir(archive_dir)
-        old_agg_dir = self._d.config.archive_dir
-        self._d.config.set_aggregator_dirs([archive_dir])
 
         # Fudge a T1250.
         test_file = 'T1250_TOLI_20130828202901.txt'
@@ -533,9 +530,7 @@ class TestLoaderDaemon(unittest2.TestCase):
         os.remove(os.path.join(expected_archive_dir, test_file))
         os.removedirs(source_dir)
         os.removedirs(expected_archive_dir)
-        os.removedirs(agg_dir)
         self._d.config.set_archive_dir(old_archive_dir)
-        self._d.config.set_aggregator_dirs(old_agg_dir)
 
     def test_distribute_file_with_aggregator_set(self):
         """Distribute the T1250 file.
@@ -547,7 +542,7 @@ class TestLoaderDaemon(unittest2.TestCase):
         agg_dir = tempfile.mkdtemp()
         old_archive_dir = self._d.config.archive_dir
         self._d.config.set_archive_dir(archive_dir)
-        old_agg_dir = self._d.config.archive_dir
+        old_agg_dir = self._d.config.aggregator_dirs
         self._d.config.set_aggregator_dirs([agg_dir])
 
         # Fudge a T1250.

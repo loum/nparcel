@@ -15,8 +15,9 @@ class TestFilterDaemon(unittest2.TestCase):
         cls._test_dir = os.path.join('nparcel', 'tests', 'files')
         cls._file = os.path.join(cls._test_dir,
                                  'T1250_TOLI_20130828202901.txt')
-        config = os.path.join('nparcel', 'conf', 'nparceld.conf')
-        cls._fd = nparcel.FilterDaemon(pidfile=None, config=config)
+        cls._fd = nparcel.FilterDaemon(pidfile=None)
+        cls._fd.set_filters({'parcelpoint': ['P', 'R'],
+                             'woolworths': ['U']})
         cls._fd.emailer.set_template_base(os.path.join('nparcel',
                                                        'templates'))
 
@@ -72,32 +73,41 @@ class TestFilterDaemon(unittest2.TestCase):
         self._fd.set_support_emails([])
         self._fd._start(self._fd._exit_event)
 
-        expected_out_dir = os.path.join(out_dir, 'parcelpoint', 'out')
-        expected_out_filename = 'T1250_TOLP_20131118125707.txt'
-        expected_out_file = os.path.join(expected_out_dir,
-                                         expected_out_filename)
+        filtered = {'parcelpoint':
+                    {'dir': os.path.join(out_dir, 'parcelpoint', 'out'),
+                     'files': ['T1250_TOLP_20131118125707.txt']},
+                    'woolworths':
+                    {'dir': os.path.join(out_dir, 'woolworths', 'out'),
+                     'files': ['T1250_TOLP_20131118135041.txt',
+                               'T1250_TOLP_20131118125707.txt']}}
 
-        # Check out directory.
-        received = get_directory_files_list(expected_out_dir)
-        expected = [expected_out_file]
-        msg = 'Outbound directory filtered file lists do not match'
-        self.assertListEqual(received, expected, msg)
+        # Check filtered directories.
+        for dp, v in filtered.iteritems():
+            files = get_directory_files_list(v['dir'])
+            received = [os.path.basename(x) for x in files]
+            expected = v['files']
+            msg = '%s filtered files error' % dp
+            self.assertListEqual(sorted(received), sorted(expected), msg)
 
         # Check contents.
-        fh = open(os.path.join(self._test_dir,
-                               expected_out_filename + '.filtered'))
-        expected = fh.read()
-        fh.close()
-        fh = open(expected_out_file)
-        received = fh.read()
-        fh.close()
-        msg = 'Filtered content error'
-        self.assertEqual(expected, received, msg)
+        for dp, v in filtered.iteritems():
+            dir = os.path.join(self._test_dir, dp)
+            for f in v['files']:
+                fh = open(os.path.join(dir, f))
+                expected = fh.read()
+                fh.close()
+
+                fh = open(os.path.join(v['dir'], f))
+                received = fh.read()
+                fh.close()
+                msg = '%s %s content error' % (dp, f)
+                self.assertEqual(expected, received, msg)
 
         # Clean up.
-        remove_files(expected_out_file)
+        for dp, v in filtered.iteritems():
+            remove_files(get_directory_files_list(v['dir']))
+            os.removedirs(v['dir'])
         os.removedirs(in_dir)
-        os.removedirs(expected_out_dir)
         self._fd.set_file(old_file)
         self._fd.set_dry(old_dry)
         self._fd.set_batch(old_batch)
@@ -141,7 +151,9 @@ class TestFilterDaemon(unittest2.TestCase):
         """
         base_dir = tempfile.mkdtemp()
 
-        received = self._fd.get_outbound_file(self._file, dir=base_dir)
+        received = self._fd.get_outbound_file('parcelpoint',
+                                              self._file,
+                                              dir=base_dir)
         dir = os.path.join(base_dir, 'parcelpoint', 'out')
         expected = os.path.join(dir, 'T1250_TOLI_20130828202901.txt.tmp')
         msg = 'Outbound file resource error'
@@ -153,21 +165,21 @@ class TestFilterDaemon(unittest2.TestCase):
     def test_write(self):
         """Test outbound file write-out.
         """
-        data = 'xxx'
+        data = '%s\n' % 'xxx'
         base_dir = tempfile.mkdtemp()
 
         old_staging = self._fd.staging_base
         self._fd.set_staging_base(base_dir)
 
         fhs = {}
-        self._fd.write(data, fhs, self._file, dry=False)
+        self._fd.write(data, fhs, 'parcelpoint', self._file, dry=False)
         files_closed = self._fd.close(fhs)
 
         outfile = files_closed[0]
         fh = open(outfile)
         received = fh.read().rstrip()
         fh.close()
-        expected = data + '\n%%EOF'
+        expected = data + '%%EOF'
         msg = 'Written content error'
         self.assertEqual(received, expected, msg)
 

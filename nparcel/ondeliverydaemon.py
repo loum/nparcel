@@ -215,15 +215,12 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                  dry=False,
                  batch=False,
                  config=None):
-        c = None
-        if config is not None:
-            c = nparcel.OnDeliveryB2CConfig(config)
         nparcel.DaemonService.__init__(self,
                                        pidfile=pidfile,
                                        file=file,
                                        dry=dry,
                                        batch=batch,
-                                       config=c)
+                                       config=config)
 
         if self.config is not None:
             self.set_comms_dir(self.config.comms_dir)

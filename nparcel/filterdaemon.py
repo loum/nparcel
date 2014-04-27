@@ -14,6 +14,9 @@ from nparcel.utils.files import (check_eof_flag,
                                  create_dir,
                                  move_file,
                                  remove_files)
+from nparcel.utils.setter import (set_scalar,
+                                  set_list,
+                                  set_dict)
 
 
 class FilterDaemon(nparcel.DaemonService):
@@ -23,15 +26,7 @@ class FilterDaemon(nparcel.DaemonService):
 
         :mod:`re` format string to match filter files against
 
-    .. attribute:: staging_base
-
-        base directory for outbound processing
-
-    .. attribute:: customer
-
-        context of outbound processing (default ``parcelpoint``)
-
-    .. attribute:: filtering_rules
+    .. attribute:: filters
 
         list of tokens to match against the start of the agent code field
 
@@ -42,126 +37,61 @@ class FilterDaemon(nparcel.DaemonService):
     """
     _file_format = 'T1250_TOL.*\.txt'
     _staging_base = os.curdir
-    _customer = 'parcelpoint'
-    _filtering_rules = ['P', 'R']
-    _in_dirs = ['%s' % os.path.join(os.sep, 'data', 'nparcel', 'aggregate')]
+    _filters = {}
+    _in_dirs = []
 
     def __init__(self,
                  pidfile,
                  file=None,
                  dry=False,
                  batch=False,
-                 config='nparcel.conf'):
-        c = None
-        if config is not None:
-            c = nparcel.B2CConfig(config)
+                 config=None):
         nparcel.DaemonService.__init__(self,
                                        pidfile=pidfile,
                                        file=file,
                                        dry=dry,
                                        batch=batch,
-                                       config=c)
+                                       config=config)
 
-        try:
-            if self.config.filter_loop is not None:
-                self.set_loop(self.config.filter_loop)
-        except AttributeError, err:
-            log.info('Daemon loop not defined in config -- default %d sec' %
-                     self.loop)
-
-        try:
-            if self.config.t1250_file_format is not None:
-                self.set_file_format(self.config.t1250_file_format)
-        except AttributeError, err:
-            msg = ('Inbound file format not defined in config -- using %s' %
-                   self.file_format)
-            log.info(msg)
-
-        try:
-            if self.config.staging_base is not None:
-                self.set_staging_base(self.config.staging_base)
-        except AttributeError, err:
-            msg = ('Staging base not defined in config -- using %s' %
-                   self.staging_base)
-            log.info(msg)
-
-        try:
-            if self.config.filter_customer is not None:
-                self.set_customer(self.config.filter_customer)
-        except AttributeError, err:
-            msg = ('Filter customer not defined in config -- using %s' %
-                   self.customer)
-            log.info(msg)
-
-        try:
-            if len(self.config.filtering_rules):
-                self.set_filtering_rules(self.config.filtering_rules)
-        except AttributeError, err:
-            msg = ('Daemon filter rules not defined in config -- using %s' %
-                   self.filtering_rules)
-            log.info(msg)
-
-        try:
-            if self.config.aggregator_dirs is not None:
-                self.set_in_dirs(self.config.aggregator_dirs)
-        except AttributeError, err:
-            msg = ('Inbound directory not defined in config -- using %s' %
-                    self.in_dirs)
-            log.info(msg)
-
-        try:
-            if self.config.support_emails is not None:
-                self.set_support_emails(self.config.support_emails)
-        except AttributeError, err:
-            msg = ('Support emails not defined in config -- using %s' %
-                    str(self.support_emails))
-            log.info(msg)
+        if self.config is not None:
+            self.set_loop(self.config.filter_loop)
+            self.set_file_format(self.config.t1250_file_format)
+            self.set_staging_base(self.config.staging_base)
+            self.set_filters(self.config.filters)
+            self.set_in_dirs(self.config.aggregator_dirs)
+            self.set_support_emails(self.config.support_emails)
 
     @property
     def file_format(self):
         return self._file_format
 
+    @set_scalar
     def set_file_format(self, value):
-        self._file_format = value
+        pass
 
     @property
     def staging_base(self):
         return self._staging_base
 
+    @set_scalar
     def set_staging_base(self, value):
-        self._staging_base = value
+        pass
 
     @property
-    def customer(self):
-        return self._customer
+    def filters(self):
+        return self._filters
 
-    def set_customer(self, value):
-        self._customer = value
-
-    @property
-    def filtering_rules(self):
-        return self._filtering_rules
-
-    def set_filtering_rules(self, values):
-        del self._filtering_rules[:]
-        self._filtering_rules = []
-
-        if values is not None:
-            self._filtering_rules.extend(values)
-            log.debug('Set filtering_rules to "%s"' %
-                      str(self._filtering_rules))
+    @set_dict
+    def set_filters(self, values=None):
+        pass
 
     @property
     def in_dirs(self):
         return self._in_dirs
 
-    def set_in_dirs(self, values):
-        del self._in_dirs[:]
-        self._in_dirs = []
-
-        if values is not None and len(values):
-            self._in_dirs.extend(values)
-            log.debug('Set inbound directories "%s"' % str(self._in_dirs))
+    @set_list
+    def set_in_dirs(self, values=None):
+        pass
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
@@ -178,7 +108,7 @@ class FilterDaemon(nparcel.DaemonService):
         """
         signal.signal(signal.SIGTERM, self._exit_handler)
 
-        filter = nparcel.Filter(rules=self.filtering_rules)
+        filter = nparcel.Filter()
 
         commit = True
         if self.dry:
@@ -215,10 +145,16 @@ class FilterDaemon(nparcel.DaemonService):
                         eof_found = True
                         break
                     else:
-                        filtered_status = filter.process(line)
-                        self.reporter(filtered_status)
-                        if filtered_status:
-                            self.write(line, fhs, file, dry=self.dry)
+                        for dp, rules in self.filters.iteritems():
+                            filtered_status = filter.process(line, rules)
+                            self.reporter(filtered_status)
+                            if filtered_status:
+                                kwargs = {'data': line,
+                                          'fhs': fhs,
+                                          'delivery_partner': dp,
+                                          'infile': file,
+                                          'dry': self.dry}
+                                self.write(**kwargs)
                 f.close()
                 self.close(fhs)
 
@@ -287,7 +223,7 @@ class FilterDaemon(nparcel.DaemonService):
 
         return files_to_process
 
-    def get_outbound_file(self, file, dir=None):
+    def get_outbound_file(self, delivery_partner, file, dir=None):
         """Generates the path to the outbound file resource for output
         of *file* processing.
 
@@ -296,10 +232,14 @@ class FilterDaemon(nparcel.DaemonService):
         * :attr:`nparcel.b2cconfig.staging_base` attribute (or current
           directory if not identified)
 
-        * :attr:`nparcel.b2cconfig.filter_customer` (or *parcelpoint*
-          if not identified)
+        * *delivery_partner* and ``out``
 
         * *file* name (with ``.tmp`` appended)
+
+        For example, if the Delivery Partner is **parcelpoint** then the
+        outfile generated will be::
+
+            ``<staging_base>/parcelpoint/out/<T1250_file>.tmp``
 
         **Args:**
             *file*: the name of the T1250 file currently under processing
@@ -313,25 +253,21 @@ class FilterDaemon(nparcel.DaemonService):
             resource
 
         """
-        log.info('Generating the outbound file resource for %s' % file)
-        outbound_file_name = None
+        outfile = None
 
-        if dir is not None:
-            log.info('Setting staging base to "%s"' % dir)
-            self.set_staging_base(dir)
+        if dir is None:
+            dir = self.staging_base
 
-        file_basename = os.path.basename(file)
-        outbound_dir = os.path.join(self.staging_base, self.customer, 'out')
+        outbound_dir = os.path.join(dir, delivery_partner, 'out')
 
         if create_dir(outbound_dir):
-            outbound_file_name = os.path.join(outbound_dir,
-                                            file_basename + '.tmp')
+            outfile = os.path.join(outbound_dir,
+                                   os.path.basename(file) + '.tmp')
 
-        log.info('Outbound file resource name "%s"' % outbound_file_name)
+        log.debug('Using outfile "%s"' % outfile)
+        return outfile
 
-        return outbound_file_name
-
-    def write(self, data, fhs, infile, dry=False):
+    def write(self, data, fhs, delivery_partner, infile, dry=False):
         """Write out *data* to the associated *fhs* file handler.
 
         *fhs* is based on the return value from
@@ -342,21 +278,24 @@ class FilterDaemon(nparcel.DaemonService):
 
             *fhs*: dictionary structure capturing open file handle objects
 
-        """
-        log.debug('Writing out data "%s ..."' % data[0:20])
+            *delivery_partner*: name of the Delivery Partner that will
+            receive the filtered T1250 file
 
-        infile_basename = os.path.basename(infile)
-        fh = fhs.get(infile_basename)
+            *infile*: source T1250 EDI file that is being filtered
+
+        """
+        log.info('Writing out connote "%s" ...' % data[0:20].rstrip())
+
+        outfile = self.get_outbound_file(delivery_partner, infile)
+        fh = fhs.get(outfile)
         if fh is None:
-            log.info('Preparing file handler for infile %s' %
-                     infile_basename)
+            log.info('Preparing file handler for outfile %s' % outfile)
             if not dry:
-                outfile = self.get_outbound_file(infile)
-                fhs[infile_basename] = open(outfile, 'w')
-                fh = fhs[infile_basename]
+                fhs[outfile] = open(outfile, 'w')
+                fh = fhs[outfile]
 
         if not dry:
-            fh.write('%s\n' % data)
+            fh.write('%s' % data)
 
     def close(self, fhs):
         """Closes out open T1250-specific file handles.
