@@ -10,14 +10,14 @@ class FilterB2CConfig(nparcel.B2CConfig):
     """:class:`nparcel.FilterB2CConfig` captures the configuration items
     required for the ``npfilterd`` facility.
 
-    .. attribute:: filter_loop (filter)
+    .. attribute:: filter_loop
 
         time (seconds) between filter processing iterations.
 
-    .. attribute:: filter_customer
+    .. attribute:: filters
 
-        downstream recipient of filtered T1250 files
-        (default ``parcelpoint``)
+        dictionary of Alternate Delivery Partner names and a list
+        of tokens to match against the start of the agent code field
 
     """
     _filter_loop = 30
@@ -55,7 +55,12 @@ class FilterB2CConfig(nparcel.B2CConfig):
                    'is_list': True},
                   {'section': 'timeout',
                    'option': 'filter_loop',
-                   'cast_type': 'int'}]
+                   'cast_type': 'int'},
+                  {'section': 'dirs',
+                   'option': 'aggregator',
+                   'var': 'aggregator_dirs',
+                   'is_list': True,
+                   'is_required': True}]
         for kw in kwargs:
             self.parse_scalar_config(**kw)
 

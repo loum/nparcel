@@ -4,7 +4,7 @@ import fnmatch
 import shutil
 from distutils.core import setup
 
-VERSION = '0.34'
+VERSION = '0.35'
 
 
 def opj(*args):
@@ -70,7 +70,7 @@ log_conf_file = find_data_files('nparcel/utils/conf/',
 
 setup(name='python-nparcel',
       version=VERSION,
-      description='Nparcel B2C Replicator',
+      description='Toll Parcel Portal B2C Middleware',
       author='Lou Markovski',
       author_email='lou.markovski@tollgroup.com',
       url='https://nparcel.tollgroup.com',

@@ -24,7 +24,7 @@ class TestFilterB2CConfig(unittest2.TestCase):
         self._c.parse_config()
 
         received = self._c.t1250_file_format
-        expected = 'T1250_TOL.*\.txt'
+        expected = 'T1250_TOL.*\.txt$'
         msg = 'OnDeliveryB2CConfig.t1250_file_format error'
         self.assertEqual(received, expected, msg)
 
@@ -32,6 +32,11 @@ class TestFilterB2CConfig(unittest2.TestCase):
         expected = '/var/ftp/pub/nparcel'
         msg = 'OnDeliveryB2CConfig.staging_base error'
         self.assertEqual(received, expected, msg)
+
+        received = self._c.aggregator_dirs
+        expected = ['/data/nparcel/aggregate']
+        msg = 'OnDeliveryB2CConfig.aggregator_dirs error'
+        self.assertListEqual(sorted(received), sorted(expected), msg)
 
         received = self._c.filters
         expected = {'parcelpoint': ['P', 'R'],

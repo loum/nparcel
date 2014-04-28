@@ -58,7 +58,7 @@ class B2CConfig(nparcel.Config):
 
         directory where comms files are kept for further processing
 
-    .. attribute:: aggregators (ParcelPoint processing)
+    .. attribute:: aggregator_dirs
 
         directory where T1250 loader files are aggregated for further
         processing

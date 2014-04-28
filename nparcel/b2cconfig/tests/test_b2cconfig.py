@@ -37,7 +37,7 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'T1250 file name format not as expected'
         received = self._c.t1250_file_format
-        expected = 'T1250_TOL.*\.txt'
+        expected = 'T1250_TOL.*\.txt$'
         self.assertEqual(received, expected, msg)
 
         msg = 'Filename Business units not as expected'

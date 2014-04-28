@@ -22,15 +22,15 @@ from nparcel.utils.setter import (set_scalar,
 class FilterDaemon(nparcel.DaemonService):
     """Daemoniser facility for the :class:`nparcel.Filter` class.
 
-    .. attribute:: file_format
+    .. attribute:: *file_format*
 
         :mod:`re` format string to match filter files against
 
-    .. attribute:: filters
+    .. attribute:: *filters*
 
         list of tokens to match against the start of the agent code field
 
-    .. attribute:: in_dirs
+    .. attribute:: *in_dirs*
 
         list of inbound directory to check for files to process
 
@@ -39,27 +39,6 @@ class FilterDaemon(nparcel.DaemonService):
     _staging_base = os.curdir
     _filters = {}
     _in_dirs = []
-
-    def __init__(self,
-                 pidfile,
-                 file=None,
-                 dry=False,
-                 batch=False,
-                 config=None):
-        nparcel.DaemonService.__init__(self,
-                                       pidfile=pidfile,
-                                       file=file,
-                                       dry=dry,
-                                       batch=batch,
-                                       config=config)
-
-        if self.config is not None:
-            self.set_loop(self.config.filter_loop)
-            self.set_file_format(self.config.t1250_file_format)
-            self.set_staging_base(self.config.staging_base)
-            self.set_filters(self.config.filters)
-            self.set_in_dirs(self.config.aggregator_dirs)
-            self.set_support_emails(self.config.support_emails)
 
     @property
     def file_format(self):
@@ -92,6 +71,27 @@ class FilterDaemon(nparcel.DaemonService):
     @set_list
     def set_in_dirs(self, values=None):
         pass
+
+    def __init__(self,
+                 pidfile,
+                 file=None,
+                 dry=False,
+                 batch=False,
+                 config=None):
+        nparcel.DaemonService.__init__(self,
+                                       pidfile=pidfile,
+                                       file=file,
+                                       dry=dry,
+                                       batch=batch,
+                                       config=config)
+
+        if self.config is not None:
+            self.set_loop(self.config.filter_loop)
+            self.set_file_format(self.config.t1250_file_format)
+            self.set_staging_base(self.config.staging_base)
+            self.set_filters(self.config.filters)
+            self.set_in_dirs(self.config.aggregator_dirs)
+            self.set_support_emails(self.config.support_emails)
 
     def _start(self, event):
         """Override the :method:`nparcel.utils.Daemon._start` method.
@@ -145,9 +145,9 @@ class FilterDaemon(nparcel.DaemonService):
                         eof_found = True
                         break
                     else:
+                        filtered_status = False
                         for dp, rules in self.filters.iteritems():
                             filtered_status = filter.process(line, rules)
-                            self.reporter(filtered_status)
                             if filtered_status:
                                 kwargs = {'data': line,
                                           'fhs': fhs,
@@ -155,6 +155,9 @@ class FilterDaemon(nparcel.DaemonService):
                                           'infile': file,
                                           'dry': self.dry}
                                 self.write(**kwargs)
+                                break
+
+                        self.reporter(filtered_status)
                 f.close()
                 self.close(fhs)
 
@@ -211,7 +214,7 @@ class FilterDaemon(nparcel.DaemonService):
             dirs_to_check.extend(self.in_dirs)
 
         for dir_to_check in dirs_to_check:
-            log.info('Looking for files at: %s ...' % dir_to_check)
+            log.debug('Looking for files at: %s ...' % dir_to_check)
             for file in get_directory_files(dir_to_check):
                 if (check_filename(file, self.file_format) and
                     check_eof_flag(file)):

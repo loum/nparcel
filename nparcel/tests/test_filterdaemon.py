@@ -18,6 +18,8 @@ class TestFilterDaemon(unittest2.TestCase):
         cls._fd = nparcel.FilterDaemon(pidfile=None)
         cls._fd.set_filters({'parcelpoint': ['P', 'R'],
                              'woolworths': ['U']})
+        cls._out_dir = tempfile.mkdtemp()
+        cls._fd.set_staging_base(cls._out_dir)
         cls._fd.emailer.set_template_base(os.path.join('nparcel',
                                                        'templates'))
 
@@ -40,6 +42,8 @@ class TestFilterDaemon(unittest2.TestCase):
         self._fd._start(self._fd._exit_event)
 
         # Clean up.
+        os.removedirs(os.path.join(self._out_dir, 'parcelpoint', 'out'))
+        os.removedirs(os.path.join(self._out_dir, 'woolworths', 'out'))
         self._fd.set_file(old_file)
         self._fd.set_dry(old_dry)
         self._fd._exit_event.clear()
@@ -56,9 +60,7 @@ class TestFilterDaemon(unittest2.TestCase):
         old_support_emails = self._fd.support_emails
 
         in_dir = tempfile.mkdtemp()
-        out_dir = tempfile.mkdtemp()
         self._fd.set_in_dirs([in_dir])
-        self._fd.set_staging_base(out_dir)
 
         # Copy over our test files.
         t_file_dir = os.path.join('nparcel', 'tests', 'files', 'filter')
@@ -74,10 +76,10 @@ class TestFilterDaemon(unittest2.TestCase):
         self._fd._start(self._fd._exit_event)
 
         filtered = {'parcelpoint':
-                    {'dir': os.path.join(out_dir, 'parcelpoint', 'out'),
+                    {'dir': os.path.join(self._out_dir, 'parcelpoint', 'out'),
                      'files': ['T1250_TOLP_20131118125707.txt']},
                     'woolworths':
-                    {'dir': os.path.join(out_dir, 'woolworths', 'out'),
+                    {'dir': os.path.join(self._out_dir, 'woolworths', 'out'),
                      'files': ['T1250_TOLP_20131118135041.txt',
                                'T1250_TOLP_20131118125707.txt']}}
 
@@ -166,13 +168,14 @@ class TestFilterDaemon(unittest2.TestCase):
         """Test outbound file write-out.
         """
         data = '%s\n' % 'xxx'
-        base_dir = tempfile.mkdtemp()
-
-        old_staging = self._fd.staging_base
-        self._fd.set_staging_base(base_dir)
 
         fhs = {}
-        self._fd.write(data, fhs, 'parcelpoint', self._file, dry=False)
+        kwargs = {'data': data,
+                  'fhs': fhs,
+                  'delivery_partner': 'parcelpoint',
+                  'infile': self._file,
+                  'dry': False}
+        self._fd.write(**kwargs)
         files_closed = self._fd.close(fhs)
 
         outfile = files_closed[0]
@@ -185,12 +188,11 @@ class TestFilterDaemon(unittest2.TestCase):
 
         # Clean up.
         remove_files(outfile)
-        os.removedirs(os.path.join(base_dir, 'parcelpoint', 'out'))
-        self._fd.set_staging_base(old_staging)
+        os.removedirs(os.path.join(self._out_dir, 'parcelpoint', 'out'))
 
     @classmethod
     def tearDownClass(cls):
+        del cls._out_dir
         del cls._test_dir
         del cls._file
-        cls._fd = None
         del cls._fd
