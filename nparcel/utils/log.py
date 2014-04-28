@@ -30,7 +30,7 @@ locations = [
     os.environ.get("LOG_CONF"),
     os.curdir,
     os.path.expanduser("~"),
-    os.path.join(os.path.expanduser("~"), '.nparceld'),
+    os.path.join(os.path.expanduser("~"), '.top'),
 ]
 
 found_log_config = False

@@ -128,7 +128,7 @@ the required configuration options:
       -b, --batch           single pass batch mode
       -c CONFIG, --config=CONFIG
                               override default config
-                              "/home/npprod/.nparceld/top.conf"
+                              "/home/npprod/.top/top.conf"
       -f FILE, --file=FILE  file to process inline (start only)
 
 Primary Elect Nofitications

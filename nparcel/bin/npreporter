@@ -18,9 +18,7 @@ REPORTS = ['uncollected',
 
 
 def main():
-    config_file = os.path.join(os.path.expanduser('~'),
-                               '.nparceld',
-                               'top.conf')
+    config_file = os.path.join(os.path.expanduser('~'), '.top', 'top.conf')
 
     based = nparcel.BaseD(config=config_file)
     based.set_command('start')

@@ -1,0 +1,50 @@
+#!/usr/bin/python
+
+import os
+import inspect
+
+import nparcel
+from nparcel.utils.log import (log,
+                               set_console,
+                               set_log_level)
+
+
+def main():
+    based = nparcel.BaseD()
+    script_name = inspect.getfile(inspect.currentframe())
+    script_name = os.path.basename(script_name)
+    based.set_script_name(script_name)
+    based.parser.add_option('-f', '--file',
+                            dest='file',
+                            help='file to process inline (start only)')
+    based.check_args()
+
+    if based.command != 'start' and based.options.file:
+        based.parser.error('invalid option(s) with command "%s"' %
+                           based.command)
+
+    if based.command == 'status' or based.options.dry is not None:
+        set_console()
+
+    # Enable detailed logging if required.
+    if based.options.verbose == 0:
+        set_log_level('INFO')
+    else:
+        log.debug('Logging verbosity set to "DEBUG" level')
+
+    # Check if a filename was provided on the command line.
+    file = None
+    if based.options.file:
+        file = based.options.file
+
+    # OK, start processing.
+    adpd = nparcel.AdpDaemon(pidfile=based.pidfile,
+                             file=file,
+                             dry=based.dry,
+                             batch=based.batch,
+                             config=based.options.config)
+
+    based.launch_command(adpd, script_name)
+
+if __name__ == '__main__':
+    main()

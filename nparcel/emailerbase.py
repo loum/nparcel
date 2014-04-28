@@ -23,7 +23,7 @@ class EmailerBase(object):
     _facility = None
     _hostname = socket.gethostname()
     _template_base = os.path.join(os.path.expanduser('~'),
-                                  '.nparceld',
+                                  '.top',
                                   'templates')
 
     def __init__(self, template_base=None):

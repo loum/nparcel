@@ -92,4 +92,4 @@ configuration.
     -d, --dry             dry run - show what would have been done
     -c CONFIG, --config=CONFIG
                             override default config
-                            "/home/npprod/.nparceld/top.conf"
+                            "/home/npprod/.top/top.conf"

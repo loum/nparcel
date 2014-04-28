@@ -6,7 +6,7 @@ from optparse import OptionParser
 
 
 class BaseD(object):
-    """Nparcel base daemoniser.
+    """Base daemoniser.
 
     .. attribute:: config
 
@@ -45,7 +45,7 @@ class BaseD(object):
         name of the PID file
 
     """
-    _config = os.path.join(os.path.expanduser('~'), '.nparceld', 'top.conf')
+    _config = os.path.join(os.path.expanduser('~'), '.top', 'top.conf')
     _usage = 'usage: %prog [options] start|stop|status'
     _parser = OptionParser(usage=_usage)
     _dry = False
@@ -137,7 +137,7 @@ class BaseD(object):
     def pidfile(self):
         if self._pidfile is None and self._script_name is not None:
             self._pidfile = os.path.join(os.path.expanduser('~'),
-                                         '.nparceld',
+                                         '.top',
                                          'pids',
                                          '%s.pid' % self._script_name)
 

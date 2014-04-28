@@ -173,7 +173,7 @@ class Emailer(nparcel.EmailerBase):
 
         **Kwargs:**
             *base_dir*: override the standard location to search for the
-            templates (default ``~user_home/.nparceld/templates``).
+            templates (default ``~user_home/.top/templates``).
 
             *files*: list of files to send as an attachment
 

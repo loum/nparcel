@@ -10,9 +10,9 @@ The current Toll Parcel Portal database arrangement is active/passive in
 nature and requires manual intervention to failover.  As such, two separate
 configuration files are required:
 
-* Prod-aware DB config file (``~/.nparceld/top.conf.prod``)
+* Prod-aware DB config file (``~/.top/top.conf.prod``)
 
-* DR-aware DB config file (``~/.nparceld/top.conf.dr``)
+* DR-aware DB config file (``~/.top/top.conf.dr``)
 
 Preparing for Failover
 ----------------------
@@ -20,20 +20,20 @@ Preparing for Failover
 Following a standard Toll Parcel Portal install, the ``top.conf`` will
 be pointing to the most recent package release version::
 
-    $ tree ~/.nparceld
-    .nparceld
+    $ tree ~/.top
+    .top
     ...
     |-- top.conf -> conf/top.conf.0.22
     ...
 
 We need to break this soft link and replace it with the **prod** variant::
 
-    $ cd ~/.nparceld
+    $ cd ~/.top
     $ rm top.conf
     $ ln -s conf/top.conf.0.22 top.conf.prod
     $ ln -s top.conf.prod top.conf
-    $ tree ~/.nparceld
-    .nparceld
+    $ tree ~/.top
+    .top
     ...
     |-- top.conf -> top.conf.prod
     |-- top.conf.prod -> conf/top.conf.0.22
@@ -61,7 +61,7 @@ Perform a Failover
 To failover to the DR instance, soft link the ``top.conf`` file
 to the **dr** instance::
 
-    $ cd ~/.nparceld
+    $ cd ~/.top
     $ rm top.conf
     $ ln -s top.conf.dr top.conf
 

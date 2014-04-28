@@ -6,8 +6,7 @@ import datetime
 
 import nparcel
 
-#IN_DIR = "/users/npprod/.nparceld/logs"
-IN_DIR = "/var/tmp"
+IN_DIR = "/users/npprod/.top/logs"
 IN_FILE = "npexporterd.log"
 
 

@@ -296,7 +296,7 @@ file to control processing workflow.
       -b, --batch           single pass batch mode
       -c CONFIG, --config=CONFIG
                             override default config
-                            "/home/guest/.nparceld/top.conf"
+                            "/home/guest/.top/top.conf"
       -f FILE, --file=FILE  file to process inline (start only)
 
 Errors

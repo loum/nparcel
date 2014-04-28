@@ -41,19 +41,19 @@ display to the terminal the files and directories that will be required::
     Logging verbosity set to "INFO" level
     Processing dry run True
     Starting npinit ...
-    Preparing environment in "/home/guest/.nparceld"
+    Preparing environment in "/home/guest/.top"
     Copying "/usr/lib/python2.4/site-packages/nparcel/conf/init.conf.0.34"
     ...
 
-``npinit`` will create the base directory structure in the ``.nparceld``
+``npinit`` will create the base directory structure in the ``.top``
 directory off the current user's home directory.
 
 Keys Files at a Glance ...
 ++++++++++++++++++++++++++
 As of *release 0.34*, the required directory structure is as follows::
 
-    $ tree .nparceld
-    .nparceld
+    $ tree .top
+    .top
     |-- conf
     |   |-- init.conf
     |   |-- init.conf.0.34
@@ -105,24 +105,24 @@ Enable the Logger Handlers
 ++++++++++++++++++++++++++
 Log handlers manage the log files and need to be configured::
 
-    $ cd ~/.nparceld
+    $ cd ~/.top
     $ ln -s conf/log.conf.0.34 log.conf
 
 Set the Default Configuration
 +++++++++++++++++++++++++++++
 All commands use some form of configuration.  By default, the middleware B2C
-components look for the default config at ``~.nparceld/top.conf``::
+components look for the default config at ``~.top/top.conf``::
 
     $ nploaderd status
     2013-10-08 17:26:04,266 CRITICAL:: Unable to locate config file:
-    "/home/guest/.nparceld/top.conf"
+    "/home/guest/.top/top.conf"
 
 .. note::
     The default config settings are explained in the :ref:`config_items`
 
 As a start, we can use the package-provided default::
 
-    $ cd ~/.nparceld
+    $ cd ~/.top
     $ ln -s conf/top.conf.0.34 top.conf
 
 From here we should get some sane information::
@@ -195,7 +195,7 @@ The outbound FTP service has its own configuration file, ``ftp.conf``.
 ``npinit`` will provide a package version-based default but this needs to
 be linked to the appropriate location::
 
-    $ cd ~/.nparceld
+    $ cd ~/.top
     $ ln -s conf/ftp.conf.0.34 ftp.conf
 
 Upgrade

@@ -42,7 +42,7 @@ Business Unit Interfaces
 The configuration file for the outbound FTP facility is ``ftp.conf``.  The
 default location for the file is::
 
-    ~/.nparceld/conf/ftp.conf
+    ~/.top/conf/ftp.conf
 
 A typical entry for *Priority* is shown below::
 
@@ -191,7 +191,7 @@ example, the Priority report file ``VIC_VANA_REP_20131108145146.txt``
       -d, --dry             dry run - show what would have been done
       -c CONFIG, --config=CONFIG
                             override default config
-                            "/home/lupco/.nparceld/ftp.conf"
+                            "/home/lupco/.top/ftp.conf"
 
 ``npftp`` has been designed to run as a batch process and can be executed
 via cron with the following entry::

@@ -252,7 +252,7 @@ batch mode.
       -b, --batch           single pass batch mode
       -c CONFIG, --config=CONFIG
                             override default config
-                            "/home/npprod/.nparceld/top.conf"
+                            "/home/npprod/.top/top.conf"
 
 .. _crontab:
 

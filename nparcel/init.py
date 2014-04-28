@@ -16,7 +16,7 @@ class Init(object):
     .. attribute:: base_dir
 
         The target directory to copy files.  Default is
-        ``~<user_home>/.nparceld``
+        ``~<user_home>/.top``
 
     .. attribute:: unconditional_files
 
@@ -40,9 +40,8 @@ class Init(object):
 
     def __init__(self,
                  config_file=None,
-                 base_dir=os.path.join(os.path.expanduser('~'),
-                                       '.nparceld')):
-        """Nparcel Initialiser initialiser.
+                 base_dir=os.path.join(os.path.expanduser('~'), '.top')):
+        """Initialiser initialiser.
         """
         path = os.path.join(self.path, 'nparcel', 'conf', 'init.conf')
         if config_file is not None:

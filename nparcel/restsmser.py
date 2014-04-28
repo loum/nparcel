@@ -21,7 +21,7 @@ class RestSmser(nparcel.Rest):
     """
     _facility = None
     _template_base = os.path.join(os.path.expanduser('~'),
-                                  '.nparceld',
+                                  '.top',
                                   'templates')
 
     def __init__(self,
@@ -76,7 +76,7 @@ class RestSmser(nparcel.Rest):
             For example, ``ret`` for the returns template
 
             *base_dir*: override the standard location to search for the
-            SMS XML template (default ``~user_home/.nparceld/templates``).
+            SMS XML template (default ``~user_home/.top/templates``).
 
             *prod*: hostname of the production instance machine
 

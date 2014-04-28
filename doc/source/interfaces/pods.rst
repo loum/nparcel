@@ -66,7 +66,7 @@ This will produce the following directory path::
       -b, --batch           single pass batch mode
       -c CONFIG, --config=CONFIG
                             override default config
-                            "~/.nparceld/top.conf"
+                            "~/.top/top.conf"
     
 As an example::
 
