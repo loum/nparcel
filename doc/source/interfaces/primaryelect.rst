@@ -55,7 +55,7 @@ Some notable functionality provided by the translation process:
 ``npmapperd`` Configuration Items
 *********************************
 
-:mod:`nparcel.mapper` uses the standard ``nparceld.conf`` configuration
+:mod:`nparcel.mapper` uses the standard ``top.conf`` configuration
 file to define the WebMethods interface.  The following list details
 the required configuration options:
 
@@ -128,7 +128,7 @@ the required configuration options:
       -b, --batch           single pass batch mode
       -c CONFIG, --config=CONFIG
                               override default config
-                              "/home/npprod/.nparceld/nparceld.conf"
+                              "/home/npprod/.nparceld/top.conf"
       -f FILE, --file=FILE  file to process inline (start only)
 
 Primary Elect Nofitications

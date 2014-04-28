@@ -26,7 +26,7 @@ during their stocktake that present in the Toll Parcel Portal DB as aged
 
 The Uncollected report is run on a per business Unit basis defined by the
 :attr:`b2ccconfig.reporterb2cconfig.bu_based` attribute setting under the
-``[report_uncollected]`` section in ``nparceld.conf``.
+``[report_uncollected]`` section in ``top.conf``.
 
 The following sample is for **Priority**:
 
@@ -101,7 +101,7 @@ stocktake that do not exist in the Toll Parcel Portal DB.
 ----------------------------------
 
 The ``npreporter`` configuration items are contained within the default
-``nparceld.conf`` file and parsed by the
+``top.conf`` file and parsed by the
 :mod:`nparcel.b2cconfig.reporterb2cconfig` module.  The reporter configuration
 items can be general or report-type specific.  The report specific entities
 contain their own section headers in the format ``[report_<report_type>]``.
@@ -252,7 +252,7 @@ batch mode.
       -b, --batch           single pass batch mode
       -c CONFIG, --config=CONFIG
                             override default config
-                            "/home/npprod/.nparceld/nparceld.conf"
+                            "/home/npprod/.nparceld/top.conf"
 
 .. _crontab:
 

@@ -66,7 +66,7 @@ This will produce the following directory path::
       -b, --batch           single pass batch mode
       -c CONFIG, --config=CONFIG
                             override default config
-                            "~/.nparceld/nparceld.conf"
+                            "~/.nparceld/top.conf"
     
 As an example::
 
@@ -77,7 +77,7 @@ As an example::
 ``nppod`` Configuration Items
 -----------------------------
 
-The ``nppod`` utility uses the default ``nparceld.conf`` file to parse
+The ``nppod`` utility uses the default ``top.conf`` file to parse
 the ``archive_directory`` value.  POD files are archived to this location.
 
 * ``archive_dir`` (default /data/nparcel/archive)

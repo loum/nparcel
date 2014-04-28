@@ -84,7 +84,7 @@ On Delivery comms trigger process::
       -b, --batch           single pass batch mode
       -c CONFIG, --config=CONFIG
                             override default config
-                            "/home/npprod/.nparceld/nparceld.conf"
+                            "/home/npprod/.nparceld/top.conf"
       -f FILE, --file=FILE  file to process inline (start only)
 
 ADP Insert
@@ -128,7 +128,7 @@ typical mail message is shown below:
 ``npadpd`` Configuration Items
 ------------------------------
 
-The ``npondeliveryd`` utility uses the default ``nparceld.conf`` file to
+The ``npondeliveryd`` utility uses the default ``top.conf`` file to
 control processing workflows.
 
 .. note::

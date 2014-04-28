@@ -45,9 +45,7 @@ class BaseD(object):
         name of the PID file
 
     """
-    _config = os.path.join(os.path.expanduser('~'),
-                           '.nparceld',
-                           'nparceld.conf')
+    _config = os.path.join(os.path.expanduser('~'), '.nparceld', 'top.conf')
     _usage = 'usage: %prog [options] start|stop|status'
     _parser = OptionParser(usage=_usage)
     _dry = False

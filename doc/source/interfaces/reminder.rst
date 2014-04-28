@@ -47,7 +47,7 @@ which match the following criteria:
 
 ``npreminderd`` Configuration Items
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-``npreminderd`` uses the generic ``nparceld.conf`` file to manage its
+``npreminderd`` uses the generic ``top.conf`` file to manage its
 configuration.
 
 .. note::
@@ -92,4 +92,4 @@ configuration.
     -d, --dry             dry run - show what would have been done
     -c CONFIG, --config=CONFIG
                             override default config
-                            "/home/npprod/.nparceld/nparceld.conf"
+                            "/home/npprod/.nparceld/top.conf"

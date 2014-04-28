@@ -18,7 +18,7 @@ class TestHealthB2CConfig(unittest2.TestCase):
     def test_parse_config(self):
         """Parse comms items from the config.
         """
-        config_file = os.path.join('nparcel', 'conf', 'nparceld.conf')
+        config_file = os.path.join('nparcel', 'conf', 'top.conf')
 
         self._c.set_config_file(config_file)
         self._c.parse_config()

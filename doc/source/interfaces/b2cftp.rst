@@ -39,10 +39,10 @@ Configuration
 
 Business Unit Interfaces
 ++++++++++++++++++++++++
-The configuration file for the outbound FTP facility is ``npftp.conf``.  The
+The configuration file for the outbound FTP facility is ``ftp.conf``.  The
 default location for the file is::
 
-    ~/.nparceld/conf/npftp.conf
+    ~/.nparceld/conf/ftp.conf
 
 A typical entry for *Priority* is shown below::
 
@@ -148,7 +148,7 @@ will attempt to place a copy of the transferred file into the directories
 Archive Directory
 +++++++++++++++++
 
-The ``archive`` option is part of the **npftp.conf** ``dirs`` section.
+The ``archive`` option is part of the **ftp.conf** ``dirs`` section.
 This value is captured in the :attr:`archive_dir` attribute.
 
 The outbound FTP facility will attempt to archive files upon successful
@@ -191,7 +191,7 @@ example, the Priority report file ``VIC_VANA_REP_20131108145146.txt``
       -d, --dry             dry run - show what would have been done
       -c CONFIG, --config=CONFIG
                             override default config
-                            "/home/lupco/.nparceld/npftp.conf"
+                            "/home/lupco/.nparceld/ftp.conf"
 
 ``npftp`` has been designed to run as a batch process and can be executed
 via cron with the following entry::

@@ -194,7 +194,7 @@ In the example above, the string ``faswbaup02`` should be assigned to the
 ``npcommsd`` Configuration Items
 --------------------------------
 
-The ``npcommsd`` utility uses the default ``nparceld.conf`` configuration
+The ``npcommsd`` utility uses the default ``top.conf`` configuration
 file to control processing workflow.
 
 .. note::
@@ -296,7 +296,7 @@ file to control processing workflow.
       -b, --batch           single pass batch mode
       -c CONFIG, --config=CONFIG
                             override default config
-                            "/home/guest/.nparceld/nparceld.conf"
+                            "/home/guest/.nparceld/top.conf"
       -f FILE, --file=FILE  file to process inline (start only)
 
 Errors

@@ -253,7 +253,7 @@ class HealthDaemon(nparcel.DaemonService):
 def main():
     config_file = os.path.join(os.path.expanduser('~'),
                                '.nparceld',
-                               'nparceld.conf')
+                               'top.conf')
 
     based = nparcel.BaseD(config=config_file)
     based.set_command('start')

@@ -15,9 +15,7 @@ class TestComms(unittest2.TestCase):
         cls.maxDiff = None
 
         conf = nparcel.CommsB2CConfig()
-        conf.set_config_file(os.path.join('nparcel',
-                                          'conf',
-                                          'nparceld.conf'))
+        conf.set_config_file(os.path.join('nparcel', 'conf', 'top.conf'))
         conf.parse_config()
         proxy = conf.proxy_string()
         cls._c = nparcel.Comms(proxy=proxy,

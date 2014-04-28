@@ -65,13 +65,13 @@ precedence as to which token is matched first.
       -b, --batch           single pass batch mode
       -c CONFIG, --config=CONFIG
                             override default config
-                            "/home/npprod/.nparceld/nparceld.conf"
+                            "/home/npprod/.nparceld/top.conf"
       -f FILE, --file=FILE  file to process inline (start only)
 
 ``npfilterd`` Configuration Items
 ---------------------------------
 
-``npfilterd`` uses the standard ``nparceld.conf`` configuration file.  The
+``npfilterd`` uses the standard ``top.conf`` configuration file.  The
 following list details the required configuration options:
 
 * ``aggregator_dirs`` (under the ``[dirs]`` section)

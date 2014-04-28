@@ -58,8 +58,8 @@ As of *release 0.34*, the required directory structure is as follows::
     |   |-- init.conf
     |   |-- init.conf.0.34
     |   |-- log.conf.0.34
-    |   |-- nparceld.conf.0.34
-    |   `-- npftp.conf.0.34
+    |   |-- top.conf.0.34
+    |   `-- ftp.conf.0.34
     |-- logs
     `-- templates
         |-- email_body_html.t
@@ -111,11 +111,11 @@ Log handlers manage the log files and need to be configured::
 Set the Default Configuration
 +++++++++++++++++++++++++++++
 All commands use some form of configuration.  By default, the middleware B2C
-components look for the default config at ``~.nparceld/nparceld.conf``::
+components look for the default config at ``~.nparceld/top.conf``::
 
     $ nploaderd status
     2013-10-08 17:26:04,266 CRITICAL:: Unable to locate config file:
-    "/home/guest/.nparceld/nparceld.conf"
+    "/home/guest/.nparceld/top.conf"
 
 .. note::
     The default config settings are explained in the :ref:`config_items`
@@ -123,7 +123,7 @@ components look for the default config at ``~.nparceld/nparceld.conf``::
 As a start, we can use the package-provided default::
 
     $ cd ~/.nparceld
-    $ ln -s conf/nparceld.conf.0.34 nparceld.conf
+    $ ln -s conf/top.conf.0.34 top.conf
 
 From here we should get some sane information::
 
@@ -133,8 +133,8 @@ From here we should get some sane information::
 Provide Database Connection Details
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 For the middleware B2C tools to be useful, you will need to add the database
-instance connection details into the ``nparceld.conf`` configuration file.
-By default, a new ``nparceld.conf`` configuration file features a section
+instance connection details into the ``top.conf`` configuration file.
+By default, a new ``top.conf`` configuration file features a section
 stub::
 
     [db]
@@ -185,18 +185,18 @@ section::
 
 Verify the Supplied Defaults
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Where possible, the new package ``nparceld.conf`` file tries to provide sane
+Where possible, the new package ``top.conf`` file tries to provide sane
 defaults for the various facilities.  Adjust these to suit your
 requirements.
 
 Set the Outbound FTP Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The outbound FTP service has its own configuration file, ``npftp.conf``.
+The outbound FTP service has its own configuration file, ``ftp.conf``.
 ``npinit`` will provide a package version-based default but this needs to
 be linked to the appropriate location::
 
     $ cd ~/.nparceld
-    $ ln -s conf/npftp.conf.0.34 npftp.conf
+    $ ln -s conf/ftp.conf.0.34 ftp.conf
 
 Upgrade
 -------
@@ -204,7 +204,7 @@ Upgrade
 upgrade.  ``npinit`` will ensure that the required files (new or existing)
 are put in their correct place.
 
-Certain configuration files (such as ``nparceld.conf`` and ``npftp.conf``)
+Certain configuration files (such as ``top.conf`` and ``ftp.conf``)
 are not clobberred as to not override interface connection credentials.  In
 this case, an additional manual step would be required to copy over the
 connection credentials into the new, package-versioned configuration file and
@@ -224,7 +224,7 @@ relink.
 Verify Existing Options
 +++++++++++++++++++++++
 If your existing configuration arrangement features customisations, ensure
-that you copy these over to the new ``nparceld.conf`` file.
+that you copy these over to the new ``top.conf`` file.
 
 The defaults are a good starting point but probably not what you require.
 

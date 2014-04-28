@@ -8,10 +8,10 @@ class TestReporterB2CConfig(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._file = os.path.join('nparcel', 'conf', 'nparceld.conf')
+        cls._file = os.path.join('nparcel', 'conf', 'top.conf')
 
     def setUp(self):
-        sconfig_file = os.path.join('nparcel', 'conf', 'nparceld.conf')
+        sconfig_file = os.path.join('nparcel', 'conf', 'top.conf')
         self._rc = nparcel.ReporterB2CConfig()
 
     def test_init(self):
@@ -23,7 +23,7 @@ class TestReporterB2CConfig(unittest2.TestCase):
     def test_parse_config(self):
         """Parse comms items from the config.
         """
-        config_file = os.path.join('nparcel', 'conf', 'nparceld.conf')
+        config_file = os.path.join('nparcel', 'conf', 'top.conf')
         self._rc.set_config_file(config_file)
         self._rc.parse_config()
 

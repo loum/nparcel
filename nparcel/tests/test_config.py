@@ -1,4 +1,5 @@
 import unittest2
+import os
 
 import nparcel
 
@@ -7,7 +8,7 @@ class TestConfig(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._file = 'nparcel/conf/nparceld.conf'
+        cls._file = os.path.join('nparcel', 'conf', 'top.conf')
 
     def setUp(self):
         self._c = nparcel.Config()
@@ -27,7 +28,8 @@ class TestConfig(unittest2.TestCase):
         """Read valid config.
         """
         old_config = self._c.config_file
-        received = self._c.set_config_file('nparcel/conf/nparceld.conf')
+        config = os.path.join('nparcel', 'conf', 'top.conf')
+        received = self._c.set_config_file(config)
         msg = 'Config should read without error and return None'
         self.assertIsNone(received, msg)
 

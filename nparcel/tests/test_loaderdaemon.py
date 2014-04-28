@@ -16,7 +16,7 @@ class TestLoaderDaemon(unittest2.TestCase):
         cls._test_dir = os.path.join('nparcel', 'tests', 'files')
         cls._file = os.path.join(cls._test_dir,
                                  'T1250_TOLI_20130828202901.txt')
-        config = os.path.join('nparcel', 'conf', 'nparceld.conf')
+        config = os.path.join('nparcel', 'conf', 'top.conf')
         cls._d = nparcel.LoaderDaemon(pidfile=None, config=config)
         cls._d.emailer.set_template_base(os.path.join('nparcel',
                                                       'templates'))

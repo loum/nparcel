@@ -164,13 +164,13 @@ configuration condition_map::
       -b, --batch           single pass batch mode
       -c CONFIG, --config=CONFIG
                             override default config
-                            "/home/npprod/.nparceld/nparceld.conf"
+                            "/home/npprod/.nparceld/top.conf"
       -f FILE, --file=FILE  file to process inline (start only)
 
 ``nploaderd`` Configuration Items
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``nploaderd`` uses the standard ``nparceld.conf`` configuration file to
+``nploaderd`` uses the standard ``top.conf`` configuration file to
 control processing behaviour.  The following list details the required
 configuration options:
 

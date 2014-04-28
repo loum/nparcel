@@ -115,13 +115,13 @@ base directory will have ``podtranslated`` appended to it.
       -b, --batch           single pass batch mode
       -c CONFIG, --config=CONFIG
                             override default config
-                            "/home/npprod/.nparceld/nparceld.conf"
+                            "/home/npprod/.nparceld/top.conf"
       -f FILE, --file=FILE  file to process inline (start only)
 
 ``nppoderd`` Configuration Items
 --------------------------------
 
-``nppoderd`` uses the standard ``nparceld.conf`` configuration file.  The
+``nppoderd`` uses the standard ``top.conf`` configuration file.  The
 following list details the required configuration options:
 
 .. note::

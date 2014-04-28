@@ -8,7 +8,7 @@ class TestB2CConfig(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._file = os.path.join('nparcel', 'conf', 'nparceld.conf')
+        cls._file = os.path.join('nparcel', 'conf', 'top.conf')
 
     def setUp(self):
         self._c = nparcel.B2CConfig()

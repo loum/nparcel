@@ -14,7 +14,7 @@ from nparcel.utils.log import (log,
 def main():
     config = os.path.join(os.path.expanduser('~'),
                           '.nparceld',
-                          'npftp.conf')
+                          'ftp.conf')
 
     usage = "usage: %prog [options]"
     parser = OptionParser(usage=usage)

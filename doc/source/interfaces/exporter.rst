@@ -105,7 +105,7 @@ The list of possible columns that can be displayed include:
 ``npexporterd`` Configuration Items
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``npexporterd`` uses the standard ``nparceld.conf`` configuration file to
+``npexporterd`` uses the standard ``top.conf`` configuration file to
 control processing behaviour.  The following list details the required
 configuration options:
 
@@ -228,4 +228,4 @@ configuration options:
       -b, --batch           single pass batch mode
       -c CONFIG, --config=CONFIG
                             override default config
-                            "/home/npprod/.nparceld/nparceld.conf"
+                            "/home/npprod/.nparceld/top.conf"
