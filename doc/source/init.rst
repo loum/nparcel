@@ -15,17 +15,17 @@ the functionality to be useful.
 Fresh Install
 -------------
 
-The ``npinit`` command creates the required directory structure and places
+The ``topinit`` command creates the required directory structure and places
 the required templates and configuration files in the default location.
 
-.. _npinit-usage:
+.. _topinit-usage:
 
-``npinit`` Usage
-++++++++++++++++
+``topinit`` Usage
+++++++++++++++++++
 
 ::
 
-    usage: npinit [options]
+    usage: topinit [options]
     
     options:
       -h, --help            show this help message and exit
@@ -34,18 +34,18 @@ the required templates and configuration files in the default location.
       -c CONFIG, --config=CONFIG
                             override default config
 
-``npinit`` with the dry flag is a useful starting point as it will only
+``topinit`` with the dry flag is a useful starting point as it will only
 display to the terminal the files and directories that will be required::
 
-    $ npinit -d
+    $ topinit -d
     Logging verbosity set to "INFO" level
     Processing dry run True
-    Starting npinit ...
+    Starting topinit ...
     Preparing environment in "/home/guest/.top"
     Copying "/usr/lib/python2.4/site-packages/nparcel/conf/init.conf.0.34"
     ...
 
-``npinit`` will create the base directory structure in the ``.top``
+``topinit`` will create the base directory structure in the ``.top``
 directory off the current user's home directory.
 
 Keys Files at a Glance ...
@@ -113,7 +113,7 @@ Set the Default Configuration
 All commands use some form of configuration.  By default, the middleware B2C
 components look for the default config at ``~.top/top.conf``::
 
-    $ nploaderd status
+    $ toploaderd status
     2013-10-08 17:26:04,266 CRITICAL:: Unable to locate config file:
     "/home/guest/.top/top.conf"
 
@@ -127,8 +127,8 @@ As a start, we can use the package-provided default::
 
 From here we should get some sane information::
 
-    $ nploaderd status
-    nploaderd is idle
+    $ toploaderd status
+    toploaderd is idle
 
 Provide Database Connection Details
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -192,7 +192,7 @@ requirements.
 Set the Outbound FTP Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The outbound FTP service has its own configuration file, ``ftp.conf``.
-``npinit`` will provide a package version-based default but this needs to
+``topinit`` will provide a package version-based default but this needs to
 be linked to the appropriate location::
 
     $ cd ~/.top
@@ -200,8 +200,8 @@ be linked to the appropriate location::
 
 Upgrade
 -------
-:ref:`npinit <npinit-usage>` can again be used to prepare the environment during a package
-upgrade.  ``npinit`` will ensure that the required files (new or existing)
+:ref:`topinit <topinit-usage>` can again be used to prepare the environment during a package
+upgrade.  ``topinit`` will ensure that the required files (new or existing)
 are put in their correct place.
 
 Certain configuration files (such as ``top.conf`` and ``ftp.conf``)
@@ -210,7 +210,7 @@ this case, an additional manual step would be required to copy over the
 connection credentials into the new, package-versioned configuration file and
 relink.
 
-``npinit`` arranges files into two categories:
+``topinit`` arranges files into two categories:
 
 * **unconditional** - existing files are clobberred to conform to the
   requirments of the package software
@@ -231,16 +231,16 @@ The defaults are a good starting point but probably not what you require.
 Starting the Daemons
 --------------------
 
-As of *version 0.32*, ``npctrl`` can be used to start and stop all
+As of *version 0.32*, ``topctrl`` can be used to start and stop all
 middleware daemons in a single call.
 
-``npctrl`` Usage
-++++++++++++++++
+``topctrl`` Usage
++++++++++++++++++
 
 ::
 
-    npctrl -h
-    usage: npctrl [options] start|stop|status
+    topctrl -h
+    usage: topctrl [options] start|stop|status
 
     options:
       -h, --help            show this help message and exit
@@ -248,27 +248,30 @@ middleware daemons in a single call.
 
 For example::
 
-    $ npctrl start
-    Starting nploaderd as daemon ...
-    Starting npexporterd as daemon ...
-    Starting npfilterd as daemon ...
-    Starting npmapperd as daemon ...
-    Starting npondeliveryd as daemon ...
-    Starting npreminderd as daemon ...
-    Starting npcommsd as daemon ...
+    $ topctrl start
+    Starting toploaderd as daemon ...
+    Starting topexporterd as daemon ...
+    Starting topfilterd as daemon ...
+    Starting topmapperd as daemon ...
+    Starting topondeliveryd as daemon ...
+    Starting topreminderd as daemon ...
+    Starting topcommsd as daemon ...
+    Starting toppoderd as daemon ...
 
-    $ npctrl stop
-    Stopping nploaderd ...
+    $ topctrl stop
+    Stopping toploaderd ...
     OK
-    Stopping npexporterd ...
+    Stopping topexporterd ...
     OK
-    Stopping npfilterd ...
+    Stopping topfilterd ...
     OK
-    Stopping npmapperd ...
+    Stopping topmapperd ...
     OK
-    Stopping npondeliveryd ...
+    Stopping topondeliveryd ...
     OK
-    Stopping npreminderd ...
+    Stopping topreminderd ...
     OK
-    Stopping npcommsd ...
+    Stopping topcommsd ...
+    OK
+    Stopping toppoderd ...
     OK

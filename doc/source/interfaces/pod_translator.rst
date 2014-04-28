@@ -23,13 +23,13 @@ The business rules required by FAST include:
 POD Translator Workflow
 -----------------------
 
-The POD Translator facility is managed by the ``nppoderd`` daemon.  The
+The POD Translator facility is managed by the ``toppoderd`` daemon.  The
 solution was designed to sit in between the ParcelPoint report inbound
 directory and the Business Unit report outbound directory.  As such,
 required configuration parameters include the inbound
 :ref:`pod_dirs <pod_dirs>` and the outbound :ref:`out_dir <out_dir>`.
 
-In general, ``nppoderd`` will source files from :ref:`pod_dirs <pod_dirs>`
+In general, ``toppoderd`` will source files from :ref:`pod_dirs <pod_dirs>`
 and deposit translated files to :ref:`out_dir <out_dir>`.
 
 The Token Generator
@@ -40,7 +40,7 @@ unique, unambiguous numeric representation for a POD identifier.
 
 .. note::
 
-    Unique and unambiguous only if a single instance of ``nppoderd``
+    Unique and unambiguous only if a single instance of ``toppoderd``
     is active.
         
 The token generation algorithm is based on seconds since epoch which
@@ -60,7 +60,7 @@ Token generation is based on current time.
 Token Substitution
 ^^^^^^^^^^^^^^^^^^
 
-With the new token generated, ``nppoderd`` will attempt to substitute the
+With the new token generated, ``toppoderd`` will attempt to substitute the
 ``JOB_KEY`` column value in the report file and the names of the signature
 files.  For example, if the original files in the source directory
 include::
@@ -100,13 +100,13 @@ At the end of successful processing, the original file will be archived
 as per the :ref:`archive_dir <archive_dir>` setting.  By default, this
 base directory will have ``podtranslated`` appended to it.
 
-``nppoderd`` Usage
-------------------
+``toppoderd`` Usage
+-------------------
 
-``nppoderd`` can be run as a daemon as per the following::
+``toppoderd`` can be run as a daemon as per the following::
 
-    $ nppoderd --help
-    usage: nppoderd [options] start|stop|status
+    $ toppoderd --help
+    usage: toppoderd [options] start|stop|status
     
     options:
       -h, --help            show this help message and exit
@@ -118,10 +118,10 @@ base directory will have ``podtranslated`` appended to it.
                             "/home/npprod/.top/top.conf"
       -f FILE, --file=FILE  file to process inline (start only)
 
-``nppoderd`` Configuration Items
+``toppoderd`` Configuration Items
 --------------------------------
 
-``nppoderd`` uses the standard ``top.conf`` configuration file.  The
+``toppoderd`` uses the standard ``top.conf`` configuration file.  The
 following list details the required configuration options:
 
 .. note::

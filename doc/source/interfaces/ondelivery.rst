@@ -23,8 +23,8 @@ require this additional level of processing are:
 * **Priority Transfer out to V123 (Service Code 4)** or **Driver Transfer
   out to ADP (Service Code 2)**
 
-On Delivery comms trigger is processed by the ``npondeliveryd`` daemon.
-The ``npondeliveryd`` daemon polls alternate interfaces to identify
+On Delivery comms trigger is processed by the ``topondeliveryd`` daemon.
+The ``topondeliveryd`` daemon polls alternate interfaces to identify
 a delivery event at the Alternate Delivery Point.
 
 Parcels that are Pending Delivery
@@ -48,7 +48,7 @@ in the Toll Parcel Portal as:
 Parcels (``job_items``) within Toll Parcel Portal that exhibit these traits
 are extracted via the SQL query provided by
 :meth:`nparcel.table.jobitem.uncollected_jobitems_sql`.  From here,
-``npondeliveryd`` will poll the alternate interfaces for a delivered event.
+``topondeliveryd`` will poll the alternate interfaces for a delivered event.
 
 Delivery Partner Aware
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -70,7 +70,7 @@ suppressed.  The configuration setting required for this behaviour is::
     [comms_delivery_partners]
     Priority = Nparcel
 
-``npondeliveryd`` Interfaces
+``topondeliveryd`` Interfaces
 ----------------------------
 
 The alternate interfaces used include:
@@ -98,7 +98,7 @@ query set is shown below:
    :align: center
    :alt: TransSend query set
 
-``npondeliveryd`` uses the ``CONNOTE_NUMBER`` / ``ITEM_NUMBER`` TransSend
+``topondeliveryd`` uses the ``CONNOTE_NUMBER`` / ``ITEM_NUMBER`` TransSend
 columns to identify a parcel.  If found, it will check the
 ``LATEST_SCAN_EVENT_ACTION`` value for ``DELIVERED`` before setting the
 comms events files.
@@ -113,7 +113,7 @@ comms events files.
 TCD
 +++
 
-New in **version 0.28**, ``npondeliveryd`` now takes a daily extraction
+New in **version 0.28**, ``topondeliveryd`` now takes a daily extraction
 from TCD.  TCD push their report files to the Toll Parcel Portal FTP
 interface.  Typical contents are as follows::
 
@@ -128,7 +128,7 @@ These line items are read as four space-separated columns where:
 * column 4 -- ``Delivery Date``
 
 Should the ``Consignment Number`` / ``Item Number`` lookup result in a
-valid ``Delivery Date`` value then ``npondeliveryd`` will generate a
+valid ``Delivery Date`` value then ``topondeliveryd`` will generate a
 comms events file.
 
 Comms Templates
@@ -153,14 +153,14 @@ condition map setting.  If the **delay** template is preferred over the
 default **body** template then set position 12 of the ``conditions`` map for
 the appropriate Business Unit.
 
-``npondeliveryd`` Usage
------------------------
+``topondeliveryd`` Usage
+------------------------
 
-``npondeliveryd`` is a CLI-based daemoniser that controls the
+``topondeliveryd`` is a CLI-based daemoniser that controls the
 On Delivery comms trigger process::
 
-    $ npondeliveryd -h
-    usage: npondeliveryd [options] start|stop|status
+    $ topondeliveryd -h
+    usage: topondeliveryd [options] start|stop|status
     
     options:
       -h, --help            show this help message and exit
@@ -172,10 +172,10 @@ On Delivery comms trigger process::
                             "/home/npprod/.top/top.conf"
     -f FILE, --file=FILE  file to process inline (start only)
 
-``npondeliveryd`` Configuration Items
+``topondeliveryd`` Configuration Items
 -------------------------------------
 
-The ``npondeliveryd`` utility uses the default ``top.conf`` file to
+The ``topondeliveryd`` utility uses the default ``top.conf`` file to
 control processing workflows.
 
 .. note::
@@ -203,7 +203,7 @@ control processing workflows.
 
 * ``ondelivery_loop`` (under the ``[timeout]`` section)
 
-    time (seconds) between ``npondeliveryd`` processing iterations
+    time (seconds) between ``topondeliveryd`` processing iterations
 
 * ``pe_comms`` (set via the ``[conditions]`` map position 14)
 

@@ -10,7 +10,7 @@ from nparcel.utils.log import log
 
 class PodB2CConfig(nparcel.B2CConfig):
     """:class:`nparcel.PodB2CConfig` captures the configuration items
-    required for the ``nphealth`` facility.
+    required for the ``tophealth`` facility.
 
     .. attribute:: pod_translator_loop
 

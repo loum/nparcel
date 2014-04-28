@@ -9,7 +9,7 @@ from nparcel.utils.log import log
 
 class HealthB2CConfig(nparcel.B2CConfig):
     """:class:`nparcel.HealthB2CConfig` captures the configuration items
-    required for the ``nphealth`` facility.
+    required for the ``tophealth`` facility.
 
     .. attribute:: health_processes
 

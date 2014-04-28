@@ -10,7 +10,7 @@ from nparcel.utils.log import log
 
 class CommsB2CConfig(nparcel.B2CConfig):
     """:class:`nparcel.CommsB2CConfig` captures the configuration items
-    required for the ``npcommsd`` facility.
+    required for the ``topcommsd`` facility.
 
     .. attribute:: *comms_loop*
 

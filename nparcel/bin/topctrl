@@ -2,7 +2,7 @@
 
 function usage() {
 cat <<EOF
-usage: npctrl [options] start|stop|status
+usage: topctrl [options] start|stop|status
 
 options:
   -h, --help            show this help message and exit
@@ -12,7 +12,7 @@ EOF
 exit 1
 }
 
-FACILITIES="nploaderd npexporterd npfilterd npmapperd npondeliveryd npreminderd npcommsd nppoderd"
+FACILITIES="toploaderd topexporterd topfilterd topmapperd topondeliveryd topreminderd topcommsd toppoderd"
 BIN='/usr/local/bin'
 
 verbose=off

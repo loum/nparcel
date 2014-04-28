@@ -32,7 +32,7 @@ to the aggregator for futher processing.  This is controlled by the
     [conditions]
     TOLI = 10001001000001011
 
-The ``npfilterd`` daemon periodically polls the aggregator directory for
+The ``topfilterd`` daemon periodically polls the aggregator directory for
 new files.  Valid Delivery Partner records are identified by an agent code
 that starts with a pre-defined token.
 
@@ -50,13 +50,13 @@ For example, if the agent is ``P001`` then the rule to ``P``.  Similarly,
 ``P0`` would also match.  In this case, the order of the list will take
 precedence as to which token is matched first.
 
-``npfilterd`` Usage
--------------------
+``topfilterd`` Usage
+--------------------
 
-``npfilterd`` can be configured to run as a daemon as per the following::
+``topfilterd`` can be configured to run as a daemon as per the following::
 
-    $ npfilterd --help
-    usage: npfilterd [options] start|stop|status
+    $ topfilterd --help
+    usage: topfilterd [options] start|stop|status
     
     options:
       -h, --help            show this help message and exit
@@ -68,15 +68,15 @@ precedence as to which token is matched first.
                             "/home/npprod/.top/top.conf"
       -f FILE, --file=FILE  file to process inline (start only)
 
-``npfilterd`` Configuration Items
+``topfilterd`` Configuration Items
 ---------------------------------
 
-``npfilterd`` uses the standard ``top.conf`` configuration file.  The
+``topfilterd`` uses the standard ``top.conf`` configuration file.  The
 following list details the required configuration options:
 
 * ``aggregator_dirs`` (under the ``[dirs]`` section)
 
-    list of inbound directories for ``npfilterd`` where comms event files
+    list of inbound directories for ``topfilterd`` where comms event files
     are deposited for further processing
 
 * ``staging_base`` (under the ``[dirs]`` section)

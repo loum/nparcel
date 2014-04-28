@@ -10,7 +10,7 @@ from nparcel.utils.log import log
 
 class MapperB2CConfig(nparcel.B2CConfig):
     """:class:`nparcel.MapperB2CConfig` captures the configuration items
-    required for the ``npmapperd`` facility.
+    required for the ``topmapperd`` facility.
 
     .. attribute:: mapper_loop
 

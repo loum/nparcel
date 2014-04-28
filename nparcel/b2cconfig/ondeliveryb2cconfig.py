@@ -11,7 +11,7 @@ from nparcel.utils.setter import (set_scalar,
 
 class OnDeliveryB2CConfig(nparcel.B2CConfig):
     """:class:`nparcel.OnDeliveryB2CConfig` captures the configuration items
-    required for the ``npondeliveryd`` facility.
+    required for the ``topondeliveryd`` facility.
 
     .. attribute:: ondelivery_loop
 

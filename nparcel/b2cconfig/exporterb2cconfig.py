@@ -10,7 +10,7 @@ from nparcel.utils.log import log
 
 class ExporterB2CConfig(nparcel.B2CConfig):
     """:class:`nparcel.ExporterB2CConfig` captures the configuration items
-    required for the ``npexporterd`` facility.
+    required for the ``topexporterd`` facility.
 
     .. attribute:: exporter_loop
 

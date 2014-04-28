@@ -41,7 +41,7 @@ The list of Business Units supported include:
 * Fast (``bu_id 2``)
 * IPEC (``bu_id 3``)
 
-New in **version 0.30**, the ``npexporterd`` can close off ``job_item``
+New in **version 0.30**, the ``topexporterd`` can close off ``job_item``
 records via an existing report file.  This scenarios supports
 Alternate Delivery Partners that maintain their own parcel collections
 system.  For example, ParcelPoint.  In this case, it is important that
@@ -102,16 +102,16 @@ The list of possible columns that can be displayed include:
     Ordering and columns that are displayed can be controlled by the
     :ref:`exporter_fields <exporter_fields>` configuration item.
 
-``npexporterd`` Configuration Items
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``topexporterd`` Configuration Items
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``npexporterd`` uses the standard ``top.conf`` configuration file to
+``topexporterd`` uses the standard ``top.conf`` configuration file to
 control processing behaviour.  The following list details the required
 configuration options:
 
 * ``exporter_loop``
 
-    time (seconds) between ``npexporterd`` processing iterations
+    time (seconds) between ``topexporterd`` processing iterations
 
 .. _exporter_fields:
 
@@ -213,13 +213,13 @@ configuration options:
     comma separated list of email addresses to receive notifications
     in case things go wrong
 
-``npexporterd`` usage
-^^^^^^^^^^^^^^^^^^^^^
+``topexporterd`` usage
+^^^^^^^^^^^^^^^^^^^^^^
 
-``npexporterd`` can be configured to run as a daemon as per the following::
+``topexporterd`` can be configured to run as a daemon as per the following::
 
-    $ npexporterd -h
-    usage: npexporterd [options] start|stop|status
+    $ topexporterd -h
+    usage: topexporterd [options] start|stop|status
     
     options:
       -h, --help            show this help message and exit

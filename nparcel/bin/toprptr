@@ -8,7 +8,7 @@ import datetime
 import nparcel
 
 IN_DIR = "/users/npprod/.top/logs"
-IN_FILE = "nploaderd.log"
+IN_FILE = "toploaderd.log"
 
 
 def main():

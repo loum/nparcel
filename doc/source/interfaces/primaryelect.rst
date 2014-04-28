@@ -35,8 +35,8 @@ Toll Parcel Portal receives a direct feed from the GIS-prepared WebMethods
 interface.  Toll Parcel Portal uses the :mod:`nparcel.mapper` middleware
 component to translate the WebMethods format into typical T1250 EDI files.
 
-The :mod:`nparcel.mapper` workflow starts with the ``npmapperd`` script.
-First, ``npmapperd`` will check for WebMethods raw ``*.dat`` files and
+The :mod:`nparcel.mapper` workflow starts with the ``topmapperd`` script.
+First, ``topmapperd`` will check for WebMethods raw ``*.dat`` files and
 attempts to translated these into T1250 EDI format.  From here, the
 translated T1250 files are deposited into the corresponding Business Unit
 inbound FTP resource directories where they enter into the normal Toll
@@ -44,7 +44,7 @@ Parcel Portal workflow.
 
 .. note::
 
-    Translated T1250 EDI files that are processed by ``nploaderd``
+    Translated T1250 EDI files that are processed by ``toploaderd``
     **will not** generate comms files (Service Code ``3`` scenario)
 
 Some notable functionality provided by the translation process:
@@ -52,7 +52,7 @@ Some notable functionality provided by the translation process:
 * pre-populates the *Service Code* field (offset 842) with the value ``3``
   which represents a Primary Elect job type
 
-``npmapperd`` Configuration Items
+``topmapperd`` Configuration Items
 *********************************
 
 :mod:`nparcel.mapper` uses the standard ``top.conf`` configuration
@@ -77,7 +77,7 @@ the required configuration options:
 
     Found under the ``[dirs]`` section, inbound file from GIS are transfered
     via FTP into the this directory.  ``mapper_in`` represents the FTP
-    resource that files are deposited to and where ``npmapperd`` looks
+    resource that files are deposited to and where ``topmapperd`` looks
     for files to process.  Default ``/var/ftp/pub/nparcel/gis/in``
 
     .. note::
@@ -113,13 +113,13 @@ the required configuration options:
     comma separated list of email addresses to receive notifications
     in case things go wrong
 
-``npmapperd`` Usage
-*******************
+``topmapperd`` Usage
+********************
 
-``npmapper`` can be configured to run as a daemon as per the following::
+``topmapperd`` can be configured to run as a daemon as per the following::
 
-    $ npmapperd -h
-    usage: npmapperd [options] start|stop|status
+    $ topmapperd -h
+    usage: topmapperd [options] start|stop|status
     
     options:
       -h, --help            show this help message and exit
@@ -133,7 +133,7 @@ the required configuration options:
 
 Primary Elect Nofitications
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-In a similar fashion to the ``npreminderd`` process, Primary Elect
+In a similar fashion to the ``topreminderd`` process, Primary Elect
 consumer notifications are managed by a separate process,
 :ref:`on_delivery_trigger`.  Here, the ``npondeliverd`` identifies all
 Primary Elect jobs whose job items have not had their ``jobitem.notify_ts``

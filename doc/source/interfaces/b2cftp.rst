@@ -178,12 +178,12 @@ example, the Priority report file ``VIC_VANA_REP_20131108145146.txt``
 
     /data/nparcel/archive/ftp/priority/20131108
 
-``npftp`` Usage
----------------
+``topftp`` Usage
+----------------
 
 ::
 
-    usage: npftp [options]
+    usage: topftp [options]
     
     options:
       -h, --help            show this help message and exit
@@ -193,10 +193,10 @@ example, the Priority report file ``VIC_VANA_REP_20131108145146.txt``
                             override default config
                             "/home/lupco/.top/ftp.conf"
 
-``npftp`` has been designed to run as a batch process and can be executed
+``topftp`` has been designed to run as a batch process and can be executed
 via cron with the following entry::
 
-    10,25,40,55 * * * * /usr/local/bin/npftp
+    10,25,40,55 * * * * /usr/local/bin/topftp
 
 .. note::
 

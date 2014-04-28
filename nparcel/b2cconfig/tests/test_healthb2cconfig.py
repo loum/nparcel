@@ -24,14 +24,14 @@ class TestHealthB2CConfig(unittest2.TestCase):
         self._c.parse_config()
 
         received = self._c.health_processes
-        expected = ['npcommsd',
-                    'npexporterd',
-                    'npfilterd',
-                    'nploaderd',
-                    'npmapperd',
-                    'npondeliveryd',
-                    'npreminderd',
-                    'nppoderd']
+        expected = ['topcommsd',
+                    'topexporterd',
+                    'topfilterd',
+                    'toploaderd',
+                    'topmapperd',
+                    'topondeliveryd',
+                    'topreminderd',
+                    'toppoderd']
         msg = 'health.processes not as expected'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 

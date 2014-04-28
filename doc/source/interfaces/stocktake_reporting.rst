@@ -97,14 +97,15 @@ stocktake that do not exist in the Toll Parcel Portal DB.
     :align: center
     :alt: Exception Stocktake Sample report
 
-``npreporter`` Configuration Items
-----------------------------------
+``topreporter`` Configuration Items
+-----------------------------------
 
-The ``npreporter`` configuration items are contained within the default
+The ``topreporter`` configuration items are contained within the default
 ``top.conf`` file and parsed by the
-:mod:`nparcel.b2cconfig.reporterb2cconfig` module.  The reporter configuration
-items can be general or report-type specific.  The report specific entities
-contain their own section headers in the format ``[report_<report_type>]``.
+:mod:`nparcel.b2cconfig.reporterb2cconfig` module.  The reporter
+configuration items can be general or report-type specific.  The report
+specific entities contain their own section headers in the format
+``[report_<report_type>]``.
 
 * ``db`` (the actual ``[db]`` section)
 
@@ -233,17 +234,17 @@ contain their own section headers in the format ``[report_<report_type>]``.
 
             sheet_title = Uncollected
 
-``npreporter`` Usage
---------------------
+``topreporter`` Usage
+---------------------
 
-Although the ``npreporter`` report wrapper is built on top of the
+Although the ``topreporter`` report wrapper is built on top of the
 :mod:`utils.daemon` facility, it has been refactored to run in
 batch mode.
 
 ::
 
-    $ npreporter -h
-    usage: npreporter [options] <uncollected|compliance|noncompliance|exception|totals|collected>
+    $ topreporter -h
+    usage: topreporter [options] <uncollected|compliance|noncompliance|exception|totals|collected>
     
     options:
       -h, --help            show this help message and exit
@@ -264,17 +265,17 @@ arrangement::
     # Need to space out the timings because only one instance of the report
     # can run at any time.
     # Uncollected 
-    0 7 * * 1-5 /usr/local/bin/npreporter uncollected
+    0 7 * * 1-5 /usr/local/bin/topreporter uncollected
     # Non-Compliance
-    1 7 * * 1-5 /usr/local/bin/npreporter noncompliance
+    1 7 * * 1-5 /usr/local/bin/topreporter noncompliance
     # Exception
-    5 7 * * 1-5 /usr/local/bin/npreporter exception
+    5 7 * * 1-5 /usr/local/bin/topreporter exception
     # Collected
-    8 7 * * 1-5 /usr/local/bin/npreporter collected
+    8 7 * * 1-5 /usr/local/bin/topreporter collected
     # Totals
-    10 7 * * 1-5 /usr/local/bin/npreporter totals
+    10 7 * * 1-5 /usr/local/bin/topreporter totals
     # Compliance (place last because it is the longest)
-    15 7 * * 1-5 /usr/local/bin/npreporter compliance
+    15 7 * * 1-5 /usr/local/bin/topreporter compliance
 
 .. note::
 

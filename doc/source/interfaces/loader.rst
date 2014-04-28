@@ -26,7 +26,7 @@ The list of Business Units supported include:
 Loader Workflow
 ---------------
 
-The T1250 EDI loading facility is managed by the ``nploaderd`` daemon.  It
+The T1250 EDI loading facility is managed by the ``toploaderd`` daemon.  It
 will source files from the inbound directories specified by :ref:`in <in>`.
 
 Enabling Comms
@@ -83,7 +83,9 @@ IDs and Delivery Partners::
     Ipec = 3
 
 
-.. note:: Restart ``nploaderd`` for the configuration updates to take effect
+.. note::
+
+    Restart ``toploaderd`` for the configuration updates to take effect
 
 Fine Tuning Comms via Service Code
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -149,13 +151,13 @@ configuration condition_map::
     Once set, this setting overrides all other Service Code 4 related
     conditon_map items
 
-``nploaderd`` usage
+``toploaderd`` usage
 -------------------
 
-``nploaderd`` can be configured to run as a daemon as per the following::
+``toploaderd`` can be configured to run as a daemon as per the following::
 
-    $ nploaderd -h
-    usage: nploaderd [options] start|stop|status
+    $ toploaderd -h
+    usage: toploaderd [options] start|stop|status
     
     options:
       -h, --help            show this help message and exit
@@ -167,10 +169,10 @@ configuration condition_map::
                             "/home/npprod/.top/top.conf"
       -f FILE, --file=FILE  file to process inline (start only)
 
-``nploaderd`` Configuration Items
+``toploaderd`` Configuration Items
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-``nploaderd`` uses the standard ``top.conf`` configuration file to
+``toploaderd`` uses the standard ``top.conf`` configuration file to
 control processing behaviour.  The following list details the required
 configuration options:
 

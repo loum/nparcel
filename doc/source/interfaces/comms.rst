@@ -59,7 +59,7 @@ appropriately constructed file to the comms module interface.
     The comms interface is a simple directory structure
     (default ``/data/nparcel/comms``)
 
-Comms event files are processed by the ``npcommsd`` daemon process.
+Comms event files are processed by the ``topcommsd`` daemon process.
 
 Enabling Returns Comms
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -78,7 +78,7 @@ following configration setting:
 
     To suppress the ``ret`` template processing, remove the token from
     either ``comms.controlled_templates`` or
-    ``comms.uncontrolled_templates``.  In this case, the ``npcommsd``
+    ``comms.uncontrolled_templates``.  In this case, the ``topcommsd``
     daemon will simply ignore the ``ret`` -based comms event files.
     These files will continue to pool in the :ref:`comms_dir <comms_dir>`
 
@@ -191,10 +191,10 @@ the ``hostname`` utility::
 In the example above, the string ``faswbaup02`` should be assigned to the
 :ref:`prod <prod>` configuration item.
 
-``npcommsd`` Configuration Items
---------------------------------
+``topcommsd`` Configuration Items
+---------------------------------
 
-The ``npcommsd`` utility uses the default ``top.conf`` configuration
+The ``topcommsd`` utility uses the default ``top.conf`` configuration
 file to control processing workflow.
 
 .. note::
@@ -281,13 +281,13 @@ file to control processing workflow.
     hyphen '-' and use format HH:MM.  Multiple ranges are separated with
     commas.  Default ``default 08:00-19:00``)
 
-``npcommsd`` usage
-------------------
+``topcommsd`` usage
+-------------------
 
-``npcommsd`` can be configured to run as a daemon as per the following::
+``topcommsd`` can be configured to run as a daemon as per the following::
 
-    $ npcommsd -h
-    usage: npcommsd [options] start|stop|status
+    $ topcommsd -h
+    usage: topcommsd [options] start|stop|status
     
     options:
       -h, --help            show this help message and exit

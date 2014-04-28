@@ -8,7 +8,7 @@ from nparcel.utils.setter import (set_scalar,
 
 class FilterB2CConfig(nparcel.B2CConfig):
     """:class:`nparcel.FilterB2CConfig` captures the configuration items
-    required for the ``npfilterd`` facility.
+    required for the ``topfilterd`` facility.
 
     .. attribute:: filter_loop
 

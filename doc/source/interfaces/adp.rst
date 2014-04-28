@@ -10,7 +10,7 @@ Alternate Delivery Point (ADP) Bulk Load
 
 *New in version 0.30*
 
-The ``npadpd`` daemon manages the bulk load of new ADP resources into the
+The ``topadpd`` daemon manages the bulk load of new ADP resources into the
 Toll Parcel Portal ``agent`` table.
 
 Support file types include:
@@ -22,14 +22,14 @@ Support file types include:
 .. note::
 
     During the ADP file load process, if an ``*.xlsx`` is encountered the
-    ``npadpd`` daemon will attempt to translate the file into ``*.csv``.
+    ``topadpd`` daemon will attempt to translate the file into ``*.csv``.
     
     Both ``*.xlsx`` and ``*.csv`` variant will be archived
 
-``npadpd`` Interfaces
+``topadpd`` Interfaces
 ---------------------
 
-``npadpd`` can be configured to poll a directory resource for new ADP
+``topadpd`` can be configured to poll a directory resource for new ADP
 bulk load files.  As such, it is possible to FTP the ADP bulk load
 files to where the ``adpd`` daemon is running to have them be
 automatically loaded into the ``agent`` table.
@@ -41,7 +41,7 @@ automatically loaded into the ``agent`` table.
 Alternatively, a ADP bulk insert file can be provide on the command line
 using the ``-f`` switch:: 
 
-    $ npadpd -f /var/tmp/ADP-Bulk-Load.xlsx
+    $ topadpd -f /var/tmp/ADP-Bulk-Load.xlsx
 
 With the ``-f`` switch, the daemon will run in batch mode (perform a single
 iteration)
@@ -62,20 +62,20 @@ by the Toll Parcel Portal support team.  Should new headers be added
 to the ADP bulk insert file then the configuration must be updated to
 reflect the change.  Otherwise, the new column will be ignored.
 
-``npadpd`` Logging
-------------------
+``topadpd`` Logging
+-------------------
 
 As with all middleware components, logging is captured in a separate file.
-Typically, the log file can be found at ``<HOME>/.nparcel/logs/npadpd.log``
+Typically, the log file can be found at ``<HOME>/.nparcel/logs/topadpd.log``
 
-``npadpd`` Usage
-----------------
+``topadpd`` Usage
+-----------------
 
-``npondeliveryd`` is a CLI-based daemoniser that controls the
+``topondeliveryd`` is a CLI-based daemoniser that controls the
 On Delivery comms trigger process::
 
-    $ npadpd -h
-    usage: npadpd [options] start|stop|status
+    $ topadpd -h
+    usage: topadpd [options] start|stop|status
     
     options:
       -h, --help            show this help message and exit
@@ -90,7 +90,7 @@ On Delivery comms trigger process::
 ADP Insert
 ----------
 
-In addition to the insertion into the ``agent`` table, the ``npadpd``
+In addition to the insertion into the ``agent`` table, the ``topadpd``
 daemon will also create a corresponding record in the ``login_access``
 and ``login_account`` table to support the ADP login function into the
 Toll Parcel Portal website.
@@ -98,7 +98,7 @@ Toll Parcel Portal website.
 ADP Insert Exceptions
 ---------------------
 
-``npadpd`` will abort an ADP insert under the following conditions:
+``topadpd`` will abort an ADP insert under the following conditions:
 
 .. note::
 
@@ -125,10 +125,10 @@ typical mail message is shown below:
    :align: center
    :alt: ADP Failure Email Message
 
-``npadpd`` Configuration Items
-------------------------------
+``topadpd`` Configuration Items
+-------------------------------
 
-The ``npondeliveryd`` utility uses the default ``top.conf`` file to
+The ``topondeliveryd`` utility uses the default ``top.conf`` file to
 control processing workflows.
 
 .. note::
@@ -165,7 +165,7 @@ control processing workflows.
 
 * ``adp_loop`` (under the ``[timeout]`` section)
 
-    time (seconds) between ``npondeliveryd`` processing iterations
+    time (seconds) between ``topondeliveryd`` processing iterations
 
 * ``db`` (the actual ``[db]`` section)
 

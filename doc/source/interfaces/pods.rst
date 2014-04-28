@@ -52,12 +52,12 @@ This will produce the following directory path::
 
     73b0b66e/5dfe3567/82ec56c6/fede538f
 
-``nppod`` Usage
----------------
+``toppod`` Usage
+----------------
 
-``nppod`` is a CLI-based tool that can present a POD digest-based path::
+``toppod`` is a CLI-based tool that can present a POD digest-based path::
 
-    usage: nppod [options] <POD value>
+    usage: toppod [options] <POD value>
     
     options:
       -h, --help            show this help message and exit
@@ -70,14 +70,14 @@ This will produce the following directory path::
     
 As an example::
 
-    $ nppod 193433
-    Starting nppod inline (batch mode) ...
+    $ toppod 193433
+    Starting toppod inline (batch mode) ...
     path: /data/nparcel/archive/signature/73b0b66e/5dfe3567/82ec56c6/fede538f
 
-``nppod`` Configuration Items
------------------------------
+``toppod`` Configuration Items
+------------------------------
 
-The ``nppod`` utility uses the default ``top.conf`` file to parse
+The ``toppod`` utility uses the default ``top.conf`` file to parse
 the ``archive_directory`` value.  POD files are archived to this location.
 
 * ``archive_dir`` (default /data/nparcel/archive)

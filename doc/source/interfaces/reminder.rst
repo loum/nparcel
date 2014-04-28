@@ -26,7 +26,7 @@ parcel has not been collected for a defined period (for example, 4 days).
 Reminder Workflow
 -----------------
 
-``npreminderd`` queries the Toll Parcel Portal database to identify items
+``topreminderd`` queries the Toll Parcel Portal database to identify items
 which match the following criteria:
 
 * ``job_item.created_ts`` column date occurs after the ``start_date``
@@ -45,9 +45,9 @@ which match the following criteria:
     :align: center
     :alt: Toll Parcel Portal B2C Uncollected Reminder interface
 
-``npreminderd`` Configuration Items
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-``npreminderd`` uses the generic ``top.conf`` file to manage its
+``topreminderd`` Configuration Items
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+``topreminderd`` uses the generic ``top.conf`` file to manage its
 configuration.
 
 .. note::
@@ -77,14 +77,14 @@ configuration.
 
 * ``exporter_loop`` (under the ``[timeout]`` section)
 
-    time (seconds) between ``npreminderd`` processing iterations
+    time (seconds) between ``topreminderd`` processing iterations
 
-``npreminderd`` Usage
----------------------
+``topreminderd`` Usage
+----------------------
 
-``npreminderd`` can be configured to run as a daemon as per the following::
+``topreminderd`` can be configured to run as a daemon as per the following::
 
-    usage: npreminderd [options]
+    usage: topreminderd [options]
      
     options:
     -h, --help            show this help message and exit

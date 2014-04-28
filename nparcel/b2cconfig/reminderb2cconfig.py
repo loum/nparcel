@@ -12,7 +12,7 @@ from nparcel.utils.log import log
 
 class ReminderB2CConfig(nparcel.B2CConfig):
     """:class:`nparcel.ReminderB2CConfig` captures the configuration items
-    required for the ``npreminderd`` facility.
+    required for the ``topreminderd`` facility.
 
     .. attribute:: reminder_loop
 

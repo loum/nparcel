@@ -10,7 +10,7 @@ from nparcel.utils.log import log
 
 class ReporterB2CConfig(nparcel.B2CConfig):
     """:class:`nparcel.ReporterB2CConfig` captures the configuration items
-    required for the ``npreporter`` facility.
+    required for the ``topreporter`` facility.
 
     .. attribute:: report_bu_ids
 
