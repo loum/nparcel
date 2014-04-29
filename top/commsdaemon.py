@@ -9,6 +9,8 @@ import ConfigParser
 import top
 from top.utils.log import log
 from top.utils.files import get_directory_files_list
+from top.utils.setter import (set_scalar,
+                              set_list)
 
 
 class CommsDaemon(top.DaemonService):
@@ -60,85 +62,6 @@ class CommsDaemon(top.DaemonService):
     _skip_days = ['Sunday']
     _send_time_ranges = ['08:00-19:00']
 
-    def __init__(self,
-                 pidfile,
-                 file=None,
-                 dry=False,
-                 batch=False,
-                 config=None):
-        c = None
-        if config is not None:
-            c = top.CommsB2CConfig(config)
-        top.DaemonService.__init__(self,
-                                   pidfile=pidfile,
-                                   file=file,
-                                   dry=dry,
-                                   batch=batch,
-                                   config=c)
-
-        self._facility = self.__class__.__name__
-
-        try:
-            self.set_support_emails(self.config.support_emails)
-        except AttributeError, err:
-            msg = ('%s support_emails not in config: %s. Using %s' %
-                   (self._facility, err, str(self.support_emails)))
-            log.debug(msg)
-
-        try:
-            self.set_comms_dir(self.config.comms_dir)
-        except AttributeError, err:
-            msg = ('%s comms_dir not in config: %s. Using %s' %
-                   (self._facility, err, self.comms_dir))
-            log.debug(msg)
-
-        try:
-            self.set_loop(self.config.comms_loop)
-        except AttributeError, err:
-            log.debug('%s comms_loop not in config: %s. Using %d sec' %
-                      (self._facility, err, self.loop))
-
-        try:
-            self.set_q_warning(self.config.comms_q_warning)
-        except AttributeError, err:
-            msg = ('%s q_warning not in config: %s. Using %s' %
-                   (self._facility, err, self.q_warning))
-            log.debug(msg)
-
-        try:
-            self.set_q_error(self.config.comms_q_error)
-        except AttributeError, err:
-            msg = ('%s q_error not in config: %s. Using %s' %
-                   (self._facility, err, self.q_error))
-            log.debug(msg)
-
-        try:
-            self.set_controlled_templates(self.config.controlled_templates)
-        except AttributeError, err:
-            msg = ('%s controlled_templates not in config: %s. Using "%s"' %
-                   (self._facility, err, self.controlled_templates))
-            log.debug(msg)
-
-        try:
-            tmp = self.config.uncontrolled_templates
-            self.set_uncontrolled_templates(tmp)
-        except AttributeError, err:
-            msg = ('%s uncontrolled_templates not in config: %s. Using "%s"' %
-                   (self._facility, err, self.uncontrolled_templates))
-            log.debug(msg)
-
-        try:
-            self.set_skip_days(self.config.skip_days)
-        except AttributeError, err:
-            log.debug('%s skip_days not in config: %s. Using "%s"' %
-                      (self._facility, err, self.skip_days))
-
-        try:
-            self.set_send_time_ranges(self.config.send_time_ranges)
-        except AttributeError, err:
-            log.debug('%s send_time_ranges not in config: %s. Using "%s"' %
-                      (self._facility, err, self.send_time_ranges))
-
     @property
     def comms(self):
         return self._comms
@@ -147,76 +70,57 @@ class CommsDaemon(top.DaemonService):
     def comms_dir(self):
         return self._comms_dir
 
+    @set_scalar
     def set_comms_dir(self, value):
-        self._comms_dir = value
-        log.debug('%s comms_dir to "%s"' %
-                  (self._facility, self.comms_dir))
+        pass
 
     @property
     def q_warning(self):
         return self._q_warning
 
+    @set_scalar
     def set_q_warning(self, value):
-        self._q_warning = value
+        pass
 
     @property
     def q_error(self):
         return self._q_error
 
+    @set_scalar
     def set_q_error(self, value):
-        self._q_error = value
+        pass
 
     @property
     def controlled_templates(self):
         return self._controlled_templates
 
+    @set_list
     def set_controlled_templates(self, values=None):
-        del self._controlled_templates[:]
-        self._controlled_templates = []
-
-        if values is not None:
-            self._controlled_templates.extend(values)
-        log.debug('%s controlled_templates set to: "%s"' %
-                  (self._facility, self.controlled_templates))
+        pass
 
     @property
     def uncontrolled_templates(self):
         return self._uncontrolled_templates
 
+    @set_list
     def set_uncontrolled_templates(self, values=None):
-        del self._uncontrolled_templates[:]
-        self._uncontrolled_templates = []
-
-        if values is not None:
-            self._uncontrolled_templates.extend(values)
-        log.debug('%s uncontrolled_templates set to: "%s"' %
-                  (self._facility, self.uncontrolled_templates))
+        pass
 
     @property
     def skip_days(self):
         return self._skip_days
 
+    @set_list
     def set_skip_days(self, values=None):
-        del self._skip_days[:]
-        self._skip_days = []
-
-        if values is not None:
-            self._skip_days.extend(values)
-            log.debug('%s skip days set to "%s"' %
-                      (self._facility, str(self.skip_days)))
+        pass
 
     @property
     def send_time_ranges(self):
         return self._send_time_ranges
 
+    @set_list
     def set_send_time_ranges(self, values=None):
-        del self._send_time_ranges[:]
-        self._send_time_ranges = []
-
-        if values is not None:
-            self._send_time_ranges.extend(values)
-            log.debug('%s send_time_ranges set to "%s"' %
-                      (self._facility, str(values)))
+        pass
 
     @property
     def sms_api(self):
@@ -310,6 +214,29 @@ class CommsDaemon(top.DaemonService):
 
         log.debug('%s comms_kwargs: "%s"' % (self.facility, kwargs))
         return kwargs
+
+    def __init__(self,
+                 pidfile,
+                 file=None,
+                 dry=False,
+                 batch=False,
+                 config=None):
+        top.DaemonService.__init__(self,
+                                   pidfile=pidfile,
+                                   file=file,
+                                   dry=dry,
+                                   batch=batch,
+                                   config=config)
+        if self.config is not None:
+            self.set_comms_dir(self.config.comms_dir)
+            self.set_loop(self.config.comms_loop)
+            self.set_q_warning(self.config.comms_q_warning)
+            self.set_q_error(self.config.comms_q_error)
+            self.set_controlled_templates(self.config.controlled_templates)
+            tmp = self.config.uncontrolled_templates
+            self.set_uncontrolled_templates(tmp)
+            self.set_skip_days(self.config.skip_days)
+            self.set_send_time_ranges(self.config.send_time_ranges)
 
     def _start(self, event):
         """Override the :method:`top.utils.Daemon._start` method.

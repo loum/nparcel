@@ -37,12 +37,16 @@ def main():
     if based.options.file:
         file = based.options.file
 
+    config = None
+    if based.options.config is not None:
+        config = top.CommsB2CConfig(based.options.config)
+
     # OK, start processing.
     cd = top.CommsDaemon(pidfile=based.pidfile,
                          file=file,
                          dry=based.dry,
                          batch=based.batch,
-                         config=based.options.config)
+                         config=config)
 
     based.launch_command(cd, script_name)
 

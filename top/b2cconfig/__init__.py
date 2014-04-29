@@ -1014,8 +1014,12 @@ class B2CConfig(top.Config):
 
             try:
                 getter = getattr(self, var)
-                log.debug('%s %s.%s not defined.  Using "%s"' %
-                          (self.facility, section, option, getter))
+                msg = ('%s %s.%s not defined. Using' %
+                       (self.facility, section, option))
+                if isinstance(getter, (int, long, float, complex)):
+                    log.debug('%s %d' % (msg, getter))
+                else:
+                    log.debug('%s "%s"' % (msg, getter))
             except AttributeError, err:
                 log.debug('%s %s.%s not defined: %s.' %
                           (self.facility, section, option, err))
@@ -1087,8 +1091,12 @@ class B2CConfig(top.Config):
 
             try:
                 getter = getattr(self, var)
-                log.debug('%s %s not defined.  Using "%s"' %
-                          (self.facility, section, getter))
+                msg = ('%s %s not defined.  Using' %
+                       (self.facility, section))
+                if isinstance(getter, (int, long, float, complex)):
+                    log.debug('%s %d' % (msg, getter))
+                else:
+                    log.debug('%s "%s"' % (msg, getter))
             except AttributeError, err:
                 log.debug('%s %s not defined: %s.' %
                           (self.facility, section, err))

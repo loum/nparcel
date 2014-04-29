@@ -84,7 +84,6 @@ class FilterDaemon(top.DaemonService):
                                    dry=dry,
                                    batch=batch,
                                    config=config)
-
         if self.config is not None:
             self.set_loop(self.config.filter_loop)
             self.set_file_format(self.config.t1250_file_format)
