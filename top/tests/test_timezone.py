@@ -1,6 +1,7 @@
 import unittest2
 
-from nparcel.timezone import convert_timezone
+from top.timezone import convert_timezone
+
 
 class TestTimezone(unittest2.TestCase):
 

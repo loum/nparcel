@@ -3,11 +3,11 @@ import datetime
 import tempfile
 import os
 
-import nparcel
-from nparcel.utils.files import (get_directory_files_list,
-                                 remove_files,
-                                 gen_digest_path)
-from nparcel.timezone import convert_timezone
+import top
+from top.utils.files import (get_directory_files_list,
+                             remove_files,
+                             gen_digest_path)
+from top.timezone import convert_timezone
 
 # Current business_unit map:
 BU = {'fast': 2}
@@ -20,7 +20,7 @@ class TestExporterFast(unittest2.TestCase):
         cls.maxDiff = None
         cls._seq = '0, 1, 2, 3, 4, 5, 6'
 
-        cls._e = nparcel.Exporter()
+        cls._e = top.Exporter()
 
         # Prepare some sample data.
         # "agent" table.

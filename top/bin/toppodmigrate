@@ -4,22 +4,22 @@ import os
 import inspect
 import signal
 
-import nparcel
-from nparcel.utils.files import (gen_digest_path,
-                                 move_file)
-from nparcel.utils.log import (log,
-                               set_log_level,
-                               set_console)
+import top
+from top.utils.files import (gen_digest_path,
+                             move_file)
+from top.utils.log import (log,
+                           set_log_level,
+                           set_console)
 
 
-class PodMigrateDaemon(nparcel.DaemonService):
+class PodMigrateDaemon(top.DaemonService):
     _current_dir = os.curdir
 
-    def __init__(self, pidfile, dry=True, config='nparcel.conf'):
+    def __init__(self, pidfile, dry=True, config='top.conf'):
         super(PodMigrateDaemon, self).__init__(pidfile=pidfile)
 
         self.set_dry(dry)
-        self.config = nparcel.B2CConfig(file=config)
+        self.config = top.B2CConfig(file=config)
         self.config.parse_config()
 
     @property
@@ -56,7 +56,7 @@ class PodMigrateDaemon(nparcel.DaemonService):
 def main():
     config_file = os.path.join(os.path.expanduser('~'), '.top', 'top.conf')
 
-    based = nparcel.BaseD(config=config_file)
+    based = top.BaseD(config=config_file)
     based.set_command('start')
     script_name = inspect.getfile(inspect.currentframe())
     script_name = os.path.basename(script_name)

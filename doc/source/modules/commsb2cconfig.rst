@@ -1,4 +1,4 @@
-.. B2C CommsB2CConfig
+.. Toll Outlet Portal Middleware CommsB2CConfig
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 Comms B2CConfig
 ===============
 
-.. automodule:: nparcel.b2cconfig.commsb2cconfig
+.. automodule:: top.b2cconfig.commsb2cconfig
     :members:

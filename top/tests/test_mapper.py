@@ -1,24 +1,25 @@
 import unittest2
+import os
 
-import nparcel
+import top
 
 
 class TestMapper(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._m = nparcel.Mapper()
+        cls._m = top.Mapper()
 
-        test_conf = 'nparcel/tests/test_mapper.conf'
-        cls._c = nparcel.Config(config_file=test_conf)
+        test_conf = os.path.join('top', 'tests', 'test_mapper.conf')
+        cls._c = top.Config(config_file=test_conf)
 
         cls.maxDiff = None
 
     def test_init(self):
         """Initialise a Mapper object.
         """
-        msg = 'Object is not an nparcel.Mapper'
-        self.assertIsInstance(self._m, nparcel.Mapper, msg)
+        msg = 'Object is not an top.Mapper'
+        self.assertIsInstance(self._m, top.Mapper, msg)
 
     def test_parse_valid_line(self):
         """Parse the config.

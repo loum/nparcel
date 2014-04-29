@@ -2,32 +2,32 @@ import unittest2
 import tempfile
 import os
 
-import nparcel
-from nparcel.utils.files import (copy_file,
-                                 get_directory_files_list,
-                                 remove_files)
+import top
+from top.utils.files import (copy_file,
+                             get_directory_files_list,
+                             remove_files)
 
 
 class TestFilterDaemon(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._test_dir = os.path.join('nparcel', 'tests', 'files')
+        cls._test_dir = os.path.join('top', 'tests', 'files')
         cls._file = os.path.join(cls._test_dir,
                                  'T1250_TOLI_20130828202901.txt')
-        cls._fd = nparcel.FilterDaemon(pidfile=None)
+        cls._fd = top.FilterDaemon(pidfile=None)
         cls._fd.set_filters({'parcelpoint': ['P', 'R'],
                              'woolworths': ['U']})
         cls._out_dir = tempfile.mkdtemp()
         cls._fd.set_staging_base(cls._out_dir)
-        cls._fd.emailer.set_template_base(os.path.join('nparcel',
+        cls._fd.emailer.set_template_base(os.path.join('top',
                                                        'templates'))
 
     def test_init(self):
         """Initialise a FilterDaemon object.
         """
-        msg = 'Not a nparcel.FilterDaemon object'
-        self.assertIsInstance(self._fd, nparcel.FilterDaemon, msg)
+        msg = 'Not a top.FilterDaemon object'
+        self.assertIsInstance(self._fd, top.FilterDaemon, msg)
 
     def test_start(self):
         """Start dry loop.
@@ -63,7 +63,7 @@ class TestFilterDaemon(unittest2.TestCase):
         self._fd.set_in_dirs([in_dir])
 
         # Copy over our test files.
-        t_file_dir = os.path.join('nparcel', 'tests', 'files', 'filter')
+        t_file_dir = os.path.join('top', 'tests', 'files', 'filter')
         t_files = get_directory_files_list(t_file_dir)
         for f in t_files:
             copy_file(f, os.path.join(in_dir, os.path.basename(f)))

@@ -1,4 +1,4 @@
-"""The :mod:`nparcel.utils.daemon` module provides your server with start
+"""The :mod:`top.utils.daemon` module provides your server with start
 and stop functionality.  Furthermore, it supports process daemonisation so
 that the server could be run as a self-contained Linux service.
 
@@ -22,9 +22,9 @@ import signal
 import time
 import threading
 
-from nparcel.utils.log import log
-from nparcel.utils.files import (create_dir,
-                                 remove_files)
+from top.utils.log import log
+from top.utils.files import (create_dir,
+                             remove_files)
 
 MAXFD = 1024
 
@@ -32,7 +32,7 @@ MAXFD = 1024
 class Daemon(object):
     """A generic daemon class.
 
-    :class:`nparcel.utils.Daemon` will prepare the daemon environment for
+    :class:`top.utils.Daemon` will prepare the daemon environment for
     you but expects that you give it an entry point (:meth:`_start`) to
     the functional component of your process.
 
@@ -40,9 +40,9 @@ class Daemon(object):
     :meth:`_start`
     method ...
 
-    >>> import nparcel.utils
+    >>> import top.utils
     >>> import time
-    >>> class DummyDaemon(nparcel.utils.Daemon):
+    >>> class DummyDaemon(top.utils.Daemon):
     ...     def _start(self, event):
     ...         while True:
     ...             time.sleep(5)
@@ -74,7 +74,7 @@ class Daemon(object):
 
     .. attribute:: inline
 
-        boolean flag to execute :meth:`nparcel.utils.daemon.Daemon._start`
+        boolean flag to execute :meth:`top.utils.daemon.Daemon._start`
         method without daemonising
 
     """
@@ -161,7 +161,7 @@ class Daemon(object):
         be invoked directly.  Instead, allow the context of the process
         invocation (either as a deamon or inline), to prepare the
         environment for you.  From within your class, all you need to do
-        is call the :meth:`nparcel.utils.Daemon.start` method.
+        is call the :meth:`top.utils.Daemon.start` method.
 
         **Kwargs:**
             event (:mod:`threading.Event`): Internal semaphore that
@@ -185,7 +185,7 @@ class Daemon(object):
             to '/' once the process is forked.
 
         **Raises:**
-            :mod:`nparcel.utils.daemon.DaemonError` if *pidfile* contains
+            :mod:`top.utils.daemon.DaemonError` if *pidfile* contains
             invalid content.
 
         """
@@ -260,7 +260,7 @@ class Daemon(object):
                 ``False`` -- failure
 
         **Raises:**
-            :mod:`nparcel.utils.daemon.DaemonError`, if:
+            :mod:`top.utils.daemon.DaemonError`, if:
 
             * PID file has not been defined
             * PID file is not writable

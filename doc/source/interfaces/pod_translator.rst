@@ -1,4 +1,4 @@
-.. B2C POD Translator
+.. Toll Outlet Portal Middleware POD Translator
 
 .. toctree:
     :maxdepth: 2
@@ -65,7 +65,7 @@ With the new token generated, ``toppoderd`` will attempt to substitute the
 files.  For example, if the original files in the source directory
 include::
 
-    $ ls -1 /var/ftp/pub/nparcel/parcelpoint/in/
+    $ ls -1 /var/ftp/pub/top/parcelpoint/in/
     P3014R0-00007388.ps
     P3014R0-00007399.ps
     VIC_VANA_REP_20131121065550.txt
@@ -78,7 +78,7 @@ and the contents of the report file include::
 
 the result will be::
 
-    $ ls -1 /var/ftp/pub/nparcel/fast/out/
+    $ ls -1 /var/ftp/pub/top/fast/out/
     03971803521.ps
     03971803522.ps
     QLD_VANA_REF_20131121065550.txt
@@ -119,7 +119,7 @@ base directory will have ``podtranslated`` appended to it.
       -f FILE, --file=FILE  file to process inline (start only)
 
 ``toppoderd`` Configuration Items
---------------------------------
+---------------------------------
 
 ``toppoderd`` uses the standard ``top.conf`` configuration file.  The
 following list details the required configuration options:

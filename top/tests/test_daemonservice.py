@@ -1,7 +1,7 @@
 import unittest2
 import os
 
-import nparcel
+import top
 
 
 class TestDaemonService(unittest2.TestCase):
@@ -9,15 +9,15 @@ class TestDaemonService(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._recipients = ['loumar@tollgroup.com']
-        cls._ds = nparcel.DaemonService(pidfile=None)
-        cls._ds.emailer.set_template_base(os.path.join('nparcel',
+        cls._ds = top.DaemonService(pidfile=None)
+        cls._ds.emailer.set_template_base(os.path.join('top',
                                                        'templates'))
 
     def test_init(self):
         """Intialise a DaemonService object.
         """
-        msg = 'Not a nparcel.DaemonService object'
-        self.assertIsInstance(self._ds, nparcel.DaemonService, msg)
+        msg = 'Not a top.DaemonService object'
+        self.assertIsInstance(self._ds, top.DaemonService, msg)
 
     def test_alert_failed_processing(self):
         """Test alert comms for a processing error.
@@ -50,7 +50,7 @@ class TestDaemonService(unittest2.TestCase):
         """
         items = ['item 1', 'item 2', 'item 3']
         received = self._ds.create_table(items)
-        fh = open(os.path.join('nparcel',
+        fh = open(os.path.join('top',
                                'tests',
                                'files',
                                'proc_err_table.out'))

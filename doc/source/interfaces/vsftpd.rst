@@ -1,4 +1,4 @@
-.. B2C Inbound FTP (vsftpd)
+.. Toll Outlet Portal Middleware Inbound FTP (vsftpd)
 
 .. toctree::
     :maxdepth: 2
@@ -6,10 +6,10 @@
 Inbound FTP
 ===========
 Each Business Unit must capture failed parcel delivery information into
-the standard Nparcel-formatted 1250 file.  These files must be periodically
-be transferred to the Nparcel B2C replicator system via FTP.
+the standard 1250 EDI file.  These files must be periodically
+be transferred to the Toll Outlet Portal middleware via FTP.
 
-The Toll Parcel Portal B2C middleware presents a inbound FTP drop box for
+The Toll Outlet Portal middleware presents a inbound FTP drop box for
 each Business Unit.
 
 .. _ftp_drop_box:
@@ -17,19 +17,19 @@ each Business Unit.
 Prepare an Inbound Drop-box
 ---------------------------
 All Business Units have their own drop box details which branches off the
-generic ``/var/ftp/pub/nparcel`` directory structure.  For example, in the
+generic ``/var/ftp/pub/top`` directory structure.  For example, in the
 case of Business Unit **Priority**, the inbound FTP directory would be
-``/var/ftp/pub/nparcel/priority/in``.
+``/var/ftp/pub/top/priority/in``.
 
 To create the directory, as the user ``npprod`` run the command::
 
-    $ mkdir -p /var/ftp/pub/nparcel/priority/in
+    $ mkdir -p /var/ftp/pub/top/priority/in
 
 Create the Business Unit FTP user
 ---------------------------------
 As each Buiness Unit comes online, we need to give them credentials to be
 able to connect to their own T1250* drop-box.  The Business Unit will
-connect to the Nparcel B2C FTP server with these credentials.
+connect to the Toll Outlet Portal's FTP server with these credentials.
 
 First add the new Business Unit username and password to the
 ``/opt/virtual-users.txt`` file::

@@ -1,4 +1,4 @@
-.. Toll Parcel Portal On Delivery Notifications
+.. Toll Outlet Portal Middleware On Delivery Notifications
 
 .. toctree::
     :maxdepth: 2
@@ -13,7 +13,7 @@ Primary Elect is a service provided to the customer that allows them
 to nominate the Alternate Delivery Point from where they can pick up
 their parcels.
 
-Primary Elect jobs differ from the normal Toll Parcel Portal flow in that
+Primary Elect jobs differ from the normal Toll Outlet Portal flow in that
 the jobs are not triggered by a failed delivery event.  Instead, jobs are
 sent directly from the vendor (for example, Grays Online)
 
@@ -31,16 +31,16 @@ Primary Elect Workflow
 Raw WebMethods T1250 Files -- GIS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Since the various Business Units do not support Primary Elect jobs,
-Toll Parcel Portal receives a direct feed from the GIS-prepared WebMethods
-interface.  Toll Parcel Portal uses the :mod:`nparcel.mapper` middleware
+Toll Outlet Portal receives a direct feed from the GIS-prepared WebMethods
+interface.  Toll Outlet Portal uses the :mod:`top.mapper` middleware
 component to translate the WebMethods format into typical T1250 EDI files.
 
-The :mod:`nparcel.mapper` workflow starts with the ``topmapperd`` script.
+The :mod:`top.mapper` workflow starts with the ``topmapperd`` script.
 First, ``topmapperd`` will check for WebMethods raw ``*.dat`` files and
 attempts to translated these into T1250 EDI format.  From here, the
 translated T1250 files are deposited into the corresponding Business Unit
 inbound FTP resource directories where they enter into the normal Toll
-Parcel Portal workflow.
+Outlet Portal workflow.
 
 .. note::
 
@@ -53,9 +53,9 @@ Some notable functionality provided by the translation process:
   which represents a Primary Elect job type
 
 ``topmapperd`` Configuration Items
-*********************************
+**********************************
 
-:mod:`nparcel.mapper` uses the standard ``top.conf`` configuration
+:mod:`top.mapper` uses the standard ``top.conf`` configuration
 file to define the WebMethods interface.  The following list details
 the required configuration options:
 
@@ -78,7 +78,7 @@ the required configuration options:
     Found under the ``[dirs]`` section, inbound file from GIS are transfered
     via FTP into the this directory.  ``mapper_in`` represents the FTP
     resource that files are deposited to and where ``topmapperd`` looks
-    for files to process.  Default ``/var/ftp/pub/nparcel/gis/in``
+    for files to process.  Default ``/var/ftp/pub/top/gis/in``
 
     .. note::
 
@@ -104,7 +104,7 @@ the required configuration options:
     Base directory where processed ``*.dat`` files are archived to.
     Directory is expanded on to capture context of current file.
     For example, if the source file is
-    ``<ftp_base>/nparcel/in/T1250_TOLI_20131011115618.dat`` then the
+    ``<ftp_base>/top/in/T1250_TOLI_20131011115618.dat`` then the
     archive target would be similar to
     ``<archive_dir>/gis/20131011/T1250_TOLI_20131011115618.dat``
 

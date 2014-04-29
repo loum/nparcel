@@ -1,4 +1,4 @@
-.. Nparcel B2C Comms
+.. Tol Outlet Portal Middleware Comms
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 Comms
 =====
 
-.. automodule:: nparcel.comms
+.. automodule:: top.comms
     :members:

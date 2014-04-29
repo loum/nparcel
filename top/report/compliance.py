@@ -1,12 +1,12 @@
 __all__ = [
     "Compliance",
 ]
-import nparcel
-from nparcel.utils.log import log
+import top
+from top.utils.log import log
 
 
-class Compliance(nparcel.Auditer):
-    """Toll Parcel Portal base Compliance class.
+class Compliance(top.Auditer):
+    """Toll Outlet Portal base Compliance class.
 
     .. attribute:: period
 
@@ -20,7 +20,7 @@ class Compliance(nparcel.Auditer):
         """Compliance initialiser.
 
         """
-        nparcel.Auditer.__init__(self,
+        top.Auditer.__init__(self,
                                  db_kwargs=db_kwargs,
                                  delivery_partners=delivery_partners)
 

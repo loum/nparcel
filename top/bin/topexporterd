@@ -3,14 +3,14 @@
 import os
 import inspect
 
-import nparcel
-from nparcel.utils.log import (log,
-                               set_console,
-                               set_log_level)
+import top
+from top.utils.log import (log,
+                           set_console,
+                           set_log_level)
 
 
 def main():
-    based = nparcel.BaseD()
+    based = top.BaseD()
     script_name = inspect.getfile(inspect.currentframe())
     script_name = os.path.basename(script_name)
     based.set_script_name(script_name)
@@ -25,10 +25,10 @@ def main():
         log.debug('Logging verbosity set to "DEBUG" level')
 
     # OK, start processing.
-    ed = nparcel.ExporterDaemon(pidfile=based.pidfile,
-                                dry=based.dry,
-                                batch=based.batch,
-                                config=based.options.config)
+    ed = top.ExporterDaemon(pidfile=based.pidfile,
+                            dry=based.dry,
+                            batch=based.batch,
+                            config=based.options.config)
 
     script_name = inspect.getfile(inspect.currentframe())
     script_name = os.path.basename(script_name)

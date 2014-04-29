@@ -4,12 +4,12 @@ __all__ = [
 import datetime
 import copy
 
-import nparcel
-from nparcel.utils.log import log
-from nparcel.postcode import translate_postcode
+import top
+from top.utils.log import log
+from top.postcode import translate_postcode
 
 
-class Adp(nparcel.Service):
+class Adp(top.Service):
     """Adp (Alternate Delivery Point) class.
 
     .. attribute:: headers
@@ -38,7 +38,7 @@ class Adp(nparcel.Service):
         """Adp initialisation.
 
         """
-        super(nparcel.Adp, self).__init__(db=kwargs.get('db'))
+        top.Service.__init__(self, db=kwargs.get('db'))
 
         self.set_headers(kwargs.get('headers'))
         self.set_delivery_partners(kwargs.get('delivery_partners'))
@@ -94,7 +94,7 @@ class Adp(nparcel.Service):
             column
 
             *values*: dictionary of raw values to load into the
-            Toll Parcel Portal database
+            Toll Outlet Portal database
 
             *dry*: only report, do not execute
 

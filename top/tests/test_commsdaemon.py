@@ -3,9 +3,9 @@ import datetime
 import os
 import tempfile
 
-import nparcel
-from nparcel.utils.files import (remove_files,
-                                 get_directory_files_list)
+import top
+from top.utils.files import (remove_files,
+                             get_directory_files_list)
 
 
 class TestCommsDaemon(unittest2.TestCase):
@@ -14,8 +14,8 @@ class TestCommsDaemon(unittest2.TestCase):
     def setUpClass(cls):
         cls.maxDiff = None
 
-        cls._cd = nparcel.CommsDaemon(pidfile=None)
-        cls._cd._config = nparcel.CommsB2CConfig()
+        cls._cd = top.CommsDaemon(pidfile=None)
+        cls._cd._config = top.CommsB2CConfig()
 
         # If you want to perform a real run, uncomment the following
         # according to your environment and provide the REST
@@ -62,14 +62,14 @@ class TestCommsDaemon(unittest2.TestCase):
         cls._cd.config.set_prod('faswbaup02')
 
         # Call up front to pre-load the DB.
-        cls._cd._comms = nparcel.Comms(**(cls._cd.comms_kwargs))
-        template_dir = os.path.join('nparcel', 'templates')
+        cls._cd._comms = top.Comms(**(cls._cd.comms_kwargs))
+        template_dir = os.path.join('top', 'templates')
         cls._cd._comms._emailer.set_template_base(template_dir)
         cls._cd._comms._smser.set_template_base(template_dir)
         cls._cd._emailer.set_template_base(template_dir)
 
         db = cls._cd._comms.db
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.agent, 'fixture': 'agents.py'},
                     {'db': db.job, 'fixture': 'jobs.py'},
                     {'db': db.jobitem, 'fixture': 'jobitems.py'},
@@ -85,8 +85,8 @@ class TestCommsDaemon(unittest2.TestCase):
     def test_init(self):
         """Initialise a CommsDaemon object.
         """
-        msg = 'Not a nparcel.CommsDaemon object'
-        self.assertIsInstance(self._cd, nparcel.CommsDaemon, msg)
+        msg = 'Not a top.CommsDaemon object'
+        self.assertIsInstance(self._cd, top.CommsDaemon, msg)
 
     def test_start(self):
         """Start file processing loop.
@@ -263,7 +263,7 @@ class TestCommsDaemon(unittest2.TestCase):
         dry = True
 
         count = 101
-        subject = 'Warning - Nparcel Comms message count was at %d' % count
+        subject = 'Warning - Comms message count was at %d' % count
         d = {'count': count,
              'date': datetime.datetime.now().strftime('%c'),
              'warning_threshold': self._cd.q_warning}
@@ -278,7 +278,7 @@ class TestCommsDaemon(unittest2.TestCase):
         """
         dry = True
         count = 1001
-        subject = 'Error - Nparcel Comms message count was at %d' % count
+        subject = 'Error - Comms message count was at %d' % count
         d = {'count': count,
              'date': datetime.datetime.now().strftime('%c'),
              'error_threshold': self._cd.q_error}
@@ -371,8 +371,8 @@ class TestCommsDaemon(unittest2.TestCase):
     def test_comms_kwargs_no_config(self):
         """Verify the comms kwarg initialiser structure -- no config.
         """
-        cd = nparcel.CommsDaemon(pidfile=None)
-        cd._config = nparcel.CommsB2CConfig()
+        cd = top.CommsDaemon(pidfile=None)
+        cd._config = top.CommsB2CConfig()
 
         received = cd.comms_kwargs
         expected = {'db': None,
@@ -389,8 +389,8 @@ class TestCommsDaemon(unittest2.TestCase):
     def test_comms_kwargs(self):
         """Verify the comms kwarg initialiser structure.
         """
-        cd = nparcel.CommsDaemon(pidfile=None)
-        cd.config = nparcel.CommsB2CConfig()
+        cd = top.CommsDaemon(pidfile=None)
+        cd.config = top.CommsB2CConfig()
 
         # Environment.
         cd.config.set_prod('faswbaup02')

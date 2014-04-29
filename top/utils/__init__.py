@@ -1,6 +1,6 @@
 from daemon import Daemon, DaemonError
 
-""":mod:`nparcel.utils` is a handy kit of commonly used utilities.
+""":mod:`top.utils` is a handy kit of commonly used utilities.
 
 Do you find yourself doing the same thing over and (yawn) over again?  Then
 create a definition in this package and make your life that much easier ...
@@ -12,7 +12,7 @@ __all__ = [
 import datetime
 import time
 
-from nparcel.utils.log import log
+from top.utils.log import log
 
 
 def date_diff(start_date, end_date, precision='days'):

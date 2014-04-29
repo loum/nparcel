@@ -1,12 +1,12 @@
 __all__ = [
     "NonCompliance",
 ]
-import nparcel
-from nparcel.utils.log import log
+import top
+from top.utils.log import log
 
 
-class NonCompliance(nparcel.Auditer):
-    """Toll Parcel Portal base NonCompliance class.
+class NonCompliance(top.Auditer):
+    """Toll Outlet Portal base NonCompliance class.
 
     """
 
@@ -17,20 +17,20 @@ class NonCompliance(nparcel.Auditer):
         """NonCompliance initialiser.
 
         """
-        nparcel.Auditer.__init__(self,
-                                 db_kwargs=db_kwargs,
-                                 bu_ids=bu_ids,
-                                 delivery_partners=delivery_partners)
+        top.Auditer.__init__(self,
+                             db_kwargs=db_kwargs,
+                             bu_ids=bu_ids,
+                             delivery_partners=delivery_partners)
 
     def process(self, id=None, dry=False):
-        """Identifies list of ``job_items`` found in Toll Parcel Portal
+        """Identifies list of ``job_items`` found in Toll Outlet Portal
         but not scanned into ``agent_stocktake`` by the agent.
 
         **Kwargs:**
             *dry*: do not execute, only report
 
         **Returns:**
-            list of ``job_items`` found in Toll Parcel Portal but not
+            list of ``job_items`` found in Toll Outlet Portal but not
             scanned into ``agent_stocktake``.
 
         """

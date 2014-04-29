@@ -1,7 +1,7 @@
 import unittest2
 import os
 
-import nparcel
+import top
 
 DUMMY_SCHEMA = ['id INTEGER PRIMARY KEY',
                 'dummy_field CHAR(15)']
@@ -11,7 +11,7 @@ class TestDbSession(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._db = nparcel.DbSession()
+        cls._db = top.DbSession()
         cls._db.connect()
         cls._db.create_table(name='dummy', schema=DUMMY_SCHEMA)
 

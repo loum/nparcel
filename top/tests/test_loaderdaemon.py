@@ -2,23 +2,23 @@ import unittest2
 import tempfile
 import os
 
-import nparcel
-from nparcel.utils.files import (create_dir,
-                                 get_directory_files_list,
-                                 copy_file,
-                                 remove_files)
+import top
+from top.utils.files import (create_dir,
+                             get_directory_files_list,
+                             copy_file,
+                             remove_files)
 
 
 class TestLoaderDaemon(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._test_dir = os.path.join('nparcel', 'tests', 'files')
+        cls._test_dir = os.path.join('top', 'tests', 'files')
         cls._file = os.path.join(cls._test_dir,
                                  'T1250_TOLI_20130828202901.txt')
-        config = os.path.join('nparcel', 'conf', 'top.conf')
-        cls._d = nparcel.LoaderDaemon(pidfile=None, config=config)
-        cls._d.emailer.set_template_base(os.path.join('nparcel',
+        config = os.path.join('top', 'conf', 'top.conf')
+        cls._d = top.LoaderDaemon(pidfile=None, config=config)
+        cls._d.emailer.set_template_base(os.path.join('top',
                                                       'templates'))
         cls._comms_dir = tempfile.mkdtemp()
         cls._d.config.set_comms_dir(cls._comms_dir)
@@ -26,8 +26,8 @@ class TestLoaderDaemon(unittest2.TestCase):
     def test_init(self):
         """Intialise a LoaderDaemon object.
         """
-        msg = 'Not a nparcel.LoaderDaemon object'
-        self.assertIsInstance(self._d, nparcel.LoaderDaemon, msg)
+        msg = 'Not a top.LoaderDaemon object'
+        self.assertIsInstance(self._d, top.LoaderDaemon, msg)
 
     def test_validate_file_priority(self):
         """Validate filename -- Priority.
@@ -180,7 +180,10 @@ class TestLoaderDaemon(unittest2.TestCase):
         self._d.config.cond['tolp'] = ''.join(new_cond)
 
         # Copy over our test file.
-        priority_file = 'nparcel/tests/files/T1250_TOLP_20130413135756.txt'
+        priority_file = os.path.join('top',
+                                     'tests',
+                                     'files',
+                                     'T1250_TOLP_20130413135756.txt')
         copy_file(priority_file,
                   os.path.join(in_dir, os.path.basename(priority_file)))
 
@@ -269,7 +272,10 @@ class TestLoaderDaemon(unittest2.TestCase):
         self._d.config.cond['tolp'] = ''.join(new_cond)
 
         # Copy over our test file.
-        priority_file = 'nparcel/tests/files/T1250_TOLP_20130413135756.txt'
+        priority_file = os.path.join('top',
+                                     'tests',
+                                     'files',
+                                     'T1250_TOLP_20130413135756.txt')
         copy_file(priority_file,
                   os.path.join(in_dir, os.path.basename(priority_file)))
 
@@ -358,7 +364,10 @@ class TestLoaderDaemon(unittest2.TestCase):
         self._d.config.cond['tolp'] = ''.join(new_cond)
 
         # Copy over our test file.
-        priority_file = 'nparcel/tests/files/T1250_TOLP_20130413135756.txt'
+        priority_file = os.path.join('top',
+                                     'tests',
+                                     'files',
+                                     'T1250_TOLP_20130413135756.txt')
         copy_file(priority_file,
                   os.path.join(in_dir, os.path.basename(priority_file)))
 
@@ -448,7 +457,10 @@ class TestLoaderDaemon(unittest2.TestCase):
         self._d.config.cond['tolp'] = ''.join(new_cond)
 
         # Copy over our test file.
-        priority_file = 'nparcel/tests/files/T1250_TOLP_20130413135756.txt'
+        priority_file = os.path.join('top',
+                                     'tests',
+                                     'files',
+                                     'T1250_TOLP_20130413135756.txt')
         copy_file(priority_file,
                   os.path.join(in_dir, os.path.basename(priority_file)))
 

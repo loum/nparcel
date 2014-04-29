@@ -4,37 +4,34 @@ import os
 import inspect
 import signal
 
-import nparcel
-from nparcel.utils.log import (log,
-                               set_log_level,
-                               set_console,
-                               rollover)
+import top
+from top.utils.log import (log,
+                           set_log_level,
+                           set_console,
+                           rollover)
 
 
-class PostcodeDaemon(nparcel.utils.Daemon):
+class PostcodeDaemon(top.utils.Daemon):
 
-    def __init__(self,
-                 pidfile,
-                 dry=False,
-                 config='nparcel.conf'):
+    def __init__(self, pidfile, dry=False, config='top.conf'):
         super(PostcodeDaemon, self).__init__(pidfile=pidfile)
 
         self.dry = dry
 
-        self.config = nparcel.B2CConfig(file=config)
+        self.config = top.B2CConfig(file=config)
         self.config.parse_config()
 
     def _start(self, event):
         signal.signal(signal.SIGTERM, self._exit_handler)
 
-        loader = nparcel.Loader(db=self.config.db_kwargs(),
-                                comms_dir=self.config.comms_dir)
+        loader = top.Loader(db=self.config.db_kwargs(),
+                            comms_dir=self.config.comms_dir)
 
         loader.verify_postcodes(dry=self.dry)
 
 
 def main():
-    based = nparcel.BaseD()
+    based = top.BaseD()
     based.set_command('start')
     script_name = inspect.getfile(inspect.currentframe())
     script_name = os.path.basename(script_name)

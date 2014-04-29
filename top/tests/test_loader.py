@@ -3,9 +3,9 @@ import datetime
 import tempfile
 import os
 
-import nparcel
-from nparcel.utils.files import (remove_files,
-                                 get_directory_files_list)
+import top
+from top.utils.files import (remove_files,
+                             get_directory_files_list)
 
 
 FILE_BU = {'tolp': '1', 'tolf': '2', 'toli': '3'}
@@ -22,14 +22,14 @@ class TestLoader(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        test_conf = 'nparcel/tests/test_loader.conf'
-        cls._c = nparcel.Config(config_file=test_conf)
+        test_conf = os.path.join('top', 'tests', 'test_loader.conf')
+        cls._c = top.Config(config_file=test_conf)
         cls._comms_dir = tempfile.mkdtemp()
-        cls._ldr = nparcel.Loader(comms_dir=cls._comms_dir)
+        cls._ldr = top.Loader(comms_dir=cls._comms_dir)
         cls._job_ts = cls._ldr.db.date_now()
 
         db = cls._ldr.db
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.agent, 'fixture': 'agents.py'},
                     {'db': db.delivery_partner,
                      'fixture': 'delivery_partners.py'}]
@@ -42,14 +42,14 @@ class TestLoader(unittest2.TestCase):
     def test_init(self):
         """Initialise a Loader object.
         """
-        msg = 'Object is not an nparcel.Loader'
-        self.assertIsInstance(self._ldr, nparcel.Loader, msg)
+        msg = 'Object is not an top.Loader'
+        self.assertIsInstance(self._ldr, top.Loader, msg)
 
     def test_parser_integration(self):
         """Parser object integration.
         """
         msg = 'Loader object does not have a valid Parser object'
-        self.assertIsInstance(self._ldr.parser, nparcel.Parser, msg)
+        self.assertIsInstance(self._ldr.parser, top.Parser, msg)
 
     def test_valid_barcode_extract(self):
         """Extract valid barcode.
@@ -289,7 +289,7 @@ FROM job_item"""
         fields['job_ts'] = self._job_ts
         fields['bu_id'] = int(FILE_BU.get('tolp'))
         received = self._ldr.table_column_map(fields,
-                                              nparcel.loader.JOB_MAP,
+                                              top.loader.JOB_MAP,
                                               COND_MAP)
         expected = {'address_1': '31 Bridge st,',
                     'address_2': 'Lane Cove,',
@@ -731,7 +731,7 @@ FROM job_item"""
         fields['job_ts'] = self._job_ts
         fields['bu_id'] = int(FILE_BU.get('tolp'))
         received = self._ldr.table_column_map(fields,
-                                              nparcel.loader.JOB_MAP,
+                                              top.loader.JOB_MAP,
                                               COND_MAP)
         expected = {'address_1': '31 Bridge st,',
                     'address_2': 'Lane Cove,',
@@ -778,7 +778,7 @@ FROM job_item"""
         line = self._c.get('test_lines', 'VALID_LINE')
         fields = self._ldr.parser.parse_line(line)
         received = self._ldr.table_column_map(fields,
-                                              nparcel.loader.JOB_ITEM_MAP,
+                                              top.loader.JOB_ITEM_MAP,
                                               COND_MAP)
         # Null out the time created.
         received['created_ts'] = None

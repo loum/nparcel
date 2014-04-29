@@ -1,6 +1,6 @@
 import unittest2
 
-import nparcel
+import top
 
 
 class TestReporter(unittest2.TestCase):
@@ -8,13 +8,13 @@ class TestReporter(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._identifier = 'tester'
-        cls._r = nparcel.Reporter(identifier=cls._identifier)
+        cls._r = top.Reporter(identifier=cls._identifier)
 
     def test_init(self):
         """Initialise a Reporter object.
         """
-        msg = 'Object is not an nparcel.Reporter'
-        self.assertIsInstance(self._r, nparcel.Reporter, msg)
+        msg = 'Object is not an top.Reporter'
+        self.assertIsInstance(self._r, top.Reporter, msg)
 
     def test_report(self):
         """Run the reporter.

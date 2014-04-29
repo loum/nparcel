@@ -3,11 +3,11 @@ __all__ = [
 ]
 import socket
 
-from nparcel.utils.log import log
+from top.utils.log import log
 
 
 class Rest(object):
-    """Nparcel REST-based class.
+    """REST-based class.
 
     .. attribute:: proxy
 

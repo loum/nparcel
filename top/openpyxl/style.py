@@ -32,7 +32,7 @@ try:
 except ImportError:
     from md5 import md5
 
-from nparcel.openpyxl.shared.compat import any
+from top.openpyxl.shared.compat import any
 
 class HashableObject(object):
     """Define how to hash property classes."""

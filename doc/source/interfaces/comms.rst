@@ -1,4 +1,4 @@
-.. B2C Comms
+.. Toll Outlet Portal Middleware Comms
 
 .. toctree::
     :maxdepth: 2
@@ -6,14 +6,14 @@
 Comms
 =====
 
-The Toll Parcel Portal comms facility manages comsumer notifications.
+The Toll Outlet Portal comms facility manages comsumer notifications.
 Notifications are provided via email and SMS.
 
 The types of consumer notifications supported by the Comms facility are:
 
 * **"Sorry we missed you ..."**
 
-    Triggered when loaded into the Toll Parcel Portal database as per:
+    Triggered when loaded into the Toll Outlet Portal database as per:
 
     * Service Code is NULL (unconditionally)
 
@@ -28,7 +28,7 @@ The types of consumer notifications supported by the Comms facility are:
 
 * **Primary Elect**
 
-    Triggered *after* load into the Toll Parcel Portal database and
+    Triggered *after* load into the Toll Outlet Portal database and
     verification has been obtained that the parcel has been delivered to
     the ADP.  Verification is typically provided via an alternate interface
     (for example, TCD report or TransSend).  See :ref:`primary_elect` for
@@ -37,14 +37,14 @@ The types of consumer notifications supported by the Comms facility are:
 * **On Delivery to Alternate Delivery Point**
 
     Similar to *Primary Elect* in that the comms are triggerred *after*
-    the load event into the Toll Parcel Portal database.  See
+    the load event into the Toll Outlet Portal database.  See
     :ref:`on_delivery_trigger` for more detail
 
 * **Returns**
 
     As of *release v0.32*, consumers can return parcels to an Alternate
     Delivery Point.  Acceptance is receipted against email and SMS comms
-    that are sent to the consumer in real time.  The Toll Parcel Portal
+    that are sent to the consumer in real time.  The Toll Outlet Portal
     website creates the returns comms event files
 
 Comms Workflow
@@ -57,7 +57,7 @@ appropriately constructed file to the comms module interface.
 .. note::
 
     The comms interface is a simple directory structure
-    (default ``/data/nparcel/comms``)
+    (default ``/data/top/comms``)
 
 Comms event files are processed by the ``topcommsd`` daemon process.
 
@@ -103,7 +103,7 @@ follows::
 * **<jobitem.id>**
 
     The integer value representing the ``jobitem.id`` column in the
-    Toll Parcel Portal database
+    Toll Outlet Portal database
 
 * **<template>**
 
@@ -158,7 +158,7 @@ Test Environment Identification and Disclaimer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 As of *version 0.34*, all comms that are generated from a non-production
-instance of the Toll Parcel Portal middleware will have a special **TEST**
+instance of the Toll Outlet Portal middleware will have a special **TEST**
 token added to the comms content.  In the case of e-mail, the **TEST**
 token will be applied to the header *and* content.  E-mails will also feature a disclaimer:
 
@@ -174,7 +174,7 @@ token will be applied to the header *and* content.  E-mails will also feature a 
 
 The comms facility identifies test messages by comparing the
 :ref:`prod <prod>` configuration item with the hostname running the
-Toll Parcel Portal middleware.
+Toll Outlet Portal middleware.
 
 .. note::
 
@@ -218,7 +218,7 @@ file to control processing workflow.
 * ``comms`` (under the ``[dirs]`` section)
 
     Inbound interface where comms event files are read from.
-    Default ``/data/nparcel/comms``
+    Default ``/data/top/comms``
 
 * ``comms_loop`` (under the ``[timeout]`` section)
 
@@ -247,7 +247,7 @@ file to control processing workflow.
 
 .. image:: ../_static/comms_warning.png
     :align: center
-    :alt: Toll Parcel Portal B2C Comms Queue Threshold Warning
+    :alt: Toll Outlet Portal Comms Queue Threshold Warning
 
 * ``comms_q_error``
 
@@ -335,9 +335,9 @@ simply logs the returned values.
   currently a manual process on a "need to know" basis.
 
 When an error is detected in code, all efforts are made to alert the
-Toll Parcel Point support email.  A sample failure email construct is as
+Toll Outlet Point support email.  A sample failure email construct is as
 follows:
 
     .. image:: ../_static/comms_failure.png
         :align: center
-        :alt: Toll Parcel Point B2C Comms Failure Alert Email
+        :alt: Toll Outlet Point Comms Failure Alert Email

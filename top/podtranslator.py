@@ -5,14 +5,14 @@ import tempfile
 import time
 import os
 
-from nparcel.utils.log import log
-from nparcel.utils.files import (copy_file,
-                                 move_file,
-                                 get_directory_files_list)
+from top.utils.log import log
+from top.utils.files import (copy_file,
+                             move_file,
+                             get_directory_files_list)
 
 
 class PodTranslator(object):
-    """:class:`nparcelPodTranslator` object structure.
+    """:class:`top.PodTranslator` object structure.
     """
 
     def token_generator(self, dt=None):

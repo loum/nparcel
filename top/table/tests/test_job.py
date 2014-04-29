@@ -2,22 +2,22 @@ import unittest2
 import datetime
 import os
 
-import nparcel
+import top
 
 
 class TestJob(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._job = nparcel.Job()
-        cls._db = nparcel.DbSession()
+        cls._job = top.Job()
+        cls._db = top.DbSession()
         db = cls._db
         db.connect()
 
         cls._job_ts = datetime.datetime.now().isoformat(' ')[:-3]
 
         # Prepare some sample data.
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.job,
                      'fixture': 'jobs.py'}]
         for i in fixtures:
@@ -47,7 +47,7 @@ VALUES ("%s", "%s")""" % (bc, self._job_ts)
         self._db.connection.rollback()
 
     def test_job_table_insert_with_valid_nparcel_data(self):
-        """Insert valid Nparcel data.
+        """Insert valid data.
         """
         kwargs = {'address_1': '31 Bridge st,',
                   'address_2': 'Lane Cove,',

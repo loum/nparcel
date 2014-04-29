@@ -2,19 +2,19 @@ import unittest2
 import os
 import datetime
 
-import nparcel
+import top
 
 
 class TestReturns(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._r = nparcel.Returns()
-        cls._db = nparcel.DbSession()
+        cls._r = top.Returns()
+        cls._db = top.DbSession()
         cls._db.connect()
 
         db = cls._db
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.returns_reference,
                      'fixture': 'returns_reference.py'},
                     {'db': db.returns, 'fixture': 'returns.py'},
@@ -34,8 +34,8 @@ SET created_ts = '%s'""" % cls._now
     def test_init(self):
         """Placeholder test to make sure the Returns table is created.
         """
-        msg = 'Object is not an nparcel.Returns'
-        self.assertIsInstance(self._r, nparcel.Returns, msg)
+        msg = 'Object is not an top.Returns'
+        self.assertIsInstance(self._r, top.Returns, msg)
 
     def test_extract_id_sql(self):
         """Verify the extract_id_sql string.

@@ -7,11 +7,11 @@ import signal
 import datetime
 import socket
 
-import nparcel
-from nparcel.utils.log import (log,
-                               set_log_level,
-                               set_console,
-                               rollover)
+import top
+from top.utils.log import (log,
+                           set_log_level,
+                           set_console,
+                           rollover)
 
 
 class Pids(object):
@@ -96,12 +96,12 @@ class Pids(object):
             pass
 
 
-class HealthDaemon(nparcel.DaemonService):
+class HealthDaemon(top.DaemonService):
     """Daemoniser facility for the Health() class.
 
     """
     _config = None
-    _emailer = nparcel.Emailer()
+    _emailer = top.Emailer()
     _recipients = []
     _pid_table = {}
     _headers = ['Process Name', 'PIDs']
@@ -130,10 +130,10 @@ class HealthDaemon(nparcel.DaemonService):
     def __init__(self, pidfile, dry=False, config=None):
         """HealthDaemon initialiser.
         """
-        nparcel.DaemonService.__init__(self, pidfile=pidfile, dry=dry)
+        top.DaemonService.__init__(self, pidfile=pidfile, dry=dry)
 
         if config is not None:
-            self.set_config(nparcel.HealthB2CConfig(file=config))
+            self.set_config(top.HealthB2CConfig(file=config))
             self.config.parse_config()
 
         try:
@@ -253,7 +253,7 @@ class HealthDaemon(nparcel.DaemonService):
 def main():
     config_file = os.path.join(os.path.expanduser('~'), '.top', 'top.conf')
 
-    based = nparcel.BaseD(config=config_file)
+    based = top.BaseD(config=config_file)
     based.set_command('start')
     script_name = inspect.getfile(inspect.currentframe())
     script_name = os.path.basename(script_name)

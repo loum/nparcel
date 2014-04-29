@@ -1,4 +1,4 @@
-.. Toll Parcel Portal B2C Modules Index
+.. Toll Outlet Portal Middleware Modules Index
 
 Modules
 =======

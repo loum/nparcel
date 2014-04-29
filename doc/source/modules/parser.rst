@@ -1,4 +1,4 @@
-.. Nparcel B2C Parser
+.. Toll Outlet Portal Middleware Parser
 
 .. toctree::
     :maxdepth: 2
@@ -6,10 +6,10 @@
 Parser
 ======
 
-Methods :mod:`nparcel.parser`
------------------------------
+Methods :mod:`top.parser`
+-------------------------
 
-.. automodule:: nparcel.parser
+.. automodule:: top.parser
    :members:
 
-.. .. autofunction:: nparcel.parser.__init__
+.. .. autofunction:: top.parser.__init__

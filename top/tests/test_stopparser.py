@@ -1,23 +1,23 @@
 import unittest2
 import os
 
-import nparcel
+import top
 
 
 class TestStopParser(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._sp = nparcel.StopParser()
-        test_dir = os.path.join('nparcel', 'tests', 'files')
+        cls._sp = top.StopParser()
+        test_dir = os.path.join('top', 'tests', 'files')
         test_file = 'TCD_Deliveries_20140207111019.DAT'
         cls._test_file = os.path.join(test_dir, test_file)
 
     def test_init(self):
         """Initialise a StopParser object.
         """
-        msg = 'Object is not an nparcel.StopParser'
-        self.assertIsInstance(self._sp, nparcel.StopParser, msg)
+        msg = 'Object is not an top.StopParser'
+        self.assertIsInstance(self._sp, top.StopParser, msg)
 
     def test_read(self):
         """Read in the sample csv.

@@ -1,12 +1,12 @@
-.. B2C Middleware Source Code Repository and Packaging
+.. Toll Outlet Portal Middleware Source Code Repository and Packaging
 
-B2C Middleware Source Code Repository and Packaging
-===================================================
+Middleware Source Code Repository and Packaging
+===============================================
 
 The Development Environment
 ---------------------------
 
-The Toll Parcel Portal will run on any \*nix based system that runs Python
+The Toll Outlet Portal will run on any \*nix based system that runs Python
 2.4 or greater.
 
 If accessing the middleware source code for the first time, you will need to
@@ -157,15 +157,15 @@ the ``rpm-build`` package::
 Source Code Management
 ----------------------
 
-The Toll Parcel Portal B2C Replicator package source code is maintained at
+The Toll Outlet Portal middleware package source code is maintained at
 `Github <https://github.com/loum/nparcel>`_.
 
 Cloning
 ^^^^^^^
-To clone the project into the directory ``nparcel`` on your local
+To clone the project into the directory ``top`` on your local
 filesystem::
 
-    $ git clone https://github.com/loum/nparcel.git
+    $ git clone https://github.com/loum/nparcel.git top
     Initialized empty Git repository in /home/lupco/dev/nparcel/.git/
     remote: Counting objects: 4, done.
     remote: Compressing objects: 100% (3/3), done.
@@ -196,25 +196,25 @@ Package Build
 
 A package can be built from within the top level of your local version of
 the source code repository.  For example, if you cloned the project into the
-directory ``nparcel``, then execute these commands::
+directory ``top``, then execute these commands::
 
-    $ cd nparcel
+    $ cd top
     $ make build
 
 This will create the package under the ``dist`` directory::
 
     $ ls -1 dist
-    python-nparcel-0.31-1.noarch.rpm
-    python-nparcel-0.31-1.src.rpm
-    python-nparcel-0.31.tar.gz
+    python-top-0.31-1.noarch.rpm
+    python-top-0.31-1.src.rpm
+    python-top-0.31.tar.gz
 
-The ``python-nparcel-0.31-1.noarch.rpm`` package is given to your friendly
+The ``python-top-0.31-1.noarch.rpm`` package is given to your friendly
 UNIX Admin who will be able to install the software.
 
 .. note::
 
     The package versioning (for example, ``0.31`` as above) can be altered
-    within the ``nparcel/setup.py`` file under the top level of the project
+    within the ``top/setup.py`` file under the top level of the project
     repository.
 
 Package Installation
@@ -230,27 +230,27 @@ install the package yourself.
 If this is an upgrade, remove the old version of the package.  The latest
 package version can be obtained with::
 
-    $ rpm -qi python-nparcel
-    Name        : python-nparcel               Relocations: /usr 
+    $ rpm -qi python-top
+    Name        : python-top               Relocations: /usr 
     Version     : 0.31                              Vendor: Lou Markovski <lou.markovski@tollgroup.com>
     Release     : 1                             Build Date: Tue 04 Mar 2014 15:15:23 EST
     Install Date: Tue 04 Mar 2014 15:15:33 EST      Build Host: titanium.toll.com.au
-    Group       : Development/Libraries         Source RPM: python-nparcel-0.31-1.src.rpm
+    Group       : Development/Libraries         Source RPM: python-top-0.31-1.src.rpm
     Size        : 3635424                          License: UNKNOWN
     Signature   : (none)
     URL         : https://nparcel.tollgroup.com
-    Summary     : Nparcel B2C Replicator
+    Summary     : Toll Outlet Portal Middleware
     Description :
     UNKNOWN
 
 To uninstall an old package::
 
-    # rpm -e python-nparcel
+    # rpm -e python-top
 
 To install the new package (provided the new package has been placed in
-``/var/tmp/python-nparcel-0.31-1.noarch.rpm``)::
+``/var/tmp/python-top-0.31-1.noarch.rpm``)::
 
-    # rpm -qi /var/tmp/python-nparcel-0.31-1.noarch.rpm
+    # rpm -qi /var/tmp/python-top-0.31-1.noarch.rpm
 
 FAQs
 ----

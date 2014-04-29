@@ -26,18 +26,18 @@
 """Imports for the openpyxl package."""
 
 # package imports
-from nparcel.openpyxl import cell
-from nparcel.openpyxl import namedrange
-from nparcel.openpyxl import style
-from nparcel.openpyxl import workbook
-from nparcel.openpyxl import worksheet
-from nparcel.openpyxl import reader
-from nparcel.openpyxl import shared
-from nparcel.openpyxl import writer
+from top.openpyxl import cell
+from top.openpyxl import namedrange
+from top.openpyxl import style
+from top.openpyxl import workbook
+from top.openpyxl import worksheet
+from top.openpyxl import reader
+from top.openpyxl import shared
+from top.openpyxl import writer
 
 # shortcuts
-from nparcel.openpyxl.workbook import Workbook
-from nparcel.openpyxl.reader.excel import load_workbook
+from top.openpyxl.workbook import Workbook
+from top.openpyxl.reader.excel import load_workbook
 
 # constants
 

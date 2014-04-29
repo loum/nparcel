@@ -1,4 +1,4 @@
-.. Nparcel B2C Exporter
+.. Toll Outlet Portal Middleware Exporter
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 Exporter
 ========
 
-.. automodule:: nparcel.exporter
+.. automodule:: top.exporter
     :members:

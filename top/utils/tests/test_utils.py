@@ -1,6 +1,6 @@
 import unittest2
 
-from nparcel.utils import date_diff
+from top.utils import date_diff
 
 
 class TestUtils(unittest2.TestCase):

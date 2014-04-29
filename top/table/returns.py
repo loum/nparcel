@@ -1,10 +1,10 @@
 __all__ = [
     "Returns",
 ]
-import nparcel
+import top
 
 
-class Returns(nparcel.Table):
+class Returns(top.Table):
     """Returns table ORM.
     """
 

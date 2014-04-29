@@ -26,9 +26,9 @@
 """Write the shared style table."""
 
 # package imports
-from nparcel.openpyxl.shared.xmltools import Element, SubElement
-from nparcel.openpyxl.shared.xmltools import get_document_content
-from nparcel.openpyxl import style
+from top.openpyxl.shared.xmltools import Element, SubElement
+from top.openpyxl.shared.xmltools import get_document_content
+from top.openpyxl import style
 
 class StyleWriter(object):
 

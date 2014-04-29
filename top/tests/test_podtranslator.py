@@ -3,23 +3,23 @@ import datetime
 import tempfile
 import os
 
-import nparcel
-from nparcel.utils.files import (copy_file,
-                                 remove_files,
-                                 get_directory_files_list)
+import top
+from top.utils.files import (copy_file,
+                             remove_files,
+                             get_directory_files_list)
 
 
 class TestPodTranslator(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._pt = nparcel.PodTranslator()
+        cls._pt = top.PodTranslator()
 
     def test_init(self):
         """Initialise an PodTranslator object.
         """
-        msg = 'Object is not an nparcel.PodTranslator'
-        self.assertIsInstance(self._pt, nparcel.PodTranslator, msg)
+        msg = 'Object is not an top.PodTranslator'
+        self.assertIsInstance(self._pt, top.PodTranslator, msg)
 
     def test_token_generator_datetime_object(self):
         """Verify the token_generator -- datetime object provided
@@ -59,7 +59,7 @@ class TestPodTranslator(unittest2.TestCase):
         """
         # Place a copy of the test files in temp directory.
         dir = tempfile.mkdtemp()
-        test_file = os.path.join('nparcel',
+        test_file = os.path.join('top',
                                  'tests',
                                  'files',
                                  'NSW_VANA_REF_20131121065550.txt')
@@ -89,7 +89,7 @@ class TestPodTranslator(unittest2.TestCase):
         """
         # Place a copy of the test files in temp directory.
         dir = tempfile.mkdtemp()
-        test_file = os.path.join('nparcel',
+        test_file = os.path.join('top',
                                  'tests',
                                  'files',
                                  'NSW_VANA_REF_20131121065550.txt')

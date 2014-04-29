@@ -3,8 +3,8 @@ import tempfile
 import datetime
 import os
 
-import nparcel
-from nparcel.utils.files import remove_files
+import top
+from top.utils.files import remove_files
 
 
 class TestWriter(unittest2.TestCase):
@@ -13,14 +13,14 @@ class TestWriter(unittest2.TestCase):
     def setUpClass(cls):
         cls._now = datetime.datetime.now()
 
-        cls._w = nparcel.Writer()
+        cls._w = top.Writer()
         cls._dir = tempfile.mkdtemp()
 
     def test_init(self):
         """Initialise a Writer object.
         """
-        msg = 'Object is not an nparcel.Writer'
-        self.assertIsInstance(self._w, nparcel.Writer, msg)
+        msg = 'Object is not an top.Writer'
+        self.assertIsInstance(self._w, top.Writer, msg)
 
     def test_write(self):
         """Write out the headers and content.

@@ -1,4 +1,4 @@
-.. Nparcel B2C Reminder
+.. Toll Outlet Portal Middleware Reminder
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 Reminder
 ========
 
-.. automodule:: nparcel.reminder
+.. automodule:: top.reminder
     :members:

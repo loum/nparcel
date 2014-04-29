@@ -4,12 +4,12 @@ all__ = [
 import sys
 import ConfigParser
 
-import nparcel
-from nparcel.utils.log import log
+import top
+from top.utils.log import log
 
 
-class ExporterB2CConfig(nparcel.B2CConfig):
-    """:class:`nparcel.ExporterB2CConfig` captures the configuration items
+class ExporterB2CConfig(top.B2CConfig):
+    """:class:`top.ExporterB2CConfig` captures the configuration items
     required for the ``topexporterd`` facility.
 
     .. attribute:: exporter_loop
@@ -18,7 +18,7 @@ class ExporterB2CConfig(nparcel.B2CConfig):
 
     .. attribute:: signature_dir
 
-        directory where the Toll Parcel Portal places it's POD
+        directory where the Toll Outlet Portal places it's POD
         signature files
 
     .. attribute:: exporter_dirs
@@ -71,7 +71,7 @@ class ExporterB2CConfig(nparcel.B2CConfig):
     def __init__(self, file=None):
         """ExporterB2CConfig initialisation.
         """
-        nparcel.B2CConfig.__init__(self, file)
+        top.B2CConfig.__init__(self, file)
 
     @property
     def signature_dir(self):
@@ -156,10 +156,10 @@ class ExporterB2CConfig(nparcel.B2CConfig):
         """Read config items from the configuration file.
 
         """
-        nparcel.Config.parse_config(self)
+        top.Config.parse_config(self)
 
         # These are the generic values that can be removed
-        # after nparcel.B2CConfig is refactored.
+        # after top.B2CConfig is refactored.
         try:
             self.set_staging_base(self.get('dirs', 'staging_base'))
         except (ConfigParser.NoOptionError,
@@ -183,7 +183,7 @@ class ExporterB2CConfig(nparcel.B2CConfig):
                       (self.facility, err, self._cond))
 
         # These are the comms values that will remain
-        # after nparcel.B2CConfig is refactored.
+        # after top.B2CConfig is refactored.
         try:
             self.set_signature_dir(self.get('dirs', 'signature'))
         except (ConfigParser.NoOptionError,

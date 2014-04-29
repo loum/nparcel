@@ -2,7 +2,7 @@ import unittest2
 import os
 import datetime
 
-import nparcel
+import top
 
 
 class TestUncollected(unittest2.TestCase):
@@ -16,12 +16,12 @@ class TestUncollected(unittest2.TestCase):
 
         cls.maxDiff = None
 
-        cls._u = nparcel.Uncollected(bu_ids=bu_ids)
+        cls._u = top.Uncollected(bu_ids=bu_ids)
         cls._u.set_delivery_partners(['Nparcel'])
         db = cls._u.db
 
         # Prepare some sample data.
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.agent_stocktake,
                      'fixture': 'agent_stocktakes.py'},
                     {'db': db.agent,
@@ -62,8 +62,8 @@ WHERE id IN (15, 16, 19)""" % cls._old_created_ts
     def test_init(self):
         """Initialise a Uncollected object.
         """
-        msg = 'Object is not an nparcel.Uncollected'
-        self.assertIsInstance(self._u, nparcel.Uncollected, msg)
+        msg = 'Object is not an top.Uncollected'
+        self.assertIsInstance(self._u, top.Uncollected, msg)
 
     def test_process(self):
         """Check uncollected aged parcel processing.

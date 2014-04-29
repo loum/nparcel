@@ -1,4 +1,4 @@
-.. Toll Parcel Portal B2C Exception
+.. Toll Outlet Portal Middleware Exception
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 Exception
 =========
 
-.. automodule:: nparcel.report.exception
+.. automodule:: top.report.exception
     :members:

@@ -1,29 +1,29 @@
 import unittest2
 import os
 
-import nparcel
+import top
 
 
 class TestReporterB2CConfig(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._file = os.path.join('nparcel', 'conf', 'top.conf')
+        cls._file = os.path.join('top', 'conf', 'top.conf')
 
     def setUp(self):
-        sconfig_file = os.path.join('nparcel', 'conf', 'top.conf')
-        self._rc = nparcel.ReporterB2CConfig()
+        sconfig_file = os.path.join('top', 'conf', 'top.conf')
+        self._rc = top.ReporterB2CConfig()
 
     def test_init(self):
         """Initialise a ReporterB2CConfig object.
         """
-        msg = 'Object is not a nparcel.ReporterB2CConfig'
-        self.assertIsInstance(self._rc, nparcel.ReporterB2CConfig, msg)
+        msg = 'Object is not a top.ReporterB2CConfig'
+        self.assertIsInstance(self._rc, top.ReporterB2CConfig, msg)
 
     def test_parse_config(self):
         """Parse comms items from the config.
         """
-        config_file = os.path.join('nparcel', 'conf', 'top.conf')
+        config_file = os.path.join('top', 'conf', 'top.conf')
         self._rc.set_config_file(config_file)
         self._rc.parse_config()
 
@@ -35,7 +35,7 @@ class TestReporterB2CConfig(unittest2.TestCase):
         self.assertDictEqual(received, expected, msg)
 
         received = self._rc.report_outdir
-        expected = os.path.join(os.sep, 'data', 'nparcel', 'reports')
+        expected = os.path.join(os.sep, 'data', 'top', 'reports')
         msg = 'Config report outdir value error'
         self.assertEqual(received, expected, msg)
 
@@ -106,7 +106,7 @@ class TestReporterB2CConfig(unittest2.TestCase):
         self.assertDictEqual(received, expected, msg)
 
         received = self._rc.report_type_ws
-        title = 'Toll Parcel Portal Stocktake Uncollected (Aged) Report'
+        title = 'Toll Outlet Portal Stocktake Uncollected (Aged) Report'
         subtitle = 'ITEMS UNCOLLECTED FOR MORE THAN 7 DAYS'
         expected = {'title': title,
                     'subtitle': subtitle,
@@ -179,7 +179,7 @@ class TestReporterB2CConfig(unittest2.TestCase):
         self.assertDictEqual(received, expected, msg)
 
         received = self._rc.report_type_ws
-        title = 'Toll Parcel Portal Stocktake Compliance Report'
+        title = 'Toll Outlet Portal Stocktake Compliance Report'
         expected = {'title': title,
                     'sheet_title': 'Compliance'}
         msg = 'report_compliance_ws error'
@@ -283,7 +283,7 @@ class TestReporterB2CConfig(unittest2.TestCase):
         self.assertDictEqual(received, expected, msg)
 
         received = self._rc.report_type_ws
-        title = 'Toll Parcel Portal Stocktake Non-Compliance Report'
+        title = 'Toll Outlet Portal Stocktake Non-Compliance Report'
         subtitle = 'ITEMS IN TPP SYSTEM, NOT SCANNED BY AGENT'
         expected = {'title': title,
                     'subtitle': subtitle,
@@ -346,7 +346,7 @@ class TestReporterB2CConfig(unittest2.TestCase):
         self.assertDictEqual(received, expected, msg)
 
         received = self._rc.report_type_ws
-        title = 'Toll Parcel Portal Stocktake Exception Report'
+        title = 'Toll Outlet Portal Stocktake Exception Report'
         subtitle = 'ITEMS SCANNED BY AGENT, NOT FOUND IN TPP'
         expected = {'title': title,
                     'subtitle': subtitle,
@@ -418,7 +418,7 @@ class TestReporterB2CConfig(unittest2.TestCase):
         self.assertDictEqual(received, expected, msg)
 
         received = self._rc.report_type_ws
-        title = 'Toll Parcel Portal Stocktake Parcel Totals Report'
+        title = 'Toll Outlet Portal Stocktake Parcel Totals Report'
         subtitle = ''
         expected = {'title': title,
                     'subtitle': subtitle,
@@ -494,7 +494,7 @@ class TestReporterB2CConfig(unittest2.TestCase):
         self.assertDictEqual(received, expected, msg)
 
         received = self._rc.report_type_ws
-        title = 'Toll Parcel Portal Stocktake Collected Exception Report'
+        title = 'Toll Outlet Portal Stocktake Collected Exception Report'
         subtitle = 'ITEMS SCANNED BY AGENT, STATUS IS COLLECTED'
         expected = {'title': title,
                     'subtitle': subtitle,

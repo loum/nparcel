@@ -4,12 +4,12 @@ __all__ = [
 import sys
 import __builtin__
 
-import nparcel
+import top
 import ConfigParser
-from nparcel.utils.log import log
-from nparcel.utils.setter import (set_scalar,
-                                  set_list,
-                                  set_dict)
+from top.utils.log import log
+from top.utils.setter import (set_scalar,
+                              set_list,
+                              set_dict)
 
 FLAG_MAP = {'item_number_excp': 0,
             'send_email': 1,
@@ -31,11 +31,11 @@ FLAG_MAP = {'item_number_excp': 0,
             'delay_template_sc_2': 17}
 
 
-class B2CConfig(nparcel.Config):
+class B2CConfig(top.Config):
     """B2CConfig class.
 
-    :class:`nparcel.B2CConfig` captures the configuration items required
-    by the Toll Parcel Portal B2C middleware.
+    :class:`top.B2CConfig` captures the configuration items required
+    by the Toll Outlet Portal middleware.
 
     .. attribute:: prod
 
@@ -157,7 +157,7 @@ class B2CConfig(nparcel.Config):
     def __init__(self, file=None):
         """B2CConfig initialisation.
         """
-        nparcel.Config.__init__(self, file)
+        top.Config.__init__(self, file)
 
     @property
     def prod(self):
@@ -618,7 +618,7 @@ class B2CConfig(nparcel.Config):
         """Read config items from the configuration file.
 
         """
-        nparcel.Config.parse_config(self)
+        top.Config.parse_config(self)
 
         kwargs = [{'section': 'dirs',
                    'option': 'comms',

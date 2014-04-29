@@ -1,1 +1,1 @@
-Toll Parcel Portal Middleware Health Check (${host}) - ${date}
+Toll Outlet Portal Middleware Health Check (${host}) - ${date}

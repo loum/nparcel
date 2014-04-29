@@ -7,17 +7,17 @@ import time
 import datetime
 import signal
 
-import nparcel
-from nparcel.utils.log import log
-from nparcel.utils.files import (get_directory_files,
-                                 check_eof_flag,
-                                 move_file,
-                                 copy_file,
-                                 check_filename)
+import top
+from top.utils.log import log
+from top.utils.files import (get_directory_files,
+                             check_eof_flag,
+                             move_file,
+                             copy_file,
+                             check_filename)
 
 
-class LoaderDaemon(nparcel.DaemonService):
-    """Daemoniser facility for the :class:`nparcel.Loader` class.
+class LoaderDaemon(top.DaemonService):
+    """Daemoniser facility for the :class:`top.Loader` class.
 
     .. attribute:: file_format
 
@@ -43,16 +43,16 @@ class LoaderDaemon(nparcel.DaemonService):
                  file=None,
                  dry=False,
                  batch=False,
-                 config='nparcel.conf'):
+                 config='top.conf'):
         c = None
         if config is not None:
-            c = nparcel.B2CConfig(config)
-        nparcel.DaemonService.__init__(self,
-                                       pidfile=pidfile,
-                                       file=file,
-                                       dry=dry,
-                                       batch=batch,
-                                       config=c)
+            c = top.B2CConfig(config)
+        top.DaemonService.__init__(self,
+                                   pidfile=pidfile,
+                                   file=file,
+                                   dry=dry,
+                                   batch=batch,
+                                   config=c)
 
         try:
             self.set_support_emails(self.config.support_emails)
@@ -109,7 +109,7 @@ class LoaderDaemon(nparcel.DaemonService):
                   (self.facility, self.business_units))
 
     def _start(self, event):
-        """Override the :method:`nparcel.utils.Daemon._start` method.
+        """Override the :method:`top.utils.Daemon._start` method.
 
         Will perform a single iteration if the :attr:`file` attribute has
         a list of filenames to process.  Similarly, dry and batch modes
@@ -123,8 +123,8 @@ class LoaderDaemon(nparcel.DaemonService):
         """
         signal.signal(signal.SIGTERM, self._exit_handler)
 
-        loader = nparcel.Loader(db=self.config.db_kwargs(),
-                                comms_dir=self.config.comms_dir)
+        loader = top.Loader(db=self.config.db_kwargs(),
+                            comms_dir=self.config.comms_dir)
         commit = True
         if self.dry:
             commit = False
@@ -218,7 +218,7 @@ class LoaderDaemon(nparcel.DaemonService):
 
     def get_files(self):
         """Checks inbound directories (defined by the
-        :attr:`nparcel.b2cconfig.in_dirs` config option) for valid
+        :attr:`top.b2cconfig.in_dirs` config option) for valid
         T1250 files to be processed.  In this context, valid is interpreted
         as:
         * T1250 files that conform to the T1250 syntax
@@ -253,7 +253,7 @@ class LoaderDaemon(nparcel.DaemonService):
         return files_to_process
 
     def validate_file(self, filename):
-        """Parse the Nparcel-format filename string and attempt to extract
+        """Parse the T1250-format filename string and attempt to extract
         the Business Unit and file timestamp.
 
         **Kwargs:**

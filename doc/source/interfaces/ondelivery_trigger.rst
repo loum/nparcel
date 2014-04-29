@@ -1,4 +1,4 @@
-.. Toll Parcel Portal On Delivery Comms Trigger
+.. Toll Outlet Portal Middleware On Delivery Comms Trigger
 
 .. toctree::
     :maxdepth: 2
@@ -10,10 +10,10 @@ On Delivery Comms Trigger
 
 In addition to the "Sorry we missed you ..." scenario that redirects
 parcels to an Alternate Delivery Point if the consumer is not present
-at the nominated address to accept delivery, the Toll Parcel Portal
+at the nominated address to accept delivery, the Toll Outlet Portal
 supports an On Delivery comms trigger.  In this case, a special
 delivery type will suppress comms notifications during the initial
-:mod:`nparcel.loader` until which time that the parcel was physically
+:mod:`top.loader` until which time that the parcel was physically
 delivered to the Alternate Delivery Point.  The delivery types that
 require this additional level of processing are:
 
@@ -31,7 +31,7 @@ Parcels that are Pending Delivery
 ---------------------------------
 
 Parcels that are pending delivery to an Alternate Delivery Point present
-in the Toll Parcel Portal as:
+in the Toll Outlet Portal as:
 
 * not being picked up (``jobitem.pickup_ts`` is ``NULL``)
 
@@ -45,9 +45,9 @@ in the Toll Parcel Portal as:
 * are configured to generate On Delivery Comms as per
   :ref:`sc4_ondelivery_bu_ids` or :ref:`primary_elect_ondelivery`
 
-Parcels (``job_items``) within Toll Parcel Portal that exhibit these traits
+Parcels (``job_items``) within Toll Outlet Portal that exhibit these traits
 are extracted via the SQL query provided by
-:meth:`nparcel.table.jobitem.uncollected_jobitems_sql`.  From here,
+:meth:`top.table.jobitem.uncollected_jobitems_sql`.  From here,
 ``topondeliveryd`` will poll the alternate interfaces for a delivered event.
 
 Delivery Partner Aware
@@ -71,7 +71,7 @@ suppressed.  The configuration setting required for this behaviour is::
     Priority = Nparcel
 
 ``topondeliveryd`` Interfaces
-----------------------------
+-----------------------------
 
 The alternate interfaces used include:
 
@@ -114,7 +114,7 @@ TCD
 +++
 
 New in **version 0.28**, ``topondeliveryd`` now takes a daily extraction
-from TCD.  TCD push their report files to the Toll Parcel Portal FTP
+from TCD.  TCD push their report files to the Toll Outlet Portal FTP
 interface.  Typical contents are as follows::
 
     MKL5050005831       20140211 00393403250088959404   20140212
@@ -140,7 +140,7 @@ standard and simply uses the ``pe`` template.  For example, if
 ``job_item.id`` 12345 triggers an On Delivery event, then (if configured)
 the comms events files generated include::
 
-    $ ls -1 /data/nparcel/comms
+    $ ls -1 /data/top/comms
     $ email.12345.pe
     $ sms.12345.pe
 
@@ -173,7 +173,7 @@ On Delivery comms trigger process::
     -f FILE, --file=FILE  file to process inline (start only)
 
 ``topondeliveryd`` Configuration Items
--------------------------------------
+--------------------------------------
 
 The ``topondeliveryd`` utility uses the default ``top.conf`` file to
 control processing workflows.
@@ -185,7 +185,7 @@ control processing workflows.
 
 * ``tcd_in`` (under the ``[dirs]`` section)
 
-    TCD Delivery Report inbound directory (default ``/data/nparcel/tcd``)
+    TCD Delivery Report inbound directory (default ``/data/top/tcd``)
 
 * ``tcd_filename_format``
 
@@ -215,7 +215,7 @@ control processing workflows.
 
 * ``db`` (the actual ``[db]`` section)
 
-    Toll Parcel Portal database connectivity information.  A typical
+    Toll Outlet Portal database connectivity information.  A typical
     example is::
 
         [db]

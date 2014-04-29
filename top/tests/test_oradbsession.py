@@ -1,7 +1,7 @@
 import unittest2
 import os
 
-import nparcel
+import top
 
 DUMMY_SCHEMA = ['id INTEGER PRIMARY KEY',
                 'dummy_field CHAR(15)']
@@ -11,7 +11,7 @@ class TestOraDbSession(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._db = nparcel.OraDbSession()
+        cls._db = top.OraDbSession()
         cls._db.connect()
         cls._db.create_table(name='dummy', schema=DUMMY_SCHEMA)
         cls._db.create_table(name='v_nparcel_adp_connotes',
@@ -52,7 +52,7 @@ VALUES ('xxx')"""
                   'password': 'password',
                   'port': 1521,
                   'sid': 'sid'}
-        db = nparcel.OraDbSession(kwargs)
+        db = top.OraDbSession(kwargs)
 
         # Check the connection string.
         # Tweak the password to suit.
@@ -68,7 +68,7 @@ VALUES ('xxx')"""
     def test_load_fixture(self):
         """Load a fixture into a table -- dodgy table name.
         """
-        fixture_file = os.path.join('nparcel',
+        fixture_file = os.path.join('top',
                                     'tests',
                                     'fixtures',
                                     'transsend.py')

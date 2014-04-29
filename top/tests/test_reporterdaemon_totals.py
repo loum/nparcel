@@ -3,8 +3,8 @@ import os
 import datetime
 import tempfile
 
-import nparcel
-from nparcel.utils.files import (remove_files,
+import top
+from top.utils.files import (remove_files,
                                  get_directory_files_list)
 
 
@@ -14,9 +14,9 @@ class TestReporterDaemonTotals(unittest2.TestCase):
     def setUpClass(cls):
         cls._now = datetime.datetime.now()
 
-        cls._rd = nparcel.ReporterDaemon('totals', pidfile=None)
+        cls._rd = top.ReporterDaemon('totals', pidfile=None)
 
-        cls._rd.emailer.set_template_base(os.path.join('nparcel',
+        cls._rd.emailer.set_template_base(os.path.join('top',
                                                        'templates'))
         cls._rd.set_outfile('Stocktake_parcel_totals_')
         cls._dir = tempfile.mkdtemp()
@@ -30,11 +30,11 @@ class TestReporterDaemonTotals(unittest2.TestCase):
         cls._rd.set_bu_ids(bu_ids)
         cls._rd.set_delivery_partners(['Nparcel'])
         kwargs = cls._rd.reporter_kwargs
-        cls._rd._report = nparcel.Totals(**kwargs)
+        cls._rd._report = top.Totals(**kwargs)
 
         # Prepare some sample data.
         db = cls._rd._report.db
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.agent_stocktake,
                      'fixture': 'agent_stocktakes.py'},
                     {'db': db.agent,
@@ -96,7 +96,7 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
         self._rd.set_header_widths(widths)
 
         old_ws = self._rd.ws
-        title = 'Toll Parcel Portal Stocktake - Total Parcels at agent'
+        title = 'Toll Outlet Portal Stocktake - Total Parcels at agent'
         ws = {'title': title,
               'sheet_title': 'Parcel Totals'}
         self._rd.set_ws(ws)
@@ -123,11 +123,11 @@ WHERE id IN (15, 16, 19, 20, 22)""" % cls._now
 
         old_report_filename = self._rd.report_filename
         file = 'Stocktake_parcel_totals_20131219-09:46-all.xlsx'
-        attach_file = os.path.join('nparcel', 'tests', 'files', file)
+        attach_file = os.path.join('top', 'tests', 'files', file)
         self._rd.set_report_filename(attach_file)
 
         old_ws = self._rd.ws
-        title = 'Toll Parcel Portal Stocktake Parcel Totals Report'
+        title = 'Toll Outlet Portal Stocktake Parcel Totals Report'
         now = self._now.strftime('%d/%m/%Y')
         self._rd.set_ws({'title': title})
 

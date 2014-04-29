@@ -3,17 +3,17 @@ __all__ = [
 ]
 import datetime
 
-import nparcel
+import top
 
 
-class JobItem(nparcel.Table):
+class JobItem(top.Table):
     """job_item table ORM.
     """
-    _job = nparcel.Job()
-    _agent_stocktake = nparcel.AgentStocktake()
+    _job = top.Job()
+    _agent_stocktake = top.AgentStocktake()
 
     def __init__(self):
-        """Toll Parcel Portal job_item table initialiser.
+        """Toll Outlet Portal job_item table initialiser.
         """
         super(JobItem, self).__init__('job_item')
 
@@ -687,7 +687,7 @@ AND ji.id NOT IN
 
             *delivery_partners*: string based tuple of Delivery Partner
             names to limit result set against.  For example,
-            ``['nparcel', 'toll']``.  The values supported are as per
+            ``['top', 'toll']``.  The values supported are as per
             the ``delivery_partner.name`` table set
 
             *day_range*: number of days from current time to include
@@ -811,7 +811,7 @@ AND %(alias)s.pickup_ts %(pickup_sql)s""" % {'name': self.name,
 
             *delivery_partners*: string based tuple of Delivery Partner
             names to limit result set against.  For example,
-            ``['nparcel', 'toll']``.  The values supported are as per
+            ``['top', 'toll']``.  The values supported are as per
             the ``delivery_partner.name`` table set
 
             *alias*: table alias (default ``ji``)

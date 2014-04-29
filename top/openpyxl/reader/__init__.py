@@ -26,8 +26,8 @@
 """Imports for the openpyxl.reader namespace."""
 
 # package imports
-from nparcel.openpyxl.reader import excel
-from nparcel.openpyxl.reader import strings
-from nparcel.openpyxl.reader import style
-from nparcel.openpyxl.reader import workbook
-from nparcel.openpyxl.reader import worksheet
+from top.openpyxl.reader import excel
+from top.openpyxl.reader import strings
+from top.openpyxl.reader import style
+from top.openpyxl.reader import workbook
+from top.openpyxl.reader import worksheet

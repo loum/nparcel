@@ -1,24 +1,24 @@
 import unittest2
 import os
 
-import nparcel
+import top
 
 
 class TestFilterB2CConfig(unittest2.TestCase):
 
     def setUp(self):
-        self._c = nparcel.FilterB2CConfig()
+        self._c = top.FilterB2CConfig()
 
     def test_init(self):
         """Initialise a FilterB2CConfig object.
         """
-        msg = 'Object is not a nparcel.FilterB2CConfig'
-        self.assertIsInstance(self._c, nparcel.FilterB2CConfig, msg)
+        msg = 'Object is not a top.FilterB2CConfig'
+        self.assertIsInstance(self._c, top.FilterB2CConfig, msg)
 
     def test_parse_config(self):
         """Parse comms items from the config.
         """
-        config_file = os.path.join('nparcel', 'conf', 'top.conf')
+        config_file = os.path.join('top', 'conf', 'top.conf')
 
         self._c.set_config_file(config_file)
         self._c.parse_config()
@@ -34,7 +34,7 @@ class TestFilterB2CConfig(unittest2.TestCase):
         self.assertEqual(received, expected, msg)
 
         received = self._c.aggregator_dirs
-        expected = ['/data/nparcel/aggregate']
+        expected = ['/data/top/aggregate']
         msg = 'OnDeliveryB2CConfig.aggregator_dirs error'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 

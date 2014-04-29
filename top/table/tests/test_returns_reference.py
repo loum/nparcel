@@ -1,19 +1,19 @@
 import unittest2
 import os
 
-import nparcel
+import top
 
 
 class TestReturnsReference(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._rr = nparcel.ReturnsReference()
-        cls._db = nparcel.DbSession()
+        cls._rr = top.ReturnsReference()
+        cls._db = top.DbSession()
         cls._db.connect()
 
         db = cls._db
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.returns_reference,
                      'fixture': 'returns_reference.py'},
                     {'db': db.returns, 'fixture': 'returns.py'}]
@@ -27,8 +27,8 @@ class TestReturnsReference(unittest2.TestCase):
         """Placeholder test to make sure the ReturnsReference table is
         created.
         """
-        msg = 'Object is not an nparcel.ReturnsReference'
-        self.assertIsInstance(self._rr, nparcel.ReturnsReference, msg)
+        msg = 'Object is not an top.ReturnsReference'
+        self.assertIsInstance(self._rr, top.ReturnsReference, msg)
 
     def test_reference_nbr_sql(self):
         """Verify the reference_nbr_sql string.

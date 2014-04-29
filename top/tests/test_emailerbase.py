@@ -1,19 +1,19 @@
 import unittest2
 
-import nparcel
+import top
 
 
 class TestEmailerBase(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._e = nparcel.EmailerBase()
+        cls._e = top.EmailerBase()
 
     def test_init(self):
-        """Verify initialisation of an nparcel.EmailerBase object.
+        """Verify initialisation of an top.EmailerBase object.
         """
-        msg = 'Object is not an nparcel.EmailerBase'
-        self.assertIsInstance(self._e, nparcel.EmailerBase, msg)
+        msg = 'Object is not an top.EmailerBase'
+        self.assertIsInstance(self._e, top.EmailerBase, msg)
 
     def test_validate(self):
         """Validate email addresses.

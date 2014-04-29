@@ -4,12 +4,12 @@ __all__ = [
 import ConfigParser
 import sys
 
-import nparcel
-from nparcel.utils.log import log
+import top
+from top.utils.log import log
 
 
-class PodB2CConfig(nparcel.B2CConfig):
-    """:class:`nparcel.PodB2CConfig` captures the configuration items
+class PodB2CConfig(top.B2CConfig):
+    """:class:`top.PodB2CConfig` captures the configuration items
     required for the ``tophealth`` facility.
 
     .. attribute:: pod_translator_loop
@@ -36,9 +36,9 @@ class PodB2CConfig(nparcel.B2CConfig):
     _file_formats = []
 
     def __init__(self, file=None):
-        """:class:`nparcel.PodB2CConfig` initialisation.
+        """:class:`top.PodB2CConfig` initialisation.
         """
-        nparcel.B2CConfig.__init__(self, file)
+        top.B2CConfig.__init__(self, file)
 
     @property
     def pod_translator_loop(self):
@@ -88,10 +88,10 @@ class PodB2CConfig(nparcel.B2CConfig):
         """Read config items from the configuration file.
 
         """
-        nparcel.Config.parse_config(self)
+        top.Config.parse_config(self)
 
         # These are the generic values that can be removed
-        # after nparcel.B2CConfig is refactored.
+        # after top.B2CConfig is refactored.
         try:
             self.set_archive_dir(self.get('dirs', 'archive'))
         except (ConfigParser.NoOptionError,

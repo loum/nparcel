@@ -1,4 +1,4 @@
-.. Toll Parcel Portal B2C Failover
+.. Toll Outlet Portal Middleware Failover
 
 .. toctree::
     :maxdepth: 2
@@ -6,7 +6,7 @@
 Failover
 ========
 
-The current Toll Parcel Portal database arrangement is active/passive in
+The current Toll Outlet Portal database arrangement is active/passive in
 nature and requires manual intervention to failover.  As such, two separate
 configuration files are required:
 
@@ -17,7 +17,7 @@ configuration files are required:
 Preparing for Failover
 ----------------------
 
-Following a standard Toll Parcel Portal install, the ``top.conf`` will
+Following a standard Toll Outlet Portal install, the ``top.conf`` will
 be pointing to the most recent package release version::
 
     $ tree ~/.top

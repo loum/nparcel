@@ -4,12 +4,12 @@ __all__ = [
 import time
 import signal
 
-import nparcel
-from nparcel.utils.log import log
+import top
+from top.utils.log import log
 
 
-class ReminderDaemon(nparcel.DaemonService):
-    """Daemoniser facility for the :class:`nparcel.Remind` class.
+class ReminderDaemon(top.DaemonService):
+    """Daemoniser facility for the :class:`top.Remind` class.
     """
     _reminder = None
 
@@ -20,13 +20,13 @@ class ReminderDaemon(nparcel.DaemonService):
                  config=None):
         c = None
         if config is not None:
-            c = nparcel.ReminderB2CConfig(config)
-        nparcel.DaemonService.__init__(self,
-                                       pidfile=pidfile,
-                                       file=file,
-                                       dry=dry,
-                                       batch=batch,
-                                       config=c)
+            c = top.ReminderB2CConfig(config)
+        top.DaemonService.__init__(self,
+                                   pidfile=pidfile,
+                                   file=file,
+                                   dry=dry,
+                                   batch=batch,
+                                   config=c)
 
         try:
             self.set_loop(self.config.reminder_loop)
@@ -69,7 +69,7 @@ class ReminderDaemon(nparcel.DaemonService):
         return kwargs
 
     def _start(self, event):
-        """Override the :method:`nparcel.utils.Daemon._start` method.
+        """Override the :method:`top.utils.Daemon._start` method.
 
         Will perform a single iteration in dry and batch modes.
 
@@ -82,7 +82,7 @@ class ReminderDaemon(nparcel.DaemonService):
         signal.signal(signal.SIGTERM, self._exit_handler)
 
         if self.reminder is None:
-            self._reminder = nparcel.Reminder(**(self.reminder_kwargs))
+            self._reminder = top.Reminder(**(self.reminder_kwargs))
 
         while not event.isSet():
             if self.reminder.db():

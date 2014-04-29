@@ -1,4 +1,4 @@
-.. Nparcel B2C BaseD
+.. Toll Outlet Portal Middleware BaseD
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 BaseD - Base Class for the Daemonisers
 ======================================
 
-.. automodule:: nparcel.based
+.. automodule:: top.based
     :members:

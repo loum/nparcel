@@ -5,11 +5,11 @@ import os
 import sys
 import StringIO
 
-import nparcel
-from nparcel.utils.files import (remove_files,
-                                 get_directory_files_list,
-                                 copy_file,
-                                 gen_digest_path)
+import top
+from top.utils.files import (remove_files,
+                             get_directory_files_list,
+                             copy_file,
+                             gen_digest_path)
 
 # Current business_unit map:
 BU = {'priority': 1,
@@ -22,11 +22,11 @@ class TestExporter(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.maxDiff = None
-        cls._e = nparcel.Exporter()
+        cls._e = top.Exporter()
 
         db = cls._e.db
         # Prepare some sample data.
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.agent,
                      'fixture': 'agents.py'}]
         for i in fixtures:
@@ -122,8 +122,8 @@ class TestExporter(unittest2.TestCase):
     def test_init(self):
         """Initialise an Exporter object.
         """
-        msg = 'Object is not an nparcel.Exporter'
-        self.assertIsInstance(self._e, nparcel.Exporter, msg)
+        msg = 'Object is not an top.Exporter'
+        self.assertIsInstance(self._e, top.Exporter, msg)
 
     def test_collected_sql_bu_priority(self):
         """Query table for collected items -- BU: priority.
@@ -612,7 +612,7 @@ WHERE id = 1"""
     def test_get_files(self):
         """Get inbound report files list.
         """
-        test_file_dir = os.path.join('nparcel', 'tests', 'files')
+        test_file_dir = os.path.join('top', 'tests', 'files')
         dir_1 = tempfile.mkdtemp()
         dir_2 = tempfile.mkdtemp()
         files = ['VIC_VANA_REI_20131108145146.txt',
@@ -649,7 +649,7 @@ WHERE id = 1"""
     def test_get_files_no_filters(self):
         """Get inbound report files list - no filters.
         """
-        test_file_dir = os.path.join('nparcel', 'tests', 'files')
+        test_file_dir = os.path.join('top', 'tests', 'files')
         dir_1 = tempfile.mkdtemp()
         dir_2 = tempfile.mkdtemp()
         files = ['VIC_VANA_REI_20131108145146.txt',
@@ -674,7 +674,7 @@ WHERE id = 1"""
     def test_parse_report_file(self):
         """Extract connote/item number from report file.
         """
-        test_file_dir = os.path.join('nparcel', 'tests', 'files')
+        test_file_dir = os.path.join('top', 'tests', 'files')
         file = 'VIC_VANA_REI_20131108145146.txt'
 
         received = self._e.parse_report_file(os.path.join(test_file_dir,
@@ -707,7 +707,7 @@ WHERE id = 1"""
         old_exporter_dirs = self._e.exporter_dirs
         old_exporter_file_formats = self._e.exporter_file_formats
 
-        test_file_dir = os.path.join('nparcel', 'tests', 'files')
+        test_file_dir = os.path.join('top', 'tests', 'files')
         dir = tempfile.mkdtemp()
         file = 'VIC_VANA_REP_20140214120000.txt'
         copy_file(os.path.join(test_file_dir, file),

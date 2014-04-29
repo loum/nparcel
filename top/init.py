@@ -6,8 +6,8 @@ import shutil
 import datetime
 import ConfigParser
 
-import nparcel
-from nparcel.utils.log import log
+import top
+from top.utils.log import log
 
 
 class Init(object):
@@ -43,11 +43,11 @@ class Init(object):
                  base_dir=os.path.join(os.path.expanduser('~'), '.top')):
         """Initialiser initialiser.
         """
-        path = os.path.join(self.path, 'nparcel', 'conf', 'init.conf')
+        path = os.path.join(self.path, 'top', 'conf', 'init.conf')
         if config_file is not None:
             path = config_file
         log.debug('Preparing initialisation config file: "%s"' % path)
-        self.conf = nparcel.Config(config_file=path)
+        self.conf = top.Config(config_file=path)
         self._base_dir = base_dir
 
         self._unconditional_files = []

@@ -22,8 +22,8 @@
 # @author: see AUTHORS file
 
 import math
-from nparcel.openpyxl.style import Color
-from nparcel.openpyxl.shared.units import pixels_to_EMU, EMU_to_pixels, short_color
+from top.openpyxl.style import Color
+from top.openpyxl.shared.units import pixels_to_EMU, EMU_to_pixels, short_color
 
 class Shadow(object):
 

@@ -1,18 +1,18 @@
 import unittest2
 import os
 
-import nparcel
+import top
 
 
 class TestAgent(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._agent = nparcel.Agent()
-        cls._db = nparcel.DbSession()
+        cls._agent = top.Agent()
+        cls._db = top.DbSession()
         cls._db.connect()
 
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
 
         db = cls._db
         fixtures = [{'db': db.agent, 'fixture': 'agents.py'},
@@ -28,8 +28,8 @@ class TestAgent(unittest2.TestCase):
     def test_init(self):
         """Placeholder test to make sure the Agent table is created.
         """
-        msg = 'Object is not an nparcel.Agent'
-        self.assertIsInstance(self._agent, nparcel.Agent, msg)
+        msg = 'Object is not an top.Agent'
+        self.assertIsInstance(self._agent, top.Agent, msg)
 
     def test_check_agent_id(self):
         """Agent ID table check.

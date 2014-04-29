@@ -4,12 +4,12 @@ __all__ = [
 #import sys
 import ConfigParser
 
-import nparcel
-from nparcel.utils.log import log
+import top
+from top.utils.log import log
 
 
-class ReporterB2CConfig(nparcel.B2CConfig):
-    """:class:`nparcel.ReporterB2CConfig` captures the configuration items
+class ReporterB2CConfig(top.B2CConfig):
+    """:class:`top.ReporterB2CConfig` captures the configuration items
     required for the ``topreporter`` facility.
 
     .. attribute:: report_bu_ids
@@ -76,7 +76,7 @@ class ReporterB2CConfig(nparcel.B2CConfig):
     """
     _report_type = 'uncollected'
     _report_bu_ids = {}
-    _report_outdir = '/data/nparcel/reports'
+    _report_outdir = '/data/top/reports'
     _report_outfile = 'Report_'
     _report_outfile_ts_format = '%Y%m%d-%H:%M'
     _report_extension = 'xlsx'
@@ -94,7 +94,7 @@ class ReporterB2CConfig(nparcel.B2CConfig):
     def __init__(self, file=None, type=None):
         """ReporterB2CConfig initialisation.
         """
-        nparcel.B2CConfig.__init__(self, file)
+        top.B2CConfig.__init__(self, file)
 
         if type is not None:
             self.set_report_type(type)
@@ -303,7 +303,7 @@ class ReporterB2CConfig(nparcel.B2CConfig):
         """Read config items from the configuration file.
 
         """
-        nparcel.Config.parse_config(self)
+        top.Config.parse_config(self)
 
         try:
             bu_ids = dict(self.items('report_bu_ids'))

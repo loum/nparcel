@@ -1,7 +1,7 @@
 import unittest2
 import os
 
-import nparcel
+import top
 
 
 class TestAdpParser(unittest2.TestCase):
@@ -10,16 +10,16 @@ class TestAdpParser(unittest2.TestCase):
     def setUpClass(cls):
         cls.maxDiff = None
 
-        cls._ap = nparcel.AdpParser()
-        test_dir = os.path.join('nparcel', 'tests', 'files')
+        cls._ap = top.AdpParser()
+        test_dir = os.path.join('top', 'tests', 'files')
         test_file = 'ADP-Bulk-Load.csv'
         cls._test_file = os.path.join(test_dir, test_file)
 
     def test_init(self):
         """Initialise a AdpParser object.
         """
-        msg = 'Object is not an nparcel.AdpParser'
-        self.assertIsInstance(self._ap, nparcel.AdpParser, msg)
+        msg = 'Object is not an top.AdpParser'
+        self.assertIsInstance(self._ap, top.AdpParser, msg)
 
     def test_read(self):
         """Read in the sample csv.

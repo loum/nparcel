@@ -2,7 +2,7 @@ import unittest2
 import os
 import datetime
 
-import nparcel
+import top
 
 
 class TestTotals(unittest2.TestCase):
@@ -15,12 +15,12 @@ class TestTotals(unittest2.TestCase):
         bu_ids = {1: 'Toll Priority',
                   2: 'Toll Fast',
                   3: 'Toll IPEC'}
-        cls._c = nparcel.Totals(bu_ids=bu_ids,
+        cls._c = top.Totals(bu_ids=bu_ids,
                                 delivery_partners=['Nparcel'])
         db = cls._c.db
 
         # Prepare some sample data.
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.agent_stocktake,
                      'fixture': 'agent_stocktakes.py'},
                     {'db': db.agent,
@@ -67,8 +67,8 @@ WHERE id IN (7, 8)""" % cls._older_date
     def test_init(self):
         """Initialise a Totals object.
         """
-        msg = 'Object is not an nparcel.Totals'
-        self.assertIsInstance(self._c, nparcel.Totals, msg)
+        msg = 'Object is not an top.Totals'
+        self.assertIsInstance(self._c, top.Totals, msg)
 
     def test_process(self):
         """Check totals processing.

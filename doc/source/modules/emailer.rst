@@ -1,4 +1,4 @@
-.. Nparcel B2C Emailer
+.. Toll Outlet Portal Middleware Emailer
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 Emailer
 =======
 
-.. automodule:: nparcel.emailer
+.. automodule:: top.emailer
     :members:

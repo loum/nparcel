@@ -1,4 +1,4 @@
-.. Nparcel B2C Loader
+.. Toll Outlet Portal Middleware Loader
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 Loader
 ======
 
-.. automodule:: nparcel.loader
+.. automodule:: top.loader
     :members:

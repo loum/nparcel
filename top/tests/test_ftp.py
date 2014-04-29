@@ -4,11 +4,11 @@ import tempfile
 import threading
 import datetime
 
-import nparcel
-from nparcel.utils.files import (copy_file,
-                                 get_directory_files_list,
-                                 remove_files)
-from nparcel.pyftpdlib import ftpserver
+import top
+from top.utils.files import (copy_file,
+                             get_directory_files_list,
+                             remove_files)
+from top.pyftpdlib import ftpserver
 
 
 class FtpServer(object):
@@ -49,8 +49,8 @@ class TestFtp(unittest2.TestCase):
                              args=(cls._ftpserver.exit_event, ))
         t.start()
 
-        cls._ftp = nparcel.Ftp()
-        cls._test_dir = os.path.join('nparcel', 'tests', 'files')
+        cls._ftp = top.Ftp()
+        cls._test_dir = os.path.join('top', 'tests', 'files')
 
         # Create a temporary directory structure.
         cls._dir = tempfile.mkdtemp()
@@ -60,8 +60,8 @@ class TestFtp(unittest2.TestCase):
     def test_init(self):
         """Initialise an FTP object.
         """
-        msg = 'Object is not an nparcel.Ftp'
-        self.assertIsInstance(self._ftp, nparcel.Ftp, msg)
+        msg = 'Object is not an top.Ftp'
+        self.assertIsInstance(self._ftp, top.Ftp, msg)
 
     def test_parse_config_items(self):
         """Verify required configuration items.
@@ -117,7 +117,7 @@ class TestFtp(unittest2.TestCase):
     def test_get_report_file_ids(self):
         """Check directory for report files -- valid file defined.
         """
-        test_file_dir = os.path.join('nparcel', 'tests', 'files', 'ftp')
+        test_file_dir = os.path.join('top', 'tests', 'files', 'ftp')
         test_file = 'VIC_VANA_REP_20130812140736.txt'
 
         report = os.path.join(self._dir, test_file)
@@ -436,20 +436,26 @@ class TestFtp(unittest2.TestCase):
     def test_get_xfer_files_is_not_pod(self):
         """Get list of files to transfer - non POD.
         """
-        source = 'nparcel/tests/files'
+        source = os.path.join('top', 'tests', 'files')
         filter = 'VIC_VANA_REP_\d{14}\.txt'
         is_pod = False
 
         received = self._ftp.get_xfer_files(source, filter, is_pod)
-        expected = ['nparcel/tests/files/VIC_VANA_REP_20131108145146.txt',
-                    'nparcel/tests/files/VIC_VANA_REP_20140214120000.txt']
+        expected = [os.path.join('top',
+                                 'tests',
+                                 'files',
+                                 'VIC_VANA_REP_20131108145146.txt'),
+                    os.path.join('top',
+                                 'tests',
+                                 'files',
+                                 'VIC_VANA_REP_20140214120000.txt')]
         msg = 'POD report file get list'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
     def test_get_xfer_files_is_pod(self):
         """Get list of files to transfer - POD.
         """
-        source = os.path.join('nparcel', 'tests', 'files')
+        source = os.path.join('top', 'tests', 'files')
         filter = 'VIC_VANA_REP_\d{14}\.txt'
         is_pod = True
 
@@ -475,12 +481,12 @@ class TestFtp(unittest2.TestCase):
     def test_get_xfer_files_is_not_pod_T1250(self):
         """Get list of files to transfer - non POD T1250.
         """
-        source = os.path.join('nparcel', 'tests', 'files')
+        source = os.path.join('top', 'tests', 'files')
         filter = 'T1250_TOLP_20130413\d{6}\.txt$'
         is_pod = False
 
         received = self._ftp.get_xfer_files(source, filter, is_pod)
-        expected = [os.path.join('nparcel',
+        expected = [os.path.join('top',
                                  'tests',
                                  'files',
                                  'T1250_TOLP_20130413135756.txt')]

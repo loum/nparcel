@@ -26,9 +26,9 @@
 """Read shared style definitions"""
 
 # package imports
-from nparcel.openpyxl.shared.xmltools import fromstring, QName
-from nparcel.openpyxl.shared.exc import MissingNumberFormat
-from nparcel.openpyxl.style import Style, NumberFormat
+from top.openpyxl.shared.xmltools import fromstring, QName
+from top.openpyxl.shared.exc import MissingNumberFormat
+from top.openpyxl.style import Style, NumberFormat
 
 
 def read_style_table(xml_source):

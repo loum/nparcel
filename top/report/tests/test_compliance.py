@@ -2,7 +2,7 @@ import unittest2
 import os
 import datetime
 
-import nparcel
+import top
 
 
 class TestCompliance(unittest2.TestCase):
@@ -12,11 +12,11 @@ class TestCompliance(unittest2.TestCase):
         cls._now = datetime.datetime.now()
         cls.maxDiff = None
 
-        cls._c = nparcel.Compliance(delivery_partners=['Nparcel'])
+        cls._c = top.Compliance(delivery_partners=['Nparcel'])
         db = cls._c.db
 
         # Prepare some sample data.
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.agent_stocktake,
                      'fixture': 'agent_stocktakes.py'},
                     {'db': db.agent,
@@ -63,8 +63,8 @@ WHERE id IN (7, 8)""" % cls._older_date
     def test_init(self):
         """Initialise a Compliance object.
         """
-        msg = 'Object is not an nparcel.Compliance'
-        self.assertIsInstance(self._c, nparcel.Compliance, msg)
+        msg = 'Object is not an top.Compliance'
+        self.assertIsInstance(self._c, top.Compliance, msg)
 
     def test_process(self):
         """Check compliance processing.

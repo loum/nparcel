@@ -7,24 +7,24 @@ import datetime
 import operator
 import csv
 
-import nparcel
-from nparcel.utils.log import log
-from nparcel.utils.files import (create_dir,
-                                 remove_files,
-                                 copy_file,
-                                 get_directory_files_list,
-                                 gen_digest_path)
-from nparcel.timezone import convert_timezone
+import top
+from top.utils.log import log
+from top.utils.files import (create_dir,
+                             remove_files,
+                             copy_file,
+                             get_directory_files_list,
+                             gen_digest_path)
+from top.timezone import convert_timezone
 
 STATES = ['NSW', 'VIC', 'QLD', 'SA', 'WA', 'ACT']
 
 
-class Exporter(nparcel.Service):
+class Exporter(top.Service):
     """Exporter class.
 
     .. attribute:: signature_dir
 
-        directory where the Toll Parcel Portal places it's POD
+        directory where the Toll Outlet Portal places it's POD
         signature files
 
     .. attribute:: archive_dir
@@ -66,7 +66,7 @@ class Exporter(nparcel.Service):
     def __init__(self, **kwargs):
         """Exporter object initialiser.
         """
-        nparcel.Service.__init__(self, db=kwargs.get('db'))
+        top.Service.__init__(self, db=kwargs.get('db'))
 
         self.set_signature_dir(kwargs.get('signature_dir'))
         self.set_staging_dir(kwargs.get('staging_dir'))
@@ -313,7 +313,7 @@ class Exporter(nparcel.Service):
         """Attempt to archive POD signature files.
 
         Archive directory name is constructed with the
-        :func:`nparcel.utils.files.gen_digest_path` function.
+        :func:`top.utils.files.gen_digest_path` function.
 
         **Args:**
             *id*: the name of the POD signature file that relates to the
@@ -359,7 +359,7 @@ class Exporter(nparcel.Service):
             record.
 
         **Returns:**
-            tuple representing the cleansed data suitable for Nparcel
+            tuple representing the cleansed data suitable for
             exporter output.
 
         """
@@ -640,17 +640,17 @@ class Exporter(nparcel.Service):
 
     def get_files(self, dirs=None, filters=None):
         """Checks inbound directories (defined by the
-        :attr:`nparcel.b2cconfig.exporter_in` config option) or
+        :attr:`top.b2cconfig.exporter_in` config option) or
         overridden by *dir* for files filtered against
-        :attr:`nparcel.b2cconfig.exporter_file_formats` or overridden by
+        :attr:`top.b2cconfig.exporter_file_formats` or overridden by
         *filters*.
 
         **Kwargs:**
             *dirs*: list of directories to search (override the value
-            defined by :attr:`nparcel.b2cconfig.exporter_in`)
+            defined by :attr:`top.b2cconfig.exporter_in`)
 
             *filters*: list of file filters (override the value defined
-            by :attr:`nparcel.b2cconfig.exporter_file_formats`.
+            by :attr:`top.b2cconfig.exporter_file_formats`.
 
         **Returns:**
             list of filtered files

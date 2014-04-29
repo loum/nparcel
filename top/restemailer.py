@@ -3,12 +3,12 @@ __all__ = [
 ]
 import urllib
 
-import nparcel
-import nparcel.urllib2 as urllib2
-from nparcel.utils.log import log
+import top
+import top.urllib2 as urllib2
+from top.utils.log import log
 
 
-class RestEmailer(nparcel.Emailer):
+class RestEmailer(top.Emailer):
     """RestEmailer class.
 
     """
@@ -25,12 +25,12 @@ class RestEmailer(nparcel.Emailer):
         """RestEmailer initialiser.
 
         """
-        nparcel.Emailer.__init__(self, sender, recipients)
-        self._rest = nparcel.Rest(proxy,
-                                  proxy_scheme,
-                                  api,
-                                  api_username,
-                                  api_password)
+        top.Emailer.__init__(self, sender, recipients)
+        self._rest = top.Rest(proxy,
+                              proxy_scheme,
+                              api,
+                              api_username,
+                              api_password)
 
         if support is None:
             self._support = []

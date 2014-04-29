@@ -1,4 +1,4 @@
-.. Toll Parcel Portal B2C Exporter
+.. Toll Outlet Portal Middleware Exporter
 
 .. toctree::
     :maxdepth: 2
@@ -6,16 +6,16 @@
 Exporter
 ========
 
-The Toll Parcel Portal exporter facility is responsible for identifying
+The Toll Outlet Portal exporter facility is responsible for identifying
 parcels that have been picked up by the consumer and closing off the
-item/job/job_item within the Toll Parcel Portal database.
+item/job/job_item within the Toll Outlet Portal database.
 
-Closing Off a Toll Parcel Portal Parcel Record
+Closing Off a Toll Outlet Portal Parcel Record
 ----------------------------------------------
 
 Closing off includes:
 
-* Identify the record to close in the Toll Parcel Portal database
+* Identify the record to close in the Toll Outlet Portal database
 
 * Locate the Proof of Delivery (signature or PoD) files
 
@@ -33,7 +33,7 @@ The trigger for a close-off event is a ``job_item`` record which has the
 ``pickup_ts`` column set (not ``NULL``) and ``extract_ts`` column not set
 (``NULL``).  Here is an example of a close-off event
 from the various upstream Business Units and extracts and loads parcel 
-details into the Toll Parcel Portal in preparation for consumer pickup.
+details into the Toll Outlet Portal in preparation for consumer pickup.
 
 The list of Business Units supported include:
 
@@ -45,7 +45,7 @@ New in **version 0.30**, the ``topexporterd`` can close off ``job_item``
 records via an existing report file.  This scenarios supports
 Alternate Delivery Partners that maintain their own parcel collections
 system.  For example, ParcelPoint.  In this case, it is important that
-the parcel pickup is closed off in Toll Parcel Portal to manage the
+the parcel pickup is closed off in Toll Outlet Portal to manage the
 consumer notifications.
 
 .. note::
@@ -55,7 +55,7 @@ consumer notifications.
     to control the settings for report file-bases ``job_item`` close off.
 
 In the odd event that a report based connote/item number lookup does not
-exist in the Toll Parcel Portal database, then an email notification
+exist in the Toll Outlet Portal database, then an email notification
 similar to the following will be sent:
 
 .. image:: ../_static/exporter_alert_for_failed_lookup.png
@@ -173,7 +173,7 @@ configuration options:
     Defines a comma separated list of directories to search for file-based
     events to trigger a ``job_item`` closure::
 
-        exporter_in = /data/nparcel/exporter_1,/data/nparcel/exporter_2
+        exporter_in = /data/top/exporter_1,/data/top/exporter_2
 
     These inbound directories typically align with the FTP inbound
     directory structure defined at :ref:`b2cftp`.

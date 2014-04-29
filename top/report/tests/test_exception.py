@@ -2,7 +2,7 @@ import unittest2
 import os
 import datetime
 
-import nparcel
+import top
 
 
 class TestException(unittest2.TestCase):
@@ -12,11 +12,11 @@ class TestException(unittest2.TestCase):
         cls._now = datetime.datetime.now()
         cls.maxDiff = None
 
-        cls._c = nparcel.Exception(delivery_partners=['Nparcel'])
+        cls._c = top.Exception(delivery_partners=['Nparcel'])
         db = cls._c.db
 
         # Prepare some sample data.
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.agent_stocktake,
                      'fixture': 'agent_stocktakes.py'},
                     {'db': db.agent,
@@ -63,8 +63,8 @@ WHERE id IN (7, 8)""" % cls._older_date
     def test_init(self):
         """Initialise a Exception object.
         """
-        msg = 'Object is not an nparcel.Exception'
-        self.assertIsInstance(self._c, nparcel.Exception, msg)
+        msg = 'Object is not an top.Exception'
+        self.assertIsInstance(self._c, top.Exception, msg)
 
     def test_process(self):
         """Check exception processing.

@@ -4,12 +4,12 @@ __all__ = [
 import ConfigParser
 import sys
 
-import nparcel
-from nparcel.utils.log import log
+import top
+from top.utils.log import log
 
 
-class MapperB2CConfig(nparcel.B2CConfig):
-    """:class:`nparcel.MapperB2CConfig` captures the configuration items
+class MapperB2CConfig(top.B2CConfig):
+    """:class:`top.MapperB2CConfig` captures the configuration items
     required for the ``topmapperd`` facility.
 
     .. attribute:: mapper_loop
@@ -96,10 +96,10 @@ class MapperB2CConfig(nparcel.B2CConfig):
         """Read config items from the configuration file.
 
         """
-        nparcel.Config.parse_config(self)
+        top.Config.parse_config(self)
 
         # These are the generic values that can be removed
-        # after nparcel.B2CConfig is refactored.
+        # after top.B2CConfig is refactored.
         try:
             self.set_archive_dir(self.get('dirs', 'archive'))
         except (ConfigParser.NoOptionError,

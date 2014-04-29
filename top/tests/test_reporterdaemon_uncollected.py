@@ -3,8 +3,8 @@ import os
 import datetime
 import tempfile
 
-import nparcel
-from nparcel.utils.files import (remove_files,
+import top
+from top.utils.files import (remove_files,
                                  get_directory_files_list)
 
 
@@ -14,9 +14,9 @@ class TestReporterDaemonUncollected(unittest2.TestCase):
     def setUpClass(cls):
         cls._now = datetime.datetime.now()
 
-        cls._rd = nparcel.ReporterDaemon('uncollected', pidfile=None)
+        cls._rd = top.ReporterDaemon('uncollected', pidfile=None)
 
-        cls._rd.emailer.set_template_base(os.path.join('nparcel',
+        cls._rd.emailer.set_template_base(os.path.join('top',
                                                        'templates'))
         cls._dir = tempfile.mkdtemp()
         cls._rd.set_outdir(cls._dir)
@@ -29,11 +29,11 @@ class TestReporterDaemonUncollected(unittest2.TestCase):
                   3: 'Toll IPEC'}
         cls._rd.set_bu_ids(bu_ids)
         cls._rd.set_delivery_partners(['Nparcel'])
-        cls._rd._report = nparcel.Uncollected(**(cls._rd.reporter_kwargs))
+        cls._rd._report = top.Uncollected(**(cls._rd.reporter_kwargs))
 
         # Prepare some sample data.
         db = cls._rd._report.db
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.agent_stocktake,
                      'fixture': 'agent_stocktakes.py'},
                     {'db': db.agent,
@@ -72,8 +72,8 @@ WHERE id IN (15, 16, 19, 20, 22)""" % (cls._now - datetime.timedelta(10))
     def test_init(self):
         """Intialise a ReporterDaemon object.
         """
-        msg = 'Not a nparcel.ReporterDaemon object'
-        self.assertIsInstance(self._rd, nparcel.ReporterDaemon, msg)
+        msg = 'Not a top.ReporterDaemon object'
+        self.assertIsInstance(self._rd, top.ReporterDaemon, msg)
 
     def test_start(self):
         """ReporterDaemon Uncollected _start processing loop.
@@ -128,7 +128,7 @@ WHERE id IN (15, 16, 19, 20, 22)""" % (cls._now - datetime.timedelta(10))
         self._rd.set_header_widths(widths)
 
         old_ws = self._rd.ws
-        title = 'Toll Parcel Portal Stocktake Uncollected (Aged) Report'
+        title = 'Toll Outlet Portal Stocktake Uncollected (Aged) Report'
         ws = {'title': title,
               'subtitle': 'ITEMS UNCOLLECTED FOR MORE THAN 7 DAYS',
               'sheet_title': 'Uncollected'}
@@ -168,11 +168,11 @@ WHERE id IN (15, 16, 19, 20, 22)""" % (cls._now - datetime.timedelta(10))
 
         old_report_filename = self._rd.report_filename
         file = 'Stocktake_uncollected_aged_report_20131211-20:43-1.xlsx'
-        attach_file = os.path.join('nparcel', 'tests', 'files', file)
+        attach_file = os.path.join('top', 'tests', 'files', file)
         self._rd.set_report_filename(attach_file)
 
         old_ws = self._rd.ws
-        title = 'Toll Parcel Portal Stocktake Uncollected (Aged) Report'
+        title = 'Toll Outlet Portal Stocktake Uncollected (Aged) Report'
         now = self._now.strftime('%d/%m/%Y')
         self._rd.set_ws({'title': title})
 

@@ -1,10 +1,10 @@
 __all__ = [
     "ReturnsReference",
 ]
-import nparcel
+import top
 
 
-class ReturnsReference(nparcel.Table):
+class ReturnsReference(top.Table):
     """ReturnsReference table ORM.
     """
 

@@ -27,7 +27,7 @@
 """Write the theme xml based on a fixed string."""
 
 # package imports
-from nparcel.openpyxl.shared.xmltools import fromstring, get_document_content
+from top.openpyxl.shared.xmltools import fromstring, get_document_content
 
 
 def write_theme():

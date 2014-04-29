@@ -3,26 +3,26 @@ import os
 import datetime
 import tempfile
 
-import nparcel
-from nparcel.utils.files import (remove_files,
-                                 get_directory_files_list)
+import top
+from top.utils.files import (remove_files,
+                             get_directory_files_list)
 
 
 class TestReminderDaemon(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._rd = nparcel.ReminderDaemon(pidfile=None)
-        cls._rd._config = nparcel.ReminderB2CConfig()
+        cls._rd = top.ReminderDaemon(pidfile=None)
+        cls._rd._config = top.ReminderB2CConfig()
 
         cls._comms_dir = tempfile.mkdtemp()
         cls._rd._config.set_comms_dir(cls._comms_dir)
 
         # Call up front to pre-load the DB.
-        cls._rd._reminder = nparcel.Reminder(**(cls._rd.reminder_kwargs))
+        cls._rd._reminder = top.Reminder(**(cls._rd.reminder_kwargs))
 
         db = cls._rd._reminder.db
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.job, 'fixture': 'jobs.py'},
                     {'db': db.jobitem, 'fixture': 'jobitems.py'}]
         for i in fixtures:
@@ -40,8 +40,8 @@ WHERE id = 8""" % str(ts - datetime.timedelta(days=10))
     def test_init(self):
         """Intialise a ReminderDaemon object.
         """
-        msg = 'Not a nparcel.ReminderDaemon object'
-        self.assertIsInstance(self._rd, nparcel.ReminderDaemon, msg)
+        msg = 'Not a top.ReminderDaemon object'
+        self.assertIsInstance(self._rd, top.ReminderDaemon, msg)
 
     def test_start(self):
         """Reminder _start processing dry loop.

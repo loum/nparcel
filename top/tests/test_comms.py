@@ -3,9 +3,9 @@ import tempfile
 import os
 import datetime
 
-import nparcel
-from nparcel.utils.files import (remove_files,
-                                 get_directory_files_list)
+import top
+from top.utils.files import (remove_files,
+                             get_directory_files_list)
 
 
 class TestComms(unittest2.TestCase):
@@ -14,17 +14,17 @@ class TestComms(unittest2.TestCase):
     def setUpClass(cls):
         cls.maxDiff = None
 
-        conf = nparcel.CommsB2CConfig()
-        conf.set_config_file(os.path.join('nparcel', 'conf', 'top.conf'))
+        conf = top.CommsB2CConfig()
+        conf.set_config_file(os.path.join('top', 'conf', 'top.conf'))
         conf.parse_config()
         proxy = conf.proxy_string()
-        cls._c = nparcel.Comms(proxy=proxy,
-                               scheme=conf.proxy_scheme,
-                               sms_api=conf.sms_api_kwargs,
-                               email_api=conf.email_api_kwargs)
-        cls._c._emailer.set_template_base(os.path.join('nparcel',
+        cls._c = top.Comms(proxy=proxy,
+                           scheme=conf.proxy_scheme,
+                           sms_api=conf.sms_api_kwargs,
+                           email_api=conf.email_api_kwargs)
+        cls._c._emailer.set_template_base(os.path.join('top',
                                                        'templates'))
-        cls._c._smser.set_template_base(os.path.join('nparcel',
+        cls._c._smser.set_template_base(os.path.join('top',
                                                      'templates'))
         cls._c.set_template_tokens(['body',
                                     'rem',
@@ -35,7 +35,7 @@ class TestComms(unittest2.TestCase):
         cls._now = datetime.datetime.now()
 
         db = cls._c.db
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.agent, 'fixture': 'agents.py'},
                     {'db': db.job, 'fixture': 'jobs.py'},
                     {'db': db.jobitem, 'fixture': 'jobitems.py'},
@@ -57,8 +57,8 @@ class TestComms(unittest2.TestCase):
     def test_init(self):
         """Initialise a Comms object.
         """
-        msg = 'Object is not a nparcel.Comms'
-        self.assertIsInstance(self._c, nparcel.Comms, msg)
+        msg = 'Object is not a top.Comms'
+        self.assertIsInstance(self._c, top.Comms, msg)
 
     def test_send_sms_test(self):
         """Send test SMS.

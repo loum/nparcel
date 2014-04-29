@@ -4,11 +4,11 @@ import os
 import inspect
 from optparse import OptionParser
 
-import nparcel
-from nparcel.utils.log import (log,
-                               set_log_level,
-                               set_console,
-                               rollover)
+import top
+from top.utils.log import (log,
+                           set_log_level,
+                           set_console,
+                           rollover)
 
 
 def main():
@@ -46,7 +46,7 @@ def main():
     log.info('Processing dry run %s' % dry)
 
     # Start processing.
-    ftp = nparcel.Ftp(config_file=options.config)
+    ftp = top.Ftp(config_file=options.config)
 
     script_name = inspect.getfile(inspect.currentframe())
     scrip_name = os.path.basename(script_name)

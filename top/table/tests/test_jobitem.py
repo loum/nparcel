@@ -2,7 +2,7 @@ import unittest2
 import datetime
 import os
 
-import nparcel
+import top
 
 # Current busness_unit map:
 BU = {'priority': 1,
@@ -17,13 +17,13 @@ class TestJobItem(unittest2.TestCase):
         cls._now = datetime.datetime.now()
 
         cls.maxDiff = None
-        cls._job_item = nparcel.JobItem()
-        cls._db = nparcel.DbSession()
+        cls._job_item = top.JobItem()
+        cls._db = top.DbSession()
         cls._db.connect()
 
         db = cls._db
         # Prepare some sample data.
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.agent_stocktake,
                      'fixture': 'agent_stocktakes.py'},
                     {'db': db.agent,
@@ -78,11 +78,11 @@ WHERE id = 2""" % {'dt': delayed_dt}
     def test_init(self):
         """Initialise a JobItem object.
         """
-        msg = "Object is not an nparcel.JobItem"
-        self.assertIsInstance(self._job_item, nparcel.JobItem, msg)
+        msg = "Object is not an top.JobItem"
+        self.assertIsInstance(self._job_item, top.JobItem, msg)
 
-    def test_jobitem_table_insert_with_valid_nparcel_data(self):
-        """Insert valid Nparcel data into "job_item" table.
+    def test_jobitem_table_insert_with_valid_top(self):
+        """Insert valid data into "job_item" table.
         """
         kwargs = {'connote_nbr': '2185012insert',
                   'consumer_name': 'Diane Donohoe',
@@ -368,7 +368,7 @@ AND notify_ts IS NOT NULL""" % job_item_id
         msg = 'uncollected_primary_elect_jobitems_sql return list incorrect'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
-    def test_uncollected_primary_elect_jobitems_sql_nparcel_dp(self):
+    def test_uncollected_primary_elect_jobitems_sql_top(self):
         """uncollected_primary_elect_jobitems SQL (Nparcel - PE).
         """
         kwargs = {'bu_ids': (1, 2, 3),
@@ -386,7 +386,7 @@ AND notify_ts IS NOT NULL""" % job_item_id
         msg = 'uncollected_primary_elect_jobitems_sql error (Nparcel PE)'
         self.assertListEqual(sorted(received), sorted(expected), msg)
 
-    def test_uncollected_primary_elect_jobitems_sql_nparcel_sc4(self):
+    def test_uncollected_primary_elect_jobitems_sql_top(self):
         """uncollected_primary_elect_jobitems SQL (Nparcel - SC4).
         """
         kwargs = {'bu_ids': (1, ),

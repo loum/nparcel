@@ -2,14 +2,14 @@ import unittest2
 import os
 import socket
 
-import nparcel
+import top
 
 
 class TestRestSmser(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._rsms = nparcel.RestSmser()
+        cls._rsms = top.RestSmser()
 
         # Uncomment these and set accordingly if you want to really send a
         # message.  BE CAREFUL!
@@ -21,16 +21,16 @@ class TestRestSmser(unittest2.TestCase):
         cls._rsms.set_api_username('sms_user')
         cls._rsms.set_api_password('<sms_pw>')
 
-        cls._template_base = os.path.join('nparcel', 'templates')
+        cls._template_base = os.path.join('top', 'templates')
         cls._rsms.set_template_base(cls._template_base)
 
         cls._hostname = socket.gethostname()
 
     def test_init(self):
-        """Verify initialisation of an nparcel.Emailer object.
+        """Verify initialisation of an top.Emailer object.
         """
-        msg = 'Object is not an nparcel.RestSmser'
-        self.assertIsInstance(self._rsms, nparcel.RestSmser, msg)
+        msg = 'Object is not an top.RestSmser'
+        self.assertIsInstance(self._rsms, top.RestSmser, msg)
 
     def test_send(self):
         """Send REST SMS.
@@ -198,7 +198,7 @@ class TestRestSmser(unittest2.TestCase):
              'phone_nbr': '0431602145'}
         received = self._rsms.create_comms(data=d, prod=self._hostname)
 
-        f = open(os.path.join('nparcel',
+        f = open(os.path.join('top',
                               'tests',
                               'create_comms_valid_data_structure.out'))
         expected = f.read().rstrip().replace('\\n', '\n')
@@ -208,7 +208,7 @@ class TestRestSmser(unittest2.TestCase):
     def test_add_test_message(self):
         """
         """
-        xml_file = os.path.join('nparcel',
+        xml_file = os.path.join('top',
                                 'tests',
                                 'files',
                                 'xml_message.txt')
@@ -218,7 +218,7 @@ class TestRestSmser(unittest2.TestCase):
 
         received = self._rsms.add_test_string(xml_message).rstrip()
 
-        xml_test_file = os.path.join('nparcel',
+        xml_test_file = os.path.join('top',
                                      'tests',
                                      'files',
                                      'xml_test_message.txt')

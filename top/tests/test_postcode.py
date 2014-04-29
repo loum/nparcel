@@ -1,6 +1,6 @@
 import unittest2
 
-from nparcel.postcode import translate_postcode
+from top.postcode import translate_postcode
 
 
 class TestPostcode(unittest2.TestCase):

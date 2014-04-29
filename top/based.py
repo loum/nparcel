@@ -55,7 +55,7 @@ class BaseD(object):
     _script_name = None
 
     def __init__(self, config=None):
-        """Nparcel BaseD initialisation.
+        """BaseD initialisation.
         """
         if config is not None:
             self._config = config
@@ -192,7 +192,7 @@ class BaseD(object):
         Supported command are start, stop and status.
 
         **Args:**
-            *obj*: the :class:`nparcel.Daemon` based object instance
+            *obj*: the :class:`top.Daemon` based object instance
             to launch the command against.
 
             *script_name*: the calling script's name

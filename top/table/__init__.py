@@ -3,11 +3,11 @@ __all__ = [
 ]
 import re
 
-from nparcel.utils.log import log
+from top.utils.log import log
 
 
 class Table(object):
-    """Base Nparcel DB table.
+    """Base DB table.
     """
     _name = None
     _alias = None

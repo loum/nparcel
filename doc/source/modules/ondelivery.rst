@@ -1,4 +1,4 @@
-.. Toll Parcel Portal B2C OnDelivery
+.. Toll Outlet Portal Middleware OnDelivery
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 On Delivery -- Trigger Events On Delivery
 =========================================
 
-.. automodule:: nparcel.ondelivery
+.. automodule:: top.ondelivery
     :members:

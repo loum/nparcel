@@ -3,9 +3,9 @@ __all__ = [
 ]
 import os
 
-import nparcel
-from nparcel.utils.log import log
-from nparcel.utils.files import create_dir
+import top
+from top.utils.log import log
+from top.utils.files import create_dir
 
 
 class Service(object):
@@ -13,7 +13,7 @@ class Service(object):
 
     .. attribute:: db
 
-        :class:`nparcel.DbSession` object
+        :class:`top.DbSession` object
 
     .. attribute:: comms_dir
 
@@ -42,7 +42,7 @@ class Service(object):
 
         if db is None:
             db = {}
-        self.db = nparcel.DbSession(**db)
+        self.db = top.DbSession(**db)
         self.db.connect()
 
         if comms_dir is not None:

@@ -1,4 +1,4 @@
-.. Toll Parcel Portal B2C Uncollected
+.. Toll OUtlet Portal Middleware Uncollected
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 Uncollected
 ===========
 
-.. automodule:: nparcel.report.uncollected
+.. automodule:: top.report.uncollected
     :members:

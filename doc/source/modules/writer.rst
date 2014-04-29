@@ -1,4 +1,4 @@
-.. Toll Parcel Portal B2C Writer
+.. Toll Outlet Portal Middleware Writer
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 Writer
 ======
 
-.. automodule:: nparcel.writer
+.. automodule:: top.writer
     :members:

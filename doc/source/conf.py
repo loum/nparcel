@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# nparcel_replicator documentation build configuration file, created by
+# top_middleware documentation build configuration file, created by
 # sphinx-quickstart on Thu Sep 12 13:47:12 2013.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -35,7 +35,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General substitutions.
-project = 'nparcel_replicator'
+project = 'top_middleware'
 copyright = '2013, Lou Markovski'
 
 # The default replacements for |version| and |release|, also used in various
@@ -142,7 +142,7 @@ html_last_updated_fmt = '%b %d, %Y'
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'nparcel_replicatordoc'
+htmlhelp_basename = 'top_middlwaredoc'
 
 
 # Options for LaTeX output
@@ -157,7 +157,7 @@ htmlhelp_basename = 'nparcel_replicatordoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
-  ('index', 'nparcel_replicator.tex', 'nparcel_replicator Documentation',
+  ('index', 'top_middleware.tex', 'top_middleware Documentation',
    'Lou Markovski', 'manual'),
 ]
 

@@ -1,11 +1,11 @@
 __all__ = [
     "ParcelSize",
 ]
-import nparcel
+import top
 
 
-class ParcelSize(nparcel.Table):
-    """Toll Parcel Portal DB parcel_size table ORM.
+class ParcelSize(top.Table):
+    """Toll Outlet Portal DB parcel_size table ORM.
     """
     def __init__(self):
         """

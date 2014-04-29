@@ -1,24 +1,24 @@
 import unittest2
 import os
 
-import nparcel
+import top
 
 
 class TestOnDeliveryB2CConfig(unittest2.TestCase):
 
     def setUp(self):
-        self._c = nparcel.OnDeliveryB2CConfig()
+        self._c = top.OnDeliveryB2CConfig()
 
     def test_init(self):
         """Initialise a OnDeliveryB2CConfig object.
         """
-        msg = 'Object is not a nparcel.OnDeliveryB2CConfig'
-        self.assertIsInstance(self._c, nparcel.OnDeliveryB2CConfig, msg)
+        msg = 'Object is not a top.OnDeliveryB2CConfig'
+        self.assertIsInstance(self._c, top.OnDeliveryB2CConfig, msg)
 
     def test_parse_config(self):
         """Parse comms items from the config.
         """
-        config_file = os.path.join('nparcel', 'conf', 'top.conf')
+        config_file = os.path.join('top', 'conf', 'top.conf')
 
         self._c.set_config_file(config_file)
         self._c.parse_config()
@@ -36,7 +36,7 @@ class TestOnDeliveryB2CConfig(unittest2.TestCase):
         self.assertDictEqual(received, expected, msg)
 
         received = self._c.comms_dir
-        expected = '/data/nparcel/comms'
+        expected = '/data/top/comms'
         msg = 'OnDelivery comms_dir error'
         self.assertEqual(received, expected, msg)
 

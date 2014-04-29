@@ -26,13 +26,13 @@
 """Write the workbook global settings to the archive."""
 
 # package imports
-from nparcel.openpyxl.shared.xmltools import Element, SubElement
-from nparcel.openpyxl.cell import absolute_coordinate
-from nparcel.openpyxl.shared.xmltools import get_document_content
-from nparcel.openpyxl.shared.ooxml import NAMESPACES, ARC_CORE, ARC_WORKBOOK, \
+from top.openpyxl.shared.xmltools import Element, SubElement
+from top.openpyxl.cell import absolute_coordinate
+from top.openpyxl.shared.xmltools import get_document_content
+from top.openpyxl.shared.ooxml import NAMESPACES, ARC_CORE, ARC_WORKBOOK, \
        ARC_APP, ARC_THEME, ARC_STYLE, ARC_SHARED_STRINGS
-from nparcel.openpyxl.shared.date_time import datetime_to_W3CDTF
-from nparcel.openpyxl.namedrange import NamedRange, NamedRangeContainingValue
+from top.openpyxl.shared.date_time import datetime_to_W3CDTF
+from top.openpyxl.namedrange import NamedRange, NamedRangeContainingValue
 
 
 def write_properties_core(properties):

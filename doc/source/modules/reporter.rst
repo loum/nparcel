@@ -1,4 +1,4 @@
-.. Nparcel B2C Reporter
+.. Toll Outlet Portal Middleware Reporter
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 Reporter
 ========
 
-.. automodule:: nparcel.reporter
+.. automodule:: top.reporter
     :members:

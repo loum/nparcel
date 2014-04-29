@@ -6,14 +6,14 @@ import os
 import base64
 from elementtree import ElementTree
 
-import nparcel
-import nparcel.urllib2 as urllib2
-from nparcel.utils.log import log
-from nparcel.utils.files import templater
+import top
+import top.urllib2 as urllib2
+from top.utils.log import log
+from top.utils.files import templater
 
 
-class RestSmser(nparcel.Rest):
-    """Nparcel RestSmser.
+class RestSmser(top.Rest):
+    """RestSmser.
 
     .. attribute:: template_base
         directory where templates are read from
@@ -30,15 +30,15 @@ class RestSmser(nparcel.Rest):
                  api=None,
                  api_username=None,
                  api_password=None):
-        """Nparcel Smser initialiser.
+        """Smser initialiser.
 
         """
-        nparcel.Rest.__init__(self,
-                              proxy,
-                              proxy_scheme,
-                              api,
-                              api_username,
-                              api_password)
+        top.Rest.__init__(self,
+                          proxy,
+                          proxy_scheme,
+                          api,
+                          api_username,
+                          api_password)
 
     @property
     def template_base(self):

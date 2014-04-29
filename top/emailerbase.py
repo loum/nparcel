@@ -5,7 +5,7 @@ import re
 import os
 import socket
 
-from nparcel.utils.log import log
+from top.utils.log import log
 
 
 class EmailerBase(object):

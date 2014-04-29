@@ -4,7 +4,7 @@ import re
 import os
 import datetime
 
-import nparcel
+import top
 
 IN_DIR = "/users/npprod/.top/logs"
 IN_FILE = "topexporterd.log"
@@ -55,7 +55,7 @@ def main():
     fh.close()
 
     # Generate the email content.
-    subject = 'Nparcel Exporter Report %s' % yesterday.strftime("%Y-%m-%d")
+    subject = 'Exporter Report %s' % yesterday.strftime("%Y-%m-%d")
 
     # The email message.
     msg = []
@@ -79,7 +79,7 @@ def main():
     msg.append("\n".join(errors))
     msg.append("\n")
 
-    e = nparcel.Emailer()
+    e = top.Emailer()
     recipients = ['loumar@tollgroup.com']
     #recipients = ['loumar@tollgroup.com',
     #              'john.varsamis@tollgroup.com',

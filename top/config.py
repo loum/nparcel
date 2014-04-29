@@ -5,7 +5,7 @@ import os
 import sys
 import ConfigParser
 
-from nparcel.utils.log import log
+from top.utils.log import log
 
 
 class Config(ConfigParser.SafeConfigParser):

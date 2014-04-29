@@ -5,7 +5,7 @@ import os
 import time
 import datetime
 
-import nparcel
+import top
 
 IN_DIR = "/users/npprod/.top/logs"
 IN_FILE = "toploaderd.log"
@@ -56,7 +56,7 @@ def main():
     fh.close()
 
     # Generate the email content.
-    subject = 'Nparcel Loader Report %s' % yesterday.strftime("%Y-%m-%d")
+    subject = 'Loader Report %s' % yesterday.strftime("%Y-%m-%d")
 
     # The email message.
     msg = []
@@ -104,7 +104,7 @@ def main():
                                            total_fail,
                                            total_total))
 
-    e = nparcel.Emailer()
+    e = top.Emailer()
     recipients = ['loumar@tollgroup.com']
     #recipients = ['loumar@tollgroup.com',
     #              'john.varsamis@tollgroup.com',

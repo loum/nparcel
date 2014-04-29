@@ -1,4 +1,4 @@
-.. Nparcel B2C MapperDaemon
+.. Toll Outlet Portal Middleware MapperDaemon
 
 .. toctree::
     :maxdepth: 2
@@ -8,6 +8,6 @@ MapperDaemon - Mapper Facility Daemoniser
 
 Members (including inherited)
 -----------------------------
-.. automodule:: nparcel.mapperdaemon
+.. automodule:: top.mapperdaemon
     :show-inheritance:
     :inherited-members:

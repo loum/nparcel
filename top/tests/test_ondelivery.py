@@ -2,8 +2,8 @@ import unittest2
 import tempfile
 import os
 
-import nparcel
-from nparcel.utils.files import remove_files
+import top
+from top.utils.files import remove_files
 
 
 class TestOnDelivery(unittest2.TestCase):
@@ -11,14 +11,14 @@ class TestOnDelivery(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._comms_dir = tempfile.mkdtemp()
-        cls._on = nparcel.OnDelivery(comms_dir=cls._comms_dir)
+        cls._on = top.OnDelivery(comms_dir=cls._comms_dir)
         cls._on.ts_db.create_table(name='v_nparcel_adp_connotes',
                                    schema=cls._on.ts_db.transsend.schema)
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixture_file = os.path.join(fixture_dir, 'transsend.py')
         cls._on.ts_db.load_fixture(cls._on.ts_db.transsend, fixture_file)
 
-        test_dir = os.path.join('nparcel', 'tests', 'files')
+        test_dir = os.path.join('top', 'tests', 'files')
         test_file = 'TCD_Deliveries_20140207111019.DAT'
         cls._test_file = os.path.join(test_dir, test_file)
 
@@ -39,8 +39,8 @@ class TestOnDelivery(unittest2.TestCase):
     def test_init(self):
         """Initialise a OnDelivery object.
         """
-        msg = 'Object is not a nparcel.OnDelivery'
-        self.assertIsInstance(self._on, nparcel.OnDelivery, msg)
+        msg = 'Object is not a top.OnDelivery'
+        self.assertIsInstance(self._on, top.OnDelivery, msg)
 
     def test_get_primary_elect_job_item_id_not_pe(self):
         """jobitem.id's of connote that is not a primary elect job.

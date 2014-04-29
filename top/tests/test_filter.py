@@ -1,22 +1,22 @@
 import unittest2
 import os
 
-import nparcel
+import top
 
 
 class TestFilter(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        test_conf = os.path.join('nparcel', 'tests', 'test_loader.conf')
-        cls._c = nparcel.Config(config_file=test_conf)
-        cls._fltr = nparcel.Filter()
+        test_conf = os.path.join('top', 'tests', 'test_loader.conf')
+        cls._c = top.Config(config_file=test_conf)
+        cls._fltr = top.Filter()
 
     def test_init(self):
         """Initialise a Filter object.
         """
-        msg = 'Object is not an nparcel.Filter'
-        self.assertIsInstance(self._fltr, nparcel.Filter, msg)
+        msg = 'Object is not an top.Filter'
+        self.assertIsInstance(self._fltr, top.Filter, msg)
 
     def test_process_valid_record_parcel_point(self):
         """Process valid record.

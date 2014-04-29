@@ -23,10 +23,10 @@
 
 import math
 
-from nparcel.openpyxl.style import NumberFormat
-from nparcel.openpyxl.drawing import Drawing, Shape
-from nparcel.openpyxl.shared.units import pixels_to_EMU, short_color
-from nparcel.openpyxl.cell import get_column_letter
+from top.openpyxl.style import NumberFormat
+from top.openpyxl.drawing import Drawing, Shape
+from top.openpyxl.shared.units import pixels_to_EMU, short_color
+from top.openpyxl.cell import get_column_letter
 
 class Axis(object):
 

@@ -3,9 +3,9 @@ import os
 import datetime
 import tempfile
 
-import nparcel
-from nparcel.utils.files import (remove_files,
-                                 get_directory_files_list)
+import top
+from top.utils.files import (remove_files,
+                             get_directory_files_list)
 
 
 class TestReporterDaemonNonCompliance(unittest2.TestCase):
@@ -17,9 +17,9 @@ class TestReporterDaemonNonCompliance(unittest2.TestCase):
                   2: 'Toll Fast',
                   3: 'Toll IPEC'}
 
-        cls._rd = nparcel.ReporterDaemon('noncompliance', pidfile=None)
+        cls._rd = top.ReporterDaemon('noncompliance', pidfile=None)
 
-        cls._rd.emailer.set_template_base(os.path.join('nparcel',
+        cls._rd.emailer.set_template_base(os.path.join('top',
                                                        'templates'))
         cls._rd.set_outfile('Stocktake_noncompliance_')
         cls._dir = tempfile.mkdtemp()
@@ -33,11 +33,11 @@ class TestReporterDaemonNonCompliance(unittest2.TestCase):
         cls._rd.set_bu_ids(bu_ids)
         cls._rd.set_delivery_partners(['Nparcel'])
         kwargs = cls._rd.reporter_kwargs
-        cls._rd._report = nparcel.NonCompliance(**kwargs)
+        cls._rd._report = top.NonCompliance(**kwargs)
 
         # Prepare some sample data.
         db = cls._rd._report.db
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.agent_stocktake,
                      'fixture': 'agent_stocktakes.py'},
                     {'db': db.agent,
@@ -150,7 +150,7 @@ WHERE id IN (7, 8)""" % cls._older_date
         self._rd.set_header_widths(widths)
 
         old_ws = self._rd.ws
-        title = 'Toll Parcel Portal Stocktake Non-Compliance Report'
+        title = 'Toll Outlet Portal Stocktake Non-Compliance Report'
         ws = {'title': title,
               'subtitle': 'ITEMS IN TPP SYSTEM, NOT SCANNED BY AGENT',
               'sheet_title': 'Non-compliance'}
@@ -179,11 +179,11 @@ WHERE id IN (7, 8)""" % cls._older_date
 
         old_report_filename = self._rd.report_filename
         file = 'Stocktake_non-compliance_20140121-13:38-all.xlsx'
-        attach_file = os.path.join('nparcel', 'tests', 'files', file)
+        attach_file = os.path.join('top', 'tests', 'files', file)
         self._rd.set_report_filename(attach_file)
 
         old_ws = self._rd.ws
-        title = 'Toll Parcel Portal Stocktake Non-Compliance Report'
+        title = 'Toll Outlet Portal Stocktake Non-Compliance Report'
         now = self._now.strftime('%d/%m/%Y')
         self._rd.set_ws({'title': title})
 

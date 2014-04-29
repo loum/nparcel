@@ -1,13 +1,13 @@
 __all__ = [
     "FilterB2CConfig",
 ]
-import nparcel
-from nparcel.utils.setter import (set_scalar,
-                                  set_dict)
+import top
+from top.utils.setter import (set_scalar,
+                              set_dict)
 
 
-class FilterB2CConfig(nparcel.B2CConfig):
-    """:class:`nparcel.FilterB2CConfig` captures the configuration items
+class FilterB2CConfig(top.B2CConfig):
+    """:class:`top.FilterB2CConfig` captures the configuration items
     required for the ``topfilterd`` facility.
 
     .. attribute:: filter_loop
@@ -43,7 +43,7 @@ class FilterB2CConfig(nparcel.B2CConfig):
         """Read config items from the configuration file.
 
         """
-        nparcel.Config.parse_config(self)
+        top.Config.parse_config(self)
 
         kwargs = [{'section': 'files',
                    'option': 't1250_file_format'},

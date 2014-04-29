@@ -1,4 +1,4 @@
-.. Toll Parcel Portal B2C Configuration Items
+.. Toll Outlet Portal Middleware Configuration Items
 
 .. toctree::
     :maxdepth: 2
@@ -77,7 +77,7 @@ POD File Processing
 
 Signature file ``*.ps`` and ``*.png`` variants can selectively be sent to
 the Business Units as a Proof of Delivery artefact and / or archived
-with the Toll Parcel Portal system::
+with the Toll Outlet Portal system::
 
     # Pos 04: 0 do not send .ps files
     #         1 send .ps files
@@ -130,7 +130,7 @@ was associated with a Primary Elect delivery scenario.
 Primary Elect On Delivery Comms
 +++++++++++++++++++++++++++++++
 
-Service Code 3 deliveries within Toll Parcel Portal have immediate
+Service Code 3 deliveries within Toll Outlet Portal have immediate
 comms suppressed during the initial T1250 load (this is hard-wired into the
 code base).  Instead, the middleware components interrogate alternate
 interfaces to establish when the parcel has been delivered to the
@@ -145,7 +145,7 @@ Unit basis::
 Service Code 4 On Delivery Comms Business IDs List
 ++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Service Code 4 deliveries within Toll Parcel Portal could have immediate
+Service Code 4 deliveries within Toll Outlet Portal could have immediate
 comms suppressed during the initial T1250 load.  Instead, the middleware
 components interrogate alternate interfaces to establish when the parcel
 has been delivered to the Alternate Delivery Point.  This feature can be

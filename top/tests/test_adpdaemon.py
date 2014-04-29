@@ -2,20 +2,20 @@ import unittest2
 import tempfile
 import os
 
-import nparcel
-from nparcel.utils.files import (copy_file,
-                                 remove_files,
-                                 get_directory_files_list)
+import top
+from top.utils.files import (copy_file,
+                             remove_files,
+                             get_directory_files_list)
 
 
 class TestAdpDaemon(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._adpd = nparcel.AdpDaemon(pidfile=None)
-        cls._adpd.emailer.set_template_base(os.path.join('nparcel',
+        cls._adpd = top.AdpDaemon(pidfile=None)
+        cls._adpd.emailer.set_template_base(os.path.join('top',
                                                          'templates'))
-        cls._adpd._config = nparcel.B2CConfig()
+        cls._adpd._config = top.B2CConfig()
         headers = {'agent.code': 'TP Code',
                    'agent.dp_code': 'DP Code',
                    'agent.name': 'ADP Name',
@@ -40,21 +40,21 @@ class TestAdpDaemon(unittest2.TestCase):
                              'Toll',
                              'National Storage']
         cls._adpd._config.set_delivery_partners(delivery_partners)
-        default_passwords = {'nparcel': 'aaaa',
+        default_passwords = {'top': 'aaaa',
                              'parcelpoint': 'bbbb',
                              'toll': 'cccc',
                              'national storage': 'dddd'}
         cls._adpd._config.set_adp_default_passwords(default_passwords)
 
-        test_dir = os.path.join('nparcel', 'tests', 'files')
+        test_dir = os.path.join('top', 'tests', 'files')
         xlsv_file = 'ADP-Bulk-Load.xlsx'
         cls._test_file = os.path.join(test_dir, xlsv_file)
 
     def test_init(self):
         """Initialise a AdpDaemon object.
         """
-        msg = 'Not a nparcel.AdpDaemon object'
-        self.assertIsInstance(self._adpd, nparcel.AdpDaemon, msg)
+        msg = 'Not a top.AdpDaemon object'
+        self.assertIsInstance(self._adpd, top.AdpDaemon, msg)
 
     def test_start_dry_loop(self):
         """On Delivery _start dry loop.

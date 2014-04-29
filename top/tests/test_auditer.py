@@ -2,7 +2,7 @@ import unittest2
 import datetime
 import os
 
-import nparcel
+import top
 
 
 class TestAuditer(unittest2.TestCase):
@@ -13,11 +13,11 @@ class TestAuditer(unittest2.TestCase):
         bu_ids = {1: 'Toll Priority',
                   2: 'Toll Fast',
                   3: 'Toll IPEC'}
-        cls._a = nparcel.Auditer(bu_ids=bu_ids)
+        cls._a = top.Auditer(bu_ids=bu_ids)
         db = cls._a.db
 
         # Prepare some sample data.
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.agent_stocktake,
                      'fixture': 'agent_stocktakes.py'}]
 
@@ -37,8 +37,8 @@ class TestAuditer(unittest2.TestCase):
     def test_init(self):
         """Initialise a Auditer object.
         """
-        msg = 'Object is not an nparcel.Auditer'
-        self.assertIsInstance(self._a, nparcel.Auditer, msg)
+        msg = 'Object is not an top.Auditer'
+        self.assertIsInstance(self._a, top.Auditer, msg)
 
     def test_translate_bu(self):
         """Translate BU ID to Business Unit name.

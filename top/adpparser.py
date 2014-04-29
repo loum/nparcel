@@ -3,7 +3,7 @@ __all__ = [
 ]
 import csv
 
-from nparcel.utils.log import log
+from top.utils.log import log
 
 
 class AdpParser(object):

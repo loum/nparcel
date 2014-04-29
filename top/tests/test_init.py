@@ -2,22 +2,24 @@ import unittest2
 import tempfile
 import os
 
-import nparcel
-from nparcel.utils.files import remove_files
+import top
+from top.utils.files import remove_files
 
 
 class TestInit(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._i = nparcel.Init('nparcel/conf/init.conf')
+        cls._i = top.Init(os.path.join('top',
+                                       'conf',
+                                       'init.conf'))
         cls._i.parse_config()
 
     def test_init(self):
         """Initialise an Init object.
         """
-        msg = 'Object is not an nparcel.Init'
-        self.assertIsInstance(self._i, nparcel.Init, msg)
+        msg = 'Object is not an top.Init'
+        self.assertIsInstance(self._i, top.Init, msg)
 
     def test_parse_config(self):
         """Read config items from the initialisation configuration file.
@@ -28,7 +30,7 @@ class TestInit(unittest2.TestCase):
         self.assertListEqual(received, expected, msg)
 
         received = self._i.unconditional_dirs
-        expected = ['nparcel/conf', 'nparcel/utils/conf']
+        expected = ['top/conf', 'top/utils/conf']
         msg = 'Unconditional directory error'
         self.assertListEqual(received, expected, msg)
 
@@ -38,7 +40,7 @@ class TestInit(unittest2.TestCase):
         self.assertListEqual(received, expected, msg)
 
         received = self._i.conditional_dirs
-        expected = ['nparcel/templates']
+        expected = ['top/templates']
         msg = 'Conditional directory error'
         self.assertListEqual(received, expected, msg)
 

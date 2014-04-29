@@ -1,22 +1,22 @@
-.. Toll Parcel Portal B2C Middleware documentation master file
+.. Toll Outlet Portal Middleware documentation master file
 
-Toll Parcel Portal B2C Middleware
-=================================
+Toll Outlet Portal Middleware
+=============================
 
 Overview
 --------
 
-The Toll Parcel Portal B2C middleware package presents an interface to the
+The Toll Outlet Portal middleware package presents an interface to the
 various Toll divisions to upload missed parcel collection information into
-the `Toll Parcel Portal <https://nparcel.tollgroup.com>`_
+the `Toll Outlet Portal <https://nparcel.tollgroup.com>`_
 
 The following diagram describes various interfaces at a high-level:
 
 .. image:: _static/nparcel_overview.png
    :align: center
-   :alt: Toll Parcel Portal B2C Middleware overview
+   :alt: Toll Outlet Portal Middleware overview
 
-*The Toll Parcel Portal B2C Middleware workflow*
+*The Toll Outlet Portal Middleware workflow*
 
 Contents
 --------

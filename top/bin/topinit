@@ -5,9 +5,9 @@ import os
 import inspect
 from optparse import OptionParser
 
-import nparcel
-from nparcel.utils.log import log, set_log_level
-from nparcel.utils.files import create_dir
+import top
+from top.utils.log import log, set_log_level
+from top.utils.files import create_dir
 
 
 def main():
@@ -43,7 +43,7 @@ def main():
         config_file = options.config
 
     # Start processing.
-    init = nparcel.Init(config_file=config_file)
+    init = top.Init(config_file=config_file)
 
     script_name = inspect.getfile(inspect.currentframe())
     script_name = os.path.basename(script_name)

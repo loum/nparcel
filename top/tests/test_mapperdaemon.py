@@ -3,20 +3,20 @@ import os
 import re
 import tempfile
 
-import nparcel
-from nparcel.utils.files import (check_eof_flag,
-                                 remove_files,
-                                 get_directory_files_list,
-                                 copy_file)
+import top
+from top.utils.files import (check_eof_flag,
+                             remove_files,
+                             get_directory_files_list,
+                             copy_file)
 
 
 class TestMapperDaemon(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        dir = os.path.join('nparcel', 'tests', 'files')
+        dir = os.path.join('top', 'tests', 'files')
         cls._file = os.path.join(dir, 'T1250_TOLI_20131011115618.dat')
-        cls._md = nparcel.MapperDaemon(pidfile=None)
+        cls._md = top.MapperDaemon(pidfile=None)
 
         cls._md.set_in_dirs([dir])
         cls._archive_base = tempfile.mkdtemp()
@@ -25,8 +25,8 @@ class TestMapperDaemon(unittest2.TestCase):
     def test_init(self):
         """Intialise a MapperDaemon object.
         """
-        msg = 'Not a nparcel.MapperDaemon object'
-        self.assertIsInstance(self._md, nparcel.MapperDaemon, msg)
+        msg = 'Not a top.MapperDaemon object'
+        self.assertIsInstance(self._md, top.MapperDaemon, msg)
 
     def test_start(self):
         """MapperDaemon _start processing loop.

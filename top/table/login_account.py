@@ -1,10 +1,10 @@
 __all__ = [
     "LoginAccount",
 ]
-import nparcel
+import top
 
 
-class LoginAccount(nparcel.Table):
+class LoginAccount(top.Table):
     """LoginAccount table ORM.
     """
 

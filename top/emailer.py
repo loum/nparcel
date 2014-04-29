@@ -10,12 +10,12 @@ from email import Encoders
 import getpass
 from socket import gaierror, getfqdn
 
-import nparcel
-from nparcel.utils.log import log
-from nparcel.utils.files import templater
+import top
+from top.utils.log import log
+from top.utils.files import templater
 
 
-class Emailer(nparcel.EmailerBase):
+class Emailer(top.EmailerBase):
     """Emailer class.
 
     .. attribute:: sender
@@ -38,7 +38,7 @@ class Emailer(nparcel.EmailerBase):
         """Emailer initialiser.
 
         """
-        nparcel.EmailerBase.__init__(self)
+        top.EmailerBase.__init__(self)
 
         self._sender = sender
         if self._sender is None:

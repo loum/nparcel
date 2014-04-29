@@ -1,4 +1,4 @@
-.. Toll Parcel Portal B2C Totals
+.. Toll Outlet Portal Middleware Totals
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 Totals
 ======
 
-.. automodule:: nparcel.report.totals
+.. automodule:: top.report.totals
     :members:

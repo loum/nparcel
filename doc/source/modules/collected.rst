@@ -1,4 +1,4 @@
-.. Toll Parcel Portal B2C Collected
+.. Toll Outlet Portal Middleware Collected
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 Collected
 =========
 
-.. automodule:: nparcel.report.collected
+.. automodule:: top.report.collected
     :members:

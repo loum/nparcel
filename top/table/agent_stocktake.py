@@ -3,16 +3,16 @@ __all__ = [
 ]
 import datetime
 
-import nparcel
+import top
 
 
-class AgentStocktake(nparcel.Table):
+class AgentStocktake(top.Table):
     """AgentStocktake DB table ORM.
     """
     def __init__(self):
         """
         """
-        super(AgentStocktake, self).__init__(name='agent_stocktake')
+        top.Table.__init__(self, name='agent_stocktake')
 
     @property
     def schema(self):
@@ -124,7 +124,7 @@ WHERE ag.id NOT IN
                                 day_range=7,
                                 delivery_partners=None,
                                 alias='st'):
-        """Items in ``agent_stocktake`` table not found Toll Parcel Portal.
+        """Items in ``agent_stocktake`` table not found Toll Outlet Portal.
 
         **Kwargs:**
             *day_range*: number of days from current time to include

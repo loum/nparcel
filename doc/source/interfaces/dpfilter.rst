@@ -1,4 +1,4 @@
-.. B2C Delivery Partner Filter
+.. Toll Outlet Portal Middleware Delivery Partner Filter
 
 .. toctree::
     :maxdepth: 2
@@ -6,7 +6,7 @@
 Delivery Partner Agent Code Filtering
 =====================================
 
-The Toll Parcel Portal is able to extract alternate Delivery Partner
+The Toll Outlet Portal is able to extract alternate Delivery Partner
 line items from the inbound T1250 files which are in turn on-forwarded
 to that Delivery Partner's systems.
 
@@ -19,7 +19,7 @@ defined by the ``aggregator`` configuration item::
 
     [dirs]
     ...
-    aggregator = /data/nparcel/aggregate
+    aggregator = /data/top/aggregate
 
 Each T1250 EDI input stream can be configured to send their files
 to the aggregator for futher processing.  This is controlled by the
@@ -36,7 +36,7 @@ The ``topfilterd`` daemon periodically polls the aggregator directory for
 new files.  Valid Delivery Partner records are identified by an agent code
 that starts with a pre-defined token.
 
-Filtering rules per Alternate Delivery Partner are set in the Toll Parcel
+Filtering rules per Alternate Delivery Partner are set in the Toll Outlet
 Portal configuration file under the ``filters`` section::
 
     [filters]
@@ -69,7 +69,7 @@ precedence as to which token is matched first.
       -f FILE, --file=FILE  file to process inline (start only)
 
 ``topfilterd`` Configuration Items
----------------------------------
+----------------------------------
 
 ``topfilterd`` uses the standard ``top.conf`` configuration file.  The
 following list details the required configuration options:

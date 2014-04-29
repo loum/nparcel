@@ -6,21 +6,21 @@ import time
 import os
 import re
 
-import nparcel
-from nparcel.utils.log import log
-from nparcel.utils.files import (check_eof_flag,
-                                 get_directory_files,
-                                 check_filename,
-                                 create_dir,
-                                 move_file,
-                                 remove_files)
-from nparcel.utils.setter import (set_scalar,
-                                  set_list,
-                                  set_dict)
+import top
+from top.utils.log import log
+from top.utils.files import (check_eof_flag,
+                             get_directory_files,
+                             check_filename,
+                             create_dir,
+                             move_file,
+                             remove_files)
+from top.utils.setter import (set_scalar,
+                              set_list,
+                              set_dict)
 
 
-class FilterDaemon(nparcel.DaemonService):
-    """Daemoniser facility for the :class:`nparcel.Filter` class.
+class FilterDaemon(top.DaemonService):
+    """Daemoniser facility for the :class:`top.Filter` class.
 
     .. attribute:: *file_format*
 
@@ -78,12 +78,12 @@ class FilterDaemon(nparcel.DaemonService):
                  dry=False,
                  batch=False,
                  config=None):
-        nparcel.DaemonService.__init__(self,
-                                       pidfile=pidfile,
-                                       file=file,
-                                       dry=dry,
-                                       batch=batch,
-                                       config=config)
+        top.DaemonService.__init__(self,
+                                   pidfile=pidfile,
+                                   file=file,
+                                   dry=dry,
+                                   batch=batch,
+                                   config=config)
 
         if self.config is not None:
             self.set_loop(self.config.filter_loop)
@@ -94,7 +94,7 @@ class FilterDaemon(nparcel.DaemonService):
             self.set_support_emails(self.config.support_emails)
 
     def _start(self, event):
-        """Override the :method:`nparcel.utils.Daemon._start` method.
+        """Override the :method:`top.utils.Daemon._start` method.
 
         Will perform a single iteration if the :attr:`file` attribute has
         a list of filenames to process.  Similarly, dry and batch modes
@@ -108,7 +108,7 @@ class FilterDaemon(nparcel.DaemonService):
         """
         signal.signal(signal.SIGTERM, self._exit_handler)
 
-        filter = nparcel.Filter()
+        filter = top.Filter()
 
         commit = True
         if self.dry:
@@ -191,7 +191,7 @@ class FilterDaemon(nparcel.DaemonService):
 
     def get_files(self, dirs=None):
         """Checks inbound directories (defined by the
-        :attr:`nparcel.b2cconfig.aggregator_dir` config option) for valid
+        :attr:`top.b2cconfig.aggregator_dir` config option) for valid
         T1250 files to be processed.  In this context, valid is interpreted
         as:
         * T1250 files that conform to the T1250 syntax
@@ -232,7 +232,7 @@ class FilterDaemon(nparcel.DaemonService):
 
         Generation of the outbound file is based on:
 
-        * :attr:`nparcel.b2cconfig.staging_base` attribute (or current
+        * :attr:`top.b2cconfig.staging_base` attribute (or current
           directory if not identified)
 
         * *delivery_partner* and ``out``
@@ -249,7 +249,7 @@ class FilterDaemon(nparcel.DaemonService):
             control
 
         **Kwargs:**
-            *dir*: override the :attr:`nparcel.b2cconfig.staging_base`
+            *dir*: override the :attr:`top.b2cconfig.staging_base`
 
         **Returns:**
             the path and filename to the appropriate outbound file
@@ -274,7 +274,7 @@ class FilterDaemon(nparcel.DaemonService):
         """Write out *data* to the associated *fhs* file handler.
 
         *fhs* is based on the return value from
-        :meth:`nparcel.FilterDaemon.get_outbound_file`
+        :meth:`top.FilterDaemon.get_outbound_file`
 
         **Args:**
             *data*: the line item to write out

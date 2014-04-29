@@ -1,18 +1,18 @@
 import unittest2
 import os
 
-import nparcel
+import top
 
 
 class TestSystemLevelAccess(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._sla = nparcel.SystemLevelAccess()
-        cls._db = nparcel.DbSession()
+        cls._sla = top.SystemLevelAccess()
+        cls._db = top.DbSession()
         cls._db.connect()
 
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
  
         db = cls._db
         fixtures = [{'db': db.system_level_access,
@@ -28,8 +28,8 @@ class TestSystemLevelAccess(unittest2.TestCase):
         """Placeholder test to make sure the SystemLevelAccess table is
         created.
         """
-        msg = 'Object is not an nparcel.SystemLevelAccess'
-        self.assertIsInstance(self._sla, nparcel.SystemLevelAccess, msg)
+        msg = 'Object is not an top.SystemLevelAccess'
+        self.assertIsInstance(self._sla, top.SystemLevelAccess, msg)
 
     @classmethod
     def tearDownClass(cls):

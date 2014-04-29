@@ -3,14 +3,14 @@ __all__ = [
 ]
 import ConfigParser
 
-import nparcel
-from nparcel.utils.log import log
-from nparcel.utils.setter import (set_scalar,
-                                  set_list)
+import top
+from top.utils.log import log
+from top.utils.setter import (set_scalar,
+                              set_list)
 
 
-class OnDeliveryB2CConfig(nparcel.B2CConfig):
-    """:class:`nparcel.OnDeliveryB2CConfig` captures the configuration items
+class OnDeliveryB2CConfig(top.B2CConfig):
+    """:class:`top.OnDeliveryB2CConfig` captures the configuration items
     required for the ``topondeliveryd`` facility.
 
     .. attribute:: ondelivery_loop
@@ -20,7 +20,7 @@ class OnDeliveryB2CConfig(nparcel.B2CConfig):
     .. attribute:: inbound_tcd
 
         TCD Delivery Report inbound directory
-        (default ``/var/ftp/pub/nparcel/tcd/in``)
+        (default ``/var/ftp/pub/top/tcd/in``)
 
     .. attribute:: tcd_filename_format
 
@@ -155,13 +155,13 @@ class OnDeliveryB2CConfig(nparcel.B2CConfig):
     def __init__(self, file=None):
         """OnDeliveryB2CConfig initialisation.
         """
-        nparcel.B2CConfig.__init__(self, file)
+        top.B2CConfig.__init__(self, file)
 
     def parse_config(self):
         """Read config items from the configuration file.
 
         """
-        nparcel.Config.parse_config(self)
+        top.Config.parse_config(self)
 
         # Parse the generic items that are used across the daemon
         # suite first (these will be refactored later).

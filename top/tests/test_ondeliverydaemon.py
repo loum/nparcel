@@ -2,17 +2,17 @@ import unittest2
 import tempfile
 import os
 
-import nparcel
-from nparcel.utils.files import (remove_files,
-                                 get_directory_files_list,
-                                 copy_file)
+import top
+from top.utils.files import (remove_files,
+                             get_directory_files_list,
+                             copy_file)
 
 
 class TestOnDeliveryDaemon(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._odd = nparcel.OnDeliveryDaemon(pidfile=None)
+        cls._odd = top.OnDeliveryDaemon(pidfile=None)
 
         cls._report_in_dirs = tempfile.mkdtemp()
         cls._odd.set_report_in_dirs([cls._report_in_dirs])
@@ -32,7 +32,7 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
         schema = cls._odd.od.ts_db.transsend.schema
         cls._odd.od.ts_db.create_table(name='v_nparcel_adp_connotes',
                                        schema=schema)
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixture_file = os.path.join(fixture_dir, 'transsend.py')
         cls._odd.od.ts_db.load_fixture(cls._odd.od.ts_db.transsend,
                                        fixture_file)
@@ -51,15 +51,15 @@ class TestOnDeliveryDaemon(unittest2.TestCase):
 
         db.commit()
 
-        cls._test_dir = os.path.join('nparcel', 'tests', 'files')
+        cls._test_dir = os.path.join('top', 'tests', 'files')
         cls._test_file = 'TCD_Deliveries_20140207111019.DAT'
         cls._test_filepath = os.path.join(cls._test_dir, cls._test_file)
 
     def test_init(self):
         """Intialise a OnDeliveryDaemon object.
         """
-        msg = 'Not a nparcel.OnDeliveryDaemon object'
-        self.assertIsInstance(self._odd, nparcel.OnDeliveryDaemon, msg)
+        msg = 'Not a top.OnDeliveryDaemon object'
+        self.assertIsInstance(self._odd, top.OnDeliveryDaemon, msg)
 
     def test_start_dry_loop(self):
         """On Delivery _start dry loop.

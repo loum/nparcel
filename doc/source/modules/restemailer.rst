@@ -1,4 +1,4 @@
-.. Nparcel B2C RestEmailer
+.. Toll Outlet Portal Middleware RestEmailer
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 RestEmailer
 ===========
 
-.. automodule:: nparcel.restemailer
+.. automodule:: top.restemailer
     :members:

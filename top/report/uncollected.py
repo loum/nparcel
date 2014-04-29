@@ -1,12 +1,12 @@
 __all__ = [
     "Uncollected",
 ]
-import nparcel
-from nparcel.utils.log import log
+import top
+from top.utils.log import log
 
 
-class Uncollected(nparcel.Auditer):
-    """Toll Parcel Portal Uncollected class.
+class Uncollected(top.Auditer):
+    """Toll Outlet Portal Uncollected class.
 
     """
     def __init__(self,
@@ -16,14 +16,14 @@ class Uncollected(nparcel.Auditer):
         """Uncollected initialiser.
 
         """
-        nparcel.Auditer.__init__(self,
-                                 db_kwargs=db_kwargs,
-                                 bu_ids=bu_ids,
-                                 delivery_partners=delivery_partners)
+        top.Auditer.__init__(self,
+                             db_kwargs=db_kwargs,
+                             bu_ids=bu_ids,
+                             delivery_partners=delivery_partners)
 
     def process(self, id, dry=False):
         """Checks ``agent_stocktake`` table for items that exist
-        in the Toll Parcel Portal and are uncollected and aged.
+        in the Toll Outlet Portal and are uncollected and aged.
 
         **Args:**
             *id*: tuple of integer based values relating to the
@@ -34,7 +34,7 @@ class Uncollected(nparcel.Auditer):
 
         **Returns:**
             list of ``job_item`` IDs that have been reported uncollected
-            by the Agent and qualify as being aged in the Toll Parcel
+            by the Agent and qualify as being aged in the Toll Outlet
             Point database.
 
         """

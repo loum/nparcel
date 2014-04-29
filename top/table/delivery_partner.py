@@ -1,10 +1,10 @@
 __all__ = [
     "DeliveryPartner",
 ]
-import nparcel
+import top
 
 
-class DeliveryPartner(nparcel.Table):
+class DeliveryPartner(top.Table):
     """DeliveryPartner table ORM.
     """
 

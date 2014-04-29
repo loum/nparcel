@@ -22,11 +22,11 @@
 # @author: see AUTHORS file
 import sys
 
-from nparcel.openpyxl.shared.compat.elementtree import iterparse
-from nparcel.openpyxl.shared.compat.tempnamedfile import NamedTemporaryFile
-from nparcel.openpyxl.shared.compat.allany import all, any
+from top.openpyxl.shared.compat.elementtree import iterparse
+from top.openpyxl.shared.compat.tempnamedfile import NamedTemporaryFile
+from top.openpyxl.shared.compat.allany import all, any
 
 try:
     from collections import OrderedDict
 except ImportError:
-    from nparcel.openpyxl.shared.compat.odict import OrderedDict
+    from top.openpyxl.shared.compat.odict import OrderedDict

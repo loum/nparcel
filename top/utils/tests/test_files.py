@@ -2,16 +2,16 @@ import unittest2
 import tempfile
 import os
 
-from nparcel.utils.files import (load_template,
-                                 get_directory_files,
-                                 get_directory_files_list,
-                                 remove_files,
-                                 check_filename,
-                                 gen_digest,
-                                 copy_file,
-                                 gen_digest_path,
-                                 xlsx_to_csv_converter,
-                                 templater)
+from top.utils.files import (load_template,
+                             get_directory_files,
+                             get_directory_files_list,
+                             remove_files,
+                             check_filename,
+                             gen_digest,
+                             copy_file,
+                             gen_digest_path,
+                             xlsx_to_csv_converter,
+                             templater)
 
 
 class TestFiles(unittest2.TestCase):
@@ -19,9 +19,10 @@ class TestFiles(unittest2.TestCase):
     def test_load_template(self):
         """Load template.
         """
-        received = load_template(template='test_template.t',
-                                 base_dir='nparcel/utils/tests',
-                                 replace='REPLACED')
+        kwargs = {'template': 'test_template.t',
+                  'base_dir': os.path.join('top', 'utils', 'tests'),
+                  'replace': 'REPLACED'}
+        received = load_template(**kwargs)
         expected = 'Test Template REPLACED'
         msg = 'Template load error'
         self.assertEqual(received.rstrip(), expected, msg)
@@ -102,18 +103,18 @@ class TestFiles(unittest2.TestCase):
         remove_files(os.path.join(dir, filter_file))
 
     def test_check_filename(self):
-        """Check Nparcel filename format.
+        """Check T1250 filename format.
         """
         format = 'T1250_TOL.*\.txt'
         # Priority.
         received = check_filename('T1250_TOLP_20130904061851.txt', format)
-        msg = 'Priority Nparcel filename should validate True'
+        msg = 'Priority T1250 filename should validate True'
         self.assertTrue(received, msg)
 
         # Fast.
         received = check_filename('T1250_TOLF_VIC_20130904061851.txt',
                                   format)
-        msg = 'Fast VIC Nparcel filename should validate True'
+        msg = 'Fast VIC T1250 filename should validate True'
         self.assertTrue(received, msg)
 
         # Dodgy.
@@ -173,7 +174,7 @@ class TestFiles(unittest2.TestCase):
     def test_xlsx_to_csv_converter(self):
         """Convert a xlsx file to csv.
         """
-        test_dir = os.path.join('nparcel', 'tests', 'files')
+        test_dir = os.path.join('top', 'tests', 'files')
         xlsx_file = os.path.join(test_dir, 'ADP-Bulk-Load.xlsx')
         dir = tempfile.mkdtemp()
         file_to_convert = os.path.join(dir, os.path.basename(xlsx_file))
@@ -205,7 +206,7 @@ class TestFiles(unittest2.TestCase):
     def test_xlsx_to_csv_converter_invalid_file(self):
         """Convert a xlsx file to csv -- invalid file.
         """
-        test_dir = os.path.join('nparcel', 'tests', 'files')
+        test_dir = os.path.join('top', 'tests', 'files')
         file = os.path.join(test_dir, 'T1250_TOLI_20131011115618.dat')
 
         received = xlsx_to_csv_converter(file)
@@ -216,7 +217,7 @@ class TestFiles(unittest2.TestCase):
     def test_xlsx_to_csv_converter_csv_file(self):
         """Convert a xlsx file to csv -- straight through CSV file.
         """
-        test_dir = os.path.join('nparcel', 'tests', 'files')
+        test_dir = os.path.join('top', 'tests', 'files')
         file = os.path.join(test_dir, 'ADP-Bulk-Load.csv')
 
         received = xlsx_to_csv_converter(file)
@@ -227,7 +228,7 @@ class TestFiles(unittest2.TestCase):
     def test_templater(self):
         """Parse and substitute content-based template.
         """
-        template_dir = os.path.join('nparcel', 'templates')
+        template_dir = os.path.join('top', 'templates')
         template_file = 'email_body_html.t'
         path_to_template_file = os.path.join(template_dir, template_file)
         d = {'name': 'Auburn Newsagency',
@@ -240,7 +241,7 @@ class TestFiles(unittest2.TestCase):
              'non_prod': ''}
 
         received = templater(path_to_template_file, **d)
-        fh = open(os.path.join('nparcel',
+        fh = open(os.path.join('top',
                                'tests',
                                'files',
                                'email_body_html_template.t'))
@@ -271,7 +272,7 @@ class TestFiles(unittest2.TestCase):
     def test_templater_incomplete_data(self):
         """Parse and substitute content-based template -- incomplete data.
         """
-        template_dir = os.path.join('nparcel', 'templates')
+        template_dir = os.path.join('top', 'templates')
         template_file = 'email_body_html.t'
         path_to_template_file = os.path.join(template_dir, template_file)
 

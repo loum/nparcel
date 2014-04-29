@@ -1,12 +1,12 @@
 __all__ = [
     "Totals",
 ]
-import nparcel
-from nparcel.utils.log import log
+import top
+from top.utils.log import log
 
 
-class Totals(nparcel.Auditer):
-    """Toll Parcel Portal base Totals class.
+class Totals(top.Auditer):
+    """Toll Outlet Portal base Totals class.
 
     .. attribute:: period
 
@@ -23,7 +23,7 @@ class Totals(nparcel.Auditer):
         """Totals initialiser.
 
         """
-        nparcel.Auditer.__init__(self,
+        top.Auditer.__init__(self,
                                  db_kwargs=db_kwargs,
                                  bu_ids=bu_ids,
                                  delivery_partners=delivery_partners)
@@ -38,14 +38,14 @@ class Totals(nparcel.Auditer):
 
     def process(self, id=None, dry=False):
         """Checks ``agent_stocktake`` table parcel counts against
-        the parcel counts registered in Toll Parcel Portal.
+        the parcel counts registered in Toll Outlet Portal.
 
         **Kwargs:**
             *dry*: do not execute, only report
 
         **Returns:**
             list of ``agent_stocktake`` ADP parcel counts and
-            that Agents Toll Parcel Portal count.
+            that Agents Toll Outlet Portal count.
 
         """
         log.info('Parcel totals query ...')

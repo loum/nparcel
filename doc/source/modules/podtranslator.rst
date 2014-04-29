@@ -1,4 +1,4 @@
-.. B2C PodTranslator
+.. Toll Outlet Portal Middleware PodTranslator
 
 .. toctree::
     :maxdepth: 2
@@ -8,5 +8,5 @@ PodTranslator - ParcelPoint to FAST POD Translator
 
 Members
 -------
-.. automodule:: nparcel.podtranslator
+.. automodule:: top.podtranslator
     :members:

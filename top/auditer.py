@@ -4,13 +4,13 @@ __all__ = [
 import datetime
 import time
 
-import nparcel
-from nparcel.utils.log import log
-from nparcel.utils import date_diff
+import top
+from top.utils.log import log
+from top.utils import date_diff
 
 
-class Auditer(nparcel.Service):
-    """Toll Parcel Portal base Auditer class.
+class Auditer(top.Service):
+    """Toll Outlet Portal base Auditer class.
 
     .. attribute:: *bu_id*
 
@@ -52,7 +52,7 @@ class Auditer(nparcel.Service):
         if delivery_partners is not None:
             self._delivery_partners = delivery_partners
 
-        nparcel.Service.__init__(self, db=db_kwargs)
+        top.Service.__init__(self, db=db_kwargs)
 
     @property
     def bu_ids(self):

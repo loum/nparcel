@@ -1,4 +1,4 @@
-.. Toll Parcel Portal Adp
+.. Toll Outlet Portal Alternate Delivery Point (ADP)
 
 .. toctree::
     :maxdepth: 2
@@ -6,10 +6,10 @@
 Adp
 ===
 
-Methods :mod:`nparcel.adp`
+Methods :mod:`top.adp`
 --------------------------
 
-.. automodule:: nparcel.adp
+.. automodule:: top.adp
    :members:
 
-.. .. autofunction:: nparcel.adp.__init__()
+.. .. autofunction:: top.adp.__init__()

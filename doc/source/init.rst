@@ -1,4 +1,4 @@
-.. Toll Parcel Portal B2C Environment Initialisation
+.. Toll Outlet Portal Middleware Environment Initialisation
 
 .. toctree::
     :maxdepth: 2
@@ -8,7 +8,7 @@
 Environment Initialisation
 ==========================
 
-The middleware B2C software package is available to all system users.
+The middleware software package is available to all system users.
 However, the environment needs to be initialised and configured for any of
 the functionality to be useful.
 
@@ -42,7 +42,7 @@ display to the terminal the files and directories that will be required::
     Processing dry run True
     Starting topinit ...
     Preparing environment in "/home/guest/.top"
-    Copying "/usr/lib/python2.4/site-packages/nparcel/conf/init.conf.0.34"
+    Copying "/usr/lib/python2.4/site-packages/top/conf/init.conf.0.34"
     ...
 
 ``topinit`` will create the base directory structure in the ``.top``
@@ -98,8 +98,8 @@ As of *release 0.34*, the required directory structure is as follows::
 
 The main directories are:
 
-* ``conf`` - middleware B2C configuration files
-* ``templates`` - template file used by the middleware B2C comms facility
+* ``conf`` - middleware configuration files
+* ``templates`` - template file used by the middleware comms facility
 
 Enable the Logger Handlers
 ++++++++++++++++++++++++++
@@ -110,7 +110,7 @@ Log handlers manage the log files and need to be configured::
 
 Set the Default Configuration
 +++++++++++++++++++++++++++++
-All commands use some form of configuration.  By default, the middleware B2C
+All commands use some form of configuration.  By default, the middleware
 components look for the default config at ``~.top/top.conf``::
 
     $ toploaderd status
@@ -132,7 +132,7 @@ From here we should get some sane information::
 
 Provide Database Connection Details
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-For the middleware B2C tools to be useful, you will need to add the database
+For the middleware tools to be useful, you will need to add the database
 instance connection details into the ``top.conf`` configuration file.
 By default, a new ``top.conf`` configuration file features a section
 stub::
@@ -170,7 +170,7 @@ Adjust these to align with your environments requirements.
 
 Supply the Esendex REST Credentials
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If the middleware B2C comms facility is to be used, then supply the Esendex
+If the middleware Comms facility is to be used, then supply the Esendex
 API credentials for both email and SMS under the ``[rest]`` configuration
 section::
 

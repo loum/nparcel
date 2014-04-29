@@ -1,4 +1,4 @@
-.. Toll Parcel Portal StopParser
+.. Toll Outlet Portal Middleware StopParser
 
 .. toctree::
     :maxdepth: 2
@@ -6,10 +6,10 @@
 StopParser
 ==========
 
-Methods :mod:`nparcel.stopparser`
+Methods :mod:`top.stopparser`
 ---------------------------------
 
-.. automodule:: nparcel.stopparser
+.. automodule:: top.stopparser
    :members:
 
-.. .. autofunction:: nparcel.stopparser.__init__()
+.. .. autofunction:: top.stopparser.__init__()

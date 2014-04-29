@@ -1,10 +1,10 @@
 __all__ = [
     "Agent",
 ]
-import nparcel
+import top
 
 
-class Agent(nparcel.Table):
+class Agent(top.Table):
     """Agent table ORM.
     """
 

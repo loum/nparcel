@@ -5,7 +5,7 @@ import datetime
 
 
 class Reporter(object):
-    """Nparcel record processing reporter.
+    """Record processing reporter.
     """
 
     def __init__(self, identifier=None):

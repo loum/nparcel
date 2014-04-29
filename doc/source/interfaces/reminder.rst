@@ -1,4 +1,4 @@
-.. Toll Parcel Portal B2C Reminder Notifications
+.. Toll Outlet Portal Middleware Reminder Notifications
 
 .. toctree::
     :maxdepth: 2
@@ -15,18 +15,18 @@ parcel has not been collected for a defined period (for example, 4 days).
 
 .. image:: ../_static/sample_reminder_email.png
     :align: center
-    :alt: B2C Uncollected Parcel Reminder email notification
+    :alt: Uncollected Parcel Reminder email notification
 
 *Uncollected Parcel Reminder SMS notifications*
 
 .. image:: ../_static/sample_reminder_sms.png
     :align: center
-    :alt: B2C Uncollected Parcel Reminder SMS notification
+    :alt: Uncollected Parcel Reminder SMS notification
 
 Reminder Workflow
 -----------------
 
-``topreminderd`` queries the Toll Parcel Portal database to identify items
+``topreminderd`` queries the Toll Outlet Portal database to identify items
 which match the following criteria:
 
 * ``job_item.created_ts`` column date occurs after the ``start_date``
@@ -43,7 +43,7 @@ which match the following criteria:
 .. image:: ../_static/reminder_interface.png
     :width: 49% 
     :align: center
-    :alt: Toll Parcel Portal B2C Uncollected Reminder interface
+    :alt: Toll Outlet Portal Uncollected Reminder interface
 
 ``topreminderd`` Configuration Items
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

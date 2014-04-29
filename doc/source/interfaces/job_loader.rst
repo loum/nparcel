@@ -1,4 +1,4 @@
-.. Toll Parcel Portal B2C Loader
+.. Toll Outlet Portal Middleware Loader
 
 .. toctree::
     :maxdepth: 2
@@ -8,9 +8,9 @@
 Loader
 ======
 
-The Toll Parcel Portal loader facility accepts inbound T1250 EDI files
+The Toll Outlet Portal loader facility accepts inbound T1250 EDI files
 from the various upstream Business Units and extracts and loads parcel 
-details into the Toll Parcel Portal in preparation for consumer pickup.
+details into the Toll Outlet Portal in preparation for consumer pickup.
 
 The list of Business Units supported include:
 
@@ -151,8 +151,8 @@ configuration condition_map::
     Once set, this setting overrides all other Service Code 4 related
     conditon_map items
 
-``toploaderd`` usage
--------------------
+``toploaderd`` Usage
+--------------------
 
 ``toploaderd`` can be configured to run as a daemon as per the following::
 
@@ -170,7 +170,7 @@ configuration condition_map::
       -f FILE, --file=FILE  file to process inline (start only)
 
 ``toploaderd`` Configuration Items
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``toploaderd`` uses the standard ``top.conf`` configuration file to
 control processing behaviour.  The following list details the required
@@ -183,7 +183,7 @@ configuration options:
     found under the ``[dirs]`` section, the ``in`` config setting defines
     the directories to search for new T1250 EDI files.  For example::
 
-        in = /var/ftp/pub/nparcel/priority/in,/var/ftp/pub/nparcel/ipec/in
+        in = /var/ftp/pub/top/priority/in,/var/ftp/pub/top/ipec/in
 
     These inbound directories typically align with the FTP inbound
     directory structure defined at :ref:`b2cftp`.

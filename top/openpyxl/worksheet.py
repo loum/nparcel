@@ -29,17 +29,17 @@
 import re
 
 # package imports
-import nparcel.openpyxl.cell
-from nparcel.openpyxl.cell import coordinate_from_string, \
+import top.openpyxl.cell
+from top.openpyxl.cell import coordinate_from_string, \
     column_index_from_string, get_column_letter
-from nparcel.openpyxl.shared.exc import SheetTitleException, \
+from top.openpyxl.shared.exc import SheetTitleException, \
     InsufficientCoordinatesException, CellCoordinatesException, \
     NamedRangeException
-from nparcel.openpyxl.shared.password_hasher import hash_password
-from nparcel.openpyxl.style import Style, DEFAULTS as DEFAULTS_STYLE
-from nparcel.openpyxl.drawing import Drawing
-from nparcel.openpyxl.namedrange import NamedRangeContainingValue
-from nparcel.openpyxl.shared.compat import OrderedDict
+from top.openpyxl.shared.password_hasher import hash_password
+from top.openpyxl.style import Style, DEFAULTS as DEFAULTS_STYLE
+from top.openpyxl.drawing import Drawing
+from top.openpyxl.namedrange import NamedRangeContainingValue
+from top.openpyxl.shared.compat import OrderedDict
 
 _DEFAULTS_STYLE_HASH = hash(DEFAULTS_STYLE)
 
@@ -401,7 +401,7 @@ class Worksheet(object):
 
         if not coordinate in self._cells:
             column, row = coordinate_from_string(coordinate)
-            new_cell = nparcel.openpyxl.cell.Cell(self, column, row)
+            new_cell = top.openpyxl.cell.Cell(self, column, row)
             self._cells[coordinate] = new_cell
             if column not in self.column_dimensions:
                 self.column_dimensions[column] = ColumnDimension(column)

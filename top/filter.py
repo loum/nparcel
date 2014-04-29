@@ -1,22 +1,22 @@
 __all__ = [
     "Filter",
 ]
-import nparcel
-from nparcel.utils.log import log
+import top
+from top.utils.log import log
 
 # ParcelPoint records are only interested in the "Agent Id" field.
 FIELDS = {'Agent Id': {'offset': 453,
                        'length': 4}}
 
 
-class Filter(nparcel.Service):
+class Filter(top.Service):
     """Filter class.
 
     """
-    _parser = nparcel.Parser(fields=FIELDS)
+    _parser = top.Parser(fields=FIELDS)
 
     def __init__(self):
-        nparcel.Service.__init__(self)
+        top.Service.__init__(self)
 
     @property
     def parser(self):

@@ -3,11 +3,11 @@ __all__ = [
 ]
 import datetime
 
-import nparcel
-from nparcel.utils.log import log
-from nparcel.openpyxl import Workbook
-from nparcel.openpyxl.style import Color, Fill, Border
-from nparcel.openpyxl.cell import get_column_letter
+import top
+from top.utils.log import log
+from top.openpyxl import Workbook
+from top.openpyxl.style import Color, Fill, Border
+from top.openpyxl.cell import get_column_letter
 
 Color.LIGHTBLUE = 'FFB5DAFF'
 Color.LIGHTERBLUE = 'FFE9F4FF'
@@ -15,8 +15,8 @@ Color.LIGHTGREY = 'FFD1D1D1'
 Color.REALLYLIGHTGREY = 'FFF1F1F1'
 
 
-class Xlwriter(nparcel.Writer):
-    """Toll Parcel Portal Writer class.
+class Xlwriter(top.Writer):
+    """Toll Outlet Portal Writer class.
 
     .. attribute:: title
 
@@ -51,7 +51,7 @@ class Xlwriter(nparcel.Writer):
         """Writer initialiser.
 
         """
-        super(nparcel.Xlwriter, self).__init__(outfile=outfile)
+        super(top.Xlwriter, self).__init__(outfile=outfile)
 
     def __call__(self, data):
         """Class callable that writes list of tuple values in *data*.

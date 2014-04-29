@@ -2,9 +2,9 @@ import unittest2
 import tempfile
 import os
 
-import nparcel
+import top
 
-from nparcel.utils.files import remove_files
+from top.utils.files import remove_files
 
 
 class TestService(unittest2.TestCase):
@@ -12,13 +12,13 @@ class TestService(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._comms_dir = tempfile.mkdtemp()
-        cls._s = nparcel.Service(comms_dir=cls._comms_dir)
+        cls._s = top.Service(comms_dir=cls._comms_dir)
 
     def test_init(self):
         """Initialise a Service object.
         """
-        msg = 'Object is not a nparcel.Service'
-        self.assertIsInstance(self._s, nparcel.Service, msg)
+        msg = 'Object is not a top.Service'
+        self.assertIsInstance(self._s, top.Service, msg)
 
     def test_flag_comms_previous_no_comms_files(self):
         """Check if comms flag has been set previously.

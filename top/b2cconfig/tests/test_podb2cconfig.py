@@ -1,24 +1,24 @@
 import unittest2
 import os
 
-import nparcel
+import top
 
 
 class TestPodB2CConfig(unittest2.TestCase):
 
     def setUp(self):
-        self._c = nparcel.PodB2CConfig()
+        self._c = top.PodB2CConfig()
 
     def test_init(self):
         """Initialise a PodB2CConfig object.
         """
-        msg = 'Object is not a nparcel.PodB2CConfig'
-        self.assertIsInstance(self._c, nparcel.PodB2CConfig, msg)
+        msg = 'Object is not a top.PodB2CConfig'
+        self.assertIsInstance(self._c, top.PodB2CConfig, msg)
 
     def test_parse_config(self):
         """Parse comms items from the config.
         """
-        config_file = os.path.join('nparcel', 'conf', 'top.conf')
+        config_file = os.path.join('top', 'conf', 'top.conf')
 
         self._c.set_config_file(config_file)
         self._c.parse_config()

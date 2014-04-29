@@ -1,4 +1,4 @@
-.. Nparcel B2C Filter (ParcelPoint Extraction)
+.. Toll Outlet Portal Middleware Filter (ParcelPoint Extraction)
 
 .. toctree::
     :maxdepth: 2
@@ -8,5 +8,5 @@ Filter - ParcelPoint
 
 Members
 -------
-.. automodule:: nparcel.filter
+.. automodule:: top.filter
     :members:

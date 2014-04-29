@@ -1,7 +1,7 @@
 __all__ = [
     "dbsession",
 ]
-from nparcel.utils.log import log
+from top.utils.log import log
 try:
     from pysqlite2 import dbapi2 as sqlite3
 except:
@@ -9,11 +9,11 @@ except:
 import pyodbc
 import datetime
 
-import nparcel
+import top
 
 
 class DbSession(object):
-    """Nparcel DB session manager.
+    """DB session manager.
 
     .. attribute:: db_type
 
@@ -24,18 +24,18 @@ class DbSession(object):
     _connection = None
     _cursor = None
     _db_type = None
-    _job = nparcel.Job()
-    _jobitem = nparcel.JobItem()
-    _agent = nparcel.Agent()
-    _agent_stocktake = nparcel.AgentStocktake()
-    _identity_type = nparcel.IdentityType()
-    _parcel_size = nparcel.ParcelSize()
-    _delivery_partner = nparcel.DeliveryPartner()
-    _login_account = nparcel.LoginAccount()
-    _system_level_access = nparcel.SystemLevelAccess()
-    _login_access = nparcel.LoginAccess()
-    _returns = nparcel.Returns()
-    _returns_reference = nparcel.ReturnsReference()
+    _job = top.Job()
+    _jobitem = top.JobItem()
+    _agent = top.Agent()
+    _agent_stocktake = top.AgentStocktake()
+    _identity_type = top.IdentityType()
+    _parcel_size = top.ParcelSize()
+    _delivery_partner = top.DeliveryPartner()
+    _login_account = top.LoginAccount()
+    _system_level_access = top.SystemLevelAccess()
+    _login_access = top.LoginAccess()
+    _returns = top.Returns()
+    _returns_reference = top.ReturnsReference()
 
     def __init__(self, **kwargs):
         self._host = kwargs.get('host')

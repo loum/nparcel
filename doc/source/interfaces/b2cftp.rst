@@ -1,4 +1,4 @@
-.. B2C FTP
+.. Toll Outlet Portal Middleware FTP
 
 .. toctree::
     :maxdepth: 2
@@ -7,10 +7,10 @@
 
 B2C FTP
 =======
-The Toll Parcel Portal B2C Exporter produces Proof of Delivery (PoD)
-report files that need to be returned to the relevant Business Units to
-complete the end-to-end process flow.  POD reports are accompanied by
-signature files.
+The Toll Outlet Portal middleware Exporter facility produces Proof of
+Delivery (PoD) report files that need to be returned to the relevant
+Business Units to complete the end-to-end process flow.  POD reports are
+accompanied by signature files.
 
 The interface between the Exporter facility and the outbound FTP is
 defined by the Exporter's ``staging_base`` configuration option (under the
@@ -19,8 +19,8 @@ directory*.
 
 The staging directory is Business Unit-specific and branches off the
 staging directory base.  For example, if the ``staging_base`` is defined
-as ``/var/ftp/pub/nparcel`` the staging area for Priority will be
-``/var/ftp/pub/nparcel/priority/out``.  In general, this can be represented
+as ``/var/ftp/pub/top`` the staging area for Priority will be
+``/var/ftp/pub/top/priority/out``.  In general, this can be represented
 as::
 
     <staging_base>/<business_unit>/out
@@ -28,10 +28,10 @@ as::
 ParcelPoint Integration
 -----------------------
 
-As of *version 0.20*, the Toll Parcel Portal FTP sub-system provides an
+As of *version 0.20*, the Toll Outlet Portal FTP sub-system provides an
 interface to `ParcelPoint <http://parcelpoint.com.au>`_
 
-Toll Parcel Portal FTP delivers T1250 files and receives POD report
+Toll Outlet Portal FTP delivers T1250 files and receives POD report
 files from ParcelPoint.
 
 Configuration
@@ -52,7 +52,7 @@ A typical entry for *Priority* is shown below::
     port = 21
     user = priority
     password = <password>
-    source = /var/ftp/pub/nparcel/priority/out
+    source = /var/ftp/pub/top/priority/out
     filter = VIC_VANA_REI_\d{14}\.txt$
     target = in
     pod = yes
@@ -69,7 +69,7 @@ Key items in the configuration are:
 
 *new in version 0.20*
 
-* ``direction`` determines transfer flow relative to the Toll Parcel Portal
+* ``direction`` determines transfer flow relative to the Toll Outlet Portal
   FTP server.  Supported values include ``inbound`` and ``outbound``
   (default ``outbound``)
 
@@ -81,13 +81,13 @@ Key items in the configuration are:
 
 ParcelPoint Configuration
 +++++++++++++++++++++++++
-The Toll Parcel Portal inbound/outbound concept is somewhat reversed
+The Toll Outlet Portal inbound/outbound concept is somewhat reversed
 for the ParcelPoint outbound interface.  In this case, *outbound* is the
 delivery of T1250 files to ParcelPoint.  The ``source`` configuration 
 item is the name of the *local* directory to search for T1250 files to
 deliver.  Similarly, ``target`` is the remote server directory to send
 files to.  Again, the context of the definitions is relative to the Toll
-Parcel Portal system.
+Outlet Portal system.
 
 .. note::
 
@@ -155,7 +155,7 @@ The outbound FTP facility will attempt to archive files upon successful
 transfer if the ``archive`` configuration option is defined::
 
     [dirs]
-    archive = /data/nparcel/archive/ftp
+    archive = /data/top/archive/ftp
 
 .. note::
 
@@ -166,7 +166,7 @@ To disable FTP archiving: simply comment out the ``archive`` option as
 below::
 
     [dirs]
-    #archive = /data/nparcel/archive/ftp
+    #archive = /data/top/archive/ftp
 
 As of *version 0.32*, archiving is context based to better distribute
 the files across the file system.  The extended directory structure
@@ -176,7 +176,7 @@ example, the Priority report file ``VIC_VANA_REP_20131108145146.txt``
 (which connects as the user ``priority`` and was transferred on
 08/11/2013) would be archived to::
 
-    /data/nparcel/archive/ftp/priority/20131108
+    /data/top/archive/ftp/priority/20131108
 
 ``topftp`` Usage
 ----------------

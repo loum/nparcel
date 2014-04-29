@@ -1,4 +1,4 @@
-.. Toll Parcel Portal B2C Auditer
+.. Toll Outlet Portal Middleware Auditer
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 Auditer
 =======
 
-.. automodule:: nparcel.auditer
+.. automodule:: top.auditer
     :members:

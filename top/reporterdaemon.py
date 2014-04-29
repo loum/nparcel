@@ -5,12 +5,12 @@ import os
 import signal
 import datetime
 
-import nparcel
-from nparcel.utils.log import log
-from nparcel.utils.files import create_dir
+import top
+from top.utils.log import log
+from top.utils.files import create_dir
 
 
-class ReporterDaemon(nparcel.DaemonService):
+class ReporterDaemon(top.DaemonService):
     """Daemoniser facility for the reporting classes.
 
     .. attribute:: *bu_ids*
@@ -35,7 +35,7 @@ class ReporterDaemon(nparcel.DaemonService):
     .. attribute:: *outdir*
 
         temporary working directory to where report files are
-        staged to for further processing (default ``/data/nparcel/reports``)
+        staged to for further processing (default ``/data/top/reports``)
 
     .. attribute:: *extension*
 
@@ -110,7 +110,7 @@ class ReporterDaemon(nparcel.DaemonService):
     _config = None
     _report = None
     _bu_ids = {}
-    _outdir = os.path.join(os.sep, 'data', 'nparcel', 'reports')
+    _outdir = os.path.join(os.sep, 'data', 'top', 'reports')
     _outfile = 'Stocktake_uncollected_aged_report_'
     _outfile_ts_format = '%Y%m%d-%H:%M'
     _extension = 'xlsx'
@@ -126,7 +126,7 @@ class ReporterDaemon(nparcel.DaemonService):
     _bu_based = False
     _delivery_partners = []
     _compliance_period = 7
-    _emailer = nparcel.Emailer()
+    _emailer = top.Emailer()
 
     def __init__(self,
                  report,
@@ -136,12 +136,12 @@ class ReporterDaemon(nparcel.DaemonService):
                  config=None):
         c = None
         if config is not None:
-            c = nparcel.ReporterB2CConfig(file=config, type=report)
-        nparcel.DaemonService.__init__(self,
-                                       pidfile=pidfile,
-                                       dry=dry,
-                                       batch=batch,
-                                       config=c)
+            c = top.ReporterB2CConfig(file=config, type=report)
+        top.DaemonService.__init__(self,
+                                   pidfile=pidfile,
+                                   dry=dry,
+                                   batch=batch,
+                                   config=c)
         self.set_report_type(report)
 
         log_msg = self.facility + '.%s not set via config: %s. Using "%s"'
@@ -465,7 +465,7 @@ class ReporterDaemon(nparcel.DaemonService):
         return kwargs
 
     def _start(self, event):
-        """Override the :method:`nparcel.utils.Daemon._start` method.
+        """Override the :method:`top.utils.Daemon._start` method.
 
         **Args:**
             *event* (:mod:`threading.Event`): Internal semaphore that
@@ -479,18 +479,18 @@ class ReporterDaemon(nparcel.DaemonService):
         if self._report is None:
             kwargs = self.reporter_kwargs
             if self.report_type == 'uncollected':
-                self._report = nparcel.Uncollected(**kwargs)
+                self._report = top.Uncollected(**kwargs)
             elif self.report_type == 'compliance':
-                self._report = nparcel.Compliance(**kwargs)
+                self._report = top.Compliance(**kwargs)
                 self._report.set_period(self.compliance_period)
             elif self.report_type == 'noncompliance':
-                self._report = nparcel.NonCompliance(**kwargs)
+                self._report = top.NonCompliance(**kwargs)
             elif self.report_type == 'exception':
-                self._report = nparcel.Exception(**kwargs)
+                self._report = top.Exception(**kwargs)
             elif self.report_type == 'totals':
-                self._report = nparcel.Totals(**kwargs)
+                self._report = top.Totals(**kwargs)
             elif self.report_type == 'collected':
-                self._report = nparcel.Collected(**kwargs)
+                self._report = top.Collected(**kwargs)
 
         # Set the report PROD instance name.
         try:
@@ -523,7 +523,7 @@ class ReporterDaemon(nparcel.DaemonService):
                 if self.outdir is not None:
                     outfile = os.path.join(self.outdir, outfile)
                 self.set_report_filename(outfile)
-                writer = nparcel.Xlwriter(outfile)
+                writer = top.Xlwriter(outfile)
 
                 writer.set_title(self.ws.get('title'))
                 writer.set_subtitle(self.ws.get('subtitle'))

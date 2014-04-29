@@ -1,18 +1,18 @@
 import unittest2
 import os
 
-import nparcel
+import top
 
 
 class TestLoginAccess(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._la = nparcel.LoginAccess()
-        cls._db = nparcel.DbSession()
+        cls._la = top.LoginAccess()
+        cls._db = top.DbSession()
         cls._db.connect()
 
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
 
         db = cls._db
         fixtures = [{'db': db.login_access, 'fixture': 'login_access.py'}]
@@ -27,8 +27,8 @@ class TestLoginAccess(unittest2.TestCase):
         """Placeholder test to make sure the LoginAccess table is
         created.
         """
-        msg = 'Object is not an nparcel.LoginAccess'
-        self.assertIsInstance(self._la, nparcel.LoginAccess, msg)
+        msg = 'Object is not an top.LoginAccess'
+        self.assertIsInstance(self._la, top.LoginAccess, msg)
 
     @classmethod
     def tearDownClass(cls):

@@ -3,12 +3,12 @@ __all__ = [
 ]
 import ConfigParser
 
-import nparcel
-from nparcel.utils.log import log
+import top
+from top.utils.log import log
 
 
-class HealthB2CConfig(nparcel.B2CConfig):
-    """:class:`nparcel.HealthB2CConfig` captures the configuration items
+class HealthB2CConfig(top.B2CConfig):
+    """:class:`top.HealthB2CConfig` captures the configuration items
     required for the ``tophealth`` facility.
 
     .. attribute:: health_processes
@@ -32,15 +32,15 @@ class HealthB2CConfig(nparcel.B2CConfig):
                   (self.facility, self.health_processes))
 
     def __init__(self, file=None):
-        """:class:`nparcel.HealthB2CConfig` initialisation.
+        """:class:`top.HealthB2CConfig` initialisation.
         """
-        nparcel.B2CConfig.__init__(self, file)
+        top.B2CConfig.__init__(self, file)
 
     def parse_config(self):
         """Read config items from the configuration file.
 
         """
-        nparcel.Config.parse_config(self)
+        top.Config.parse_config(self)
 
         try:
             health_procs = self.get('health', 'processes')

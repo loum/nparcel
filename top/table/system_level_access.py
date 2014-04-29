@@ -1,10 +1,10 @@
 __all__ = [
     "SystemLevelAccess",
 ]
-import nparcel
+import top
 
 
-class SystemLevelAccess(nparcel.Table):
+class SystemLevelAccess(top.Table):
     """SystemLevelAccess table ORM.
     """
 

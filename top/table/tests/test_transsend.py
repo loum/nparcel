@@ -1,19 +1,19 @@
 import unittest2
 import os
 
-import nparcel
+import top
 
 
 class TestTransSend(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._transsend = nparcel.TransSend()
-        cls._db = nparcel.OraDbSession()
+        cls._transsend = top.TransSend()
+        cls._db = top.OraDbSession()
         cls._db.connect()
         cls._db.create_table(name='v_nparcel_adp_connotes',
                              schema=cls._db.transsend.schema)
-        fixture_file = os.path.join('nparcel',
+        fixture_file = os.path.join('top',
                                     'tests',
                                     'fixtures',
                                     'transsend.py')
@@ -23,7 +23,7 @@ class TestTransSend(unittest2.TestCase):
         """TransSend table initialisation.
         """
         msg = 'Object is not a TransSend instance'
-        self.assertIsInstance(self._transsend, nparcel.TransSend, msg)
+        self.assertIsInstance(self._transsend, top.TransSend, msg)
 
     def test_connote_sql(self):
         """Verify teh connote_sql string.

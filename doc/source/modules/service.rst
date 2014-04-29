@@ -1,4 +1,4 @@
-.. Nparcel B2C Service
+.. Toll Outlet Portal Middleware Service
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 Service
 =======
 
-.. automodule:: nparcel.service
+.. automodule:: top.service
     :members:

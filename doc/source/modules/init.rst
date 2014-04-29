@@ -1,4 +1,4 @@
-.. Nparcel B2C Init
+.. Toll Outlet Portal Middleware Init
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 Init
 ====
 
-.. automodule:: nparcel.init
+.. automodule:: top.init
     :members:

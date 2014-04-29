@@ -5,12 +5,12 @@ import os
 import time
 import signal
 
-import nparcel
-from nparcel.utils.log import log
+import top
+from top.utils.log import log
 
 
-class ExporterDaemon(nparcel.DaemonService):
-    """Daemoniser facility for the :class:`nparcel.Exporter` class.
+class ExporterDaemon(top.DaemonService):
+    """Daemoniser facility for the :class:`top.Exporter` class.
 
     .. attribute:: exporter_fields
 
@@ -28,12 +28,12 @@ class ExporterDaemon(nparcel.DaemonService):
                  config=None):
         c = None
         if config is not None:
-            c = nparcel.ExporterB2CConfig(config)
-        nparcel.DaemonService.__init__(self,
-                                       pidfile=pidfile,
-                                       dry=dry,
-                                       batch=batch,
-                                       config=c)
+            c = top.ExporterB2CConfig(config)
+        top.DaemonService.__init__(self,
+                                   pidfile=pidfile,
+                                   dry=dry,
+                                   batch=batch,
+                                   config=c)
 
         try:
             self.set_loop(self.config.exporter_loop)
@@ -139,7 +139,7 @@ class ExporterDaemon(nparcel.DaemonService):
         signal.signal(signal.SIGTERM, self._exit_handler)
 
         if self.exporter is None:
-            self._exporter = nparcel.Exporter(**(self.exporter_kwargs))
+            self._exporter = top.Exporter(**(self.exporter_kwargs))
 
         while not event.isSet():
             if self.exporter.db():

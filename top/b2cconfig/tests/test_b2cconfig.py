@@ -1,23 +1,23 @@
 import unittest2
 import os
 
-import nparcel
+import top
 
 
 class TestB2CConfig(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._file = os.path.join('nparcel', 'conf', 'top.conf')
+        cls._file = os.path.join('top', 'conf', 'top.conf')
 
     def setUp(self):
-        self._c = nparcel.B2CConfig()
+        self._c = top.B2CConfig()
 
     def test_init(self):
         """Initialise a B2CConfig object.
         """
-        msg = 'Object is not a nparcel.B2CConfig'
-        self.assertIsInstance(self._c, nparcel.B2CConfig, msg)
+        msg = 'Object is not a top.B2CConfig'
+        self.assertIsInstance(self._c, top.B2CConfig, msg)
 
     def test_parse_config(self):
         """Parse items from the config.
@@ -92,7 +92,7 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'Archive directory not as expected'
         received = self._c.archive_dir
-        expected = '/data/nparcel/archive'
+        expected = '/data/top/archive'
         self.assertEqual(received, expected, msg)
 
         msg = 'Staging base directory not as expected'
@@ -102,7 +102,7 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'Aggregator directory not as expected'
         received = self._c.aggregator_dirs
-        expected = ['/data/nparcel/aggregate']
+        expected = ['/data/top/aggregate']
         self.assertListEqual(received, expected, msg)
 
         msg = 'ADP directories not as expected'
@@ -112,7 +112,7 @@ class TestB2CConfig(unittest2.TestCase):
 
         msg = 'Comms directory not as expected'
         received = self._c.comms_dir
-        expected = '/data/nparcel/comms'
+        expected = '/data/top/comms'
         self.assertEqual(received, expected, msg)
 
     def test_parse_config_timeout(self):

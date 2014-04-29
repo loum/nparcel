@@ -3,14 +3,14 @@
 import os
 import inspect
 
-import nparcel
-from nparcel.utils.log import (log,
-                               set_console,
-                               set_log_level)
+import top
+from top.utils.log import (log,
+                           set_console,
+                           set_log_level)
 
 
 def main():
-    based = nparcel.BaseD()
+    based = top.BaseD()
     script_name = inspect.getfile(inspect.currentframe())
     script_name = os.path.basename(script_name)
     based.set_script_name(script_name)
@@ -39,14 +39,14 @@ def main():
 
     config = None
     if based.options.config is not None:
-        config = nparcel.FilterB2CConfig(based.options.config)
+        config = top.FilterB2CConfig(based.options.config)
 
     # OK, start processing.
-    fd = nparcel.FilterDaemon(pidfile=based.pidfile,
-                              file=file,
-                              dry=based.dry,
-                              batch=based.batch,
-                              config=config)
+    fd = top.FilterDaemon(pidfile=based.pidfile,
+                          file=file,
+                          dry=based.dry,
+                          batch=based.batch,
+                          config=config)
 
     based.launch_command(fd, script_name)
 

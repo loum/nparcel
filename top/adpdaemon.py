@@ -5,24 +5,24 @@ import signal
 import os
 import time
 
-import nparcel
-from nparcel.utils.log import log
-from nparcel.utils.files import (get_directory_files_list,
-                                 move_file,
-                                 xlsx_to_csv_converter)
+import top
+from top.utils.log import log
+from top.utils.files import (get_directory_files_list,
+                             move_file,
+                             xlsx_to_csv_converter)
 
 
-class AdpDaemon(nparcel.DaemonService):
-    """Daemoniser facility for the :class:`nparcel.AdpParser` class.
+class AdpDaemon(top.DaemonService):
+    """Daemoniser facility for the :class:`top.AdpParser` class.
 
     .. attribute:: parser
 
-        :mod:`nparcel.AdpParser` parser object
+        :mod:`top.AdpParser` parser object
 
     .. attribute:: adp_in_dirs
 
         ADP bulk load inbound directory
-        (default ``/var/ftp/pub/nparcel/adp/in``)
+        (default ``/var/ftp/pub/top/adp/in``)
 
     .. attribute:: adp_file_formats
 
@@ -34,12 +34,12 @@ class AdpDaemon(nparcel.DaemonService):
         where to archive ADP file after processing
 
     """
-    _parser = nparcel.AdpParser()
+    _parser = top.AdpParser()
     _adp_in_dirs = [os.path.join(os.sep,
                                  'var',
                                  'ftp',
                                  'pub',
-                                 'nparcel',
+                                 'top',
                                  'adp',
                                  'in')]
     _adp_file_formats = []
@@ -53,13 +53,13 @@ class AdpDaemon(nparcel.DaemonService):
                  config=None):
         c = None
         if config is not None:
-            c = nparcel.B2CConfig(config)
-        nparcel.DaemonService.__init__(self,
-                                       pidfile=pidfile,
-                                       file=file,
-                                       dry=dry,
-                                       batch=batch,
-                                       config=c)
+            c = top.B2CConfig(config)
+        top.DaemonService.__init__(self,
+                                   pidfile=pidfile,
+                                   file=file,
+                                   dry=dry,
+                                   batch=batch,
+                                   config=c)
 
         try:
             if self.config.support_emails is not None:
@@ -130,7 +130,7 @@ class AdpDaemon(nparcel.DaemonService):
         log.debug('Set archive directory to "%s"' % value)
 
     def _start(self, event):
-        """Override the :method:`nparcel.utils.Daemon._start` method.
+        """Override the :method:`top.utils.Daemon._start` method.
 
         Will perform a single iteration if the :attr:`file` attribute has
         a list of filenames to process.  Similarly, dry and batch modes
@@ -171,7 +171,7 @@ class AdpDaemon(nparcel.DaemonService):
         except AttributeError, err:
             log.debug('ADP code_header not in config: %s ' % err)
 
-        adp = nparcel.Adp(**kwargs)
+        adp = top.Adp(**kwargs)
 
         commit = True
         if self.dry:
@@ -205,23 +205,17 @@ class AdpDaemon(nparcel.DaemonService):
 
             alerts = []
             if len(files):
-                alerts = list(adp.alerts)
+                self.send_table(recipients=self.support_emails,
+                                table_data=list(adp.alerts),
+                                dry=self.dry)
                 adp.reset(commit=commit)
-                stats = self.reporter.report()
-                log.info(stats)
+
+                # Archive the files.
                 for f in files:
                     self.archive_file(f, dry=self.dry)
 
-            # Report the results.
-            if len(alerts):
-                alert_table = self.create_table(alerts)
-                del alerts[:]
-                data = {'facility': self.__class__.__name__,
-                        'err_table': alert_table}
-                self.emailer.send_comms(template='general_err',
-                                        data=data,
-                                        recipients=self.support_emails,
-                                        dry=self.dry)
+                stats = self.reporter.report()
+                log.info(stats)
 
             if not event.isSet():
                 if self.dry:

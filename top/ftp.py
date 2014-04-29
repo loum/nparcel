@@ -8,15 +8,15 @@ import socket
 import datetime
 import time
 
-import nparcel
+import top
 import ConfigParser
-from nparcel.utils.log import log
-from nparcel.utils.files import (create_dir,
-                                 check_filename,
-                                 move_file,
-                                 copy_file,
-                                 get_directory_files,
-                                 get_directory_files_list)
+from top.utils.log import log
+from top.utils.files import (create_dir,
+                             check_filename,
+                             move_file,
+                             copy_file,
+                             get_directory_files,
+                             get_directory_files_list)
 
 
 class Ftp(ftplib.FTP):
@@ -29,7 +29,7 @@ class Ftp(ftplib.FTP):
 
     .. attribute:: config
 
-        :mod:`nparcel.Config` object
+        :mod:`top.Config` object
 
     .. attribute:: xfers
 
@@ -41,7 +41,7 @@ class Ftp(ftplib.FTP):
             port = 21
             user = priority
             password = prior_pw
-            source = /data/nparcel/priority/out
+            source = /data/top/priority/out
             target = in
 
         This ``ftp_priority`` section definition will be appended to the
@@ -52,13 +52,13 @@ class Ftp(ftplib.FTP):
         boolean that tracks the FTP connection
 
     """
-    _archive_dir = '/data/nparcel/archive/ftp'
-    _config = nparcel.Config()
+    _archive_dir = '/data/top/archive/ftp'
+    _config = top.Config()
     _xfers = []
     _connected = False
 
     def __init__(self, config_file=None):
-        """Nparcel Ftp initialisation.
+        """Ftp initialisation.
 
         """
         ftplib.FTP.__init__(self)
@@ -90,7 +90,7 @@ class Ftp(ftplib.FTP):
         del self._xfers[:]
         self._xfers = []
 
-        self._config = nparcel.Config()
+        self._config = top.Config()
 
     def set_archive_dir(self, value):
         self._archive_dir = value
@@ -639,9 +639,9 @@ class Ftp(ftplib.FTP):
         ``YYYYMMDD`` time format of the current date in the form
         ``<archive_dir>/<name>/<YYYYMMDD>.  For example, if the
         :attr:`archive_dir` directory is set to
-        ``/data/nparcel/archive/ftp``::
+        ``/data/top/archive/ftp``::
 
-            /data/nparcel/archive/ftp/priority/20140305
+            /data/top/archive/ftp/priority/20140305
 
         **Args:**
             *name*: the context descriptor of the transfer

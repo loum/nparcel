@@ -1,23 +1,23 @@
 import unittest2
 import os
 
-import nparcel
+import top
 
 
 class TestConfig(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._file = os.path.join('nparcel', 'conf', 'top.conf')
+        cls._file = os.path.join('top', 'conf', 'top.conf')
 
     def setUp(self):
-        self._c = nparcel.Config()
+        self._c = top.Config()
 
     def test_init(self):
         """Initialise a Config object.
         """
-        msg = 'Object is not a nparcel.Config'
-        self.assertIsInstance(self._c, nparcel.Config, msg)
+        msg = 'Object is not a top.Config'
+        self.assertIsInstance(self._c, top.Config, msg)
 
     def test_parse_config_no_file(self):
         """Read config with no file provided.
@@ -28,7 +28,7 @@ class TestConfig(unittest2.TestCase):
         """Read valid config.
         """
         old_config = self._c.config_file
-        config = os.path.join('nparcel', 'conf', 'top.conf')
+        config = os.path.join('top', 'conf', 'top.conf')
         received = self._c.set_config_file(config)
         msg = 'Config should read without error and return None'
         self.assertIsNone(received, msg)

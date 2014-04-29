@@ -1,4 +1,4 @@
-.. Nparcel B2C ExporterDaemon
+.. Toll Outlet Portal Middleware ExporterDaemon
 
 .. toctree::
     :maxdepth: 2
@@ -8,7 +8,7 @@ ExporterDaemon - Exporter Facility Daemoniser
 
 Members (including inherited)
 -----------------------------
-.. automodule:: nparcel.exporterdaemon
+.. automodule:: top.exporterdaemon
     :show-inheritance:
     :inherited-members:
     :members:

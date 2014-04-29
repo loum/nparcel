@@ -2,24 +2,24 @@ import unittest2
 import os
 import datetime
 
-import nparcel
+import top
 
 
 class TestReminderB2CConfig(unittest2.TestCase):
 
     def setUp(self):
-        self._c = nparcel.ReminderB2CConfig()
+        self._c = top.ReminderB2CConfig()
 
     def test_init(self):
         """Initialise a ReminderB2CConfig object.
         """
-        msg = 'Object is not a nparcel.ReminderB2CConfig'
-        self.assertIsInstance(self._c, nparcel.ReminderB2CConfig, msg)
+        msg = 'Object is not a top.ReminderB2CConfig'
+        self.assertIsInstance(self._c, top.ReminderB2CConfig, msg)
 
     def test_parse_config(self):
         """Parse comms items from the config.
         """
-        config_file = os.path.join('nparcel', 'conf', 'top.conf')
+        config_file = os.path.join('top', 'conf', 'top.conf')
         self._c.set_config_file(config_file)
         self._c.parse_config()
 
@@ -31,7 +31,7 @@ class TestReminderB2CConfig(unittest2.TestCase):
         received = self._c.comms_dir
         expected = os.path.join(os.sep,
                                 'data',
-                                'nparcel',
+                                'top',
                                 'comms')
         msg = 'dir.comms error'
         self.assertEqual(received, expected, msg)

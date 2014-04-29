@@ -1,12 +1,12 @@
 __all__ = [
     "Collected",
 ]
-import nparcel
-from nparcel.utils.log import log
+import top
+from top.utils.log import log
 
 
-class Collected(nparcel.Auditer):
-    """Toll Parcel Portal Collected class.
+class Collected(top.Auditer):
+    """Toll Outlet Portal Collected class.
 
     """
     def __init__(self, **kwargs):
@@ -16,14 +16,14 @@ class Collected(nparcel.Auditer):
         db_kwargs = kwargs.get('db')
         bu_ids = kwargs.get('bu_ids')
         delivery_partners = kwargs.get('delivery_partners')
-        nparcel.Auditer.__init__(self,
-                                 db_kwargs=db_kwargs,
-                                 bu_ids=bu_ids,
-                                 delivery_partners=delivery_partners)
+        top.Auditer.__init__(self,
+                             db_kwargs=db_kwargs,
+                             bu_ids=bu_ids,
+                             delivery_partners=delivery_partners)
 
     def process(self, id=None, dry=False):
         """Checks ``agent_stocktake`` table for items that have already
-        have been flagged as collected in Toll Parcel Portal.
+        have been flagged as collected in Toll Outlet Portal.
 
         **Args:**
             *id*: tuple of integer based values relating to the
@@ -34,7 +34,7 @@ class Collected(nparcel.Auditer):
 
         **Returns:**
             list of ``job_item`` IDs that have been reported uncollected
-            by the Agent yet exist in Toll Parcel Point database as being
+            by the Agent yet exist in Toll Outlet Point database as being
             collected.
 
         """

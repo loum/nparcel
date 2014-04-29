@@ -5,7 +5,7 @@ import time
 import pytz
 import datetime
 
-from nparcel.utils.log import log
+from top.utils.log import log
 
 
 TZ = {'vic': 'Australia/Victoria',

@@ -5,7 +5,7 @@ __all__ = [
 ]
 import inspect
 
-from nparcel.utils.log import log
+from top.utils.log import log
 
 
 def setter(f, attr_type):
@@ -28,7 +28,7 @@ def setter(f, attr_type):
     For example, apply the ``set_scalar`` decorator in the place where you
     define your property setter::
 
-        from nparcel.utils.setter import set_scalar
+        from top.utils.setter import set_scalar
         ...
         @property
         def my_scalar(self):

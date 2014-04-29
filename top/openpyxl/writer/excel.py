@@ -30,19 +30,19 @@ from zipfile import ZipFile, ZIP_DEFLATED
 from StringIO import StringIO
 
 # package imports
-from nparcel.openpyxl.shared.ooxml import ARC_SHARED_STRINGS, ARC_CONTENT_TYPES, \
+from top.openpyxl.shared.ooxml import ARC_SHARED_STRINGS, ARC_CONTENT_TYPES, \
         ARC_ROOT_RELS, ARC_WORKBOOK_RELS, ARC_APP, ARC_CORE, ARC_THEME, \
         ARC_STYLE, ARC_WORKBOOK, \
         PACKAGE_WORKSHEETS, PACKAGE_DRAWINGS, PACKAGE_CHARTS
-from nparcel.openpyxl.writer.strings import create_string_table, write_string_table
-from nparcel.openpyxl.writer.workbook import write_content_types, write_root_rels, \
+from top.openpyxl.writer.strings import create_string_table, write_string_table
+from top.openpyxl.writer.workbook import write_content_types, write_root_rels, \
         write_workbook_rels, write_properties_app, write_properties_core, \
         write_workbook
-from nparcel.openpyxl.writer.theme import write_theme
-from nparcel.openpyxl.writer.styles import StyleWriter
-from nparcel.openpyxl.writer.drawings import DrawingWriter, ShapeWriter
-from nparcel.openpyxl.writer.charts import ChartWriter
-from nparcel.openpyxl.writer.worksheet import write_worksheet, write_worksheet_rels
+from top.openpyxl.writer.theme import write_theme
+from top.openpyxl.writer.styles import StyleWriter
+from top.openpyxl.writer.drawings import DrawingWriter, ShapeWriter
+from top.openpyxl.writer.charts import ChartWriter
+from top.openpyxl.writer.worksheet import write_worksheet, write_worksheet_rels
 
 
 class ExcelWriter(object):

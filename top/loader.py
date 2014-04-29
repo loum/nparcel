@@ -4,9 +4,9 @@ __all__ = [
 import re
 import inspect
 
-import nparcel
-from nparcel.utils.log import log
-from nparcel.postcode import translate_postcode
+import top
+from top.utils.log import log
+from top.postcode import translate_postcode
 
 FIELDS = {'Conn Note': {'offset': 0,
                         'length': 20},
@@ -94,17 +94,17 @@ JOB_ITEM_MAP = {'Conn Note': {
                     'callback': 'date_now'}}
 
 
-class Loader(nparcel.Service):
-    """:class:`nparcelLoader` object structure.
+class Loader(top.Service):
+    """:class:`top.Loader` object structure.
     """
 
     def __init__(self, db=None, comms_dir=None):
-        """:class:`nparcel.Loader` initialiser.
+        """:class:`top.Loader` initialiser.
 
         """
-        nparcel.Service.__init__(self, db=db, comms_dir=comms_dir)
+        top.Service.__init__(self, db=db, comms_dir=comms_dir)
 
-        self.parser = nparcel.Parser(fields=FIELDS)
+        self.parser = top.Parser(fields=FIELDS)
 
     def process(self,
                 time,
@@ -519,14 +519,14 @@ class Loader(nparcel.Service):
         return dp
 
     def table_column_map(self, fields, map, condition_map):
-        """Convert the parser fields to Nparcel table column names in
-        preparation for table manipulation.
+        """Convert the parser fields to Toll Outlet Portal table column
+        names in preparation for table manipulation.
 
         **Args:**
-            fields: dictionary of :class:`nparcel.Parser` fields and
+            fields: dictionary of :class:`top.Parser` fields and
             values.
 
-            map: dictionary of :class:`nparcel.Parser` fields to table
+            map: dictionary of :class:`top.Parser` fields to table
             columns.
 
         **Returns:**

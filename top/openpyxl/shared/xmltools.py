@@ -32,8 +32,8 @@ Shortcut functions taken from:
 
 # Python stdlib imports
 from xml.sax.xmlreader import AttributesNSImpl
-from nparcel.openpyxl.shared.compat.sax import XMLGenerator
-from nparcel.openpyxl.shared.compat import OrderedDict
+from top.openpyxl.shared.compat.sax import XMLGenerator
+from top.openpyxl.shared.compat import OrderedDict
 try:
     from xml.etree.ElementTree import ElementTree, Element, SubElement, \
             QName, fromstring, tostring
@@ -42,7 +42,7 @@ except ImportError:
             QName, fromstring, tostring
 
 # package imports
-from nparcel.openpyxl import __name__ as prefix
+from top.openpyxl import __name__ as prefix
 
 
 def get_document_content(xml_node):

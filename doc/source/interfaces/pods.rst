@@ -1,4 +1,4 @@
-.. Toll Parcel Portal POD Archiving
+.. Toll Outlet Portal Middleware POD Archiving
 
 .. toctree::
     :maxdepth: 2
@@ -8,17 +8,17 @@
 Proof of Delivery Archiving
 ===========================
 
-The Toll Parcel Portal currently manages POD archiving of files from the
+The Toll Outlet Portal currently manages POD archiving of files from the
 Portal itself and from ParcelPoint.
 
-The Toll Parcel Portal POD information is a unique database (``jobitem``
+The Toll Outlet Portal POD information is a unique database (``jobitem``
 table) primary key integer value.  For example::
 
     193433.ps
     193433.png
 
 The Portal will then generate a ``PNG`` and ``PS`` variant of the POD
-signature and present these to the :mod:`nparcel.exporter` interface for
+signature and present these to the :mod:`top.exporter` interface for
 further processing.
 
 ParcelPoint use an alpha-numeric variant filename but also produce
@@ -28,7 +28,7 @@ both ``PNG`` and ``PS`` formats.  For example::
     P3019BQ-0000SHP2.png
 
 In both cases, the exporter will attempt the archive the POD files
-during the :mod:`nparcel.exporter` process.
+during the :mod:`top.exporter` process.
 
 POD File Indexing and Distribution
 ----------------------------------
@@ -72,7 +72,7 @@ As an example::
 
     $ toppod 193433
     Starting toppod inline (batch mode) ...
-    path: /data/nparcel/archive/signature/73b0b66e/5dfe3567/82ec56c6/fede538f
+    path: /data/top/archive/signature/73b0b66e/5dfe3567/82ec56c6/fede538f
 
 ``toppod`` Configuration Items
 ------------------------------
@@ -80,7 +80,7 @@ As an example::
 The ``toppod`` utility uses the default ``top.conf`` file to parse
 the ``archive_directory`` value.  POD files are archived to this location.
 
-* ``archive_dir`` (default /data/nparcel/archive)
+* ``archive_dir`` (default /data/top/archive)
 
 .. note::
 

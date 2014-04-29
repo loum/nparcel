@@ -1,4 +1,4 @@
-.. Toll Parcel Portal Alternate Delivery Point
+.. Toll Outlet Portal Middleware Alternate Delivery Point Bulk Load
 
 .. toctree::
     :maxdepth: 2
@@ -11,7 +11,7 @@ Alternate Delivery Point (ADP) Bulk Load
 *New in version 0.30*
 
 The ``topadpd`` daemon manages the bulk load of new ADP resources into the
-Toll Parcel Portal ``agent`` table.
+Toll Outlet Portal ``agent`` table.
 
 Support file types include:
 
@@ -27,7 +27,7 @@ Support file types include:
     Both ``*.xlsx`` and ``*.csv`` variant will be archived
 
 ``topadpd`` Interfaces
----------------------
+----------------------
 
 ``topadpd`` can be configured to poll a directory resource for new ADP
 bulk load files.  As such, it is possible to FTP the ADP bulk load
@@ -50,7 +50,7 @@ The ADP bulk Load File Format
 -----------------------------
 
 The ADP bulk load file format should contain a series of column names
-that map to a Toll Parcel Portal table column.
+that map to a Toll Outlet Portal table column.
 
 .. note::
 
@@ -58,7 +58,7 @@ that map to a Toll Parcel Portal table column.
     define the mappings
 
 At this time, the structure of the ADP bulk load file format is managed
-by the Toll Parcel Portal support team.  Should new headers be added
+by the Toll Outlet Portal support team.  Should new headers be added
 to the ADP bulk insert file then the configuration must be updated to
 reflect the change.  Otherwise, the new column will be ignored.
 
@@ -66,7 +66,7 @@ reflect the change.  Otherwise, the new column will be ignored.
 -------------------
 
 As with all middleware components, logging is captured in a separate file.
-Typically, the log file can be found at ``<HOME>/.nparcel/logs/topadpd.log``
+Typically, the log file can be found at ``<HOME>/.top/logs/topadpd.log``
 
 ``topadpd`` Usage
 -----------------
@@ -93,7 +93,7 @@ ADP Insert
 In addition to the insertion into the ``agent`` table, the ``topadpd``
 daemon will also create a corresponding record in the ``login_access``
 and ``login_account`` table to support the ADP login function into the
-Toll Parcel Portal website.
+Toll Outlet Portal website.
 
 ADP Insert Exceptions
 ---------------------
@@ -118,7 +118,7 @@ ADP Insert Exceptions
 
 Exceptions to these validation rules will cause the ADP file line
 item to be rejected.  In the case of a batch run, the failures
-will be emailed to the Toll Parcel Support email address.  A
+will be emailed to the Toll Outlet Support email address.  A
 typical mail message is shown below:
 
 .. image:: ../_static/adp_failure_email.png
@@ -169,7 +169,7 @@ control processing workflows.
 
 * ``db`` (the actual ``[db]`` section)
 
-    Toll Parcel Portal database connectivity information.  A typical
+    Toll Outlet Portal database connectivity information.  A typical
     example is::
 
         [db]
@@ -183,7 +183,7 @@ control processing workflows.
 
 * ``adp_headers`` (under the ``[adp_headers]`` section)
 
-    dictionary of Toll Parcel Portal database table columns to column
+    dictionary of Toll Outlet Portal database table columns to column
     headers in the ADP bulk insert file.  The database and table is
     delimited as ``table_name.column_name`` in an attempt to distinguish
     between common column names across tables.  For example::

@@ -1,25 +1,25 @@
 __all__ = [
     "Exception",
 ]
-import nparcel
-from nparcel.utils.log import log
+import top
+from top.utils.log import log
 
 
-class Exception(nparcel.Auditer):
-    """Toll Parcel Portal Exception class.
+class Exception(top.Auditer):
+    """Toll Outlet Portal Exception class.
 
     """
     def __init__(self, db_kwargs=None, delivery_partners=None):
         """Exception initialiser.
 
         """
-        nparcel.Auditer.__init__(self,
-                                 db_kwargs=db_kwargs,
-                                 delivery_partners=delivery_partners)
+        top.Auditer.__init__(self,
+                             db_kwargs=db_kwargs,
+                             delivery_partners=delivery_partners)
 
     def process(self, id=None, dry=False):
         """Checks ``agent_stocktake`` table for scanned items that
-        do not exist in the Toll Parcel Portal.
+        do not exist in the Toll Outlet Portal.
 
         **Kwargs:**
             *dry*: do not execute, only report

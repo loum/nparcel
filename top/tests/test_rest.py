@@ -1,19 +1,19 @@
 import unittest2
 
-import nparcel
+import top
 
 
 class TestRest(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._r = nparcel.Rest()
+        cls._r = top.Rest()
 
     def test_init(self):
-        """Verify initialisation of an nparcel.Rest object.
+        """Verify initialisation of an top.Rest object.
         """
-        msg = 'Object is not an nparcel.Rest'
-        self.assertIsInstance(self._r, nparcel.Rest, msg)
+        msg = 'Object is not an top.Rest'
+        self.assertIsInstance(self._r, top.Rest, msg)
 
     @classmethod
     def tearDownClass(cls):

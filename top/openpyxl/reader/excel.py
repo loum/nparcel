@@ -29,16 +29,16 @@
 from zipfile import ZipFile, ZIP_DEFLATED, BadZipfile
 
 # package imports
-from nparcel.openpyxl.shared.exc import OpenModeError, InvalidFileException
-from nparcel.openpyxl.shared.ooxml import ARC_SHARED_STRINGS, ARC_CORE, ARC_APP, \
+from top.openpyxl.shared.exc import OpenModeError, InvalidFileException
+from top.openpyxl.shared.ooxml import ARC_SHARED_STRINGS, ARC_CORE, ARC_APP, \
         ARC_WORKBOOK, PACKAGE_WORKSHEETS, ARC_STYLE
-from nparcel.openpyxl.workbook import Workbook, DocumentProperties
-from nparcel.openpyxl.reader.strings import read_string_table
-from nparcel.openpyxl.reader.style import read_style_table
-from nparcel.openpyxl.reader.workbook import read_sheets_titles, read_named_ranges, \
+from top.openpyxl.workbook import Workbook, DocumentProperties
+from top.openpyxl.reader.strings import read_string_table
+from top.openpyxl.reader.style import read_style_table
+from top.openpyxl.reader.workbook import read_sheets_titles, read_named_ranges, \
         read_properties_core, get_sheet_ids, read_excel_base_date
-from nparcel.openpyxl.reader.worksheet import read_worksheet
-from nparcel.openpyxl.reader.iter_worksheet import unpack_worksheet
+from top.openpyxl.reader.worksheet import read_worksheet
+from top.openpyxl.reader.iter_worksheet import unpack_worksheet
 
 def repair_central_directory(zipFile):
     ''' trims trailing data from the central directory 

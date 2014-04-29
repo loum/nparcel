@@ -6,15 +6,15 @@ import time
 import os
 import datetime
 
-import nparcel
-from nparcel.utils.log import log
-from nparcel.utils.files import (move_file,
-                                 copy_file,
-                                 remove_files)
+import top
+from top.utils.log import log
+from top.utils.files import (move_file,
+                             copy_file,
+                             remove_files)
 
 
-class PodTranslatorDaemon(nparcel.DaemonService):
-    """Daemoniser facility for the :class:`nparcel.PodTranslator` class.
+class PodTranslatorDaemon(top.DaemonService):
+    """Daemoniser facility for the :class:`top.PodTranslator` class.
 
     .. attribute:: file_formats
 
@@ -42,13 +42,13 @@ class PodTranslatorDaemon(nparcel.DaemonService):
                  config=None):
         c = None
         if config is not None:
-            c = nparcel.PodB2CConfig(config)
-        nparcel.DaemonService.__init__(self,
-                                       pidfile=pidfile,
-                                       file=file,
-                                       dry=dry,
-                                       batch=batch,
-                                       config=c)
+            c = top.PodB2CConfig(config)
+        top.DaemonService.__init__(self,
+                                   pidfile=pidfile,
+                                   file=file,
+                                   dry=dry,
+                                   batch=batch,
+                                   config=c)
 
         try:
             self.set_loop(self.config.pod_translator_loop)
@@ -117,7 +117,7 @@ class PodTranslatorDaemon(nparcel.DaemonService):
                   (self.facility, self.file_formats))
 
     def _start(self, event):
-        """Override the :method:`nparcel.utils.Daemon._start` method.
+        """Override the :method:`top.utils.Daemon._start` method.
 
         Will perform a single iteration if the :attr:`file` attribute has
         a list of filenames to process.  Similarly, dry and batch modes
@@ -131,7 +131,7 @@ class PodTranslatorDaemon(nparcel.DaemonService):
         """
         signal.signal(signal.SIGTERM, self._exit_handler)
 
-        pt = nparcel.PodTranslator()
+        pt = top.PodTranslator()
 
         while not event.isSet():
             files = []

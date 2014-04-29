@@ -1,4 +1,4 @@
-.. Toll Parcel Portal B2C Non Compliance
+.. Toll Outlet Portal Middleware Non-Compliance
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 Non Compliance
 ==============
 
-.. automodule:: nparcel.report.noncompliance
+.. automodule:: top.report.noncompliance
     :members:

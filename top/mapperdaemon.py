@@ -7,16 +7,16 @@ import re
 import os
 import datetime
 
-import nparcel
-from nparcel.utils.log import log
-from nparcel.utils.files import (get_directory_files,
-                                 check_eof_flag,
-                                 check_filename,
-                                 move_file)
+import top
+from top.utils.log import log
+from top.utils.files import (get_directory_files,
+                             check_eof_flag,
+                             check_filename,
+                             move_file)
 
 
-class MapperDaemon(nparcel.DaemonService):
-    """Daemoniser facility for the :class:`nparcel.Mapper` class.
+class MapperDaemon(top.DaemonService):
+    """Daemoniser facility for the :class:`top.Mapper` class.
     .. attribute:: customer
 
         context name of the current process iteration
@@ -57,13 +57,13 @@ class MapperDaemon(nparcel.DaemonService):
                  config=None):
         c = None
         if config is not None:
-            c = nparcel.MapperB2CConfig(config)
-        nparcel.DaemonService.__init__(self,
-                                       pidfile=pidfile,
-                                       file=file,
-                                       dry=dry,
-                                       batch=batch,
-                                       config=c)
+            c = top.MapperB2CConfig(config)
+        top.DaemonService.__init__(self,
+                                   pidfile=pidfile,
+                                   file=file,
+                                   dry=dry,
+                                   batch=batch,
+                                   config=c)
 
         try:
             self.set_loop(self.config.mapper_loop)
@@ -150,7 +150,7 @@ class MapperDaemon(nparcel.DaemonService):
         self._archive_string = value
 
     def _start(self, event):
-        """Override the :method:`nparcel.utils.Daemon._start` method.
+        """Override the :method:`top.utils.Daemon._start` method.
 
         Will perform a single iteration if the :attr:`file` attribute has
         a list of filenames to process.  Similarly, dry and batch modes
@@ -164,8 +164,8 @@ class MapperDaemon(nparcel.DaemonService):
         """
         signal.signal(signal.SIGTERM, self._exit_handler)
 
-        mapper = nparcel.Mapper()
-        reporter = nparcel.Reporter()
+        mapper = top.Mapper()
+        reporter = top.Reporter()
 
         while not event.isSet():
             fhs = {}
@@ -290,7 +290,7 @@ class MapperDaemon(nparcel.DaemonService):
     def get_customer_archive(self, file):
         """Returns the archive target path based on GIS T1250 filename
         *file*.  For example, if the source file is
-        ``<ftp_base>/nparcel/in/T1250_TOLI_20131011115618.dat`` then the
+        ``<ftp_base>/top/in/T1250_TOLI_20131011115618.dat`` then the
         archive target would be similar to
         ``<archive_base>/gis/20131011/T1250_TOLI_20131011115618.dat``
 

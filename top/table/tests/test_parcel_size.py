@@ -1,19 +1,19 @@
 import unittest2
 import os
 
-import nparcel
+import top
 
 
 class TestParcelSize(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._p_size = nparcel.ParcelSize()
-        cls._db = nparcel.DbSession()
+        cls._p_size = top.ParcelSize()
+        cls._db = top.DbSession()
         cls._db.connect()
 
         db = cls._db
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.parcel_size, 'fixture': 'parcel_sizes.py'}]
         for i in fixtures:
             fixture_file = os.path.join(fixture_dir, i['fixture'])
@@ -24,8 +24,8 @@ class TestParcelSize(unittest2.TestCase):
     def test_init(self):
         """Placeholder test to make sure the ParcelSize table is created.
         """
-        msg = 'Object is not an nparcel.ParcelSize'
-        self.assertIsInstance(self._p_size, nparcel.ParcelSize, msg)
+        msg = 'Object is not an top.ParcelSize'
+        self.assertIsInstance(self._p_size, top.ParcelSize, msg)
 
     @classmethod
     def tearDownClass(cls):

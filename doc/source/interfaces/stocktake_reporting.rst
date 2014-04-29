@@ -1,4 +1,4 @@
-.. B2C Stocktake Reporting
+.. Toll Outlet Portal Middleware Stocktake Reporting
 
 .. toctree::
     :maxdepth: 2
@@ -21,7 +21,7 @@ Uncollected Reports
 -------------------
 
 Report on parcels that have been scanned by the Alternate Delivery Point
-during their stocktake that present in the Toll Parcel Portal DB as aged
+during their stocktake that present in the Toll Outlet Portal DB as aged
 (``job_item.created_ts`` column value greater than 7 days)
 
 The Uncollected report is run on a per business Unit basis defined by the
@@ -38,7 +38,7 @@ Collected Reports
 -----------------
 
 Report against parcels that have been scanned by the Alternate Delivery Point
-but marked as collected within the Toll Parcel Portal DB.
+but marked as collected within the Toll Outlet Portal DB.
 
 .. image:: ../_static/collected.png
     :align: center
@@ -65,7 +65,7 @@ Non-compliance Reports
 The Non-compliance report captures two scenarios:
 
 * Report against Alternate Delivery Points that have been flagged by the
-  Toll Parcel Portal DB to be in possession of an uncollected parcel but
+  Toll Outlet Portal DB to be in possession of an uncollected parcel but
   have not scanned the parcel as part of their most recent stocktake.
 
 * Report against parcels that have been scanned by and Alternate Delivery
@@ -80,7 +80,7 @@ Totals
 ------
 
 Report against number of parcels scanned by the Alternate Delivery Partner
-compared to the number of parcels recorded in the Toll Parcel Portal DB
+compared to the number of parcels recorded in the Toll Outlet Portal DB
 in the current stocktake.
 
 .. image:: ../_static/totals.png
@@ -91,7 +91,7 @@ Exception
 ---------
 
 Report against parcels scanned by the Alternate Delivery Point during their
-stocktake that do not exist in the Toll Parcel Portal DB.
+stocktake that do not exist in the Toll Outlet Portal DB.
 
 .. image:: ../_static/exception.png
     :align: center
@@ -102,14 +102,14 @@ stocktake that do not exist in the Toll Parcel Portal DB.
 
 The ``topreporter`` configuration items are contained within the default
 ``top.conf`` file and parsed by the
-:mod:`nparcel.b2cconfig.reporterb2cconfig` module.  The reporter
+:mod:`top.b2cconfig.reporterb2cconfig` module.  The reporter
 configuration items can be general or report-type specific.  The report
 specific entities contain their own section headers in the format
 ``[report_<report_type>]``.
 
 * ``db`` (the actual ``[db]`` section)
 
-    Toll Parcel Portal database connectivity information.  A typical
+    Toll Outlet Portal database connectivity information.  A typical
     example is::
 
         [db]
@@ -219,7 +219,7 @@ specific entities contain their own section headers in the format
         the report title that will be emphasised and displayed
         on the first row.  For example::
 
-            title = Toll Parcel Portal Stocktake Uncollected (Aged) Report
+            title = Toll Outlet Portal Stocktake Uncollected (Aged) Report
 
     * ``subtitle``
 

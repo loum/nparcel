@@ -3,9 +3,9 @@ import datetime
 import tempfile
 import os
 
-import nparcel
-from nparcel.utils.files import (get_directory_files_list,
-                                 remove_files)
+import top
+from top.utils.files import (get_directory_files_list,
+                             remove_files)
 
 # Current business_unit map:
 BU = {'ipec': 3}
@@ -17,7 +17,7 @@ class TestExporterIpec(unittest2.TestCase):
     def setUpClass(cls):
         cls._seq = '0, 1, 2, 3, 4, 5, 6, 7'
 
-        cls._e = nparcel.Exporter()
+        cls._e = top.Exporter()
 
         # Prepare some sample data.
         # "agent" table.

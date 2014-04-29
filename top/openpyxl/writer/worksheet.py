@@ -30,8 +30,8 @@ from StringIO import StringIO  # cStringIO doesn't handle unicode
 
 # package imports
 import decimal
-from nparcel.openpyxl.cell import coordinate_from_string, column_index_from_string
-from nparcel.openpyxl.shared.xmltools import Element, SubElement, XMLGenerator, \
+from top.openpyxl.cell import coordinate_from_string, column_index_from_string
+from top.openpyxl.shared.xmltools import Element, SubElement, XMLGenerator, \
         get_document_content, start_tag, end_tag, tag
 
 

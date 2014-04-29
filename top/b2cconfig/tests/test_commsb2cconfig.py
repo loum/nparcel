@@ -1,30 +1,30 @@
 import unittest2
 import os
 
-import nparcel
+import top
 
 
 class TestCommsB2CConfig(unittest2.TestCase):
 
     def setUp(self):
-        self._c = nparcel.CommsB2CConfig()
+        self._c = top.CommsB2CConfig()
 
     def test_init(self):
         """Initialise a CommsB2CConfig object.
         """
-        msg = 'Object is not a nparcel.CommsB2CConfig'
-        self.assertIsInstance(self._c, nparcel.CommsB2CConfig, msg)
+        msg = 'Object is not a top.CommsB2CConfig'
+        self.assertIsInstance(self._c, top.CommsB2CConfig, msg)
 
     def test_parse_config(self):
         """Parse comms items from the config.
         """
-        config_file = os.path.join('nparcel', 'conf', 'top.conf')
+        config_file = os.path.join('top', 'conf', 'top.conf')
 
         self._c.set_config_file(config_file)
         self._c.parse_config()
 
         received = self._c.comms_dir
-        expected = os.path.join(os.sep, 'data', 'nparcel', 'comms')
+        expected = os.path.join(os.sep, 'data', 'top', 'comms')
         msg = 'dir.comms not as expected'
         self.assertEqual(received, expected, msg)
 

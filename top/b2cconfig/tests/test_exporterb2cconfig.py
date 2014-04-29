@@ -1,24 +1,24 @@
 import unittest2
 import os
 
-import nparcel
+import top
 
 
 class TestExporterB2CConfig(unittest2.TestCase):
 
     def setUp(self):
-        self._c = nparcel.ExporterB2CConfig()
+        self._c = top.ExporterB2CConfig()
 
     def test_init(self):
         """Initialise a ExporterB2CConfig object.
         """
-        msg = 'Object is not a nparcel.ExporterB2CConfig'
-        self.assertIsInstance(self._c, nparcel.ExporterB2CConfig, msg)
+        msg = 'Object is not a top.ExporterB2CConfig'
+        self.assertIsInstance(self._c, top.ExporterB2CConfig, msg)
 
     def test_parse_config(self):
         """Parse comms items from the config.
         """
-        config_file = os.path.join('nparcel', 'conf', 'top.conf')
+        config_file = os.path.join('top', 'conf', 'top.conf')
 
         self._c.set_config_file(config_file)
         self._c.parse_config()
@@ -52,7 +52,7 @@ class TestExporterB2CConfig(unittest2.TestCase):
         self.assertDictEqual(received, expected, msg)
 
         received = self._c.exporter_dirs
-        expected = [os.path.join(os.sep, 'data', 'nparcel', 'exporter')]
+        expected = [os.path.join(os.sep, 'data', 'top', 'exporter')]
         msg = 'dir.exporter_in error'
         self.assertListEqual(received, expected, msg)
 

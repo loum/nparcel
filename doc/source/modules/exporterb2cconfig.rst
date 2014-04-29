@@ -1,4 +1,4 @@
-.. B2C ExporterB2CConfig
+.. Toll Outlet Portal Middleware ExporterB2CConfig
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 Exporter B2CConfig
 ==================
 
-.. automodule:: nparcel.b2cconfig.exporterb2cconfig
+.. automodule:: top.b2cconfig.exporterb2cconfig
     :members:

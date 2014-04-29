@@ -2,19 +2,19 @@ import unittest2
 import os
 import tempfile
 
-import nparcel
-from nparcel.utils.files import (remove_files,
-                                 copy_file,
-                                 get_directory_files_list)
+import top
+from top.utils.files import (remove_files,
+                             copy_file,
+                             get_directory_files_list)
 
 
 class TestAdp(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._adp = nparcel.Adp()
+        cls._adp = top.Adp()
 
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
 
         db = cls._adp.db
         fixtures = [{'db': db.agent, 'fixture': 'agents.py'},
@@ -28,15 +28,15 @@ class TestAdp(unittest2.TestCase):
     def test_init(self):
         """Initialise an Adp object.
         """
-        msg = 'Object is not a nparcel.Adp'
-        self.assertIsInstance(self._adp, nparcel.Adp, msg)
+        msg = 'Object is not a top.Adp'
+        self.assertIsInstance(self._adp, top.Adp, msg)
 
     def test_process_dry_run(self):
         """Check processing -- dry run.
         """
         dry = True
 
-        test_dir = os.path.join('nparcel', 'tests', 'files')
+        test_dir = os.path.join('top', 'tests', 'files')
         csv_file = 'ADP-Bulk-Load.csv'
         test_file = os.path.join(test_dir, csv_file)
 

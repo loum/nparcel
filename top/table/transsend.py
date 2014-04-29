@@ -1,17 +1,17 @@
 __all__ = [
     "TransSend"
 ]
-import nparcel
+import top
 
 
-class TransSend(nparcel.Table):
+class TransSend(top.Table):
     """TransSend DB transsend table ORM.
     """
 
     def __init__(self):
         """transsend table initialiser.
         """
-        super(TransSend, self).__init__('v_nparcel_adp_connotes')
+        top.Table.__init__(self, 'v_nparcel_adp_connotes')
 
     @property
     def schema(self):

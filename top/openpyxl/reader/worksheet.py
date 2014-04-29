@@ -27,15 +27,15 @@
 
 # Python stdlib imports
 try:
-    from nparcel.openpyxl.shared.compat import iterparse
+    from top.openpyxl.shared.compat import iterparse
 except ImportError:
     from xml.etree.ElementTree import iterparse
 from itertools import ifilter
 from StringIO import StringIO
 
 # package imports
-from nparcel.openpyxl.cell import Cell, coordinate_from_string
-from nparcel.openpyxl.worksheet import Worksheet
+from top.openpyxl.cell import Cell, coordinate_from_string
+from top.openpyxl.worksheet import Worksheet
 
 def _get_xml_iter(xml_source):
 
@@ -122,7 +122,7 @@ def fast_parse(ws, xml_source, string_table, style_table):
         # to avoid memory exhaustion, clear the item after use
         element.clear()
 
-from nparcel.openpyxl.reader.iter_worksheet import IterableWorksheet
+from top.openpyxl.reader.iter_worksheet import IterableWorksheet
 
 def read_worksheet(xml_source, parent, preset_title, string_table,
                    style_table, workbook_name=None, sheet_codename=None):

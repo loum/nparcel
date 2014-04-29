@@ -1,4 +1,4 @@
-.. B2C PodB2CConfig
+.. Toll Outlet Portal Middleware PodB2CConfig
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 POD Translator B2CConfig
 ========================
 
-.. automodule:: nparcel.b2cconfig.podb2cconfig
+.. automodule:: top.b2cconfig.podb2cconfig
     :members:

@@ -1,4 +1,4 @@
-.. B2C MapperB2CConfig
+.. Toll Outlet Portal Middleware MapperB2CConfig
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 Mapper B2CConfig
 ================
 
-.. automodule:: nparcel.b2cconfig.mapperb2cconfig
+.. automodule:: top.b2cconfig.mapperb2cconfig
     :members:

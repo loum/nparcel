@@ -2,7 +2,7 @@ import unittest2
 import os
 import datetime
 
-import nparcel
+import top
 
 
 class TestAgentStocktake(unittest2.TestCase):
@@ -13,12 +13,12 @@ class TestAgentStocktake(unittest2.TestCase):
 
         cls._now = datetime.datetime.now()
 
-        cls._st = nparcel.AgentStocktake()
-        cls._db = nparcel.DbSession()
+        cls._st = top.AgentStocktake()
+        cls._db = top.DbSession()
         cls._db.connect()
 
         db = cls._db
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.agent_stocktake,
                      'fixture': 'agent_stocktakes.py'},
                     {'db': db.agent,
@@ -74,8 +74,8 @@ WHERE reference_nbr = '%s'""" % (cls._agent_stocktake_created_ts,
     def test_init(self):
         """AgentStocktake table creation.
         """
-        msg = 'Object is not an nparcel.AgentStocktake'
-        self.assertIsInstance(self._st, nparcel.AgentStocktake, msg)
+        msg = 'Object is not an top.AgentStocktake'
+        self.assertIsInstance(self._st, top.AgentStocktake, msg)
 
     def test_reference_sql(self):
         """Verify the reference_sql SQL.

@@ -1,4 +1,4 @@
-.. Toll Parcel Portal B2C Xlwriter
+.. Toll Outlet Portal Middleware Xlwriter
 
 .. toctree::
     :maxdepth: 2
@@ -9,7 +9,7 @@ Xlwriter - Excel Worksheet Writer
 Members (including inherited)
 -----------------------------
 
-.. automodule:: nparcel.xlwriter
+.. automodule:: top.xlwriter
     :members:
     :show-inheritance:
     :inherited-members:

@@ -2,19 +2,19 @@ import unittest2
 import os
 import tempfile
 
-import nparcel
-from nparcel.utils.files import (copy_file,
-                                 remove_files,
-                                 get_directory_files_list)
+import top
+from top.utils.files import (copy_file,
+                             remove_files,
+                             get_directory_files_list)
 
 
 class TestExporterDaemon(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._ed = nparcel.ExporterDaemon(pidfile=None)
+        cls._ed = top.ExporterDaemon(pidfile=None)
         cls._ed.set_business_units({'priority': 1, 'fast': 2, 'ipec': 3})
-        cls._ed._config = nparcel.ExporterB2CConfig()
+        cls._ed._config = top.ExporterB2CConfig()
         cls._ed._config.set_cond({'tolp': '000100000000010110',
                                   'tolf': '000101100000010110',
                                   'toli': '100010000000010110'})
@@ -49,17 +49,16 @@ class TestExporterDaemon(unittest2.TestCase):
         cls._archive_dir = tempfile.mkdtemp()
         cls._ed._config.set_archive_dir(cls._archive_dir)
 
-        cls._ed.emailer.set_template_base(os.path.join('nparcel',
-                                                       'templates'))
+        cls._ed.emailer.set_template_base(os.path.join('top', 'templates'))
 
         # Call up front to pre-load the DB.
-        cls._ed._exporter = nparcel.Exporter(**(cls._ed.exporter_kwargs))
+        cls._ed._exporter = top.Exporter(**(cls._ed.exporter_kwargs))
         cls._ed.set_exporter_fields({'tolp': '0,1,2,3,4,5,6',
                                      'tolf': '0,1,2,3,4,5,6',
                                      'toli': '0,1,2,3,4,5,6,7'})
 
         db = cls._ed._exporter.db
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.agent, 'fixture': 'agents.py'},
                     {'db': db.identity_type,
                      'fixture': 'identity_type.py'},
@@ -74,8 +73,8 @@ class TestExporterDaemon(unittest2.TestCase):
     def test_init(self):
         """Intialise a ExporterDaemon object.
         """
-        msg = 'Not a nparcel.ExporterDaemon object'
-        self.assertIsInstance(self._ed, nparcel.ExporterDaemon, msg)
+        msg = 'Not a top.ExporterDaemon object'
+        self.assertIsInstance(self._ed, top.ExporterDaemon, msg)
 
     def test_start(self):
         """Start dry loop.
@@ -98,7 +97,7 @@ class TestExporterDaemon(unittest2.TestCase):
         old_batch = self._ed.batch
         old_support_emails = list(self._ed.support_emails)
 
-        test_file_dir = os.path.join('nparcel', 'tests', 'files')
+        test_file_dir = os.path.join('top', 'tests', 'files')
         file = 'VIC_VANA_REP_20140214120000.txt'
         copy_file(os.path.join(test_file_dir, file),
                   os.path.join(self._exporter_dir, file))

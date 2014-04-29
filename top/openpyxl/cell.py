@@ -38,12 +38,12 @@ import datetime
 import re
 
 # package imports
-from nparcel.openpyxl.shared.compat import all
-from nparcel.openpyxl.shared.date_time import SharedDate
-from nparcel.openpyxl.shared.exc import CellCoordinatesException, \
+from top.openpyxl.shared.compat import all
+from top.openpyxl.shared.date_time import SharedDate
+from top.openpyxl.shared.exc import CellCoordinatesException, \
         ColumnStringIndexException, DataTypeException
-from nparcel.openpyxl.style import NumberFormat
-from nparcel.openpyxl.shared import NUMERIC_TYPES
+from top.openpyxl.style import NumberFormat
+from top.openpyxl.shared import NUMERIC_TYPES
 
 # constants
 COORD_RE = re.compile('^[$]?([A-Z]+)[$]?(\d+)$')

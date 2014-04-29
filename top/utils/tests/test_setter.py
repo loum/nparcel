@@ -1,9 +1,9 @@
 import unittest2
 
-from nparcel.utils.setter import (set_scalar,
-                                  set_tuple,
-                                  set_list,
-                                  set_dict)
+from top.utils.setter import (set_scalar,
+                              set_tuple,
+                              set_list,
+                              set_dict)
 
 
 class Bogus(object):

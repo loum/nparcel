@@ -1,18 +1,18 @@
 __all__ = [
     "OnDelivery",
 ]
-import nparcel
-from nparcel.utils.log import log
-from nparcel.utils.setter import (set_scalar,
-                                  set_list)
+import top
+from top.utils.log import log
+from top.utils.setter import (set_scalar,
+                              set_list)
 
 
-class OnDelivery(nparcel.Service):
+class OnDelivery(top.Service):
     """OnDelivery class.
 
     .. attribute:: parser
 
-        :mod:`nparcel.StopParser` parser object
+        :mod:`top.StopParser` parser object
 
     .. attribute:: ts_db_kwargs
 
@@ -51,7 +51,7 @@ class OnDelivery(nparcel.Service):
         connectivity
 
     """
-    _parser = nparcel.StopParser()
+    _parser = top.StopParser()
     _ts_db_kwargs = None
     _delivered_header = 'latest_scan_event_action'
     _delivered_event_key = 'delivered'
@@ -63,12 +63,11 @@ class OnDelivery(nparcel.Service):
         """OnDelivery initialisation.
 
         """
-        super(nparcel.OnDelivery, self).__init__(db=db_kwargs,
-                                                 comms_dir=comms_dir)
+        top.Service.__init__(self, db=db_kwargs, comms_dir=comms_dir)
 
         if ts_db_kwargs is not None:
             self._ts_db_kwargs = ts_db_kwargs
-        self._ts_db = nparcel.OraDbSession(ts_db_kwargs)
+        self._ts_db = top.OraDbSession(ts_db_kwargs)
         self._ts_db.connect()
 
     def __del__(self):

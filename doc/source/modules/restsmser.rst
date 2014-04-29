@@ -1,4 +1,4 @@
-.. Nparcel B2C RestSmser
+.. Toll Outlet Portal Middleware RestSmser
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 RestSmser
 =========
 
-.. automodule:: nparcel.restsmser
+.. automodule:: top.restsmser
     :members:

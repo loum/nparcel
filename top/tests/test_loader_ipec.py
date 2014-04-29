@@ -1,6 +1,6 @@
 import unittest2
 
-import nparcel
+import top
 
 FILE_BU = {'tolp': '1', 'tolf': '2', 'toli': '3'}
 COND_MAP_IPEC = {'item_number_excp': True}
@@ -20,7 +20,7 @@ class TestLoaderIpec(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._ldr = nparcel.Loader()
+        cls._ldr = top.Loader()
         cls._job_ts = cls._ldr.db.date_now()
 
     def test_processor_valid(self):
@@ -133,7 +133,7 @@ WHERE connote_nbr = '%s'""" % VALID_CONNOTE
         """
         fields = self._ldr.parser.parse_line(VALID)
         received = self._ldr.table_column_map(fields,
-                                              nparcel.loader.JOB_ITEM_MAP,
+                                              top.loader.JOB_ITEM_MAP,
                                               COND_MAP_IPEC)
         # Null out the time created.
         received['created_ts'] = None

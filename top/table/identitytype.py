@@ -1,11 +1,11 @@
 __all__ = [
     "IdentityType",
 ]
-import nparcel
+import top
 
 
-class IdentityType(nparcel.Table):
-    """Nparcel DB identity_type table ORM.
+class IdentityType(top.Table):
+    """DB identity_type table ORM.
     """
 
     def __init__(self):

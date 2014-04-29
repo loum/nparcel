@@ -6,13 +6,13 @@ import time
 import datetime
 import ConfigParser
 
-import nparcel
-from nparcel.utils.log import log
-from nparcel.utils.files import get_directory_files_list
+import top
+from top.utils.log import log
+from top.utils.files import get_directory_files_list
 
 
-class CommsDaemon(nparcel.DaemonService):
-    """Daemoniser facility for the :class:`nparcel.Comms` class.
+class CommsDaemon(top.DaemonService):
+    """Daemoniser facility for the :class:`top.Comms` class.
 
     .. attribute:: *comms_dir*
 
@@ -68,13 +68,13 @@ class CommsDaemon(nparcel.DaemonService):
                  config=None):
         c = None
         if config is not None:
-            c = nparcel.CommsB2CConfig(config)
-        nparcel.DaemonService.__init__(self,
-                                       pidfile=pidfile,
-                                       file=file,
-                                       dry=dry,
-                                       batch=batch,
-                                       config=c)
+            c = top.CommsB2CConfig(config)
+        top.DaemonService.__init__(self,
+                                   pidfile=pidfile,
+                                   file=file,
+                                   dry=dry,
+                                   batch=batch,
+                                   config=c)
 
         self._facility = self.__class__.__name__
 
@@ -312,7 +312,7 @@ class CommsDaemon(nparcel.DaemonService):
         return kwargs
 
     def _start(self, event):
-        """Override the :method:`nparcel.utils.Daemon._start` method.
+        """Override the :method:`top.utils.Daemon._start` method.
 
         Will perform a single iteration if the :attr:`file` attribute has
         a list of filenames to process.  Similarly, dry and batch modes
@@ -327,7 +327,7 @@ class CommsDaemon(nparcel.DaemonService):
         signal.signal(signal.SIGTERM, self._exit_handler)
 
         if self._comms is None:
-            self._comms = nparcel.Comms(**(self.comms_kwargs))
+            self._comms = top.Comms(**(self.comms_kwargs))
 
         all_templates = (self.controlled_templates +
                          self.uncontrolled_templates)
@@ -480,7 +480,7 @@ class CommsDaemon(nparcel.DaemonService):
                      (message_count, self.q_error))
             queue_ok = False
 
-            subject = ('Error - Nparcel Comms message count was at %d' %
+            subject = ('Error - Comms message count was at %d' %
                        message_count)
             d = {'count': message_count,
                  'date': current_dt_str,

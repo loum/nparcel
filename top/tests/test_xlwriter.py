@@ -2,28 +2,28 @@ import unittest2
 import tempfile
 import os
 
-import nparcel
+import top
 
-from nparcel.utils.files import remove_files
+from top.utils.files import remove_files
 
 
 class TestXlwriter(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._x = nparcel.Xlwriter()
+        cls._x = top.Xlwriter()
         cls._dir = tempfile.mkdtemp()
 
     def test_init(self):
         """Initialise a Xlwriter object.
         """
-        msg = 'Object is not an nparcel.Xlwriter'
-        self.assertIsInstance(self._x, nparcel.Xlwriter, msg)
+        msg = 'Object is not an top.Xlwriter'
+        self.assertIsInstance(self._x, top.Xlwriter, msg)
 
     def test_write(self):
         """Write out the headers and content.
         """
-        rep_title = 'Toll Parcel Portal Stocktake Uncollected (Aged) Report'
+        rep_title = 'Toll Outlet Portal Stocktake Uncollected (Aged) Report'
         self._x.set_title(rep_title)
 
         sub_title = 'ITEMS UNCOLLECTED FOR MORE THAN 7 DAYS'

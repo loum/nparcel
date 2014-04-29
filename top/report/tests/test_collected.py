@@ -2,7 +2,7 @@ import unittest2
 import os
 import datetime
 
-import nparcel
+import top
 
 
 class TestCollected(unittest2.TestCase):
@@ -16,12 +16,12 @@ class TestCollected(unittest2.TestCase):
                        2: 'Toll Fast',
                        3: 'Toll IPEC'}
 
-        cls._u = nparcel.Collected(bu_ids=cls._bu_ids,
-                                   delivery_partners=['Nparcel'])
+        cls._u = top.Collected(bu_ids=cls._bu_ids,
+                               delivery_partners=['Nparcel'])
         db = cls._u.db
 
         # Prepare some sample data.
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.agent_stocktake,
                      'fixture': 'agent_stocktakes.py'},
                     {'db': db.agent,
@@ -62,8 +62,8 @@ WHERE id IN (21)""" % {'now': cls._now,
     def test_init(self):
         """Initialise a Collected object.
         """
-        msg = 'Object is not an nparcel.Collected'
-        self.assertIsInstance(self._u, nparcel.Collected, msg)
+        msg = 'Object is not an top.Collected'
+        self.assertIsInstance(self._u, top.Collected, msg)
 
     def test_process(self):
         """Check collected aged parcel processing.

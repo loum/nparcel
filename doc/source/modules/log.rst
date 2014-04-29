@@ -1,4 +1,4 @@
-.. Nparcel B2C Log
+.. Toll Outlet Portal Middelware Log
 
 .. toctree::
     :maxdepth: 2
@@ -6,7 +6,7 @@
 Log - Logger
 ============
 
-.. automodule:: nparcel.utils.log
+.. automodule:: top.utils.log
     :members:
 
 Indices and tables

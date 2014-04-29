@@ -3,11 +3,11 @@ __all__ = [
 ]
 import csv
 
-from nparcel.utils.log import log
+from top.utils.log import log
 
 
 class Writer(object):
-    """Toll Parcel Portal Writer class.
+    """Toll Outlet Portal Writer class.
 
     .. attribute:: outfile
         name of the output file to write to

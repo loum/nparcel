@@ -1,4 +1,4 @@
-.. Nparcel B2C DbSession
+.. Toll Outlet Portal Middleware DbSession
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 DbSession
 =========
 
-.. automodule:: nparcel.dbsession
+.. automodule:: top.dbsession
     :members:

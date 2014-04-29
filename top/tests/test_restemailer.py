@@ -2,14 +2,14 @@ import unittest2
 import os
 import socket
 
-import nparcel
+import top
 
 
 class TestRestEmailer(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._re = nparcel.RestEmailer()
+        cls._re = top.RestEmailer()
 
         # Uncomment these and set accordingly if you want to really send a
         # message.  BE CAREFUL!
@@ -24,16 +24,16 @@ class TestRestEmailer(unittest2.TestCase):
         cls._re._rest.set_api_username('user')
         cls._re._rest.set_api_password('<pw>')
 
-        cls._template_base = os.path.join('nparcel', 'templates')
+        cls._template_base = os.path.join('top', 'templates')
         cls._re.set_template_base(cls._template_base)
 
         cls._hostname = socket.gethostname()
 
     def test_init(self):
-        """Verify initialisation of an nparcel.RestEmailer object.
+        """Verify initialisation of an top.RestEmailer object.
         """
-        msg = 'Object is not an nparcel.RestEmailer'
-        self.assertIsInstance(self._re, nparcel.RestEmailer, msg)
+        msg = 'Object is not an top.RestEmailer'
+        self.assertIsInstance(self._re, top.RestEmailer, msg)
 
     def test_encode_params(self):
         """Generate a URL-encoded message.
@@ -46,7 +46,7 @@ class TestRestEmailer(unittest2.TestCase):
                                           sender=sender,
                                           recipient=recipient,
                                           msg=msg)
-        f = open(os.path.join('nparcel',
+        f = open(os.path.join('top',
                               'tests',
                               'files',
                               'encoded_params.out'))

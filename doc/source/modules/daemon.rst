@@ -1,4 +1,4 @@
-.. Nparcel B2C Daemon
+.. Toll Outlet Portal Middleware Daemon
 
 .. toctree::
     :maxdepth: 2
@@ -6,11 +6,11 @@
 Daemon - Base Module Daemoniser
 ===============================
 
-.. automodule:: nparcel.utils.daemon
+.. automodule:: top.utils.daemon
 
-:class:`nparcel.utils.Daemon` class
+:class:`top.utils.Daemon` class
 -----------------------------------
-.. autoclass:: nparcel.utils.Daemon
+.. autoclass:: top.utils.Daemon
     :members:
 
 Indices and tables

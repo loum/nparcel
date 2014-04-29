@@ -5,8 +5,8 @@ import sqlite
 import datetime
 import cx_Oracle
 
-import nparcel
-from nparcel.utils.log import log
+import top
+from top.utils.log import log
 
 
 class OraDbSession(object):
@@ -24,12 +24,12 @@ class OraDbSession(object):
 
     .. attribute:: transsend
 
-        TransSend database ORM object based on :mod:`nparcel.TransSend`
+        TransSend database ORM object based on :mod:`top.TransSend`
 
     """
     _connection = None
     _cursor = None
-    _transsend = nparcel.TransSend()
+    _transsend = top.TransSend()
     _host = None
     _database = None
     _user = None

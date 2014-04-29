@@ -1,23 +1,23 @@
-.. Toll Parcel Portal B2C Modules Interfaces
+.. Toll Outlet Portal Middleware Modules Interfaces
 
 Interfaces
 ==========
-The Nparcel B2C Replicator workflows are defined by interfaces that manage
-the inbound and outbound processing.
+The Toll Outlet Portal middleware workflows are defined by interfaces that
+manage the inbound and outbound processing.
 
 .. toctree::
     :maxdepth: 2
 
     vsftpd.rst
     b2cftp.rst
-    loader.rst
+    job_loader.rst
     exporter.rst
     reminder.rst
     primaryelect.rst
     comms.rst
     pods.rst
-    filter.rst
-    ondelivery.rst
+    dpfilter.rst
+    ondelivery_trigger.rst
     adp.rst
     stocktake_reporting.rst
     pod_translator.rst

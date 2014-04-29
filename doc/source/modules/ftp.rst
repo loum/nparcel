@@ -1,4 +1,4 @@
-.. Nparcel B2C Ftp
+.. Toll Outlet Portal Middleware Ftp
 
 .. toctree::
     :maxdepth: 2
@@ -6,5 +6,5 @@
 Ftp
 ===
 
-.. automodule:: nparcel.ftp
+.. automodule:: top.ftp
     :members:

@@ -3,11 +3,11 @@
 import os
 import inspect
 
-import nparcel
-from nparcel.utils.log import (log,
-                               set_log_level,
-                               set_console,
-                               rollover)
+import top
+from top.utils.log import (log,
+                           set_log_level,
+                           set_console,
+                           rollover)
 
 REPORTS = ['uncollected',
            'compliance',
@@ -20,7 +20,7 @@ REPORTS = ['uncollected',
 def main():
     config_file = os.path.join(os.path.expanduser('~'), '.top', 'top.conf')
 
-    based = nparcel.BaseD(config=config_file)
+    based = top.BaseD(config=config_file)
     based.set_command('start')
     script_name = inspect.getfile(inspect.currentframe())
     script_name = os.path.basename(script_name)
@@ -49,10 +49,10 @@ def main():
         log.info('Logging verbosity set to "DEBUG" level')
 
     # OK, start processing.
-    rep = nparcel.ReporterDaemon(report,
-                                 pidfile=based.pidfile,
-                                 dry=based.dry,
-                                 config=based.options.config)
+    rep = top.ReporterDaemon(report,
+                             pidfile=based.pidfile,
+                             dry=based.dry,
+                             config=based.options.config)
 
     based.set_batch(True)
     based.launch_command(rep, script_name)

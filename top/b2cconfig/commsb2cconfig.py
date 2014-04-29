@@ -4,12 +4,12 @@ __all__ = [
 import sys
 import ConfigParser
 
-import nparcel
-from nparcel.utils.log import log
+import top
+from top.utils.log import log
 
 
-class CommsB2CConfig(nparcel.B2CConfig):
-    """:class:`nparcel.CommsB2CConfig` captures the configuration items
+class CommsB2CConfig(top.B2CConfig):
+    """:class:`top.CommsB2CConfig` captures the configuration items
     required for the ``topcommsd`` facility.
 
     .. attribute:: *comms_loop*
@@ -64,7 +64,7 @@ class CommsB2CConfig(nparcel.B2CConfig):
     def __init__(self, file=None):
         """CommsB2CConfig initialisation.
         """
-        nparcel.B2CConfig.__init__(self, file)
+        top.B2CConfig.__init__(self, file)
 
     @property
     def comms_dir(self):
@@ -158,7 +158,7 @@ class CommsB2CConfig(nparcel.B2CConfig):
         """Read config items from the configuration file.
 
         """
-        nparcel.Config.parse_config(self)
+        top.Config.parse_config(self)
 
         try:
             self.set_comms_dir(self.get('dirs', 'comms'))

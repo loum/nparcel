@@ -6,14 +6,14 @@ import re
 import time
 import datetime
 
-import nparcel
-from nparcel.utils.log import log
-from nparcel.utils.files import (remove_files,
+import top
+from top.utils.log import log
+from top.utils.files import (remove_files,
                                  move_file)
-from nparcel.timezone import convert_timezone
+from top.timezone import convert_timezone
 
 
-class Comms(nparcel.Service):
+class Comms(top.Service):
     """Comms class.
 
     .. attribute:: *hold_period*
@@ -37,11 +37,11 @@ class Comms(nparcel.Service):
     _returns_template_tokens = ['ret']
 
     def __init__(self, **kwargs):
-        """:module:`nparcel.comms` initialisation.
+        """:module:`top.comms` initialisation.
         """
         db_kwargs = kwargs.get('db')
         comms_dir = kwargs.get('comms_dir')
-        nparcel.Service.__init__(self, db=db_kwargs, comms_dir=comms_dir)
+        top.Service.__init__(self, db=db_kwargs, comms_dir=comms_dir)
 
         self.set_prod(kwargs.get('prod'))
 
@@ -64,13 +64,13 @@ class Comms(nparcel.Service):
         if email_api is None:
             email_api = {}
 
-        self._smser = nparcel.RestSmser(proxy=proxy,
-                                        proxy_scheme=proxy_scheme,
-                                        **sms_api)
+        self._smser = top.RestSmser(proxy=proxy,
+                                    proxy_scheme=proxy_scheme,
+                                    **sms_api)
 
-        self._emailer = nparcel.RestEmailer(proxy=proxy,
-                                            proxy_scheme=proxy_scheme,
-                                            **email_api)
+        self._emailer = top.RestEmailer(proxy=proxy,
+                                        proxy_scheme=proxy_scheme,
+                                        **email_api)
 
     @property
     def hold_period(self):
@@ -404,8 +404,8 @@ class Comms(nparcel.Service):
                  'created_ts': '2013-09-15 00:00:00'}
 
             Refer to the
-            :meth:`nparcel.table.jobitem.job_item_agent_details_sql` and
-            :meth:`nparcel.table.returns_reference.reference_nbr_sql` method
+            :meth:`top.table.jobitem.job_item_agent_details_sql` and
+            :meth:`top.table.returns_reference.reference_nbr_sql` method
 
         """
         agent_details = []

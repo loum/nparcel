@@ -2,24 +2,24 @@ import unittest2
 import os
 import socket
 
-import nparcel
+import top
 
 
 class TestEmailer(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._e = nparcel.Emailer()
+        cls._e = top.Emailer()
         cls._e.set_recipients(['loumar@tollgroup.com'])
-        cls._e.set_template_base(os.path.join('nparcel', 'templates'))
+        cls._e.set_template_base(os.path.join('top', 'templates'))
 
         cls._hostname = socket.gethostname()
 
     def test_init(self):
-        """Verify initialisation of an nparcel.Emailer object.
+        """Verify initialisation of an top.Emailer object.
         """
-        msg = 'Object is not an nparcel.Emailer'
-        self.assertIsInstance(self._e, nparcel.Emailer, msg)
+        msg = 'Object is not an top.Emailer'
+        self.assertIsInstance(self._e, top.Emailer, msg)
 
     def test_send(self):
         """Send an email.
@@ -67,7 +67,7 @@ class TestEmailer(unittest2.TestCase):
         dry = True
 
         data = {}
-        file = [os.path.join('nparcel', 'tests', 'files', 'test.xlsx')]
+        file = [os.path.join('top', 'tests', 'files', 'test.xlsx')]
         mime = self._e.create_comms(data, template='test', files=file)
         received = self._e.send(mime_message=mime, dry=dry)
         msg = 'E-mail send with attachment should return True'
@@ -81,7 +81,7 @@ class TestEmailer(unittest2.TestCase):
         dry = True
 
         data = {}
-        file = [os.path.join('nparcel', 'tests', 'files', 'test.xlsx')]
+        file = [os.path.join('top', 'tests', 'files', 'test.xlsx')]
         mime = self._e.create_comms(data,
                                     template='test',
                                     files=file,

@@ -1,6 +1,6 @@
 import unittest2
 
-import nparcel
+import top
 import sqlite
 
 SCHEMA = ["id INTEGER PRIMARY KEY",
@@ -12,8 +12,8 @@ class TestTable(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._table = nparcel.Table(name='dummy')
-        cls._db = nparcel.DbSession()
+        cls._table = top.Table(name='dummy')
+        cls._db = top.DbSession()
         cls._db.connect()
         cls._db.create_table(name="dummy", schema=SCHEMA)
 

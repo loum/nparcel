@@ -1,13 +1,13 @@
 import unittest2
 
-import nparcel
+import top
 
 
 class TestParser(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._p = nparcel.Parser()
+        cls._p = top.Parser()
         cls._field = {'dummy field': {'offset': 0,
                                       'length': 20}}
         cls._fields = {'Conn Note': {'offset': 0,
@@ -35,9 +35,9 @@ class TestParser(unittest2.TestCase):
     def test_init(self):
         """Initialise a Parser object.
         """
-        p = nparcel.Parser()
-        msg = 'Object is not an nparcel.Parser'
-        self.assertIsInstance(p, nparcel.Parser, msg)
+        p = top.Parser()
+        msg = 'Object is not an top.Parser'
+        self.assertIsInstance(p, top.Parser, msg)
 
     def test_set_empty_field(self):
         """Set field with empty dictionary.
@@ -58,7 +58,7 @@ class TestParser(unittest2.TestCase):
         """
         fields = {'Conn Note': {'offset': 0,
                                 'length': 20}}
-        parser = nparcel.Parser(fields=fields)
+        parser = top.Parser(fields=fields)
         received = parser.get_fields()
         expected = fields
         msg = 'Fields initialisation property setter/getter error.'
@@ -77,7 +77,7 @@ class TestParser(unittest2.TestCase):
         """
         fields = {'Conn Note': {'offset': 0,
                                 'length': 20}}
-        p = nparcel.Parser(fields=fields)
+        p = top.Parser(fields=fields)
         received = p.parse_line(self._line)
         expected = {'Conn Note': '006499335802'}
         msg = 'Conn Note field parse incorrect'
@@ -88,7 +88,7 @@ class TestParser(unittest2.TestCase):
         """
         fields = {'Identifier': {'offset': 21,
                                  'length': 20}}
-        p = nparcel.Parser(fields=fields)
+        p = top.Parser(fields=fields)
         received = p.parse_line(self._line)
         expected = {'Identifier': ' YMLML11TOLP130413'}
         msg = 'Identifier field parse incorrect'
@@ -99,7 +99,7 @@ class TestParser(unittest2.TestCase):
         """
         fields = {'Consumer Name': {'offset': 41,
                                     'length': 30}}
-        p = nparcel.Parser(fields=fields)
+        p = top.Parser(fields=fields)
         received = p.parse_line(self._line)
         expected = {'Consumer Name': 'Hannah Sewell'}
         msg = 'Consumer Name field parse incorrect'
@@ -110,7 +110,7 @@ class TestParser(unittest2.TestCase):
         """
         fields = {'Consumer Address 1': {'offset': 81,
                                          'length': 30}}
-        p = nparcel.Parser(fields=fields)
+        p = top.Parser(fields=fields)
         received = p.parse_line(self._line)
         expected = {'Consumer Address 1': '51 Westbourne St.'}
         msg = 'Consumer Address 1 field parse incorrect'
@@ -121,7 +121,7 @@ class TestParser(unittest2.TestCase):
         """
         fields = {'Consumer Address 2': {'offset': 111,
                                          'length': 30}}
-        p = nparcel.Parser(fields=fields)
+        p = top.Parser(fields=fields)
         received = p.parse_line(self._line)
         expected = {'Consumer Address 2': 'Stanmore'}
         msg = 'Consumer Address 2 field parse incorrect'
@@ -132,7 +132,7 @@ class TestParser(unittest2.TestCase):
         """
         fields = {'Suburb': {'offset': 141,
                              'length': 30}}
-        p = nparcel.Parser(fields=fields)
+        p = top.Parser(fields=fields)
         received = p.parse_line(self._line)
         expected = {'Suburb': 'Sydney'}
         msg = 'Suburb field parse incorrect'
@@ -143,7 +143,7 @@ class TestParser(unittest2.TestCase):
         """
         fields = {'Post code': {'offset': 171,
                                 'length': 4}}
-        p = nparcel.Parser(fields=fields)
+        p = top.Parser(fields=fields)
         received = p.parse_line(self._line)
         expected = {'Post code': '2048'}
         msg = 'Post code field parse incorrect'
@@ -154,7 +154,7 @@ class TestParser(unittest2.TestCase):
         """
         fields = {'Bar code': {'offset': 438,
                                'length': 15}}
-        p = nparcel.Parser(fields=fields)
+        p = top.Parser(fields=fields)
         received = p.parse_line(self._line)
         expected = {'Bar code': '4156778061'}
         msg = 'Bar code field parse incorrect'
@@ -165,7 +165,7 @@ class TestParser(unittest2.TestCase):
         """
         fields = {'Agent Id': {'offset': 453,
                                'length': 4}}
-        p = nparcel.Parser(fields=fields)
+        p = top.Parser(fields=fields)
         received = p.parse_line(self._line)
         expected = {'Agent Id': 'N014'}
         msg = 'Agent Id field parse incorrect'
@@ -176,7 +176,7 @@ class TestParser(unittest2.TestCase):
         """
         fields = {'Pieces': {'offset': 588,
                              'length': 5}}
-        p = nparcel.Parser(fields=fields)
+        p = top.Parser(fields=fields)
         received = p.parse_line(self._line)
         expected = {'Pieces': '00001'}
         msg = 'Pieces field parse incorrect'
@@ -185,7 +185,7 @@ class TestParser(unittest2.TestCase):
     def test_parse_all(self):
         """Line parse with all fields.
         """
-        p = nparcel.Parser(fields=self._fields)
+        p = top.Parser(fields=self._fields)
         received = p.parse_line(self._line)
         expected = {'Conn Note': '006499335802',
                     'Identifier': ' YMLML11TOLP130413',

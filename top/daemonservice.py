@@ -1,19 +1,19 @@
 __all__ = [
     "DaemonService",
 ]
-import nparcel
-from nparcel.utils.log import log
-from nparcel.utils.files import (get_directory_files,
-                                 check_filename)
-from nparcel.utils.setter import (set_scalar,
-                                  set_list)
+import top
+from top.utils.log import log
+from top.utils.files import (get_directory_files,
+                             check_filename)
+from top.utils.setter import (set_scalar,
+                              set_list)
 
 
-class DaemonService(nparcel.utils.Daemon):
+class DaemonService(top.utils.Daemon):
     """Common components for the Daemoniser facility.
     .. attribute:: config
 
-        an :class:`nparcel.B2CConfig` type object
+        an :class:`top.B2CConfig` type object
 
     .. attribute:: file
 
@@ -33,11 +33,11 @@ class DaemonService(nparcel.utils.Daemon):
 
     .. attribute:: emailer
 
-        :mod:`nparcel.Emailer` object
+        :mod:`top.Emailer` object
 
     .. attribute:: reporter
 
-        :mod:`nparcel.Reporter` object
+        :mod:`top.Reporter` object
 
     .. attribute:: loop
 
@@ -65,8 +65,8 @@ class DaemonService(nparcel.utils.Daemon):
     _in_dirs = []
     _dry = False
     _batch = False
-    _emailer = nparcel.Emailer()
-    _reporter = nparcel.Reporter()
+    _emailer = top.Emailer()
+    _reporter = top.Reporter()
     _loop = 30
     _archive_base = None
 
@@ -92,7 +92,7 @@ class DaemonService(nparcel.utils.Daemon):
                  dry=False,
                  batch=False,
                  config=None):
-        nparcel.utils.Daemon.__init__(self, pidfile=pidfile)
+        top.utils.Daemon.__init__(self, pidfile=pidfile)
 
         if config is not None:
             self._config = config
@@ -228,7 +228,7 @@ class DaemonService(nparcel.utils.Daemon):
 
         **Kwargs:**
             *identifier*: identifying token that will be displayed in the
-            message.  For example, :mod:`nparcel.LoaderDaemon` processing
+            message.  For example, :mod:`top.LoaderDaemon` processing
             errors are usually identified by the T1250 EDI file that
             caused the error
 

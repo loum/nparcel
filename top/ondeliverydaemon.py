@@ -4,23 +4,23 @@ __all__ = [
 import time
 import signal
 
-import nparcel
-from nparcel.utils.log import log
-from nparcel.utils.files import (get_directory_files_list,
-                                 remove_files)
-from nparcel.utils.setter import (set_scalar,
-                                  set_tuple,
-                                  set_list,
-                                  set_dict)
+import top
+from top.utils.log import log
+from top.utils.files import (get_directory_files_list,
+                             remove_files)
+from top.utils.setter import (set_scalar,
+                              set_tuple,
+                              set_list,
+                              set_dict)
 
 
-class OnDeliveryDaemon(nparcel.DaemonService):
-    """Daemoniser facility for the :class:`nparcel.OnDelivery` class.
+class OnDeliveryDaemon(top.DaemonService):
+    """Daemoniser facility for the :class:`top.OnDelivery` class.
 
     .. attribute:: report_in_dir
 
         TCD Delivery Report inbound directory
-        (default ``/data/nparcel/tcd``)
+        (default ``/data/top/tcd``)
 
     .. attribute:: report_file_format
 
@@ -56,7 +56,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
 
     .. attribute od
 
-        :mod:`nparcel.OnDelivery` object
+        :mod:`top.OnDelivery` object
 
     .. attribute:: pe_bu_ids
 
@@ -215,12 +215,12 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                  dry=False,
                  batch=False,
                  config=None):
-        nparcel.DaemonService.__init__(self,
-                                       pidfile=pidfile,
-                                       file=file,
-                                       dry=dry,
-                                       batch=batch,
-                                       config=config)
+        top.DaemonService.__init__(self,
+                                   pidfile=pidfile,
+                                   file=file,
+                                   dry=dry,
+                                   batch=batch,
+                                   config=config)
 
         if self.config is not None:
             self.set_comms_dir(self.config.comms_dir)
@@ -242,7 +242,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
         """Create a OnDelivery object,
 
         **Kwargs:**
-            *db*: :mod:`nparcel.DbSession` object
+            *db*: :mod:`top.DbSession` object
 
             *ts_db_kwargs*: dictionary of key/value pairs representing
             the TransSend connection
@@ -262,9 +262,9 @@ class OnDeliveryDaemon(nparcel.DaemonService):
             comms_dir = self.comms_dir
 
         if self._od is None:
-            self._od = nparcel.OnDelivery(db_kwargs=db,
-                                          ts_db_kwargs=ts_db_kwargs,
-                                          comms_dir=comms_dir)
+            self._od = top.OnDelivery(db_kwargs=db,
+                                      ts_db_kwargs=ts_db_kwargs,
+                                      comms_dir=comms_dir)
 
             if self.config is not None:
                 self._od.set_delivered_header(self.config.delivered_header)
@@ -274,7 +274,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                 self._od.set_scan_desc_keys(self.config.scan_desc_keys)
 
     def _start(self, event):
-        """Override the :method:`nparcel.utils.Daemon._start` method.
+        """Override the :method:`top.utils.Daemon._start` method.
 
         Will perform a single iteration if the :attr:`file` attribute has
         a list of filenames to process.  Similarly, dry and batch modes
@@ -345,12 +345,12 @@ class OnDeliveryDaemon(nparcel.DaemonService):
                     time.sleep(self.loop)
 
     def get_files(self, dry=False):
-        """Searches the :attr:`nparcel.OnDeliveryDaemon.report_in_dirs`
+        """Searches the :attr:`top.OnDeliveryDaemon.report_in_dirs`
         configuration item as the source directory for TCD report files.
 
         There may be more than one TCD file available for processing
         but only the most recent
-        :attr:`nparcel.OnDeliveryDaemon.file_cache_size` will be returned.
+        :attr:`top.OnDeliveryDaemon.file_cache_size` will be returned.
         All other files will be deleted from the system.
 
         **Kwargs:**
@@ -358,7 +358,7 @@ class OnDeliveryDaemon(nparcel.DaemonService):
 
         **Returns:**
             list if TCD delivery reports.  At this time, list will contain
-            at most :attr:`nparcel.OnDeliveryDaemon.file_cache_size` TCD
+            at most :attr:`top.OnDeliveryDaemon.file_cache_size` TCD
             report files (or zero) if not matches are found.
 
         """

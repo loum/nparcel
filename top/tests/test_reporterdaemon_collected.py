@@ -3,9 +3,9 @@ import os
 import datetime
 import tempfile
 
-import nparcel
-from nparcel.utils.files import (remove_files,
-                                 get_directory_files_list)
+import top
+from top.utils.files import (remove_files,
+                             get_directory_files_list)
 
 
 class TestReporterDaemonCollected(unittest2.TestCase):
@@ -14,9 +14,9 @@ class TestReporterDaemonCollected(unittest2.TestCase):
     def setUpClass(cls):
         cls._now = datetime.datetime.now()
 
-        cls._rd = nparcel.ReporterDaemon('collected', pidfile=None)
+        cls._rd = top.ReporterDaemon('collected', pidfile=None)
 
-        cls._rd.emailer.set_template_base(os.path.join('nparcel',
+        cls._rd.emailer.set_template_base(os.path.join('top',
                                                        'templates'))
         cls._rd.set_outfile('Stocktake_collected_')
         cls._dir = tempfile.mkdtemp()
@@ -33,11 +33,11 @@ class TestReporterDaemonCollected(unittest2.TestCase):
         cls._rd.set_bu_ids(bu_ids)
         cls._rd.set_delivery_partners(['Nparcel'])
         kwargs = cls._rd.reporter_kwargs
-        cls._rd._report = nparcel.Collected(**kwargs)
+        cls._rd._report = top.Collected(**kwargs)
 
         # Prepare some sample data.
         db = cls._rd._report.db
-        fixture_dir = os.path.join('nparcel', 'tests', 'fixtures')
+        fixture_dir = os.path.join('top', 'tests', 'fixtures')
         fixtures = [{'db': db.agent_stocktake,
                      'fixture': 'agent_stocktakes.py'},
                     {'db': db.agent,
@@ -73,8 +73,8 @@ SET job_ts = '%s'""" % cls._now
     def test_init(self):
         """Intialise a ReporterDaemon object.
         """
-        msg = 'Not a nparcel.ReporterDaemon object'
-        self.assertIsInstance(self._rd, nparcel.ReporterDaemon, msg)
+        msg = 'Not a top.ReporterDaemon object'
+        self.assertIsInstance(self._rd, top.ReporterDaemon, msg)
 
     def test_start(self):
         """ReporterDaemon _start processing loop -- collected.
@@ -122,7 +122,7 @@ SET job_ts = '%s'""" % cls._now
         self._rd.set_header_widths(widths)
 
         old_ws = self._rd.ws
-        title = 'Toll Parcel Portal Stocktake Collected Exception Report'
+        title = 'Toll Outlet Portal Stocktake Collected Exception Report'
         ws = {'title': title,
               'subtitle': 'ITEMS SCANNED BY AGENT, STATUS IS COLLECTED',
               'sheet_title': 'Scanned but collected'}
@@ -150,11 +150,11 @@ SET job_ts = '%s'""" % cls._now
 
         old_report_filename = self._rd.report_filename
         file = 'Stocktake_collected_20140115-10:20-all.xlsx'
-        attach_file = os.path.join('nparcel', 'tests', 'files', file)
+        attach_file = os.path.join('top', 'tests', 'files', file)
         self._rd.set_report_filename(attach_file)
 
         old_ws = self._rd.ws
-        title = 'Toll Parcel Portal Stocktake Collected Exception Report'
+        title = 'Toll Outlet Portal Stocktake Collected Exception Report'
         now = self._now.strftime('%d/%m/%Y')
         self._rd.set_ws({'title': title})
 

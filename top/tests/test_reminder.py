@@ -3,8 +3,8 @@ import datetime
 import tempfile
 import os
 
-import nparcel
-from nparcel.utils.files import remove_files
+import top
+from top.utils.files import remove_files
 
 
 class TestReminder(unittest2.TestCase):
@@ -12,7 +12,7 @@ class TestReminder(unittest2.TestCase):
     @classmethod
     def setUpClass(cls):
         cls._comms_dir = tempfile.mkdtemp()
-        cls._r = nparcel.Reminder(comms_dir=cls._comms_dir)
+        cls._r = top.Reminder(comms_dir=cls._comms_dir)
 
         agents = [{'code': 'N031',
                    'state': 'VIC',
@@ -88,8 +88,8 @@ class TestReminder(unittest2.TestCase):
     def test_init(self):
         """Initialise a Reminder object.
         """
-        msg = 'Object is not a nparcel.Reminder'
-        self.assertIsInstance(self._r, nparcel.Reminder, msg)
+        msg = 'Object is not a top.Reminder'
+        self.assertIsInstance(self._r, top.Reminder, msg)
 
     def test_process(self):
         """Check processing.

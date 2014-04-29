@@ -1,8 +1,8 @@
 __all__ = [
     "Mapper",
 ]
-import nparcel
-from nparcel.utils.log import log
+import top
+from top.utils.log import log
 
 # Primary Elect does not support the concept of a Barcode.  To satisfy
 # the system, we copy over the first 15 characters of the Conn Note.
@@ -57,17 +57,17 @@ class Mapper(object):
     """Mapper object.
 
     """
-    _parser = nparcel.Parser(fields=FIELDS)
+    _parser = top.Parser(fields=FIELDS)
 
     def process(self, raw):
         """Accepts an unformatted T1250 record *raw* and processes the
-        translation to Toll Parcel Portal T1250 format.
+        translation to Toll Outlet Portal T1250 format.
 
         **Args:**
             *raw*: the source record to translate
 
         **Returns:**
-            string representation of a Nparcel T1250 record (1248 character
+            string representation of a T1250 record (1248 character
             length)
 
         """
@@ -94,7 +94,7 @@ class Mapper(object):
         return translated_line
 
     def translate(self, data):
-        """Translate source record into Toll Parcel Portal T1250 format.
+        """Translate source record into Toll Outlet Portal T1250 format.
 
         Special characteristic here is that it will fudge a *Service Code*
         of "3" to denote a Primary Elect job.
@@ -103,7 +103,7 @@ class Mapper(object):
             *data*: dictionary structure representation of the raw record
 
         **Returns:**
-            string representation of a Nparcel T1250 record (1248 character
+            string representation of a T1250 record (1248 character
             length)
 
         """

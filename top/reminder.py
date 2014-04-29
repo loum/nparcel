@@ -3,11 +3,11 @@ __all__ = [
 ]
 import datetime
 
-import nparcel
-from nparcel.utils.log import log
+import top
+from top.utils.log import log
 
 
-class Reminder(nparcel.Service):
+class Reminder(top.Service):
     """Reminder class.
 
     .. attribute:: config
@@ -35,12 +35,12 @@ class Reminder(nparcel.Service):
     _start_date = datetime.datetime(2013, 10, 9, 0, 0, 0)
 
     def __init__(self, **kwargs):
-        """:class:`nparcel.Reminder` initialisation.
+        """:class:`top.Reminder` initialisation.
 
         """
-        nparcel.Service.__init__(self,
-                                 db=kwargs.get('db'),
-                                 comms_dir=kwargs.get('comms_dir'))
+        top.Service.__init__(self,
+                             db=kwargs.get('db'),
+                             comms_dir=kwargs.get('comms_dir'))
 
         if kwargs.get('notification_delay') is not None:
             self.set_notification_delay(kwargs.get('notification_delay'))

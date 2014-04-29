@@ -3,19 +3,19 @@ import os
 import tempfile
 import datetime
 
-import nparcel
-from nparcel.utils.files import (copy_file,
-                                 get_directory_files_list,
-                                 remove_files)
+import top
+from top.utils.files import (copy_file,
+                             get_directory_files_list,
+                             remove_files)
 
 
 class TestPodTranslatorDaemon(unittest2.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        dir = os.path.join('nparcel', 'tests', 'files')
+        dir = os.path.join('top', 'tests', 'files')
         cls._file = os.path.join(dir, 'NSW_VANA_REF_20131121065550.txt')
-        cls._ptd = nparcel.PodTranslatorDaemon(pidfile=None)
+        cls._ptd = top.PodTranslatorDaemon(pidfile=None)
 
         cls._dir = tempfile.mkdtemp()
         cls._ptd.set_in_dirs([cls._dir])
@@ -28,8 +28,8 @@ class TestPodTranslatorDaemon(unittest2.TestCase):
     def test_init(self):
         """Intialise a PodTranslatorDaemon object.
         """
-        msg = 'Not a nparcel.PodTranslatorDaemon object'
-        self.assertIsInstance(self._ptd, nparcel.PodTranslatorDaemon, msg)
+        msg = 'Not a top.PodTranslatorDaemon object'
+        self.assertIsInstance(self._ptd, top.PodTranslatorDaemon, msg)
 
     def test_start_dry_pass(self):
         """PodTranslator _start processing loop -- dry pass.

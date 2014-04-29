@@ -19,10 +19,10 @@ import string
 import shutil
 import md5
 import tempfile
-import nparcel.openpyxl
+import top.openpyxl
 import csv
 
-from nparcel.utils.log import log
+from top.utils.log import log
 
 
 def create_dir(dir):
@@ -395,7 +395,7 @@ def xlsx_to_csv_converter(xlsx_file):
     target_file = None
 
     if (os.path.exists(xlsx_file) and extension == '.xlsx'):
-        wb = nparcel.openpyxl.load_workbook(xlsx_file)
+        wb = top.openpyxl.load_workbook(xlsx_file)
         sh = wb.get_active_sheet()
 
         target_file = os.path.join(os.path.dirname(xlsx_file),
