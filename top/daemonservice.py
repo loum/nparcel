@@ -134,13 +134,9 @@ class DaemonService(top.utils.Daemon):
     def in_dirs(self):
         return self._in_dirs
 
-    def set_in_dirs(self, values):
-        del self._in_dirs[:]
-        self._in_dirs = []
-
-        if values is not None:
-            self._in_dirs.extend(values)
-        log.debug('%s in_dirs set to "%s"' % (self.facility, self.in_dirs))
+    @set_list
+    def set_in_dirs(self, values=None):
+        pass
 
     @property
     def dry(self):

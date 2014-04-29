@@ -13,6 +13,7 @@ from top.utils.files import (get_directory_files,
                              check_eof_flag,
                              check_filename,
                              move_file)
+from top.utils.setter import set_scalar
 
 
 class MapperDaemon(top.DaemonService):
@@ -49,71 +50,13 @@ class MapperDaemon(top.DaemonService):
     _processing_ts = datetime.datetime.now()
     _archive_string = 'T1250_TOL[PIF]_(\d{8})\d{6}\.dat'
 
-    def __init__(self,
-                 pidfile,
-                 file=None,
-                 dry=False,
-                 batch=False,
-                 config=None):
-        c = None
-        if config is not None:
-            c = top.MapperB2CConfig(config)
-        top.DaemonService.__init__(self,
-                                   pidfile=pidfile,
-                                   file=file,
-                                   dry=dry,
-                                   batch=batch,
-                                   config=c)
-
-        try:
-            self.set_loop(self.config.mapper_loop)
-        except AttributeError, err:
-            log.debug('%s loop not in config: %s. Using %d (sec)' %
-                     (self.facility, err, self.loop))
-
-        try:
-            if self.config.pe_customer is not None:
-                self.set_customer(self.config.pe_customer)
-        except AttributeError, err:
-            log.debug('%s pe_customer not in config: %s. Using "%s"' %
-                      (self.facility, err, self.customer))
-
-        try:
-            if len(self.config.mapper_in_dirs):
-                self.set_in_dirs(self.config.mapper_in_dirs)
-            if not len(self.in_dirs):
-                raise
-        except AttributeError, err:
-            log.debug('%s in_dirs not in config: %s. Using %s' %
-                      (self.facility, err, self.in_dirs))
-
-        try:
-            if self.config.pe_in_file_format is not None:
-                self.set_file_format(self.config.pe_in_file_format)
-        except AttributeError, err:
-            log.debug('%s pe_file_format not in config: %s. Using %s' %
-                      (self.facility, err, self.file_format))
-
-        try:
-            if self.config.support_emails is not None:
-                self.set_support_emails(self.config.support_emails)
-        except AttributeError, err:
-            log.debug('%s support_emails not in config: %s. Using %s' %
-                      (self.facility, err, self.support_emails))
-
-        try:
-            if self.config.archive_dir is not None:
-                self.set_archive_base(self.config.archive_dir)
-        except AttributeError, err:
-            log.debug('%s archive_base not in config: %s. Using %s' %
-                      (self.facility, err, self.archive_base))
-
     @property
     def file_format(self):
         return self._file_format
 
+    @set_scalar
     def set_file_format(self, value):
-        self._file_format = value
+        pass
 
     @property
     def file_ts_format(self):
@@ -136,18 +79,38 @@ class MapperDaemon(top.DaemonService):
     def customer(self):
         return self._customer
 
+    @set_scalar
     def set_customer(self, value):
-        self._customer = value
-        log.debug('%s customer set to "%s"' %
-                  (self.facility, self.customer))
+        pass
 
     @property
     def archive_string(self):
         return self._archive_string
 
+    @set_scalar
     def set_archive_string(self, value):
-        log.info('Setting archive string to "%s"' % value)
-        self._archive_string = value
+        pass
+
+    def __init__(self,
+                 pidfile,
+                 file=None,
+                 dry=False,
+                 batch=False,
+                 config=None):
+        top.DaemonService.__init__(self,
+                                   pidfile=pidfile,
+                                   file=file,
+                                   dry=dry,
+                                   batch=batch,
+                                   config=config)
+
+        if self.config is not None:
+            self.set_archive_base(self.config.archive_dir)
+            self.set_loop(self.config.mapper_loop)
+            self.set_customer(self.config.pe_customer)
+            self.set_in_dirs(self.config.mapper_in_dirs)
+            self.set_file_format(self.config.pe_in_file_format)
+            self.set_archive_string(self.config.pe_in_file_archive_string)
 
     def _start(self, event):
         """Override the :method:`top.utils.Daemon._start` method.
