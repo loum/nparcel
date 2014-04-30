@@ -94,7 +94,6 @@ class OnDeliveryDaemon(top.DaemonService):
         will have comms event files created during the load process
 
     """
-    _config = None
     _report_in_dirs = []
     _report_file_format = 'TCD_Deliveries_\d{14}\.DAT'
     _comms_dir = None

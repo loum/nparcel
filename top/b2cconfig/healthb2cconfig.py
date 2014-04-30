@@ -5,6 +5,7 @@ import ConfigParser
 
 import top
 from top.utils.log import log
+from top.utils.setter import set_list
 
 
 class HealthB2CConfig(top.B2CConfig):
@@ -22,14 +23,9 @@ class HealthB2CConfig(top.B2CConfig):
     def health_processes(self):
         return self._health_processes
 
+    @set_list
     def set_health_processes(self, values=None):
-        del self._health_processes[:]
-        self._health_processes = []
-
-        if values is not None:
-            self._health_processes.extend(values)
-        log.debug('%s health.processes set to: "%s"' %
-                  (self.facility, self.health_processes))
+        pass
 
     def __init__(self, file=None):
         """:class:`top.HealthB2CConfig` initialisation.
@@ -41,6 +37,14 @@ class HealthB2CConfig(top.B2CConfig):
 
         """
         top.Config.parse_config(self)
+
+        kwargs = [{'section': 'health',
+                   'option': 'processes',
+                   'var': 'health_processes',
+                   'is_list': True,
+                   'is_required': True}]
+        for kw in kwargs:
+            self.parse_scalar_config(**kw)
 
         try:
             health_procs = self.get('health', 'processes')

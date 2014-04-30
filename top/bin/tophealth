@@ -12,6 +12,7 @@ from top.utils.log import (log,
                            set_log_level,
                            set_console,
                            rollover)
+from top.utils.setter import set_list
 
 
 class Pids(object):
@@ -100,76 +101,28 @@ class HealthDaemon(top.DaemonService):
     """Daemoniser facility for the Health() class.
 
     """
-    _config = None
     _emailer = top.Emailer()
-    _recipients = []
     _pid_table = {}
     _headers = ['Process Name', 'PIDs']
     _hostname = socket.gethostname()
     _processes = []
 
     @property
-    def config(self):
-        return self._config
-
-    def set_config(self, value):
-        self._config = value
-
-    @property
     def processes(self):
         return self._processes
 
+    @set_list
     def set_processes(self, values=None):
-        del self._processes[:]
-        self._processes = []
-
-        if values is not None:
-            self._processes.extend(values)
-        log.debug('%s processes: "%s"' % (self.facility, self.processes))
+        pass
 
     def __init__(self, pidfile, dry=False, config=None):
-        """HealthDaemon initialiser.
-        """
-        top.DaemonService.__init__(self, pidfile=pidfile, dry=dry)
+        top.DaemonService.__init__(self,
+                                   pidfile=pidfile,
+                                   dry=dry,
+                                   config=config)
 
-        if config is not None:
-            self.set_config(top.HealthB2CConfig(file=config))
-            self.config.parse_config()
-
-        try:
-            self.set_prod(self.config.prod)
-        except AttributeError, err:
-            log.debug('%s environment.prod not in config: %s. Using "%s"' %
-                      (self.facility, err, self.prod))
-
-        try:
-            if len(self.config.support_emails):
-                self.set_recipients(self.config.support_emails)
-        except AttributeError, err:
-            log.debug('%s recipients: %s. Using %s' %
-                      (self.facility, err, self.support_emails))
-
-        try:
-            if len(self.config.health_processes):
-                self.set_processes(self.config.health_processes)
-        except AttributeError, err:
-            log.info('%s health.process not in config: %s. Using "%s"' %
-                     (self.facility, err, self.processes))
-
-    @property
-    def recipients(self):
-        return self._recipients
-
-    def set_recipients(self, values=None):
-        del self._recipients[:]
-        self._recipients = []
-
-        if values is not None:
-            self._recipients.extend(values)
-            log.debug('Setting report recipients to "%s"' %
-                      self.recipients)
-        else:
-            log.debug('Clearing headers to display list')
+        if self.config is not None:
+            self.set_processes(self.config.health_processes)
 
     def _start(self, event):
         signal.signal(signal.SIGTERM, self._exit_handler)
@@ -208,7 +161,7 @@ class HealthDaemon(top.DaemonService):
                                           subject=subject,
                                           template='health',
                                           prod=self.prod)
-        self._emailer.set_recipients(self.recipients)
+        self._emailer.set_recipients(self.support_emails)
         self._emailer.send(mime_message=mime, dry=self.dry)
 
     def create_table(self, items, headers=None):
@@ -251,9 +204,7 @@ class HealthDaemon(top.DaemonService):
 
 
 def main():
-    config_file = os.path.join(os.path.expanduser('~'), '.top', 'top.conf')
-
-    based = top.BaseD(config=config_file)
+    based = top.BaseD()
     based.set_command('start')
     script_name = inspect.getfile(inspect.currentframe())
     script_name = os.path.basename(script_name)
@@ -272,10 +223,14 @@ def main():
     else:
         log.info('Logging verbosity set to "DEBUG" level')
 
+    config = None
+    if based.options.config is not None:
+        config = top.HealthB2CConfig(based.options.config)
+
     # OK, start processing.
     healthd = HealthDaemon(pidfile=based.pidfile,
                            dry=based.dry,
-                           config=based.options.config)
+                           config=config)
 
     based.set_batch(True)
     based.launch_command(healthd, script_name)

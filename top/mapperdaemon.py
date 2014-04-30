@@ -43,7 +43,6 @@ class MapperDaemon(top.DaemonService):
         T1250_TOL[PIF]_(\d{8})\d{6}\.dat)
 
     """
-    _config = None
     _customer = 'gis'
     _file_format = 'T1250_TOL[PIF]_\d{14}\.dat'
     _file_ts_format = '%Y%m%d%H%M%S'
