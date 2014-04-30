@@ -1,6 +1,8 @@
 import unittest2
+import datetime
 
 from top.utils.setter import (set_scalar,
+                              set_date,
                               set_tuple,
                               set_list,
                               set_dict)
@@ -8,17 +10,10 @@ from top.utils.setter import (set_scalar,
 
 class Bogus(object):
     _bogus_scalar = None
+    _bogus_date = None
     _bogus_tuple = ()
     _bogus_list = []
     _bogus_dict = {}
-
-    @property
-    def bogus_tuple(self):
-        return self._bogus_tuple
-
-    @set_tuple
-    def set_bogus_tuple(self, value):
-        pass
 
     @property
     def bogus_scalar(self):
@@ -26,6 +21,22 @@ class Bogus(object):
 
     @set_scalar
     def set_bogus_scalar(self, value):
+        pass
+
+    @property
+    def bogus_date(self):
+        return self._bogus_date
+
+    @set_date
+    def set_bogus_date(self, value):
+        pass
+
+    @property
+    def bogus_tuple(self):
+        return self._bogus_tuple
+
+    @set_tuple
+    def set_bogus_tuple(self, value):
         pass
 
     @property
@@ -74,6 +85,40 @@ class TestSetter(unittest2.TestCase):
 
         # Clean up.
         self._bogus.set_bogus_scalar(old_bogus_value)
+
+    def test_set_date(self):
+        """Set a date value.
+        """
+        old_bogus_value = self._bogus.bogus_date
+
+        value = '2013-10-09 00:00:00'
+        self._bogus.set_bogus_date(value)
+
+        # ... and check the attribute value.
+        received = self._bogus.bogus_date
+        expected = datetime.datetime(2013, 10, 9, 0, 0)
+        msg = 'Attribute bogus_scalar set error'
+        self.assertEqual(received, expected, msg)
+
+        # Clean up.
+        self._bogus.set_bogus_date(old_bogus_value)
+
+    def test_set_date_with_real_dt(self):
+        """Set a date value (datetime object).
+        """
+        old_bogus_value = self._bogus.bogus_date
+
+        value = datetime.datetime(2004, 02, 12, 0, 0)
+        self._bogus.set_bogus_date(value)
+
+        # ... and check the attribute value.
+        received = self._bogus.bogus_date
+        expected = datetime.datetime(2004, 02, 12, 0, 0)
+        msg = 'Attribute bogus_scalar set error'
+        self.assertEqual(received, expected, msg)
+
+        # Clean up.
+        self._bogus.set_bogus_date(old_bogus_value)
 
     def test_set_tuple(self):
         """Set a tuple value.

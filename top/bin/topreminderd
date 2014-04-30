@@ -4,32 +4,22 @@ import os
 import inspect
 
 import top
-from top.utils.log import (log,
-                           set_log_level,
-                           set_console)
 
 
 def main():
     based = top.BaseD()
-    script_name = inspect.getfile(inspect.currentframe())
-    script_name = os.path.basename(script_name)
-    based.set_script_name(script_name)
-    based.check_args()
+    script_name = os.path.basename(inspect.getfile(inspect.currentframe()))
+    based.check_args(script_name)
 
-    if based.command == 'status' or based.options.dry is not None:
-        set_console()
-
-    # Enable detailed logging if required.
-    if based.options.verbose == 0:
-        set_log_level('INFO')
-    else:
-        log.debug('Logging verbosity set to "DEBUG" level')
+    config = None
+    if based.options.config is not None:
+        config = top.ReminderB2CConfig(based.options.config)
 
     # OK, start processing.
     remd = top.ReminderDaemon(pidfile=based.pidfile,
                               dry=based.dry,
                               batch=based.batch,
-                              config=based.options.config)
+                              config=config)
 
     based.launch_command(remd, script_name)
 

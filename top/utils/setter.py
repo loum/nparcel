@@ -1,9 +1,12 @@
 __all__ = [
     "set_scalar",
+    "set_date",
     "set_list",
     "set_dict",
 ]
 import inspect
+import time
+import datetime
 
 from top.utils.log import log
 
@@ -51,7 +54,9 @@ def setter(f, attr_type):
             value = {}
 
         type_check = False
-        if ((not isinstance(value, (list, dict)) and attr_type == 'scalar') or
+        if ((not isinstance(value, (list, dict)) and
+             (attr_type == 'scalar' or attr_type == 'date')) or
+            (type(value) is datetime.datetime and attr_type == 'date') or
             (isinstance(value, tuple) and attr_type == 'tuple') or
             (isinstance(value, list) and attr_type == 'list') or
             (isinstance(value, dict) and attr_type == 'dict')):
@@ -65,6 +70,12 @@ def setter(f, attr_type):
 
             # Set the attribute.  But check that it exists first.
             attr_val = getattr(self, '_%s' % method_name)
+
+            # Special processing for dates.
+            if (attr_type == 'date' and value is not None):
+                if type(value) is not datetime.datetime:
+                    tmp_t = time.strptime(value, "%Y-%m-%d %H:%M:%S")
+                    value = datetime.datetime.fromtimestamp(time.mktime(tmp_t))
 
             setattr(self, '_%s' % method_name, value)
             if isinstance(value, (int, long, float, complex)):
@@ -81,6 +92,10 @@ def setter(f, attr_type):
 
 def set_scalar(f):
     return(setter(f, attr_type='scalar'))
+
+
+def set_date(f):
+    return(setter(f, attr_type='date'))
 
 
 def set_tuple(f):

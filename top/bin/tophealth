@@ -205,7 +205,6 @@ class HealthDaemon(top.DaemonService):
 
 def main():
     based = top.BaseD()
-    based.set_command('start')
     script_name = os.path.basename(inspect.getfile(inspect.currentframe()))
     based.check_args(script_name)
 

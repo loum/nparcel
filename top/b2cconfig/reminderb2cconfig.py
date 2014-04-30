@@ -1,13 +1,14 @@
 __all__ = [
     "ReminderB2CConfig",
 ]
-import sys
 import time
 import datetime
 import ConfigParser
 
 import top
 from top.utils.log import log
+from top.utils.setter import (set_scalar,
+                              set_date)
 
 
 class ReminderB2CConfig(top.B2CConfig):
@@ -41,37 +42,33 @@ class ReminderB2CConfig(top.B2CConfig):
     def reminder_loop(self):
         return self._reminder_loop
 
+    @set_scalar
     def set_reminder_loop(self, value):
-        self._reminder_loop = int(value)
-        log.debug('%s reminder_loop set to %d' %
-                  (self.facility, self.reminder_loop))
+        pass
 
     @property
     def notification_delay(self):
         return self._notification_delay
 
+    @set_scalar
     def set_notification_delay(self, value):
-        self._notification_delay = int(value)
-        log.debug('%s notification_delay set to %d' %
-                  (self.facility, self.notification_delay))
+        pass
 
     @property
     def start_date(self):
         return self._start_date
 
+    @set_date
     def set_start_date(self, value):
-        self._start_date = value
-        log.debug('%s start_date set to "%s"' %
-                  (self.facility, self.start_date))
+        pass
 
     @property
     def hold_period(self):
         return self._hold_period
 
+    @set_scalar
     def set_hold_period(self, value):
-        self._hold_period = int(value)
-        log.debug('%s hold_period set to %s' %
-                  (self.facility, self.hold_period))
+        pass
 
     def __init__(self, file=None):
         """:class:`top.ReminderB2CConfig` initialisation.
@@ -84,41 +81,20 @@ class ReminderB2CConfig(top.B2CConfig):
         """
         top.Config.parse_config(self)
 
-        try:
-            self.set_comms_dir(self.get('dirs', 'comms'))
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.critical('%s dirs.comms is a required item: %s' %
-                         (self.facility, err))
-            sys.exit(1)
-
-        # Reminder specific.
-        try:
-            self.set_reminder_loop(self.get('timeout', 'reminder_loop'))
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('%s timeout.reminder_loop: %s, Using %d' %
-                      (self.facility, err, self.reminder_loop))
-
-        try:
-            tmp = self.get('reminder', 'notification_delay')
-            self.set_notification_delay(tmp)
-        except ConfigParser.NoOptionError, err:
-            log.debug('%s reminder.notification_delay: %s. Using %d' %
-                      (self.facility, err, self.notification_delay))
-
-        try:
-            start_date = self.get('reminder', 'start_date')
-            start_time = time.strptime(start_date, "%Y-%m-%d %H:%M:%S")
-            dt = datetime.datetime.fromtimestamp(time.mktime(start_time))
-            self.set_start_date(dt)
-        except ConfigParser.NoOptionError, err:
-            log.debug('%s reminder.start_date: %s. Using "%s"' %
-                      (self.facility, err, self.start_date))
-
-        try:
-            tmp = self.get('reminder', 'hold_period')
-            self.set_hold_period(tmp)
-        except ConfigParser.NoOptionError, err:
-            log.debug('%s reminder.hold_period: %s. Using %s' %
-                      (self.facility, err, self.hold_period))
+        kwargs = [{'section': 'dirs',
+                   'option': 'comms',
+                   'var': 'comms_dir',
+                   'is_required': True},
+                  {'section': 'timeout',
+                   'option': 'reminder_loop',
+                   'cast_type': 'int'},
+                  {'section': 'reminder',
+                   'option': 'notification_delay',
+                   'cast_type': 'int'},
+                  {'section': 'reminder',
+                   'option': 'start_date'},
+                  {'section': 'reminder',
+                   'option': 'hold_period',
+                   'cast_type': 'int'}]
+        for kw in kwargs:
+            self.parse_scalar_config(**kw)

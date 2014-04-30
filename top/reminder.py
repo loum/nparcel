@@ -5,6 +5,8 @@ import datetime
 
 import top
 from top.utils.log import log
+from top.utils.setter import (set_scalar,
+                              set_date)
 
 
 class Reminder(top.Service):
@@ -34,6 +36,30 @@ class Reminder(top.Service):
     _hold_period = 345600
     _start_date = datetime.datetime(2013, 10, 9, 0, 0, 0)
 
+    @property
+    def notification_delay(self):
+        return self._notification_delay
+
+    @set_scalar
+    def set_notification_delay(self, value):
+        pass
+
+    @property
+    def start_date(self):
+        return self._start_date
+
+    @set_date
+    def set_start_date(self, value):
+        pass
+
+    @property
+    def hold_period(self):
+        return self._hold_period
+
+    @set_scalar
+    def set_hold_period(self, value):
+        pass
+
     def __init__(self, **kwargs):
         """:class:`top.Reminder` initialisation.
 
@@ -50,27 +76,6 @@ class Reminder(top.Service):
 
         if kwargs.get('start_date') is not None:
             self.set_start_date(kwargs.get('start_date'))
-
-    @property
-    def notification_delay(self):
-        return self._notification_delay
-
-    def set_notification_delay(self, value):
-        self._notification_delay = value
-
-    @property
-    def start_date(self):
-        return self._start_date
-
-    def set_start_date(self, value):
-        self._start_date = value
-
-    @property
-    def hold_period(self):
-        return self._hold_period
-
-    def set_hold_period(self, value):
-        self._hold_period = value
 
     def get_uncollected_items(self):
         """Generator which returns the uncollected job_item.id's.

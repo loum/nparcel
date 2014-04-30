@@ -18,22 +18,15 @@ class ReminderDaemon(top.DaemonService):
                  dry=False,
                  batch=False,
                  config=None):
-        c = None
-        if config is not None:
-            c = top.ReminderB2CConfig(config)
         top.DaemonService.__init__(self,
                                    pidfile=pidfile,
                                    file=file,
                                    dry=dry,
                                    batch=batch,
-                                   config=c)
+                                   config=config)
 
-        try:
+        if self.config is not None:
             self.set_loop(self.config.reminder_loop)
-        except AttributeError, err:
-            msg = ('%s loop not in config. Using %d' %
-                   (self.facility, self.loop))
-            log.debug(msg)
 
     @property
     def reminder(self):
