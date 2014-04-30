@@ -11,6 +11,8 @@ from top.utils.log import log
 from top.utils.files import (move_file,
                              copy_file,
                              remove_files)
+from top.utils.setter import (set_scalar,
+                              set_list)
 
 
 class PodTranslatorDaemon(top.DaemonService):
@@ -29,7 +31,6 @@ class PodTranslatorDaemon(top.DaemonService):
         base directory where working files are archived to
 
     """
-    _config = None
     _file_formats = []
     _out_dir = None
     _archive_dir = None
@@ -40,81 +41,44 @@ class PodTranslatorDaemon(top.DaemonService):
                  dry=False,
                  batch=False,
                  config=None):
-        c = None
-        if config is not None:
-            c = top.PodB2CConfig(config)
         top.DaemonService.__init__(self,
                                    pidfile=pidfile,
                                    file=file,
                                    dry=dry,
                                    batch=batch,
-                                   config=c)
+                                   config=config)
 
-        try:
+        if self.config is not None:
             self.set_loop(self.config.pod_translator_loop)
-        except AttributeError, err:
-            log.debug('%s loop not in config: %s. Using %d (sec)' %
-                      (self.facility, err, self.loop))
-
-        try:
-            if len(self.config.pod_dirs):
-                self.set_in_dirs(self.config.pod_dirs)
-            else:
-                raise
-        except AttributeError, err:
-            log.debug('%s inbound dir not in config: %s. Using "%s"' %
-                      (self.facility, err, self.in_dirs))
-
-        try:
+            self.set_in_dirs(self.config.pod_dirs)
             self.set_out_dir(self.config.out_dir)
-        except AttributeError, err:
-            log.debug('%s out dir not in config: %s. Using "%s"' %
-                      (self.facility, err, self.out_dir))
-
-        try:
             self.set_archive_dir(os.path.join(self.config.archive_dir,
                                               'podtranslated'))
-        except AttributeError, err:
-            log.debug('%s out dir not in config: %s. Using "%s"' %
-                      (self.facility, err, self.out_dir))
-
-        try:
-            if self.config.file_formats is not None:
-                self.set_file_formats(self.config.file_formats)
-        except AttributeError, err:
-            log.debug('%s file_formats not in config: %s. Using %s' %
-                      (self.facility, err, self.file_formats))
+            self.set_file_formats(self.config.file_formats)
 
     @property
     def out_dir(self):
         return  self._out_dir
 
-    def set_out_dir(self, value=None):
-        self._out_dir = value
-        log.debug('%s out_dir set to: "%s"' %
-                  (self.facility, str(self.out_dir)))
+    @set_scalar
+    def set_out_dir(self, value):
+        pass
 
     @property
     def archive_dir(self):
         return  self._archive_dir
 
-    def set_archive_dir(self, value=None):
-        self._archive_dir = value
-        log.debug('%s archive_dir set to: "%s"' %
-                  (self.facility, str(self.archive_dir)))
+    @set_scalar
+    def set_archive_dir(self, value):
+        pass
 
     @property
     def file_formats(self):
         return self._file_formats
 
+    @set_list
     def set_file_formats(self, values=None):
-        del self._file_formats[:]
-        self._file_formats = []
-
-        if values is not None:
-            self._file_formats.extend(values)
-        log.debug('%s file_formats set to: "%s"' %
-                  (self.facility, self.file_formats))
+        pass
 
     def _start(self, event):
         """Override the :method:`top.utils.Daemon._start` method.

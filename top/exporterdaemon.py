@@ -7,6 +7,7 @@ import signal
 
 import top
 from top.utils.log import log
+from top.utils.setter import set_dict
 
 
 class ExporterDaemon(top.DaemonService):
@@ -21,69 +22,21 @@ class ExporterDaemon(top.DaemonService):
     _exporter_fields = {}
     _business_units = {}
 
-    def __init__(self,
-                 pidfile,
-                 dry=False,
-                 batch=False,
-                 config=None):
-        c = None
-        if config is not None:
-            c = top.ExporterB2CConfig(config)
-        top.DaemonService.__init__(self,
-                                   pidfile=pidfile,
-                                   dry=dry,
-                                   batch=batch,
-                                   config=c)
-
-        try:
-            self.set_loop(self.config.exporter_loop)
-        except AttributeError, err:
-            msg = ('%s loop not in config. Using %d' %
-                   (self.facility, self.loop))
-
-        try:
-            if self.config.support_emails is not None:
-                self.set_support_emails(self.config.support_emails)
-        except AttributeError, err:
-            msg = ('%s support_emails not in config. Using "%s"' %
-                   (self.facility, self.support_emails))
-            log.info(msg)
-
-        try:
-            self.set_exporter_fields(self.config.exporter_fields)
-        except AttributeError, err:
-            log.debug('%s exporter_fields not in config: %s. Using "%s"' %
-                      (self.facility, err, self.exporter_fields))
-
-        try:
-            self.set_business_units(self.config.business_units)
-        except AttributeError, err:
-            log.debug('%s business_units not in config: %s. Using "%s"' %
-                      (self.facility, err, self.business_units))
-
     @property
     def exporter_fields(self):
         return self._exporter_fields
 
+    @set_dict
     def set_exporter_fields(self, values=None):
-        self._exporter_fields.clear()
-
-        if values is not None:
-            self._exporter_fields = values
-        log.debug('%s exporter_fields set to: "%s"' %
-                  (self.facility, self.exporter_fields))
+        pass
 
     @property
     def business_units(self):
         return self._business_units
 
+    @set_dict
     def set_business_units(self, values=None):
-        self._business_units.clear()
-
-        if values is not None:
-            self._business_units = values
-        log.debug('%s business_units set to: "%s"' %
-                  (self.facility, self.business_units))
+        pass
 
     @property
     def exporter(self):
@@ -134,6 +87,22 @@ class ExporterDaemon(top.DaemonService):
             log.debug('Item number header not in config: %s' % err)
 
         return kwargs
+
+    def __init__(self,
+                 pidfile,
+                 dry=False,
+                 batch=False,
+                 config=None):
+        top.DaemonService.__init__(self,
+                                   pidfile=pidfile,
+                                   dry=dry,
+                                   batch=batch,
+                                   config=config)
+
+        if self.config is not None:
+            self.set_loop(self.config.exporter_loop)
+            self.set_exporter_fields(self.config.exporter_fields)
+            self.set_business_units(self.config.business_units)
 
     def _start(self, event):
         signal.signal(signal.SIGTERM, self._exit_handler)

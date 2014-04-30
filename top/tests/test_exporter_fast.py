@@ -21,6 +21,7 @@ class TestExporterFast(unittest2.TestCase):
         cls._seq = '0, 1, 2, 3, 4, 5, 6'
 
         cls._e = top.Exporter()
+        cls._e.reset()
 
         # Prepare some sample data.
         # "agent" table.
@@ -372,13 +373,12 @@ class TestExporterFast(unittest2.TestCase):
         remove_files(pod_files)
         os.rmdir(os.path.join(self._e.staging_dir, 'fast', 'out'))
         os.rmdir(os.path.join(self._e.staging_dir, 'fast'))
-        self._e.set_staging_dir(value=None)
-        self._e.set_signature_dir(value=None)
+        self._e.set_staging_dir(None)
+        self._e.set_signature_dir(None)
         self._e.db.rollback()
 
     @classmethod
     def tearDownClass(cls):
-        cls._e = None
         os.removedirs(cls._dir)
         os.removedirs(cls._staging_dir)
         os.removedirs(cls._archive_dir)

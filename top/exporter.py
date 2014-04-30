@@ -14,6 +14,8 @@ from top.utils.files import (create_dir,
                              copy_file,
                              get_directory_files_list,
                              gen_digest_path)
+from top.utils.setter import (set_scalar,
+                              set_list)
 from top.timezone import convert_timezone
 
 STATES = ['NSW', 'VIC', 'QLD', 'SA', 'WA', 'ACT']
@@ -62,47 +64,26 @@ class Exporter(top.Service):
     _item_nbr_header = 'ITEM_NBR'
     _time_fmt = "%Y-%m-%d %H:%M:%S"
     _time_tz_fmt = "%Y-%m-%d %H:%M:%S %Z%z"
-
-    def __init__(self, **kwargs):
-        """Exporter object initialiser.
-        """
-        top.Service.__init__(self, db=kwargs.get('db'))
-
-        self.set_signature_dir(kwargs.get('signature_dir'))
-        self.set_staging_dir(kwargs.get('staging_dir'))
-        self.set_archive_dir(kwargs.get('archive_dir'))
-
-        self._out_dir = None
-
-        self._collected_items = []
-        self._header = ()
-
-        self.set_exporter_dirs(kwargs.get('exporter_dirs'))
-        self.set_exporter_file_formats(kwargs.get('exporter_file_formats'))
-
-        self.set_connote_header(kwargs.get('connote_header'))
-        self.set_item_nbr_header(kwargs.get('item_nbr_header'))
+    _out_dir = None
+    _collected_items = []
+    _header = []
 
     @property
     def signature_dir(self):
         return self._signature_dir
 
+    @set_scalar
     def set_signature_dir(self, value):
-        self._signature_dir = value
-        log.debug('%s signature_dir set to "%s"' %
-                  (self.facility, self.signature_dir))
+        pass
 
     @property
     def staging_dir(self):
         return self._staging_dir
 
-    def set_staging_dir(self, value=None):
-        self._staging_dir = value
-
+    @set_scalar
+    def set_staging_dir(self, value):
         if not create_dir(self._staging_dir):
             self._staging_dir = None
-        log.debug('%s staging_dir set to "%s"' %
-                  (self.facility, self.staging_dir))
 
     @property
     def out_dir(self):
@@ -143,69 +124,50 @@ class Exporter(top.Service):
     def archive_dir(self):
         return self._archive_dir
 
+    @set_scalar
     def set_archive_dir(self, value):
-        self._archive_dir = value
-
         if not create_dir(self._archive_dir):
             self._archive_dir = None
-        log.debug('%s archive_dir set to "%s"' %
-                  (self.facility, self.archive_dir))
 
     @property
     def exporter_dirs(self):
         return self._exporter_dirs
 
+    @set_list
     def set_exporter_dirs(self, values):
-        del self._exporter_dirs[:]
-        self._exporter_dirs = []
-
-        if values is not None:
-            self._exporter_dirs.extend(values)
-        log.debug('%s exporter_dirs set to "%s"' %
-                  (self.facility, self.exporter_dirs))
+        pass
 
     @property
     def exporter_file_formats(self):
         return self._exporter_file_formats
 
+    @set_list
     def set_exporter_file_formats(self, values=None):
-        del self._exporter_file_formats[:]
-        self._exporter_file_formats = []
-
-        if values is not None:
-            self._exporter_file_formats.extend(values)
-        log.debug('%s exporter_file_formats set to "%s"' %
-                  (self.facility, self.exporter_file_formats))
+        pass
 
     @property
     def connote_header(self):
         return self._connote_header
 
-    def set_connote_header(self, value=None):
-        if value is not None:
-            self._connote_header = value
-            log.debug('Exporter set report file connote header to: "%s"' %
-                      self.connote_header)
+    @set_scalar
+    def set_connote_header(self, value):
+        pass
 
     @property
     def item_nbr_header(self):
         return self._item_nbr_header
 
-    def set_item_nbr_header(self, value=None):
-        if value is not None:
-            self._item_nbr_header = value
-            log.debug('Exporter set report file item nbr header to: "%s"' %
-                      self.item_nbr_header)
+    @set_scalar
+    def set_item_nbr_header(self, value):
+        pass
 
     @property
     def header(self):
         return self._header
 
-    def set_header(self, values):
-        self._header = ()
-
-        if values is not None:
-            self._header = values
+    @set_list
+    def set_header(self, values=None):
+        pass
 
     @property
     def time_fmt(self):
@@ -214,6 +176,21 @@ class Exporter(top.Service):
     @property
     def time_tz_fmt(self):
         return self._time_tz_fmt
+
+    def __init__(self, **kwargs):
+        """Exporter object initialiser.
+        """
+        top.Service.__init__(self, db=kwargs.get('db'))
+
+        self.set_signature_dir(kwargs.get('signature_dir'))
+        self.set_staging_dir(kwargs.get('staging_dir'))
+        self.set_archive_dir(kwargs.get('archive_dir'))
+        self.set_exporter_dirs(kwargs.get('exporter_dirs'))
+        self.set_exporter_file_formats(kwargs.get('exporter_file_formats'))
+        if kwargs.get('connote_header') is not None:
+            self.set_connote_header(kwargs.get('connote_header'))
+        if kwargs.get('item_nbr_header') is not None:
+            self.set_item_nbr_header(kwargs.get('item_nbr_header'))
 
     def get_collected_items(self, business_unit_id, ignore_pe=False):
         """Query DB for recently collected items.

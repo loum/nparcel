@@ -25,17 +25,22 @@ class TestExporterB2CConfig(unittest2.TestCase):
 
         received = self._c.exporter_loop
         expected = 300
-        msg = 'timeout.exporter error'
+        msg = 'ExporterB2CConfig.exporter_loop error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.staging_base
+        expected = '/var/ftp/pub/nparcel'
+        msg = 'ExporterB2CConfig.staging_base error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.archive_dir
+        expected = '/data/top/archive'
+        msg = 'ExporterB2CConfig.archive_dir error'
         self.assertEqual(received, expected, msg)
 
         received = self._c.signature_dir
-        expected = os.path.join(os.sep,
-                                'data',
-                                'www',
-                                'nparcel',
-                                'data',
-                                'signature')
-        msg = 'dir.signature error'
+        expected = os.path.join('/data/www/nparcel/data/signature')
+        msg = 'ExporterB2CConfig.signature_dir error'
         self.assertEqual(received, expected, msg)
 
         received = self._c.file_bu
@@ -87,7 +92,7 @@ class TestExporterB2CConfig(unittest2.TestCase):
         expected = {'tolp': '000100000000010110',
                     'tolf': '000101100000010110',
                     'toli': '100010000000010110'}
-        msg = 'conditions config section error'
+        msg = 'ExporterB2CConfig.cond error'
         self.assertDictEqual(received, expected, msg)
 
     def tearDown(self):

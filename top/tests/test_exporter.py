@@ -23,6 +23,7 @@ class TestExporter(unittest2.TestCase):
     def setUpClass(cls):
         cls.maxDiff = None
         cls._e = top.Exporter()
+        cls._e.reset()
 
         db = cls._e.db
         # Prepare some sample data.
@@ -282,7 +283,7 @@ class TestExporter(unittest2.TestCase):
         remove_files(get_directory_files_list(self._e.signature_dir))
         archive_digest_path = os.path.join(archive_dir, *digest_path)
         remove_files(get_directory_files_list(archive_digest_path))
-        self._e.set_signature_dir(value=None)
+        self._e.set_signature_dir(None)
         os.removedirs(archive_digest_path)
 
     def test_signature_archive_selective(self):
@@ -318,7 +319,7 @@ class TestExporter(unittest2.TestCase):
         self._e.reset()
         remove_files(get_directory_files_list(self._e.signature_dir))
         remove_files(received)
-        self._e.set_signature_dir(value=None)
+        self._e.set_signature_dir(None)
         os.removedirs(archive_digest_path)
 
     def test_update_status(self):
@@ -337,7 +338,7 @@ WHERE id = 1"""
         """Create buinsess unit output directory.
         """
         # Set the staging directory.
-        self._e.set_staging_dir(value=self._dir)
+        self._e.set_staging_dir(self._dir)
 
         bu = 'priority'
         self._e.set_out_dir(bu)
@@ -349,7 +350,7 @@ WHERE id = 1"""
         # Cleanup.
         os.rmdir(os.path.join(self._e.staging_dir, 'priority', 'out'))
         os.rmdir(os.path.join(self._e.staging_dir, 'priority'))
-        self._e.set_staging_dir(value=None)
+        self._e.set_staging_dir(None)
         self._e.reset()
 
     def test_process(self):
@@ -436,9 +437,9 @@ WHERE id = 1"""
         remove_files(get_directory_files_list(archive_digest_path))
         os.removedirs(archive_digest_path)
 
-        self._e.set_staging_dir(value=None)
-        self._e.set_signature_dir(value=None)
-        self._e.set_archive_dir(value=None)
+        self._e.set_staging_dir(None)
+        self._e.set_signature_dir(None)
+        self._e.set_archive_dir(None)
         self._e.db.rollback()
 
     def test_process_no_items(self):
@@ -446,7 +447,7 @@ WHERE id = 1"""
         """
         bu = 'priority'
 
-        self._e.set_staging_dir(value=self._dir)
+        self._e.set_staging_dir(self._dir)
 
         self._e.set_out_dir(business_unit=bu)
         valid_items = []
@@ -456,16 +457,16 @@ WHERE id = 1"""
         # Cleanup.
         os.rmdir(os.path.join(self._e.staging_dir, 'priority', 'out'))
         os.rmdir(os.path.join(self._e.staging_dir, 'priority'))
-        self._e.set_staging_dir(value=None)
+        self._e.set_staging_dir(None)
         self._e.reset()
 
     def test_header(self):
         """Default export file header generation.
         """
-        self._e.set_header(('REF1',
+        self._e.set_header(['REF1',
                             'JOB_KEY',
                             'PICKUP_TIME',
-                            'PICKUP_POD'))
+                            'PICKUP_POD'])
         msg = 'Default exporter report line not as expected'
         received = self._e.get_report_line(self._e.header)
         expected = 'REF1|JOB_KEY|PICKUP_TIME|PICKUP_POD'
@@ -477,10 +478,10 @@ WHERE id = 1"""
     def test_headers_different_ordering(self):
         """Export file header generation -- different ordering.
         """
-        self._e.set_header(('REF1',
+        self._e.set_header(['REF1',
                             'JOB_KEY',
                             'PICKUP_TIME',
-                            'PICKUP_POD'))
+                            'PICKUP_POD'])
         msg = 'Exporter report line with modified ordering not as expected'
         received = self._e.get_report_line(self._e.header,
                                            sequence=(0, 3, 1, 2))
@@ -493,10 +494,10 @@ WHERE id = 1"""
     def test_headers_limited_columns(self):
         """Export file report line generation -- limited columns.
         """
-        self._e.set_header(('REF1',
+        self._e.set_header(['REF1',
                             'JOB_KEY',
                             'PICKUP_TIME',
-                            'PICKUP_POD'))
+                            'PICKUP_POD'])
         msg = 'Exporter report line with limited columns not as expected'
         received = self._e.get_report_line(self._e.header,
                                            sequence=(0, 3, 1))
@@ -509,10 +510,10 @@ WHERE id = 1"""
     def test_headers_index_out_of_range(self):
         """Export file header generation -- index out of range.
         """
-        self._e.set_header(('REF1',
+        self._e.set_header(['REF1',
                             'JOB_KEY',
                             'PICKUP_TIME',
-                            'PICKUP_POD'))
+                            'PICKUP_POD'])
         msg = 'Exporter report line with index out of range not as expected'
         received = self._e.get_report_line(self._e.header,
                                            sequence=(0, 1, 2, 3, 4))
@@ -546,10 +547,10 @@ WHERE id = 1"""
     def test_sort(self):
         """Sort the report.
         """
-        self._e.set_header(('REF1',
+        self._e.set_header(['REF1',
                             'JOB_KEY',
                             'PICKUP_TIME',
-                            'PICKUP_POD'))
+                            'PICKUP_POD'])
         items = [('2185012178aa',
                   '10',
                   self._now,
@@ -582,14 +583,14 @@ WHERE id = 1"""
     def test_header_column(self):
         """JOB_KEY index get.
         """
-        self._e.set_header(('REF1',
+        self._e.set_header(['REF1',
                             'JOB_KEY',
                             'PICKUP_TIME',
                             'PICKUP_POD',
                             'IDENTITY_TYPE',
                             'IDENTITY_DATA',
                             'ITEM_NBR',
-                            'AGENT_ID'))
+                            'AGENT_ID'])
 
         received = self._e.get_header_column('banana')
         expected = 0

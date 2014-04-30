@@ -4,6 +4,12 @@ __all__ = [
 import os
 from optparse import OptionParser
 
+from top.utils.setter import (set_scalar,
+                              set_list)
+from top.utils.log import (log,
+                           set_console,
+                           set_log_level)
+
 
 class BaseD(object):
     """Base daemoniser.
@@ -44,15 +50,113 @@ class BaseD(object):
 
         name of the PID file
 
+    .. attribute:: supported_commands
+
+        list of supported command names
+
     """
     _config = os.path.join(os.path.expanduser('~'), '.top', 'top.conf')
     _usage = 'usage: %prog [options] start|stop|status'
     _parser = OptionParser(usage=_usage)
+    _options = None
+    _args = []
     _dry = False
     _command = None
     _batch = False
     _pidfile = None
     _script_name = None
+    _supported_commands = ['start', 'stop', 'status']
+
+    @property
+    def config(self):
+        return self._config
+
+    @set_scalar
+    def set_config(self, value):
+        pass
+
+    @property
+    def usage(self):
+        return self._usage
+
+    @set_scalar
+    def set_usage(self, value):
+        pass
+
+    @property
+    def parser(self):
+        return self._parser
+
+    @property
+    def options(self):
+        return self._options
+
+    @set_scalar
+    def set_options(self, value):
+        pass
+
+    @property
+    def args(self):
+        return self._args
+
+    @set_list
+    def set_args(self, values=None):
+        pass
+
+    @property
+    def command(self):
+        return self._command
+
+    @set_scalar
+    def set_command(self, value):
+        pass
+
+    @property
+    def dry(self):
+        return self._dry
+
+    @set_scalar
+    def set_dry(self, value):
+        pass
+
+    @property
+    def batch(self):
+        return self._batch
+
+    @set_scalar
+    def set_batch(self, value):
+        pass
+
+    @property
+    def pidfile(self):
+        if self._pidfile is None and self._script_name is not None:
+            self._pidfile = os.path.join(os.path.expanduser('~'),
+                                         '.top',
+                                         'pids',
+                                         '%s.pid' % self._script_name)
+
+        return self._pidfile
+
+    @set_scalar
+    def set_pidfile(self, value):
+        pass
+
+    @property
+    def script_name(self):
+        return self._script_name
+
+    @set_scalar
+    def set_script_name(self, value):
+        pass
+
+    @property
+    def supported_commands(self):
+        return self._supported_commands
+
+    @set_list
+    def set_supported_commands(self, values=None):
+        pass
+
 
     def __init__(self, config=None):
         """BaseD initialisation.
@@ -79,81 +183,7 @@ class BaseD(object):
                                 help=('override default config "%s"' %
                                       self._config))
 
-    @property
-    def config(self):
-        return self._config
-
-    def set_config(self, value):
-        self._config = value
-
-    @property
-    def usage(self):
-        return self._usage
-
-    def set_usage(self, value):
-        self._usage = value
-        self._parser.set_usage(value)
-
-    @property
-    def parser(self):
-        return self._parser
-
-    @property
-    def options(self):
-        return self._options
-
-    def set_options(self, value):
-        self._options = value
-
-    @property
-    def args(self):
-        return self._args
-
-    def set_args(self, value):
-        self._args = value
-
-    @property
-    def command(self):
-        return self._command
-
-    def set_command(self, value):
-        self._command = value
-
-    @property
-    def dry(self):
-        return self._dry
-
-    def set_dry(self, value):
-        self._dry = value
-
-    @property
-    def batch(self):
-        return self._batch
-
-    def set_batch(self, value):
-        self._batch = value
-
-    @property
-    def pidfile(self):
-        if self._pidfile is None and self._script_name is not None:
-            self._pidfile = os.path.join(os.path.expanduser('~'),
-                                         '.top',
-                                         'pids',
-                                         '%s.pid' % self._script_name)
-
-        return self._pidfile
-
-    def set_pidfile(self, value):
-        self._pidfile = value
-
-    @property
-    def script_name(self):
-        return self._script_name
-
-    def set_script_name(self, value):
-        self._script_name = value
-
-    def check_args(self):
+    def check_args(self, script_name):
         """Verify that the daemon arguments are as expected.
 
         Sets the controller command to (for example stop, start or status)
@@ -162,25 +192,47 @@ class BaseD(object):
         Attempts to make a sane assesment of options against the given
         :attr:`command`.
 
+        **Kwargs**:
+            *script_name*: name of the executing script
+
         **Raises**:
             ``SystemExit`` (program exit) if one argument is not provided
             on the command line (unless the :attr:`command` is predefined.
 
         """
         (options, args) = self.parser.parse_args()
-        self.set_options(options)
-        self.set_args(args)
 
+        if options.dry is not None:
+            set_console()
+
+        command = None
         if self.command is None:
-            if len(self.args) != 1:
+            if len(args) != 1:
                 self.parser.error("incorrect number of arguments")
 
-            self.set_command(args.pop(0))
+            #self.set_command(args.pop(0))
+            command = (args.pop(0))
 
-            if (self.command != 'start' and
-                (self.options.dry or self.options.batch)):
+            if (command not in self.supported_commands):
+                self.parser.error('command "%s" not supported' % command)
+
+            if (command != 'start' and
+                (options.dry or options.batch)):
                 self.parser.error('invalid option(s) with command "%s"' %
-                                  self.command)
+                                  command)
+
+        if command == 'status':
+            set_console()
+
+        if options.verbose == 0:
+            set_log_level('INFO')
+        else:
+            log.debug('Logging verbosity set to "DEBUG" level')
+
+        self.set_script_name(script_name)
+        self.set_command(command)
+        self.set_options(options)
+        self.set_args(args)
 
         if self.command == 'start':
             self.set_dry(self.options.dry is not None)

@@ -59,7 +59,7 @@ class PodTranslator(object):
         return token
 
     def process(self, file, column='JOB_KEY', dry=False):
-        """Will translated *column* values in *file* according to the
+        """Translated *column* values in *file* according to the
         :meth:`token_generator` method.  Upon success, will created a new
         file with the extension ``.xlated`` appended.
 
@@ -106,6 +106,8 @@ class PodTranslator(object):
                     old_token = fields[job_key_index]
                     keys.append(token)
                     fields[job_key_index] = token
+                    log.info('Column "%s" old|new: %s|%s' %
+                             (column, old_token, token))
                     temp_fh.write('|'.join(fields))
 
                     # ... and rename the signature file.

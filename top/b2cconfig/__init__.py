@@ -268,12 +268,9 @@ class B2CConfig(top.Config):
     def cond(self):
         return self._cond
 
+    @set_dict
     def set_cond(self, values=None):
-        self._cond.clear()
-
-        if values is not None:
-            self._cond = values
-        log.debug('%s.conditions "%s"' % (self.facility, self.cond))
+        pass
 
     @property
     def rest(self):

@@ -23,9 +23,14 @@ class TestPodB2CConfig(unittest2.TestCase):
         self._c.set_config_file(config_file)
         self._c.parse_config()
 
+        received = self._c.archive_dir
+        expected = '/data/top/archive'
+        msg = 'podb2cconfig.archive_dir error'
+        self.assertEqual(received, expected, msg)
+
         received = self._c.pod_translator_loop
         expected = 600
-        msg = 'pod_translator_loop config error'
+        msg = 'podb2cconfig.pod_translator_loop error'
         self.assertEqual(received, expected, msg)
 
         received = self._c.pod_dirs
@@ -36,7 +41,7 @@ class TestPodB2CConfig(unittest2.TestCase):
                                  'nparcel',
                                  'parcelpoint',
                                  'in')]
-        msg = 'dirs.pod_in config error'
+        msg = 'podb2cconfig.pod_in error'
         self.assertListEqual(received, expected, msg)
 
         received = self._c.out_dir
@@ -47,12 +52,12 @@ class TestPodB2CConfig(unittest2.TestCase):
                                 'nparcel',
                                 'fast',
                                 'out')
-        msg = 'pods.out_dir config error'
+        msg = 'podb2cconfig.out_dir error'
         self.assertEqual(received, expected, msg)
 
         received = self._c.file_formats
         expected = ['.*_REF_\\d{14}\\.txt$']
-        msg = 'pods.file_formats config error'
+        msg = 'podb2cconfig.file_formats error'
         self.assertListEqual(received, expected, msg)
 
     def tearDown(self):

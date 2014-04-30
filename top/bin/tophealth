@@ -206,22 +206,11 @@ class HealthDaemon(top.DaemonService):
 def main():
     based = top.BaseD()
     based.set_command('start')
-    script_name = inspect.getfile(inspect.currentframe())
-    script_name = os.path.basename(script_name)
-    based.set_script_name(script_name)
-    based.parser.set_usage('usage: %prog [options]')
-    based.check_args()
+    script_name = os.path.basename(inspect.getfile(inspect.currentframe()))
+    based.check_args(script_name)
 
-    if based.options.dry is not None:
-        set_console()
-    else:
+    if based.options.dry is None:
         rollover()
-
-    # Enable detailed logging if required.
-    if based.options.verbose == 0:
-        set_log_level('INFO')
-    else:
-        log.info('Logging verbosity set to "DEBUG" level')
 
     config = None
     if based.options.config is not None:

@@ -178,7 +178,22 @@ class OnDeliveryB2CConfig(top.B2CConfig):
                    'option': 'scan_desc_header'},
                   {'section': 'transsend',
                    'option': 'scan_desc_keys',
-                   'is_list': True}]
+                   'is_list': True},
+                  {'section': 'timeout',
+                   'option': 'ondelivery_loop',
+                   'cast_type': 'int'},
+                   {'section': 'dirs',
+                    'option': 'tcd_in',
+                    'var': 'inbound_tcd',
+                    'is_list': True},
+                   {'section': 'primary_elect',
+                    'option': 'tcd_filename_format'},
+                   {'section': 'primary_elect',
+                    'option': 'uncollected_day_range',
+                    'cast_type': 'float'},
+                   {'section': 'primary_elect',
+                    'option': 'file_cache_size',
+                    'cast_type': 'int'}]
         for kw in kwargs:
             self.parse_scalar_config(**kw)
 
@@ -189,30 +204,8 @@ class OnDeliveryB2CConfig(top.B2CConfig):
                    'is_required': True},
                   {'section': 'file_bu',
                    'cast_type': 'int',
-                   'is_required': True}]
+                   'is_required': True},
+                  {'section': 'conditions',
+                   'var': 'cond'}]
         for kw in kwargs:
             self.parse_dict_config(**kw)
-
-        # Business unit conditons.  No probs if they are missing -- will
-        # just default to '0' (False) for each flag.
-        try:
-            self.set_cond(dict(self.items('conditions')))
-        except ConfigParser.NoSectionError, err:
-            log.debug('%s.conditions: "%s". Using "%s"' %
-                      (self.facility, err, self.cond))
-
-        # OnDelivery specific.
-        self.parse_scalar_config('timeout',
-                                 'ondelivery_loop',
-                                 cast_type='int')
-        self.parse_scalar_config('dirs',
-                                 'tcd_in',
-                                 var='inbound_tcd',
-                                 is_list=True)
-        self.parse_scalar_config('primary_elect', 'tcd_filename_format')
-        self.parse_scalar_config('primary_elect',
-                                 'uncollected_day_range',
-                                 cast_type='float')
-        self.parse_scalar_config('primary_elect',
-                                 'file_cache_size',
-                                 cast_type='int')

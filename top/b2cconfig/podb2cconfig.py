@@ -1,11 +1,10 @@
 __all__ = [
     "PodB2CConfig",
 ]
-import ConfigParser
-import sys
-
 import top
 from top.utils.log import log
+from top.utils.setter import (set_scalar,
+                              set_list)
 
 
 class PodB2CConfig(top.B2CConfig):
@@ -35,32 +34,21 @@ class PodB2CConfig(top.B2CConfig):
     _out_dir = None
     _file_formats = []
 
-    def __init__(self, file=None):
-        """:class:`top.PodB2CConfig` initialisation.
-        """
-        top.B2CConfig.__init__(self, file)
-
     @property
     def pod_translator_loop(self):
         return self._pod_translator_loop
 
+    @set_scalar
     def set_pod_translator_loop(self, value):
-        self._pod_translator_loop = int(value)
-        log.debug('%s pod_translator_loop set to %d' %
-                  (self.facility, self.pod_translator_loop))
+        pass
 
     @property
     def pod_dirs(self):
         return self._pod_dirs
 
+    @set_list
     def set_pod_dirs(self, values=None):
-        del self._pod_dirs[:]
-        self._pod_dirs = []
-
-        if values is not None:
-            self._pod_dirs.extend(values)
-        log.debug('%s pod_dirs set to: "%s"' %
-                  (self.facility, self.pod_dirs))
+        pass
 
     @property
     def out_dir(self):
@@ -84,6 +72,11 @@ class PodB2CConfig(top.B2CConfig):
         log.debug('%s pod.file_formats set to "%s"' %
                   (self.facility, self.file_formats))
 
+    def __init__(self, file=None):
+        """:class:`top.PodB2CConfig` initialisation.
+        """
+        top.B2CConfig.__init__(self, file)
+
     def parse_config(self):
         """Read config items from the configuration file.
 
@@ -92,42 +85,24 @@ class PodB2CConfig(top.B2CConfig):
 
         # These are the generic values that can be removed
         # after top.B2CConfig is refactored.
-        try:
-            self.set_archive_dir(self.get('dirs', 'archive'))
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.critical('%s dirs.archive is a required item: %s' %
-                         (self.facility, err))
-            sys.exit(1)
+        kwargs = [{'section': 'dirs',
+                   'option': 'archive',
+                   'var': 'archive_dir',
+                   'is_required': True},
+                  {'section': 'timeout',
+                   'option': 'pod_translator_loop',
+                   'var': 'pod_translator_loop',
+                   'cast_type': 'int'},
+                  {'section': 'dirs',
+                   'option': 'pod_in',
+                   'var': 'pod_dirs',
+                   'is_list': True},
+                  {'section': 'pod',
+                   'option': 'out_dir',
+                   'is_required': True},
+                  {'section': 'pod',
+                   'option': 'file_formats',
+                   'is_list': True}]
 
-        # POD specific.
-        try:
-            self.set_pod_translator_loop(self.get('timeout',
-                                                  'pod_translator_loop'))
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('%s timeout.pod_translator_loop: %s. Using %d' %
-                      (self.facility, err, self.pod_translator_loop))
-
-        try:
-            self.set_pod_dirs(self.get('dirs', 'pod_in').split(','))
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('%s dirs.pod_in: %s. Using %s' %
-                      (self.facility, err, self.pod_dirs))
-
-        try:
-            self.set_out_dir(self.get('pod', 'out_dir'))
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.critical('%s pod.out_dir is a required config item: %s' %
-                         (self.facility, err))
-            sys.exit(1)
-
-        try:
-            tmp_vals = self.get('pod', 'file_formats')
-            self.set_file_formats(tmp_vals.split(','))
-        except (ConfigParser.NoSectionError,
-                ConfigParser.NoOptionError), err:
-            log.debug('%s pod.file_formats: %s. Using "%s"' %
-                      (self.facility, err, self.file_formats))
+        for kw in kwargs:
+            self.parse_scalar_config(**kw)
