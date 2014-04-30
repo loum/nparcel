@@ -44,15 +44,12 @@ class LoaderDaemon(top.DaemonService):
                  dry=False,
                  batch=False,
                  config='top.conf'):
-        c = None
-        if config is not None:
-            c = top.B2CConfig(config)
         top.DaemonService.__init__(self,
                                    pidfile=pidfile,
                                    file=file,
                                    dry=dry,
                                    batch=batch,
-                                   config=c)
+                                   config=config)
 
         try:
             self.set_support_emails(self.config.support_emails)

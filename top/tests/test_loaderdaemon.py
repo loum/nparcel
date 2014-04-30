@@ -16,7 +16,8 @@ class TestLoaderDaemon(unittest2.TestCase):
         cls._test_dir = os.path.join('top', 'tests', 'files')
         cls._file = os.path.join(cls._test_dir,
                                  'T1250_TOLI_20130828202901.txt')
-        config = os.path.join('top', 'conf', 'top.conf')
+        config_file = os.path.join('top', 'conf', 'top.conf')
+        config = top.B2CConfig(config_file)
         cls._d = top.LoaderDaemon(pidfile=None, config=config)
         cls._d.emailer.set_template_base(os.path.join('top',
                                                       'templates'))
