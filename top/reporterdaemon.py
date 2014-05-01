@@ -8,6 +8,9 @@ import datetime
 import top
 from top.utils.log import log
 from top.utils.files import create_dir
+from top.utils.setter import (set_scalar,
+                              set_list,
+                              set_dict)
 
 
 class ReporterDaemon(top.DaemonService):
@@ -107,7 +110,6 @@ class ReporterDaemon(top.DaemonService):
 
     """
     _report_type = None
-    _config = None
     _report = None
     _bu_ids = {}
     _outdir = os.path.join(os.sep, 'data', 'top', 'reports')
@@ -128,20 +130,184 @@ class ReporterDaemon(top.DaemonService):
     _compliance_period = 7
     _emailer = top.Emailer()
 
+    @property
+    def report_type(self):
+        return self._report_type
+
+    @set_scalar
+    def set_report_type(self, value):
+        pass
+
+    @property
+    def bu_ids(self):
+        return self._bu_ids
+
+    @set_dict
+    def set_bu_ids(self, values):
+        pass
+
+    @property
+    def outdir(self):
+        return self._outdir
+
+    @set_scalar
+    def set_outdir(self, value):
+        if value is not None:
+            create_dir(self.outdir)
+
+    @property
+    def outfile(self):
+        return self._outfile
+
+    @set_scalar
+    def set_outfile(self, value):
+        pass
+
+    @property
+    def outfile_ts_format(self):
+        return self._outfile_ts_format
+
+    @set_scalar
+    def set_outfile_ts_format(self, value):
+        pass
+
+    @property
+    def extension(self):
+        return self._extension
+
+    @set_scalar
+    def set_extension(self, value):
+        pass
+
+    @property
+    def display_hdrs(self):
+        return self._display_hdrs
+
+    @set_list
+    def set_display_hdrs(self, values=None):
+        pass
+
+    @property
+    def aliases(self):
+        return self._aliases
+
+    @set_dict
+    def set_aliases(self, values=None):
+        pass
+
+    @property
+    def header_widths(self):
+        return self._header_widths
+
+    @set_dict
+    def set_header_widths(self, values=None):
+        pass
+
+    @property
+    def ws(self):
+        return self._ws
+
+    @set_dict
+    def set_ws(self, values=None):
+        if values is None:
+            self.set_ws({'title': str(),
+                         'sub_title': str(),
+                         'sheet_title': str()})
+
+    @property
+    def report_filename(self):
+        return self._report_filename
+
+    @set_scalar
+    def set_report_filename(self, value):
+        pass
+
+    @property
+    def recipients(self):
+        return self._recipients
+
+    @set_list
+    def set_recipients(self, values=None):
+        pass
+
+    @property
+    def bu_id_recipients(self):
+        return self._bu_id_recipients
+
+    @set_dict
+    def set_bu_id_recipients(self, values):
+        pass
+
+    @property
+    def delivery_partners(self):
+        return self._delivery_partners
+
+    @set_list
+    def set_delivery_partners(self, values=None):
+        pass
+
+    @property
+    def bu_based(self):
+        return self._bu_based
+
+    def set_bu_based(self, value):
+        self._bu_based = (value == True)
+        log.debug('%s.bu_based set to "%s"' % (self.facility, self.bu_based))
+
+    @property
+    def compliance_period(self):
+        return self._compliance_period
+
+    @set_scalar
+    def set_compliance_period(self, value):
+        pass
+
+    @property
+    def reporter_kwargs(self):
+        kwargs = {}
+        try:
+            kwargs['db_kwargs'] = self.config.db_kwargs()
+        except AttributeError, err:
+            log.debug('%s db_kwargs not in config: %s ' %
+                      (self.facility, err))
+
+        if self.report_type in ['uncollected',
+                                'noncompliance',
+                                'totals',
+                                'collected']:
+            try:
+                if self.config.report_bu_ids is not None:
+                    self.set_bu_ids(self.config.report_bu_ids)
+            except AttributeError, err:
+                log.debug('%s bu_ids not in config: %s. Using "%s"' %
+                          (self.facility, err, self.bu_ids))
+            kwargs['bu_ids'] = self.bu_ids
+
+        try:
+            if self.config.report_type_delivery_parters is not None:
+                self.set_bu_ids(self.config.report_type_delivery_partners)
+        except AttributeError, err:
+            msg = '%s %s not in config: %s. Using "%s"'
+            log.debug(msg % (self.facility,
+                             'report_type_delivery_partner',
+                             err,
+                             self.bu_ids))
+        kwargs['delivery_partners'] = self.delivery_partners
+
+        log.debug('%s.reporter_kwargs: "%s"' % (self.facility, kwargs))
+        return kwargs
+
     def __init__(self,
                  report,
                  pidfile,
                  dry=False,
                  batch=True,
                  config=None):
-        c = None
-        if config is not None:
-            c = top.ReporterB2CConfig(file=config, type=report)
         top.DaemonService.__init__(self,
                                    pidfile=pidfile,
                                    dry=dry,
                                    batch=batch,
-                                   config=c)
+                                   config=config)
         self.set_report_type(report)
 
         log_msg = self.facility + '.%s not set via config: %s. Using "%s"'
@@ -251,218 +417,6 @@ class ReporterDaemon(top.DaemonService):
             log.debug(log_msg % ('report_compliance_period',
                                  err,
                                  self.compliance_period))
-
-    @property
-    def report_type(self):
-        return self._report_type
-
-    def set_report_type(self, value):
-        self._report_type = value
-        log.debug('%s report_type set to "%s"' %
-                  (self.facility, self.report_type))
-
-    @property
-    def config(self):
-        return self._config
-
-    def set_config(self, value):
-        self._config = value
-
-    @property
-    def bu_ids(self):
-        return self._bu_ids
-
-    def set_bu_ids(self, values):
-        self._bu_ids.clear()
-
-        if values is not None:
-            self._bu_ids = values
-        log.debug('%s.bu_ids set to "%s"' % (self.facility, self._bu_ids))
-
-    @property
-    def outdir(self):
-        return self._outdir
-
-    def set_outdir(self, value):
-        self._outdir = value
-        create_dir(self.outdir)
-        log.debug('%s.outdir set to "%s"' % (self.facility, self.outdir))
-
-    @property
-    def outfile(self):
-        return self._outfile
-
-    def set_outfile(self, value):
-        self._outfile = value
-        log.debug('%s.outfile set to "%s"' % (self.facility, self.outfile))
-
-    @property
-    def outfile_ts_format(self):
-        return self._outfile_ts_format
-
-    def set_outfile_ts_format(self, value):
-        self._outfile_ts_format = value
-        log.debug('%s.outfile_ts_format set to "%s"' %
-                  (self.facility, self.outfile_ts_format))
-
-    @property
-    def extension(self):
-        return self._extension
-
-    def set_extension(self, value):
-        self._extension = value
-        log.debug('%s.extension set to "%s"' %
-                  (self.facility, self.extension))
-
-    @property
-    def display_hdrs(self):
-        return self._display_hdrs
-
-    def set_display_hdrs(self, values=None):
-        del self._display_hdrs[:]
-        self._display_hdrs
-
-        if values is not None:
-            self._display_hdrs.extend(values)
-        log.debug('%s.display_hdrs set to "%s"' %
-                  (self.facility, self.display_hdrs))
-
-    @property
-    def aliases(self):
-        return self._aliases
-
-    def set_aliases(self, values=None):
-        self._aliases.clear()
-
-        if values is not None:
-            self._aliases = values
-        log.debug('%s.aliases set to "%s"' % (self.facility, self._aliases))
-
-    @property
-    def header_widths(self):
-        return self._header_widths
-
-    def set_header_widths(self, values=None):
-        self._header_widths.clear()
-
-        if values is not None:
-            self._header_widths = values
-        log.debug('%s.header_widths set to "%s"' %
-                  (self.facility, self._header_widths))
-
-    @property
-    def ws(self):
-        return self._ws
-
-    def set_ws(self, values=None):
-        self._ws.clear()
-
-        if values is not None:
-            self._ws = values
-        else:
-            self._ws = {'title': str(),
-                        'sub_title': str(),
-                        'sheet_title': str()}
-        log.debug('%s.ws set to "%s"' % (self.facility, self._ws))
-
-    @property
-    def report_filename(self):
-        return self._report_filename
-
-    def set_report_filename(self, value):
-        self._report_filename = value
-        log.debug('%s.report_filename set to "%s"' %
-                  (self.facility, self._report_filename))
-
-    @property
-    def recipients(self):
-        return self._recipients
-
-    def set_recipients(self, values=None):
-        del self._recipients[:]
-        self._recipients
-
-        if values is not None:
-            self._recipients.extend(values)
-        log.debug('%s.recipients set to "%s"' %
-                  (self.facility, self._recipients))
-
-    @property
-    def bu_id_recipients(self):
-        return self._bu_id_recipients
-
-    def set_bu_id_recipients(self, values):
-        self._bu_id_recipients.clear()
-
-        if values is not None:
-            self._bu_id_recipients = values
-        log.debug('%s.bu_id_recipients set to "%s"' %
-                   (self.facility, self.bu_id_recipients))
-
-    @property
-    def delivery_partners(self):
-        return self._delivery_partners
-
-    def set_delivery_partners(self, values=None):
-        del self._delivery_partners[:]
-        self._delivery_partners
-
-        if values is not None:
-            self._delivery_partners.extend(values)
-        log.debug('%s.delivery_partners set to "%s"' %
-                    (self.facility, self._delivery_partners))
-
-    @property
-    def bu_based(self):
-        return self._bu_based
-
-    def set_bu_based(self, value):
-        self._bu_based = (value == True)
-        log.debug('%s.bu_based set to "%s"' % (self.facility, self.bu_based))
-
-    @property
-    def compliance_period(self):
-        return self._compliance_period
-
-    def set_compliance_period(self, value):
-        self._compliance_period = value
-        log.debug('%s.compliance_period set to %s (days)' %
-                  (self.facility, self.compliance_period))
-
-    @property
-    def reporter_kwargs(self):
-        kwargs = {}
-        try:
-            kwargs['db_kwargs'] = self.config.db_kwargs()
-        except AttributeError, err:
-            log.debug('%s db_kwargs not in config: %s ' %
-                      (self.facility, err))
-
-        if self.report_type in ['uncollected',
-                                'noncompliance',
-                                'totals',
-                                'collected']:
-            try:
-                if self.config.report_bu_ids is not None:
-                    self.set_bu_ids(self.config.report_bu_ids)
-            except AttributeError, err:
-                log.debug('%s bu_ids not in config: %s. Using "%s"' %
-                          (self.facility, err, self.bu_ids))
-            kwargs['bu_ids'] = self.bu_ids
-
-        try:
-            if self.config.report_type_delivery_parters is not None:
-                self.set_bu_ids(self.config.report_type_delivery_partners)
-        except AttributeError, err:
-            msg = '%s %s not in config: %s. Using "%s"'
-            log.debug(msg % (self.facility,
-                             'report_type_delivery_partner',
-                             err,
-                             self.bu_ids))
-        kwargs['delivery_partners'] = self.delivery_partners
-
-        log.debug('%s.reporter_kwargs: "%s"' % (self.facility, kwargs))
-        return kwargs
 
     def _start(self, event):
         """Override the :method:`top.utils.Daemon._start` method.

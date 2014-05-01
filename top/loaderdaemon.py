@@ -43,7 +43,7 @@ class LoaderDaemon(top.DaemonService):
                  file=None,
                  dry=False,
                  batch=False,
-                 config='top.conf'):
+                 config=None):
         top.DaemonService.__init__(self,
                                    pidfile=pidfile,
                                    file=file,

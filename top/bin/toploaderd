@@ -4,9 +4,6 @@ import os
 import inspect
 
 import top
-from top.utils.log import (log,
-                           set_console,
-                           set_log_level)
 
 
 def main():
@@ -14,7 +11,7 @@ def main():
     based.parser.add_option('-f', '--file',
                             dest='file',
                             help='file to process inline (start only)')
-    script_name = os.path.bsename(inspect.getfile(inspect.currentframe()))
+    script_name = os.path.basename(inspect.getfile(inspect.currentframe()))
     based.check_args(script_name)
 
     # Check if a filename was provided on the command line.

@@ -11,7 +11,6 @@ class TestReporterB2CConfig(unittest2.TestCase):
         cls._file = os.path.join('top', 'conf', 'top.conf')
 
     def setUp(self):
-        sconfig_file = os.path.join('top', 'conf', 'top.conf')
         self._rc = top.ReporterB2CConfig()
 
     def test_init(self):
@@ -23,9 +22,15 @@ class TestReporterB2CConfig(unittest2.TestCase):
     def test_parse_config(self):
         """Parse comms items from the config.
         """
-        config_file = os.path.join('top', 'conf', 'top.conf')
-        self._rc.set_config_file(config_file)
+        self._rc.set_config_file(self._file)
         self._rc.parse_config()
+
+        received = self._rc.report_bu_id_recipients
+        expected = {1: ['loumar@tollgroup.com', 'lou.markovski@gmail.com'],
+                    2: ['lou.markovski@gmail.com'],
+                    3: ['lou@triple20.com.au']}
+        msg = 'Config BU ID recipients value error'
+        self.assertDictEqual(received, expected, msg)
 
         received = self._rc.report_bu_ids
         expected = {1: 'Toll Priority',
@@ -518,19 +523,6 @@ class TestReporterB2CConfig(unittest2.TestCase):
 
         # Clean up.
         self._rc.set_report_type(old_report_type)
-
-    def test_parse_report_bu_id_recipients(self):
-        """Parse items from the config -- reporter BU ID recipients.
-        """
-        self._rc.set_config_file(self._file)
-        self._rc.parse_config()
-
-        received = self._rc.report_bu_id_recipients
-        expected = {1: ['loumar@tollgroup.com', 'lou.markovski@gmail.com'],
-                    2: ['lou.markovski@gmail.com'],
-                    3: ['lou@triple20.com.au']}
-        msg = 'Config BU ID recipients value error'
-        self.assertDictEqual(received, expected, msg)
 
     def tearDown(self):
         del self._rc

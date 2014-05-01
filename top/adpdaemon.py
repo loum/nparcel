@@ -51,15 +51,12 @@ class AdpDaemon(top.DaemonService):
                  dry=False,
                  batch=False,
                  config=None):
-        c = None
-        if config is not None:
-            c = top.B2CConfig(config)
         top.DaemonService.__init__(self,
                                    pidfile=pidfile,
                                    file=file,
                                    dry=dry,
                                    batch=batch,
-                                   config=c)
+                                   config=config)
 
         try:
             if self.config.support_emails is not None:

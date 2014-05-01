@@ -7,20 +7,18 @@ import signal
 import top
 from top.utils.files import (gen_digest_path,
                              move_file)
-from top.utils.log import (log,
-                           set_log_level,
-                           set_console)
+from top.utils.log import set_console
 
 
 class PodMigrateDaemon(top.DaemonService):
     _current_dir = os.curdir
 
-    def __init__(self, pidfile, dry=True, config='top.conf'):
-        super(PodMigrateDaemon, self).__init__(pidfile=pidfile)
+    def __init__(self, pidfile, dry=True, config=None):
+        top.DaemonService.__init__(self,
+                                   pidfile=pidfile,
+                                   config=config)
 
         self.set_dry(dry)
-        self.config = top.B2CConfig(file=config)
-        self.config.parse_config()
 
     @property
     def current_dir(self):
@@ -51,30 +49,23 @@ class PodMigrateDaemon(top.DaemonService):
             target = os.path.join(path, *digest_path)
             target = os.path.join(target, fname)
             move_file(file, target, dry=self.dry)
-            
+
 
 def main():
-    config_file = os.path.join(os.path.expanduser('~'), '.top', 'top.conf')
-
-    based = top.BaseD(config=config_file)
-    based.set_command('start')
-    script_name = inspect.getfile(inspect.currentframe())
-    script_name = os.path.basename(script_name)
-    based.set_script_name(script_name)
-    based.parser.set_usage('usage: %prog [options] <POD value>')
-    based.check_args()
+    based = top.BaseD()
+    script_name = os.path.basename(inspect.getfile(inspect.currentframe()))
+    based.parser.set_usage('usage: %prog [options]')
+    based.check_args(script_name, command='start')
 
     set_console()
 
-    # Enable detailed logging if required.
-    if based.options.verbose == 0:
-        set_log_level('INFO')
-    else:
-        log.info('Logging verbosity set to "DEBUG" level')
+    config = None
+    if based.options.config is not None:
+        config = top.B2CConfig(based.options.config)
 
     pd = PodMigrateDaemon(pidfile=based.pidfile,
                           dry=based.dry,
-                          config=based.options.config)
+                          config=config)
 
     # OK, start processing.
     based.set_batch(True)

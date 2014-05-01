@@ -6,6 +6,9 @@ import ConfigParser
 
 import top
 from top.utils.log import log
+from top.utils.setter import (set_scalar,
+                              set_list,
+                              set_dict)
 
 
 class ReporterB2CConfig(top.B2CConfig):
@@ -91,166 +94,109 @@ class ReporterB2CConfig(top.B2CConfig):
     _report_bu_id_recipients = {}
     _report_compliance_period = 7
 
-    def __init__(self, file=None, type=None):
-        """ReporterB2CConfig initialisation.
-        """
-        top.B2CConfig.__init__(self, file)
-
-        if type is not None:
-            self.set_report_type(type)
-
     @property
     def report_type(self):
         return self._report_type
 
+    @set_scalar
     def set_report_type(self, value=None):
-        self._report_type = value
-        log.debug('%s report_type set to "%s"' %
-                  (self.facility, self.report_type))
+        pass
 
     @property
     def report_bu_ids(self):
         return self._report_bu_ids
 
+    @set_dict
     def set_report_bu_ids(self, values):
-        self._report_bu_ids.clear()
-
-        if values is not None:
-            self._report_bu_ids = values
-        log.debug('%s report_bu_ids set to "%s"' %
-                  (self.facility, self._report_bu_ids))
+        pass
 
     @property
     def report_outdir(self):
         return self._report_outdir
 
+    @set_scalar
     def set_report_outdir(self, value):
-        self._report_outdir = value
-        log.debug('%s report_outdir set to "%s"' %
-                  (self.facility, self._report_outdir))
+        pass
 
     @property
     def report_outfile(self):
         return self._report_outfile
 
+    @set_scalar
     def set_report_outfile(self, value):
-        self._report_outfile = value
-        log.debug('%s report_outfile set to "%s"' %
-                  (self.facility, self._report_outfile))
+        pass
 
     @property
     def report_outfile_ts_format(self):
         return self._report_outfile_ts_format
 
+    @set_scalar
     def set_report_outfile_ts_format(self, value):
-        self._report_outfile_ts_format = value
-        log.debug('%s report_outfile_ts_format set to "%s"' %
-                  (self.facility, self._report_outfile_ts_format))
+        pass
 
     @property
     def report_extension(self):
         return self._report_extension
 
+    @set_scalar
     def set_report_extension(self, value):
-        self._report_extension = value
-        log.debug('%s report_extension set to "%s"' %
-                  (self.facility, self.report_extension))
+        pass
 
     @property
     def report_type_outfile(self):
         return self._report_type_outfile
 
+    @set_scalar
     def set_report_type_outfile(self, value):
-        self._report_type_outfile = value
-        log.debug('%s report_type_outfile set to "%s"' %
-                  (self.facility, self.report_type_outfile))
+        pass
 
     @property
     def report_type_display_hdrs(self):
         return self._report_type_display_hdrs
 
+    @set_list
     def set_report_type_display_hdrs(self, values=None):
-        del self.report_type_display_hdrs[:]
-        self._report_type_display_hdrs = []
-
-        if values is not None:
-            self._report_type_display_hdrs.extend(values)
-        log.debug('%s report_%s.display_hdrs set to "%s"' %
-                  (self.facility,
-                   self.report_type,
-                   self.report_type_display_hdrs))
+        pass
 
     @property
     def report_type_aliases(self):
         return self._report_type_aliases
 
+    @set_dict
     def set_report_type_aliases(self, values=None):
-        self._report_type_aliases.clear()
-
-        if values is not None:
-            self._report_type_aliases = values
-        log.debug('%s report_%s.aliases set to "%s"' %
-                  (self.facility,
-                   self.report_type,
-                   self.report_type_aliases))
+        pass
 
     @property
     def report_type_widths(self):
         return self._report_type_widths
 
+    @set_dict
     def set_report_type_widths(self, values=None):
-        self._report_type_widths.clear()
-
-        if values is not None:
-            self._report_type_widths = values
-        log.debug('%s report_%s_widths set to "%s"' %
-                  (self.facility,
-                   self.report_type,
-                   self.report_type_widths))
+        pass
 
     @property
     def report_type_ws(self):
         return self._report_type_ws
 
+    @set_dict
     def set_report_type_ws(self, values=None):
-        self._report_type_ws.clear()
-
-        if values is not None:
-            self._report_type_ws = values
-        log.debug('%s report_%s_ws set to "%s"' %
-                  (self.facility,
-                   self.report_type,
-                   self.report_type_ws))
+        pass
 
     @property
     def report_type_recipients(self):
         return self._report_type_recipients
 
+    @set_list
     def set_report_type_recipients(self, values=None):
-        del self._report_type_recipients[:]
-        self._report_type_recipients = []
-
-        if values is not None:
-            self._report_type_recipients.extend(values)
-        log.debug('%s report_%s.recipients set to "%s"' %
-                  (self.facility,
-                   self.report_type,
-                   self.report_type_recipients))
+        pass
 
     @property
     def report_type_delivery_partners(self):
         return self._report_type_delivery_partners
 
+    @set_list
     def set_report_type_delivery_partners(self, values=None):
-        del self._report_type_delivery_partners[:]
-        self._report_type_delivery_partners = []
-
-        if values is not None:
-            self._report_type_delivery_partners.extend(values)
-        log.debug('%s report_%s.delivery_partners set to "%s"' %
-                  (self.facility,
-                   self.report_type,
-                   self.report_type_delivery_partners))
+        pass
 
     @property
     def report_type_bu_based(self):
@@ -267,37 +213,33 @@ class ReporterB2CConfig(top.B2CConfig):
     def report_type_delivery_partners(self):
         return self._report_type_delivery_partners
 
+    @set_list
     def set_report_type_delivery_partners(self, values=None):
-        del self._report_type_delivery_partners[:]
-        self._report_type_delivery_partners = []
-
-        if values is not None:
-            self._report_type_delivery_partners.extend(values)
-        log.debug('%s report_%s.delivery_partners set to "%s"' %
-                  (self.facility,
-                   self.report_type,
-                   self.report_type_delivery_partners))
+        pass
 
     @property
     def report_bu_id_recipients(self):
         return self._report_bu_id_recipients
 
+    @set_dict
     def set_report_bu_id_recipients(self, values=None):
-        self._report_bu_id_recipients.clear()
-
-        if values is not None:
-            self._report_bu_id_recipients = values
-        log.debug('%s report_bu_id_recipients set to "%s"' %
-                    (self.facility, self.report_bu_id_recipients))
+        pass
 
     @property
     def report_compliance_period(self):
         return self._report_compliance_period
 
+    @set_scalar
     def set_report_compliance_period(self, value):
-        self.report_compliance_period = value
-        log.debug('%s report_compliance_period: %s' %
-                  (self.facility, self.report_compliance_period))
+        pass
+
+    def __init__(self, file=None, type=None):
+        """ReporterB2CConfig initialisation.
+        """
+        top.B2CConfig.__init__(self, file)
+
+        if type is not None:
+            self.set_report_type(type)
 
     def parse_config(self):
         """Read config items from the configuration file.
@@ -316,34 +258,20 @@ class ReporterB2CConfig(top.B2CConfig):
             log.debug('%s report_bu_ids: %s. Using "%s"' %
                       (self.facility, err, self.report_bu_ids))
 
-        try:
-            self.set_report_outdir(self.get('report_base', 'outdir'))
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('%s report_base.outdir: %s. Using "%s"' %
-                      (self.facility, err, self.report_outdir))
-
-        try:
-            self.set_report_outfile(self.get('report_base', 'outfile'))
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('%s report_base.outfile: %s. Using "%s"' %
-                      (self.facility, err, self.report_outfile))
-
-        try:
-            tmp = self.get('report_base', 'outfile_ts_format')
-            self.set_report_outfile_ts_format(tmp)
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('%s report_base.outfile_ts_format: %s. Using "%s"' %
-                      (self.facility, err, self.report_outfile_ts_format))
-
-        try:
-            self.set_report_extension(self.get('report_base', 'extension'))
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('%s report_base.extension: %s. Using "%s"' %
-                      (self.facility, err, self.report_extension))
+        kwargs = [{'section': 'report_base',
+                   'option': 'outdir',
+                   'var': 'report_outdir'},
+                  {'section': 'report_base',
+                   'option': 'outfile',
+                   'var': 'report_outfile'},
+                  {'section': 'report_base',
+                   'option': 'outfile_ts_format',
+                   'var': 'report_outfile_ts_format'},
+                  {'section': 'report_base',
+                   'option': 'extension',
+                   'var': 'report_extension'}]
+        for kw in kwargs:
+            self.parse_scalar_config(**kw)
 
         report_section = 'report_%s' % self.report_type
         for attr in ['outfile',
@@ -416,11 +344,8 @@ class ReporterB2CConfig(top.B2CConfig):
 
         # Report specific options.
         if self.report_type == 'compliance':
-            try:
-                tmp_period = self.get('report_compliance', 'period')
-                self.set_report_compliance_period(int(tmp_period))
-            except (ConfigParser.NoOptionError,
-                    ConfigParser.NoSectionError), err:
-                msg = ('%s report_compliance.period: %s' %
-                       (self.facility, self.report_compliance_period))
-                log.debug(msg)
+            kwargs = {'section': 'report_compliance',
+                      'option': 'period',
+                      'var': 'report_compliance_period',
+                      'cast_type': 'int'}
+            self.parse_scalar_config(**kwargs)

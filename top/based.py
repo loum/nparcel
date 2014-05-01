@@ -157,7 +157,6 @@ class BaseD(object):
     def set_supported_commands(self, values=None):
         pass
 
-
     def __init__(self, config=None):
         """BaseD initialisation.
         """
@@ -183,7 +182,7 @@ class BaseD(object):
                                 help=('override default config "%s"' %
                                       self._config))
 
-    def check_args(self, script_name):
+    def check_args(self, script_name, command=None):
         """Verify that the daemon arguments are as expected.
 
         Sets the controller command to (for example stop, start or status)
@@ -192,8 +191,11 @@ class BaseD(object):
         Attempts to make a sane assesment of options against the given
         :attr:`command`.
 
-        **Kwargs**:
+        **Args**:
             *script_name*: name of the executing script
+
+        **Kwargs**:
+            *command*: name of the executing script
 
         **Raises**:
             ``SystemExit`` (program exit) if one argument is not provided
@@ -205,23 +207,22 @@ class BaseD(object):
         if options.dry is not None:
             set_console()
 
-        command = None
-        if self.command is None:
+        cmd = command
+        if command is None:
             if len(args) != 1:
                 self.parser.error("incorrect number of arguments")
 
-            #self.set_command(args.pop(0))
-            command = (args.pop(0))
+            cmd = (args.pop(0))
 
-            if (command not in self.supported_commands):
-                self.parser.error('command "%s" not supported' % command)
+            if (cmd not in self.supported_commands):
+                self.parser.error('command "%s" not supported' % cmd)
 
-            if (command != 'start' and
+            if (cmd != 'start' and
                 (options.dry or options.batch)):
                 self.parser.error('invalid option(s) with command "%s"' %
-                                  command)
+                                  cmd)
 
-        if command == 'status':
+        if cmd == 'status':
             set_console()
 
         if options.verbose == 0:
@@ -229,8 +230,8 @@ class BaseD(object):
         else:
             log.debug('Logging verbosity set to "DEBUG" level')
 
+        self.set_command(cmd)
         self.set_script_name(script_name)
-        self.set_command(command)
         self.set_options(options)
         self.set_args(args)
 

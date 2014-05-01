@@ -5,22 +5,13 @@ import inspect
 import signal
 
 import top
-from top.utils.files import (gen_digest,
-                             gen_digest_path)
-from top.utils.log import (log,
-                           set_log_level,
-                           set_console)
+from top.utils.files import gen_digest_path
+from top.utils.log import set_console
 
 
 class PodDaemon(top.DaemonService):
     _current_dir = os.curdir
     _pod = None
-
-    def __init__(self, pidfile, dry=True, config='top.conf'):
-        super(PodDaemon, self).__init__(pidfile=pidfile)
-
-        self.config = top.B2CConfig(file=config)
-        self.config.parse_config()
 
     @property
     def current_dir(self):
@@ -36,6 +27,11 @@ class PodDaemon(top.DaemonService):
     def set_pod(self, value):
         self._pod = value
 
+    def __init__(self, pidfile, dry=True, config=None):
+        top.DaemonService.__init__(self,
+                                   pidfile=pidfile,
+                                   config=config)
+
     def _start(self, event):
         signal.signal(signal.SIGTERM, self._exit_handler)
 
@@ -49,16 +45,12 @@ class PodDaemon(top.DaemonService):
         path = os.path.join(self.current_dir, 'signature', *digest_path)
         print('path: %s' % path)
 
-def main():
-    config_file = os.path.join(os.path.expanduser('~'), '.top', 'top.conf')
 
-    based = top.BaseD(config=config_file)
-    based.set_command('start')
-    script_name = inspect.getfile(inspect.currentframe())
-    script_name = os.path.basename(script_name)
-    based.set_script_name(script_name)
+def main():
+    based = top.BaseD()
+    script_name = os.path.basename(inspect.getfile(inspect.currentframe()))
     based.parser.set_usage('usage: %prog [options] <POD value>')
-    based.check_args()
+    based.check_args(script_name, command='start')
 
     pod = None
     try:
@@ -68,13 +60,11 @@ def main():
 
     set_console()
 
-    # Enable detailed logging if required.
-    if based.options.verbose == 0:
-        set_log_level('INFO')
-    else:
-        log.info('Logging verbosity set to "DEBUG" level')
+    config = None
+    if based.options.config is not None:
+        config = top.B2CConfig(based.options.config)
 
-    pd = PodDaemon(pidfile=based.pidfile, config=based.options.config)
+    pd = PodDaemon(pidfile=based.pidfile, config=config)
     pd.set_pod(pod)
 
     # OK, start processing.

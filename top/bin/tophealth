@@ -9,8 +9,6 @@ import socket
 
 import top
 from top.utils.log import (log,
-                           set_log_level,
-                           set_console,
                            rollover)
 from top.utils.setter import set_list
 
@@ -206,7 +204,8 @@ class HealthDaemon(top.DaemonService):
 def main():
     based = top.BaseD()
     script_name = os.path.basename(inspect.getfile(inspect.currentframe()))
-    based.check_args(script_name)
+    based.parser.set_usage('usage: %prog [options]')
+    based.check_args(script_name, command='start')
 
     if based.options.dry is None:
         rollover()

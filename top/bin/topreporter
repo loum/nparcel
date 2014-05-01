@@ -4,10 +4,7 @@ import os
 import inspect
 
 import top
-from top.utils.log import (log,
-                           set_log_level,
-                           set_console,
-                           rollover)
+from top.utils.log import rollover
 
 REPORTS = ['uncollected',
            'compliance',
@@ -18,16 +15,11 @@ REPORTS = ['uncollected',
 
 
 def main():
-    config_file = os.path.join(os.path.expanduser('~'), '.top', 'top.conf')
-
-    based = top.BaseD(config=config_file)
-    based.set_command('start')
-    script_name = inspect.getfile(inspect.currentframe())
-    script_name = os.path.basename(script_name)
-    based.set_script_name(script_name)
+    based = top.BaseD()
+    script_name = os.path.basename(inspect.getfile(inspect.currentframe()))
     r = '<%s>' % '|'.join(REPORTS)
     based.parser.set_usage('usage: %prog [options] ' + r)
-    based.check_args()
+    based.check_args(script_name, command='start')
 
     report = None
     try:
@@ -37,22 +29,18 @@ def main():
     if report not in REPORTS:
         based.parser.error('Report "%s" not supported' % report)
 
-    if based.options.dry is not None:
-        set_console()
-    else:
+    if based.options.dry is None:
         rollover()
 
-    # Enable detailed logging if required.
-    if based.options.verbose == 0:
-        set_log_level('INFO')
-    else:
-        log.info('Logging verbosity set to "DEBUG" level')
+    config = None
+    if based.options.config is not None:
+        config = top.ExporterB2CConfig(based.options.config)
 
     # OK, start processing.
     rep = top.ReporterDaemon(report,
                              pidfile=based.pidfile,
                              dry=based.dry,
-                             config=based.options.config)
+                             config=config)
 
     based.set_batch(True)
     based.launch_command(rep, script_name)
