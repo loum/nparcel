@@ -274,13 +274,18 @@ class CommsDaemon(top.DaemonService):
                         files.append(self.file)
                         event.set()
                     else:
-                        for filter in all_templates:
-                            log.debug('filter: %s' % filter)
+                        for filter in self.controlled_templates:
+                            log.debug('controlled template filter: %s' %
+                                      filter)
                             files.extend(self.get_comms_files(filter))
 
-                    if len(files):
-                        self.reporter.reset('Comms')
-                        log.info('All files: "%s"' % files)
+            for filter in self.uncontrolled_templates:
+                log.debug('uncontrolled template filter: %s' % filter)
+                files.extend(self.get_comms_files(filter))
+
+            if len(files):
+                self.reporter.reset('Comms')
+                log.info('All files: "%s"' % files)
 
             # Start processing files.
             if self._message_queue_ok(len(files), dry=self.dry):
@@ -374,7 +379,7 @@ class CommsDaemon(top.DaemonService):
                 is_within_time_range = False
                 break
 
-        log.debug('Is current time with range?: %s' %
+        log.debug('Is current time within range?: %s' %
                     str(is_within_time_range))
 
         return is_within_time_range
