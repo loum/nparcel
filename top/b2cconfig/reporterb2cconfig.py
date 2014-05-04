@@ -2,7 +2,6 @@ __all__ = [
     "ReporterB2CConfig",
 ]
 #import sys
-import ConfigParser
 
 import top
 from top.utils.log import log
@@ -247,17 +246,6 @@ class ReporterB2CConfig(top.B2CConfig):
         """
         top.Config.parse_config(self)
 
-        try:
-            bu_ids = dict(self.items('report_bu_ids'))
-            tmp_bu_ids = {}
-            for k, v in bu_ids.iteritems():
-                tmp_bu_ids[int(k)] = v
-            self.set_report_bu_ids(tmp_bu_ids)
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('%s report_bu_ids: %s. Using "%s"' %
-                      (self.facility, err, self.report_bu_ids))
-
         kwargs = [{'section': 'report_base',
                    'option': 'outdir',
                    'var': 'report_outdir'},
@@ -270,8 +258,6 @@ class ReporterB2CConfig(top.B2CConfig):
                   {'section': 'report_base',
                    'option': 'extension',
                    'var': 'report_extension'}]
-        for kw in kwargs:
-            self.parse_scalar_config(**kw)
 
         report_section = 'report_%s' % self.report_type
         for attr in ['outfile',
@@ -279,73 +265,44 @@ class ReporterB2CConfig(top.B2CConfig):
                      'recipients',
                      'bu_based',
                      'delivery_partners']:
-            getter = 'report_type_%s' % attr
-            get_method = getattr(self, getter)
-            setter = 'set_%s' % getter
-            set_method = getattr(self, setter)
-            try:
-                val = self.get(report_section, attr)
-                if attr in ['display_hdrs',
-                            'recipients',
-                            'delivery_partners']:
-                    set_method(val.split(','))
-                else:
-                    set_method(val)
-            except (ConfigParser.NoOptionError,
-                    ConfigParser.NoSectionError), err:
-                log.debug('%s report_%s.%s: %s. Using "%s"' %
-                          (self.facility,
-                           self.report_type,
-                           attr,
-                           err,
-                           get_method))
-
-        for attr in ['aliases',
-                     'widths',
-                     'ws']:
-            report_section = 'report_%s_%s' % (self.report_type, attr)
-            getter = 'report_type_%s' % attr
-            get_method = getattr(self, getter)
-            setter = 'set_%s' % getter
-            set_method = getattr(self, setter)
-            try:
-                val = dict(self.items(report_section))
-                tmp_val = {}
-                for k, v in val.iteritems():
-                    if attr == 'aliases':
-                        tmp_val[k.upper()] = v
-                    elif attr == 'widths':
-                        tmp_val[k.lower()] = int(v)
-                    else:
-                        tmp_val[k] = v
-                set_method(tmp_val)
-            except (ConfigParser.NoOptionError,
-                    ConfigParser.NoSectionError), err:
-                log.debug('%s report_%s_%s: %s. Using "%s"' %
-                          (self.facility,
-                           self.report_type,
-                           attr,
-                           err,
-                           get_method))
-
-        try:
-            bu_recipients = dict(self.items('report_bu_id_recipients'))
-            tmp_recipients = {}
-            for k, v in bu_recipients.iteritems():
-                tmp_recipients[int(k)] = v.split(',')
-            bu_recipients = tmp_recipients
-            self.set_report_bu_id_recipients(bu_recipients)
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('%s report_bu_id_recipients: %s. Using %s' %
-                      (self.facility,
-                       err,
-                       self.report_bu_id_recipients))
+            report_attr = 'report_type_%s' % attr
+            if attr in ['display_hdrs',
+                        'recipients',
+                        'delivery_partners']:
+                kwargs.append({'section': report_section,
+                               'option': attr,
+                               'var': 'report_type_%s' % attr,
+                               'is_list': True})
+            else:
+                kwargs.append({'section': report_section,
+                               'option': attr,
+                               'var': 'report_type_%s' % attr})
 
         # Report specific options.
         if self.report_type == 'compliance':
-            kwargs = {'section': 'report_compliance',
-                      'option': 'period',
-                      'var': 'report_compliance_period',
-                      'cast_type': 'int'}
-            self.parse_scalar_config(**kwargs)
+            kwargs.append({'section': 'report_compliance',
+                           'option': 'period',
+                           'var': 'report_compliance_period',
+                           'cast_type': 'int'})
+
+        for kw in kwargs:
+            self.parse_scalar_config(**kw)
+
+        del kwargs[:]
+        kwargs = [{'section': 'report_bu_ids',
+                   'key_cast_type': 'int'},
+                  {'section': 'report_bu_id_recipients',
+                   'is_list': True,
+                   'key_cast_type': 'int'},
+                  {'section': '%s_aliases' % (report_section),
+                   'var': 'report_type_aliases',
+                   'key_case': 'upper'},
+                  {'section': '%s_widths' % (report_section),
+                   'var': 'report_type_widths',
+                   'key_case': 'lower',
+                   'cast_type': 'int'},
+                  {'section': '%s_ws' % (report_section),
+                   'var': 'report_type_ws'}]
+
+        for kw in kwargs:
+            self.parse_dict_config(**kw)

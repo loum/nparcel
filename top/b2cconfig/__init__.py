@@ -1027,6 +1027,8 @@ class B2CConfig(top.Config):
                           section,
                           var=None,
                           cast_type=None,
+                          key_cast_type=None,
+                          key_case=None,
                           is_list=False,
                           is_required=False):
         """Helper method that can parse a :mod:`ConfigParser` *section*
@@ -1047,6 +1049,10 @@ class B2CConfig(top.Config):
             *cast_type*: cast the value parsed as *cast_type*.  If
             ``None`` is specified, then parse as a string
 
+            *key_cast_type*: cast the option parsed as *cast_type*
+
+            *key_case*: for strings, change the case of the option value
+
             *is_list*: boolean flag to indicate whether to parse the
             option values as a list (default ``False``)
 
@@ -1064,11 +1070,30 @@ class B2CConfig(top.Config):
             var = section
 
         try:
-            tmp_value = dict(self.items(section))
+            key_caster = None
+            if key_cast_type is not None:
+                key_caster = getattr(__builtin__, key_cast_type)
+
+            tmp_value = {}
+            for k, v in dict(self.items(section)).iteritems():
+                # Cast the dictionay key if required.
+                key = k
+                if key_caster is not None:
+                    key = key_caster(k)
+
+                if key_case == 'upper':
+                    tmp_value[key.upper()] = v
+                elif key_case == 'lower':
+                    tmp_value[key.lower()] = v
+                else:
+                    tmp_value[key] = v
+
+            # Now, take care of list values.
             if is_list:
                 for k, v in tmp_value.iteritems():
                     tmp_value[k] = v.split(',')
 
+            # Finally, cast the value if required.
             if cast_type is not None:
                 caster = getattr(__builtin__, cast_type)
                 for k, v in tmp_value.iteritems():

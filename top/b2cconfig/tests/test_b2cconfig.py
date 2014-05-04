@@ -696,12 +696,74 @@ class TestB2CConfig(unittest2.TestCase):
         received = self._c.parse_dict_config(section, cast_type='int')
         expected = {'priority': 1, 'fast': 2, 'ipec': 3}
         msg = 'Parsed config dict (business_units) error'
-        self.assertEqual(received, expected, msg)
+        self.assertDictEqual(received, expected, msg)
 
         # ... and check that the variable is set.
         received = self._c.business_units
         msg = 'Parsed config dict set variable error'
+        self.assertDictEqual(received, expected, msg)
+
+    def test_parse_dict_config_key_as_int(self):
+        """Parse a dict (section) from the configuration file (key as int).
+        """
+        self._c.add_section('business_units')
+        self._c.set('business_units', '1', 'priority')
+
+        section = 'business_units'
+        received = self._c.parse_dict_config(section, key_cast_type='int')
+        expected = {1: 'priority'}
+        msg = 'Parsed config dict (business_units key as int) error'
         self.assertEqual(received, expected, msg)
+
+        # ... and check that the variable is set.
+        received = self._c.business_units
+        msg = 'Parsed config dict set variable error (key as int)'
+        self.assertDictEqual(received, expected, msg)
+
+        # Clean up.
+        self._c.remove_section('business_units')
+
+    def test_parse_dict_config_key_upper_case(self):
+        """Parse a dict (section) from the configuration file (key upper).
+        """
+        self._c.add_section('business_units')
+        self._c.set('business_units', 'dp_code', 'Agent')
+
+        section = 'business_units'
+        received = self._c.parse_dict_config(section,
+                                             key_case='upper')
+        expected = {'DP_CODE': 'Agent'}
+        msg = 'Parsed config dict (business_units key upper case) error'
+        self.assertEqual(received, expected, msg)
+
+        # ... and check that the variable is set.
+        received = self._c.business_units
+        msg = 'Parsed config dict set variable error (key as upper case)'
+        self.assertDictEqual(received, expected, msg)
+
+        # Clean up.
+        self._c.remove_section('business_units')
+
+    def test_parse_dict_config_key_lower_case(self):
+        """Parse a dict (section) from the configuration file (key lower).
+        """
+        self._c.add_section('business_units')
+        self._c.set('business_units', 'AGENT_NAME', 'Agent Name')
+
+        section = 'business_units'
+        received = self._c.parse_dict_config(section,
+                                             key_case='lower')
+        expected = {'agent_name': 'Agent Name'}
+        msg = 'Parsed config dict (business_units key lower case) error'
+        self.assertEqual(received, expected, msg)
+
+        # ... and check that the variable is set.
+        received = self._c.business_units
+        msg = 'Parsed config dict set variable error (key as lower case)'
+        self.assertDictEqual(received, expected, msg)
+
+        # Clean up.
+        self._c.remove_section('business_units')
 
     def test_parse_dict_config_list_values(self):
         """Parse a dict (section) from the configuration file -- as list.
