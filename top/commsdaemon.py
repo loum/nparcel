@@ -419,7 +419,9 @@ class CommsDaemon(top.DaemonService):
                  'error_threshold': self.q_error}
             mime = self.emailer.create_comms(subject=subject,
                                              data=d,
-                                             template='message_q_err')
+                                             template='message_q_err',
+                                             prod=self.prod)
+            self._emailer.set_recipients(self.support_emails)
             self.emailer.send(mime_message=mime, dry=dry)
         elif message_count > self.q_warning:
             log.info('Comms queue count %d breaches warning threshold %d' %
@@ -432,7 +434,9 @@ class CommsDaemon(top.DaemonService):
                  'warning_threshold': self.q_warning}
             mime = self.emailer.create_comms(subject=subject,
                                              data=d,
-                                             template='message_q_warn')
+                                             template='message_q_warn',
+                                             prod=self.prod)
+            self._emailer.set_recipients(self.support_emails)
             self.emailer.send(mime_message=mime, dry=dry)
 
         return queue_ok

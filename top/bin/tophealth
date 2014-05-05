@@ -174,7 +174,7 @@ class HealthDaemon(top.DaemonService):
 
         """
         table_str = []
-        tr = '<tr style="border:1px solid white">'
+        tr = '<tr style="border:1px solid white;background-color:#66FF33">'
         tr_err = '<tr style="border:1px solid white;background-color:#FF8282">'
         th = '<th style="background-color:#D6EBFF">'
         td = '<td style="white-space:nowrap">'
