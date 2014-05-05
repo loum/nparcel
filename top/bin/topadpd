@@ -21,7 +21,7 @@ def main():
 
     config = None
     if based.options.config is not None:
-        config = top.B2CConfig(based.options.config)
+        config = top.AdpB2CConfig(based.options.config)
 
     # OK, start processing.
     adpd = top.AdpDaemon(pidfile=based.pidfile,

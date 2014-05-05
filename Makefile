@@ -55,6 +55,7 @@ TEST=top.tests:TestLoader \
 	 top.b2cconfig.tests:TestPodB2CConfig \
 	 top.b2cconfig.tests:TestOnDeliveryB2CConfig \
 	 top.b2cconfig.tests:TestFilterB2CConfig \
+	 top.b2cconfig.tests:TestAdpB2CConfig \
 	 top.tests:TestFtp \
 	 top.tests:TestService \
 	 top.tests:TestReminder \

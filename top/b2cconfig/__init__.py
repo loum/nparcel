@@ -63,10 +63,6 @@ class B2CConfig(top.Config):
         directory where T1250 loader files are aggregated for further
         processing
 
-    .. attribute:: adp_dirs (ADP bulk load processing)
-
-        directory list for ADP bulk load files (into ``agent`` table)
-
     .. attribute loader_loop (loader)
 
         time (seconds) between loader processing iterations.
@@ -74,10 +70,6 @@ class B2CConfig(top.Config):
     .. attribute onleilvery_loop (on delivery)
 
         time (seconds) between on delivery processing iterations.
-
-    .. attribute:: adp_loop (ADP bulk load)
-
-        time (seconds) between filter processing iterations.
 
     .. attribute:: business_units
 
@@ -101,30 +93,6 @@ class B2CConfig(top.Config):
 
         dictionary of RESTful interfaces for SMS and email
 
-    .. attribute:: adp_headers
-
-        dictionary of ``agent`` table columns to column headers in the
-        ADP bulk insert file
-
-    .. attribute:: adp_file_formats
-
-        list of regular expressions that represent the type of files that
-        can be parsed by the ADP loader
-
-    .. attribute:: code_header
-
-        special ADP bulk insert header name that relates to the
-        ``agent.code`` column.  This value is used as a unique
-        identifier during the agent insert process
-
-    .. attribute:: delivery_partners
-
-        list of "delivery_partner" table values
-
-    .. attribute:: adp_default_passwords
-
-        dictionary of delivery partner default passwords
-
     .. attribute:: comms_delivery_partners
 
         dictionary of Business Unit based list of Delivery Partners that
@@ -137,9 +105,7 @@ class B2CConfig(top.Config):
     _staging_base = None
     _comms_dir = None
     _aggregator_dirs = []
-    _adp_dirs = []
     _loader_loop = 30
-    _adp_loop = 30
     _proxy_scheme = 'https'
     _business_units = {}
     _t1250_file_format = 'T1250_TOL.*\.txt'
@@ -147,11 +113,6 @@ class B2CConfig(top.Config):
     _cond = {}
     _support_emails = []
     _rest = {}
-    _adp_headers = {}
-    _adp_file_formats = []
-    _code_header = None
-    _delivery_partners = []
-    _adp_default_passwords = {}
     _comms_delivery_partners = {}
 
     def __init__(self, file=None):
@@ -209,28 +170,12 @@ class B2CConfig(top.Config):
         pass
 
     @property
-    def adp_dirs(self):
-        return self._adp_dirs
-
-    def set_adp_dirs(self, values=None):
-        del self._adp_dirs[:]
-        self._adp_dirs = []
-
-        if values is not None:
-            self._adp_dirs.extend(values)
-        log.debug('adp_dirs set to "%s"' % self.adp_dirs)
-
-    @property
     def loader_loop(self):
         return self._loader_loop
 
     @set_scalar
     def set_loader_loop(self, value):
         pass
-
-    @property
-    def adp_loop(self):
-        return self._adp_loop
 
     @property
     def business_units(self):
@@ -356,68 +301,6 @@ class B2CConfig(top.Config):
             log.warn('Config proxy: %s' % err)
 
         return kwargs
-
-    @property
-    def adp_headers(self):
-        return self._adp_headers
-
-    def set_adp_headers(self, values=None):
-        self._adp_headers.clear()
-
-        if values is not None:
-            self._adp_headers = values
-            log.debug('Config ADP headers set to: "%s"' %
-                      self.adp_headers)
-        else:
-            log.debug('Cleared ADP headers')
-
-    @property
-    def adp_file_formats(self):
-        return self._adp_file_formats
-
-    def set_adp_file_formats(self, values=None):
-        del self._adp_file_formats[:]
-        self._adp_file_formats = []
-
-        if values is not None:
-            self._adp_file_formats.extend(values)
-            log.debug('Config ADP file format list: "%s"' %
-                      self.adp_file_formats)
-
-    @property
-    def code_header(self):
-        return self._code_header
-
-    def set_code_header(self, value=None):
-        if value is not None:
-            self.code_header = value
-            log.debug('Config set code_header to: "%s"' %
-                      self.code_header)
-
-    @property
-    def delivery_partners(self):
-        return self._delivery_partners
-
-    def set_delivery_partners(self, values=None):
-        del self._delivery_partners[:]
-        self._delivery_partners = []
-
-        if values is not None:
-            self._delivery_partners.extend(values)
-            log.debug('Config delivery partners list: "%s"' %
-                      self.delivery_partners)
-
-    @property
-    def adp_default_passwords(self):
-        return self._adp_default_passwords
-
-    def set_adp_default_passwords(self, values=None):
-        self._adp_default_passwords.clear()
-
-        if values is not None:
-            self._adp_default_passwords = values
-            log.debug('Config ADP default passwords: "%s"' %
-                      self.adp_default_passwords)
 
     @property
     def comms_delivery_partners(self):
@@ -660,28 +543,12 @@ class B2CConfig(top.Config):
         for kw in kwargs:
             self.parse_dict_config(**kw)
 
-        # ADP directories.
-        try:
-            tmp_vals = self.get('dirs', 'adp_in').split(',')
-            self.set_adp_dirs(tmp_vals)
-            log.debug('ADP in bound directories %s' % self.adp_dirs)
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default ADP inbound directories: %s' %
-                      self.adp_dirs)
-
         # Optional items (defaults provided).
         try:
             self.loader_loop = int(self.get('timeout', 'loader_loop'))
         except ConfigParser.NoOptionError, err:
             log.debug('Using default Loader loop: %d (sec)' %
                       self.loader_loop)
-
-        try:
-            self._adp_loop = int(self.get('timeout', 'adp_loop'))
-        except ConfigParser.NoOptionError, err:
-            log.debug('Using default ADP loop: %d (sec)' %
-                      self.adp_loop)
 
         # Business unit conditons.  No probs if they are missing -- will
         # just default to '0' (False) for each flag.
@@ -698,48 +565,6 @@ class B2CConfig(top.Config):
             log.debug('RESTful APIs %s' % str(self._rest))
         except ConfigParser.NoSectionError, err:
             log.warn('No RESTful APIs in config')
-
-        # ADP headers
-        try:
-            self.set_adp_headers(dict(self.items('adp_headers')))
-        except (ConfigParser.NoOptionError,
-                ConfigParser.NoSectionError), err:
-            log.debug('Using default ADP headers: %s' % self.adp_headers)
-
-        # ADP file formats.
-        try:
-            tmp_vals = self.get('adp', 'file_formats')
-            self.set_adp_file_formats(tmp_vals.split(','))
-        except (ConfigParser.NoSectionError,
-                ConfigParser.NoOptionError), err:
-            log.debug('Using default ADP file formats: %s' %
-                      str(self.adp_file_formats))
-
-        # ADP file formats.
-        try:
-            self.set_code_header(self.get('adp', 'code_header'))
-        except (ConfigParser.NoSectionError,
-                ConfigParser.NoOptionError), err:
-            log.debug('Using default DP code header: %s' %
-                      str(self.code_header))
-
-        # Delivery partners.
-        try:
-            tmp_vals = self.get('adp', 'delivery_partners')
-            self.set_delivery_partners(tmp_vals.split(','))
-        except (ConfigParser.NoSectionError,
-                ConfigParser.NoOptionError), err:
-            log.debug('Using default DP code header: %s' %
-                      str(self.delivery_partners))
-
-        # Delivery partner default passwords.
-        try:
-            tmp_vals = dict(self.items('adp_default_passwords'))
-            self.set_adp_default_passwords(tmp_vals)
-        except (ConfigParser.NoSectionError,
-                ConfigParser.NoOptionError), err:
-            log.debug('Using default delivery partner passwords: %s' %
-                      str(self.adp_default_passwords))
 
         # Comms Delivery Partners.
         self.parse_dict_config('comms_delivery_partners', is_list=True)

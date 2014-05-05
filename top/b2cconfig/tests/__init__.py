@@ -7,4 +7,4 @@ from test_reminderb2cconfig import TestReminderB2CConfig
 from test_mapperb2cconfig import TestMapperB2CConfig
 from test_podb2cconfig import TestPodB2CConfig
 from test_ondeliveryb2cconfig import TestOnDeliveryB2CConfig
-from test_filterb2cconfig import TestFilterB2CConfig
+from test_adpb2cconfig import TestAdpB2CConfig

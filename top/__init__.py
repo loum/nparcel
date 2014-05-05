@@ -33,6 +33,7 @@ from top.b2cconfig.mapperb2cconfig import MapperB2CConfig
 from top.b2cconfig.podb2cconfig import PodB2CConfig
 from top.b2cconfig.ondeliveryb2cconfig import OnDeliveryB2CConfig
 from top.b2cconfig.filterb2cconfig import FilterB2CConfig
+from top.b2cconfig.adpb2cconfig import AdpB2CConfig
 from top.ftp import Ftp
 from top.reminder import Reminder
 from top.ondelivery import OnDelivery

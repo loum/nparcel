@@ -105,11 +105,6 @@ class TestB2CConfig(unittest2.TestCase):
         expected = ['/data/top/aggregate']
         self.assertListEqual(received, expected, msg)
 
-        msg = 'ADP directories not as expected'
-        received = self._c.adp_dirs
-        expected = ['/var/ftp/pub/nparcel/adp/in']
-        self.assertListEqual(received, expected, msg)
-
         msg = 'Comms directory not as expected'
         received = self._c.comms_dir
         expected = '/data/top/comms'
@@ -122,61 +117,6 @@ class TestB2CConfig(unittest2.TestCase):
         received = self._c.loader_loop
         expected = 30
         self.assertEqual(received, expected, msg)
-
-        msg = 'ADP loop not as expected'
-        received = self._c.adp_loop
-        expected = 30
-        self.assertEqual(received, expected, msg)
-
-    def test_parse_config_adp(self):
-        """Parse items from the config -- adp_headers
-        """
-        self._c.set_config_file(self._file)
-        self._c.parse_config()
-
-        received = self._c.adp_headers
-        expected = {'agent.code': 'TP Code',
-                    'agent.dp_code': 'DP Code',
-                    'agent.name': 'ADP Name',
-                    'agent.address': 'Address',
-                    'agent.suburb': 'Suburb',
-                    'agent.state': 'State',
-                    'agent.postcode': 'Postcode',
-                    'agent.opening_hours': 'Opening Hours',
-                    'agent.notes': 'Notes',
-                    'agent.parcel_size_code': 'ADP Accepts Parcel Size',
-                    'agent.phone_nbr': 'Phone',
-                    'agent.contact_name': 'Contact',
-                    'agent.email': 'Email',
-                    'agent.fax_nbr': 'Fax',
-                    'agent.status': 'Active',
-                    'delivery_partner.id': 'DP Id',
-                    'login_account.username': 'Username'}
-        msg = 'ADP headers not as expected'
-        self.assertDictEqual(received, expected, msg)
-
-        received = self._c.adp_file_formats
-        expected = []
-        msg = 'ADP adp_file_formats value error'
-        self.assertListEqual(received, expected, msg)
-
-        received = self._c.code_header
-        expected = 'TP Code'
-        msg = 'ADP code_header value error'
-        self.assertEqual(received, expected, msg)
-
-        received = self._c.delivery_partners
-        expected = ['Nparcel', 'ParcelPoint', 'Toll', 'National Storage']
-        msg = 'ADP delivery partners error'
-        self.assertListEqual(received, expected, msg)
-
-        received = self._c.adp_default_passwords
-        expected = {'nparcel': 'aaaa',
-                    'parcelpoint': 'bbbb',
-                    'toll': 'cccc',
-                    'national storage': 'dddd'}
-        msg = 'ADP delivery partners default passwords error'
-        self.assertDictEqual(received, expected, msg)
 
     def test_parse_config_comms_delivery_partners(self):
         """Parse items from the config -- comms_delivery_partners

@@ -1,8 +1,6 @@
 all__ = [
     "ExporterB2CConfig",
 ]
-import ConfigParser
-
 import top
 from top.utils.log import log
 from top.utils.setter import (set_scalar,

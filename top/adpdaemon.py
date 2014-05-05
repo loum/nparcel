@@ -10,6 +10,8 @@ from top.utils.log import log
 from top.utils.files import (get_directory_files_list,
                              move_file,
                              xlsx_to_csv_converter)
+from top.utils.setter import (set_scalar,
+                              set_list)
 
 
 class AdpDaemon(top.DaemonService):
@@ -45,6 +47,34 @@ class AdpDaemon(top.DaemonService):
     _adp_file_formats = []
     _archive_dir = None
 
+    @property
+    def parser(self):
+        return self._parser
+
+    @property
+    def adp_in_dirs(self):
+        return self._adp_in_dirs
+
+    @set_list
+    def set_adp_in_dirs(self, values=None):
+        pass
+
+    @property
+    def adp_file_formats(self):
+        return self._adp_file_formats
+
+    @set_list
+    def set_adp_file_formats(self, values=None):
+        pass
+
+    @property
+    def archive_dir(self):
+        return self._archive_dir
+
+    @set_scalar
+    def set_archive_dir(self, value):
+        pass
+
     def __init__(self,
                  pidfile,
                  file=None,
@@ -58,73 +88,11 @@ class AdpDaemon(top.DaemonService):
                                    batch=batch,
                                    config=config)
 
-        try:
-            if self.config.support_emails is not None:
-                self.set_support_emails(self.config.support_emails)
-        except AttributeError, err:
-            msg = ('Support emails not defined in config -- using %s' %
-                   str(self.support_emails))
-
-        try:
-            self.set_adp_in_dirs(self.config.adp_dirs)
-        except AttributeError, err:
-            msg = ('ADP inbound dir not in config -- using %s' %
-                   self.adp_in_dirs)
-            log.debug(msg)
-
-        try:
-            self.set_archive_dir(self.config.archive_dir)
-        except AttributeError, err:
-            msg = ('Archive directory not in config -- archiving disabled')
-            log.debug(msg)
-
-        try:
+        if self.config is not None:
             self.set_loop(self.config.adp_loop)
-        except AttributeError, err:
-            log.debug('Daemon loop not in config -- default %d sec' %
-                      self.loop)
-
-        try:
+            self.set_adp_in_dirs(self.config.adp_dirs)
+            self.set_archive_dir(self.config.archive_dir)
             self.set_adp_file_formats(self.config.adp_file_formats)
-        except AttributeError, err:
-            log.debug('ADP file formats not in config -- default %s' %
-                      self.adp_file_formats)
-
-    @property
-    def parser(self):
-        return self._parser
-
-    @property
-    def adp_in_dirs(self):
-        return self._adp_in_dirs
-
-    def set_adp_in_dirs(self, values):
-        del self._adp_in_dirs[:]
-        self._adp_in_dirs = []
-
-        if values is not None:
-            log.debug('Setting ADP inbound directory to "%s"' % values)
-            self._adp_in_dirs.extend(values)
-
-    @property
-    def adp_file_formats(self):
-        return self._adp_file_formats
-
-    def set_adp_file_formats(self, values):
-        del self._adp_file_formats[:]
-        self._adp_file_formats = []
-
-        if values is not None:
-            log.debug('Setting ADP file formats to "%s"' % values)
-            self._adp_file_formats.extend(values)
-
-    @property
-    def archive_dir(self):
-        return self._archive_dir
-
-    def set_archive_dir(self, value):
-        self._archive_dir = value
-        log.debug('Set archive directory to "%s"' % value)
 
     def _start(self, event):
         """Override the :method:`top.utils.Daemon._start` method.
