@@ -190,14 +190,6 @@ class ReporterB2CConfig(top.B2CConfig):
         pass
 
     @property
-    def report_type_delivery_partners(self):
-        return self._report_type_delivery_partners
-
-    @set_list
-    def set_report_type_delivery_partners(self, values=None):
-        pass
-
-    @property
     def report_type_bu_based(self):
         return self._report_type_bu_based
 

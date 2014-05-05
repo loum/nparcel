@@ -34,7 +34,8 @@ def main():
 
     config = None
     if based.options.config is not None:
-        config = top.ExporterB2CConfig(based.options.config)
+        config = top.ReporterB2CConfig(file=based.options.config,
+                                       type=report)
 
     # OK, start processing.
     rep = top.ReporterDaemon(report,

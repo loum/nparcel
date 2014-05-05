@@ -15,7 +15,7 @@ class TestAdpDaemon(unittest2.TestCase):
         cls._adpd = top.AdpDaemon(pidfile=None)
         cls._adpd.emailer.set_template_base(os.path.join('top',
                                                          'templates'))
-        cls._adpd._config = top.B2CConfig()
+        cls._adpd._config = top.AdpB2CConfig()
         headers = {'agent.code': 'TP Code',
                    'agent.dp_code': 'DP Code',
                    'agent.name': 'ADP Name',

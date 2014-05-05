@@ -463,6 +463,7 @@ class ReporterDaemon(top.DaemonService):
 
             if not self._bu_based:
                 self.set_bu_id_recipients({None: []})
+
             for id in self.bu_id_recipients.keys():
                 rows = self._report.process(id=id, dry=self.dry)
 
