@@ -35,17 +35,18 @@ class AdpDaemon(top.DaemonService):
 
         where to archive ADP file after processing
 
+    .. attribute:: code_header
+
+        special ADP bulk insert header name that relates to the
+        ``agent.code`` column.  This value is used as a unique
+        identifier during the agent insert process
+
     """
     _parser = top.AdpParser()
-    _adp_in_dirs = [os.path.join(os.sep,
-                                 'var',
-                                 'ftp',
-                                 'pub',
-                                 'top',
-                                 'adp',
-                                 'in')]
+    _adp_in_dirs = None
     _adp_file_formats = []
     _archive_dir = None
+    _code_header = 'TP Code'
 
     @property
     def parser(self):
@@ -75,40 +76,16 @@ class AdpDaemon(top.DaemonService):
     def set_archive_dir(self, value):
         pass
 
-    def __init__(self,
-                 pidfile,
-                 file=None,
-                 dry=False,
-                 batch=False,
-                 config=None):
-        top.DaemonService.__init__(self,
-                                   pidfile=pidfile,
-                                   file=file,
-                                   dry=dry,
-                                   batch=batch,
-                                   config=config)
+    @property
+    def code_header(self):
+        return self._code_header
 
-        if self.config is not None:
-            self.set_loop(self.config.adp_loop)
-            self.set_adp_in_dirs(self.config.adp_dirs)
-            self.set_archive_dir(self.config.archive_dir)
-            self.set_adp_file_formats(self.config.adp_file_formats)
+    @set_scalar
+    def set_code_header(self, value):
+        pass
 
-    def _start(self, event):
-        """Override the :method:`top.utils.Daemon._start` method.
-
-        Will perform a single iteration if the :attr:`file` attribute has
-        a list of filenames to process.  Similarly, dry and batch modes
-        only cycle through a single iteration.
-
-        **Args:**
-            *event* (:mod:`threading.Event`): Internal semaphore that
-            can be set via the :mod:`signal.signal.SIGTERM` signal event
-            to perform a function within the running proess.
-
-        """
-        signal.signal(signal.SIGTERM, self._exit_handler)
-
+    @property
+    def adp_kwargs(self):
         kwargs = {}
         try:
             kwargs['db'] = self.config.db_kwargs()
@@ -130,13 +107,44 @@ class AdpDaemon(top.DaemonService):
         except AttributeError, err:
             log.debug('ADP default passwords not in config: %s ' % err)
 
-        code_header = None
-        try:
-            code_header = self.config.code_header
-        except AttributeError, err:
-            log.debug('ADP code_header not in config: %s ' % err)
+        return kwargs
 
-        adp = top.Adp(**kwargs)
+    def __init__(self,
+                 pidfile,
+                 file=None,
+                 dry=False,
+                 batch=False,
+                 config=None):
+        top.DaemonService.__init__(self,
+                                   pidfile=pidfile,
+                                   file=file,
+                                   dry=dry,
+                                   batch=batch,
+                                   config=config)
+
+        if self.config is not None:
+            self.set_loop(self.config.adp_loop)
+            self.set_adp_in_dirs(self.config.adp_dirs)
+            self.set_archive_dir(self.config.archive_dir)
+            self.set_adp_file_formats(self.config.adp_file_formats)
+            self.set_code_header(self.config.code_header)
+
+    def _start(self, event):
+        """Override the :method:`top.utils.Daemon._start` method.
+
+        Will perform a single iteration if the :attr:`file` attribute has
+        a list of filenames to process.  Similarly, dry and batch modes
+        only cycle through a single iteration.
+
+        **Args:**
+            *event* (:mod:`threading.Event`): Internal semaphore that
+            can be set via the :mod:`signal.signal.SIGTERM` signal event
+            to perform a function within the running proess.
+
+        """
+        signal.signal(signal.SIGTERM, self._exit_handler)
+
+        adp = top.Adp(**(self.adp_kwargs))
 
         commit = True
         if self.dry:
@@ -161,8 +169,8 @@ class AdpDaemon(top.DaemonService):
             if len(files):
                 self.reporter.reset(identifier=str(files))
                 self.parser.set_in_files(files)
-                if code_header is not None:
-                    self.parser.set_code_header(code_header)
+                if self.code_header is not None:
+                    self.parser.set_code_header(self.code_header)
                 self.parser.read()
 
             for code, v in self.parser.adps.iteritems():
@@ -170,8 +178,10 @@ class AdpDaemon(top.DaemonService):
 
             alerts = []
             if len(files):
+                files_str = ', '.join(files)
                 self.send_table(recipients=self.support_emails,
                                 table_data=list(adp.alerts),
+                                identifier=files_str,
                                 dry=self.dry)
                 adp.reset(commit=commit)
 

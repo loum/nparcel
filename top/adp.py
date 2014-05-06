@@ -6,6 +6,8 @@ import copy
 
 import top
 from top.utils.log import log
+from top.utils.setter import (set_list,
+                              set_dict)
 from top.postcode import translate_postcode
 
 
@@ -34,6 +36,34 @@ class Adp(top.Service):
     _delivery_partners = []
     _default_passwords = {}
 
+    @property
+    def parser(self):
+        return self._parser
+
+    @property
+    def headers(self):
+        return self._headers
+
+    @set_dict
+    def set_headers(self, values=None):
+        pass
+
+    @property
+    def delivery_partners(self):
+        return self._delivery_partners
+
+    @set_list
+    def set_delivery_partners(self, values=None):
+        pass
+
+    @property
+    def default_passwords(self):
+        return self._default_passwords
+
+    @set_dict
+    def set_default_passwords(self, values=None):
+        pass
+
     def __init__(self, **kwargs):
         """Adp initialisation.
 
@@ -43,47 +73,6 @@ class Adp(top.Service):
         self.set_headers(kwargs.get('headers'))
         self.set_delivery_partners(kwargs.get('delivery_partners'))
         self.set_default_passwords(kwargs.get('default_passwords'))
-
-    @property
-    def parser(self):
-        return self._parser
-
-    @property
-    def headers(self):
-        return self._headers
-
-    def set_headers(self, values=None):
-        self._headers.clear()
-
-        if values is not None:
-            self._headers = values
-            log.debug('Headers set to: "%s"' % self.headers)
-        else:
-            log.debug('Cleared headers')
-
-    @property
-    def delivery_partners(self):
-        return self._delivery_partners
-
-    def set_delivery_partners(self, values=None):
-        del self._delivery_partners[:]
-        self._delivery_partners = []
-
-        if values is not None:
-            self._delivery_partners.extend(values)
-            log.debug('delivery partners list: "%s"' %
-                      self.delivery_partners)
-
-    @property
-    def default_passwords(self):
-        return self._default_passwords
-
-    def set_default_passwords(self, values=None):
-        self._default_passwords.clear()
-
-        if values is not None:
-            self._default_passwords = values
-            log.debug('default passwords: "%s"' % self.default_passwords)
 
     def process(self, code, values, dry=False):
         """Parses an ADP bulk insert file and attempts to load the items
