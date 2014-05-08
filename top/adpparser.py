@@ -70,9 +70,13 @@ class AdpParser(object):
 
     def set_adps(self, dict):
         code = dict.get(self.code_header)
-        log.debug('Setting code_header value: %s' % code)
 
-        self._adps[code] = dict
+        if self._adps.get(code) is None:
+            self._adps[code] = dict
+            log.debug('Setting code_header value: "%s"' % code)
+        else:
+            log.error('code_header value "%s" already defined. Skipping: %s'
+                      % (code, str(dict)))
 
     def adp_lookup(self, code):
         return self.adps.get(code)

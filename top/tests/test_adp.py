@@ -128,32 +128,61 @@ class TestAdp(unittest2.TestCase):
         """
         received = self._adp.sanitise({'agent.status': '1'})
         expected = {'agent.status': 1,
+                    'agent.parcel_size_code': 'S',
                     'login_account.status': 1}
         msg = 'Sanitise status "1" error'
         self.assertEqual(received, expected, msg)
 
         received = self._adp.sanitise({'agent.status': 'NO'})
         expected = {'agent.status': 2,
+                    'agent.parcel_size_code': 'S',
                     'login_account.status': 1}
         msg = 'Sanitise status "NO" error'
         self.assertEqual(received, expected, msg)
 
         received = self._adp.sanitise({'agent.status': 'YES'})
         expected = {'agent.status': 1,
+                    'agent.parcel_size_code': 'S',
                     'login_account.status': 1}
         msg = 'Sanitise status "YES" error'
         self.assertEqual(received, expected, msg)
 
         received = self._adp.sanitise({'banana': 'YES'})
         expected = {'banana': 'YES',
+                    'agent.parcel_size_code': 'S',
                     'login_account.status': 1}
         msg = 'Sanitise status not defined error'
         self.assertEqual(received, expected, msg)
 
         received = self._adp.sanitise({'banana': 'YES'})
         expected = {'banana': 'YES',
+                    'agent.parcel_size_code': 'S',
                     'login_account.status': 1}
         msg = 'Sanitise status not defined error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise({'agent.parcel_size_code': 'S'})
+        expected = {'agent.parcel_size_code': 'S',
+                    'login_account.status': 1}
+        msg = 'Sanitise agent.parcel_size_code "S" error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise({'agent.parcel_size_code': 'L'})
+        expected = {'agent.parcel_size_code': 'L',
+                    'login_account.status': 1}
+        msg = 'Sanitise agent.parcel_size_code "L" error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise({'agent.parcel_size_code': 'x'})
+        expected = {'agent.parcel_size_code': 'S',
+                    'login_account.status': 1}
+        msg = 'Sanitise agent.parcel_size_code unknown value error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise({})
+        expected = {'agent.parcel_size_code': 'S',
+                    'login_account.status': 1}
+        msg = 'Sanitise agent.parcel_size_code not defined value error'
         self.assertEqual(received, expected, msg)
 
     def test_sanitise_delivery_partner(self):
@@ -167,6 +196,7 @@ class TestAdp(unittest2.TestCase):
                                          'National Storage'])
         received = self._adp.sanitise({'delivery_partner.id': 'Nparcel'})
         expected = {'delivery_partner.id': 1,
+                    'agent.parcel_size_code': 'S',
                     'login_account.status': 1,
                     'agent.dp_id': 1}
         msg = 'Sanitise delivery_partner "Nparcel" error'
@@ -174,7 +204,8 @@ class TestAdp(unittest2.TestCase):
 
         # Unknown delivery partner.
         received = self._adp.sanitise({'delivery_partner.id': 'banana'})
-        expected = {'login_account.status': 1}
+        expected = {'login_account.status': 1,
+                    'agent.parcel_size_code': 'S'}
         self.assertDictEqual(received, expected, msg)
 
         # Clean up.
@@ -194,6 +225,7 @@ class TestAdp(unittest2.TestCase):
 
         received = self._adp.sanitise({'delivery_partner.id': 'Nparcel'})
         expected = {'delivery_partner.id': 1,
+                    'agent.parcel_size_code': 'S',
                     'login_account.password': 'aaaa',
                     'login_account.status': 1,
                     'agent.dp_id': 1}
@@ -201,7 +233,8 @@ class TestAdp(unittest2.TestCase):
         self.assertDictEqual(received, expected, msg)
 
         received = self._adp.sanitise({'delivery_partner.id': 'banana'})
-        expected = {'login_account.status': 1}
+        expected = {'login_account.status': 1,
+                    'agent.parcel_size_code': 'S'}
         msg = 'Sanitise missing password error'
         self.assertDictEqual(received, expected, msg)
 
@@ -213,27 +246,32 @@ class TestAdp(unittest2.TestCase):
         """Sanitise the "login_account.status" column.
         """
         received = self._adp.sanitise({'login_account.status': 'YES'})
-        expected = {'login_account.status': 1}
+        expected = {'login_account.status': 1,
+                    'agent.parcel_size_code': 'S'}
         msg = 'Sanitise login_account.status "YES" error'
         self.assertEqual(received, expected, msg)
 
         received = self._adp.sanitise({'login_account.status': 'Y'})
-        expected = {'login_account.status': 1}
+        expected = {'login_account.status': 1,
+                    'agent.parcel_size_code': 'S'}
         msg = 'Sanitise login_account.status "Y" error'
         self.assertEqual(received, expected, msg)
 
         received = self._adp.sanitise({'login_account.status': 'NO'})
-        expected = {'login_account.status': 0}
+        expected = {'login_account.status': 0,
+                    'agent.parcel_size_code': 'S'}
         msg = 'Sanitise login_account.status "NO" error'
         self.assertEqual(received, expected, msg)
 
         received = self._adp.sanitise({'login_account.status': 'N'})
-        expected = {'login_account.status': 0}
+        expected = {'login_account.status': 0,
+                    'agent.parcel_size_code': 'S'}
         msg = 'Sanitise login_account.status "N" error'
         self.assertEqual(received, expected, msg)
 
         received = self._adp.sanitise({})
-        expected = {'login_account.status': 1}
+        expected = {'login_account.status': 1,
+                    'agent.parcel_size_code': 'S'}
         msg = 'Sanitise login_account.status not defined error'
         self.assertEqual(received, expected, msg)
 

@@ -192,6 +192,9 @@ class Adp(top.Service):
 
           * ``NO`` or ``N`` to integer 0
 
+        * ``agent.parcel_size_code`` value defaults to "S" if no valid
+          option is provided
+
         **Args:**
             *values*: dictionary of table column headers and values.
 
@@ -265,6 +268,23 @@ class Adp(top.Service):
             la_status = 1
 
         sanitised_values['login_account.status'] = la_status
+
+        # agent.parcel_size_code
+        log.debug('Sanitising agent.parcel_size_code ...')
+        ag_parcel_size_code = values.get('agent.parcel_size_code')
+        if (ag_parcel_size_code is None or
+            not len(ag_parcel_size_code)):
+            log.info('%s missing. Setting to "S"' %
+                     'agent.parcel_size_code')
+            ag_parcel_size_code = 'S'
+
+        if (ag_parcel_size_code != 'S' and
+            ag_parcel_size_code != 'L'):
+            log.info('%s value "%s" unknown. Setting to "S"' %
+                     ('agent.parcel_size_code', ag_parcel_size_code))
+            ag_parcel_size_code = 'S'
+
+        sanitised_values['agent.parcel_size_code'] = ag_parcel_size_code
 
         return sanitised_values
 
