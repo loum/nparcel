@@ -1,5 +1,5 @@
 PY=/usr/bin/env python
-NOSE=/usr/bin/nosetests -s -v
+NOSE=/usr/bin/nosetests -s -v --with-xunit
 GIT=/usr/bin/git
 PYTHONPATH=.
 
