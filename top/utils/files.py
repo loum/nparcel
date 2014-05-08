@@ -410,7 +410,10 @@ def xlsx_to_csv_converter(xlsx_file):
         if fh is not None:
             c = csv.writer(fh)
             for r in sh.rows:
-                c.writerow([cell.value for cell in r])
+                try:
+                    c.writerow([cell.value for cell in r])
+                except UnicodeEncodeError, e:
+                    log.error('%s: %s' % (e, str([cell.value for cell in r])))
 
             fh.close()
             log.info('Conversion produced file: "%s"' % target_file)
