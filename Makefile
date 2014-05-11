@@ -1,6 +1,7 @@
 PY=/usr/bin/env python
 NOSE=/usr/bin/nosetests -s -v --with-xunit
 GIT=/usr/bin/git
+RPM=/bin/rpm
 PYTHONPATH=.
 
 # The TEST variable can be set to allow you to control which tests
@@ -110,6 +111,15 @@ build: docs rpm
 
 test:
 	$(NOSE) $(TEST)
+
+uninstall:
+	$(RPM) -e python-top
+
+install:
+	$(RPM) -ivh dist/python-top-?.??-?.noarch.rpm
+
+upgrade:
+	$(RPM) -Uvh dist/python-top-?.??-?.noarch.rpm
 
 clean:
 	$(GIT) clean -xdf
