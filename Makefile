@@ -115,6 +115,7 @@ test:
 uninstall:
 	$(RPM) -e python-top
 
+
 install:
 	$(RPM) -ivh dist/python-top-?.??-?.noarch.rpm
 
