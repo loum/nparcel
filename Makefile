@@ -111,6 +111,15 @@ build: docs rpm
 test:
 	$(NOSE) $(TEST)
 
+uninstall:
+	$(RPM) -e python-top
+
+install:
+	$(RPM) -ivh dist/python-top-?.??-?.noarch.rpm
+
+upgrade:
+	$(RPM) -Uvh dist/python-top-?.??-?.noarch.rpm
+
 clean:
 	$(GIT) clean -xdf
 	\rm -fr /tmp/tmp*
