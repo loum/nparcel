@@ -1,4 +1,4 @@
-PY=/usr/bin/env python
+PY=/usr/bin/python
 NOSE=/usr/bin/nosetests -s -v --with-xunit
 GIT=/usr/bin/git
 PYTHONPATH=.
@@ -101,7 +101,7 @@ sdist:
 	$(PY) setup.py sdist
 
 rpm:
-	$(PY) setup.py bdist_rpm
+	$(PY) setup.py bdist_rpm --fix-python
 
 docs:
 	PYTHONPATH=$(PYTHONPATH) sphinx-build -b html doc/source doc/build
