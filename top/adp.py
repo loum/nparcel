@@ -74,33 +74,57 @@ class Adp(top.Service):
         self.set_delivery_partners(kwargs.get('delivery_partners'))
         self.set_default_passwords(kwargs.get('default_passwords'))
 
-    def process(self, code, values, dry=False):
+    def process(self, code, values, mode='insert'):
         """Parses an ADP bulk insert file and attempts to load the items
         into the ``agent`` table.
 
-        **Kwargs:**
+        **Args:**
             *code*: value that typically relates to the ``agent.code``
             column
 
             *values*: dictionary of raw values to load into the
             Toll Outlet Portal database
 
-            *dry*: only report, do not execute
+        **Kwargs:**
+            *mode*: the mode of operation.  Defaults to "insert"
 
         **Returns:**
             boolean ``True`` if processing was successful
 
             boolean ``False`` if processing failed
 
-            ``None`` if an *other* scenario (typically a record ignore)
+        """
+        log.info('Processing (%s) Agent code: "%s" ...' % (mode, code))
+        filtered_values = self.extract_values(values)
+
+        status = False
+        if mode == "insert":
+            status = self.insert(code, filtered_values)
+        log.info('Agent code "%s" load status: %s' % (code, status))
+
+        return status
+
+    def insert(self, code, values):
+        """Insert the *values* into the database.
+
+        Provides an additional :meth:`sanitise` step to cleanse data.
+
+        **Args:**
+            *code*: value that typically relates to the ``agent.code``
+            column
+
+            *values*: dictionary of raw values to load into the
+            Toll Outlet Portal database
+
+        **Returns:**
+            boolean ``True`` if processing was successful
+
+            boolean ``False`` if processing failed
 
         """
         status = True
 
-        log.info('Processing Agent code: "%s" ...' % code)
-        filtered_values = self.extract_values(values)
-
-        sanitised_values = self.sanitise(filtered_values)
+        sanitised_values = self.sanitise(values)
         if not self.validate(sanitised_values):
             status = False
             self.set_alerts('Agent code "%s" validation error' % code)
@@ -141,8 +165,6 @@ class Adp(top.Service):
                                  'sla_id': 4}
                 sql = self.db.login_access.insert_sql(access_values)
                 self.db.insert(sql)
-
-        log.info('Agent code "%s" load status: %s' % (code, status))
 
         return status
 

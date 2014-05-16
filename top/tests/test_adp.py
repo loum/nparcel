@@ -71,9 +71,7 @@ class TestAdp(unittest2.TestCase):
                         'Postcode': '3168',
                         'DP Id': 'Nparcel',
                         'Username': 'VCLA005'}
-        received = self._adp.process(code='V0101',
-                                     values=code['V010'],
-                                     dry=dry)
+        received = self._adp.process(code='V0101', values=code['V010'])
         msg = 'ADP line item processing should return True'
         self.assertTrue(received, msg)
 

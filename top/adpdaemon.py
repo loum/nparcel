@@ -174,7 +174,7 @@ class AdpDaemon(top.DaemonService):
                 self.parser.read()
 
             for code, v in self.parser.adps.iteritems():
-                self.reporter(adp.process(code, v, dry=self.dry))
+                self.reporter(adp.process(code, v))
 
             alerts = []
             if len(files):
