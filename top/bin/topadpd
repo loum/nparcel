@@ -11,6 +11,9 @@ def main():
     based.parser.add_option('-f', '--file',
                             dest='file',
                             help='file to process inline (start only)')
+    based.parser.add_option('-u', '--update',
+                            action='store_true',
+                            help='update the ADP details')
     script_name = os.path.basename(inspect.getfile(inspect.currentframe()))
     based.check_args(script_name)
 
@@ -23,11 +26,16 @@ def main():
     if based.options.config is not None:
         config = top.AdpB2CConfig(based.options.config)
 
+    mode = 'insert'
+    if based.options.update:
+        mode = 'update'
+
     # OK, start processing.
     adpd = top.AdpDaemon(pidfile=based.pidfile,
                          file=file,
                          dry=based.dry,
                          batch=based.batch,
+                         mode=mode,
                          config=config)
 
     based.launch_command(adpd, script_name)

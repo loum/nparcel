@@ -41,12 +41,18 @@ class AdpDaemon(top.DaemonService):
         ``agent.code`` column.  This value is used as a unique
         identifier during the agent insert process
 
+    .. attribute:: mode
+
+        mode of operation to apply to database.  Defaults to "insert"
+        but can also perform an "update"
+
     """
     _parser = top.AdpParser()
     _adp_in_dirs = None
     _adp_file_formats = []
     _archive_dir = None
     _code_header = 'TP Code'
+    _mode = 'insert'
 
     @property
     def parser(self):
@@ -85,6 +91,14 @@ class AdpDaemon(top.DaemonService):
         pass
 
     @property
+    def mode(self):
+        return self._mode
+
+    @set_scalar
+    def set_mode(self, value):
+        pass
+
+    @property
     def adp_kwargs(self):
         kwargs = {}
         try:
@@ -114,6 +128,7 @@ class AdpDaemon(top.DaemonService):
                  file=None,
                  dry=False,
                  batch=False,
+                 mode=None,
                  config=None):
         top.DaemonService.__init__(self,
                                    pidfile=pidfile,
@@ -121,6 +136,9 @@ class AdpDaemon(top.DaemonService):
                                    dry=dry,
                                    batch=batch,
                                    config=config)
+
+        if mode is not None:
+            self.set_mode(mode)
 
         if self.config is not None:
             self.set_loop(self.config.adp_loop)
@@ -174,7 +192,7 @@ class AdpDaemon(top.DaemonService):
                 self.parser.read()
 
             for code, v in self.parser.adps.iteritems():
-                self.reporter(adp.process(code, v))
+                self.reporter(adp.process(code, v, self.mode))
 
             alerts = []
             if len(files):

@@ -98,8 +98,13 @@ class Adp(top.Service):
         filtered_values = self.extract_values(values)
 
         status = False
-        if mode == "insert":
+        if mode == 'insert':
             status = self.insert(code, filtered_values)
+        elif mode == 'update':
+            status = self.update(code, filtered_values)
+        else:
+            log.error('Unknown mode: "%s"' % self.mode)
+
         log.info('Agent code "%s" load status: %s' % (code, status))
 
         return status
@@ -165,6 +170,28 @@ class Adp(top.Service):
                                  'sla_id': 4}
                 sql = self.db.login_access.insert_sql(access_values)
                 self.db.insert(sql)
+
+        return status
+
+    def update(self, code, values):
+        """Update the *values* into the database.
+
+        **Args:**
+            *code*: value that typically relates to the ``agent.code``
+            column
+
+            *values*: dictionary of raw values to load into the
+            Toll Outlet Portal database
+
+        **Returns:**
+            boolean ``True`` if processing was successful
+
+            boolean ``False`` if processing failed
+
+        """
+        status = True
+
+        log.debug('Update values: %s' % values)
 
         return status
 

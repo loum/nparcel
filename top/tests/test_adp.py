@@ -365,6 +365,23 @@ class TestAdp(unittest2.TestCase):
         msg = 'Validate missing username/password should be False'
         self.assertFalse(received, msg)
 
+    def test_update(self):
+        """Bulk ADP update.
+        """
+        code = {}
+        code['V010'] = {'TP Code': 'V010',
+                        'DP Code': 'VCLA005',
+                        'ADP Name': 'Clayton Newsagency',
+                        'Address': '345 Clayton Road',
+                        'Suburb': 'CLAYTON',
+                        'State': 'VIC',
+                        'Postcode': '3168',
+                        'DP Id': 'Nparcel',
+                        'Username': 'VCLA005'}
+        received = self._adp.update(code='V0101', values=code['V010'])
+        msg = 'ADP update should return True'
+        self.assertTrue(received, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._adp = None

@@ -13,7 +13,11 @@ Alternate Delivery Point (ADP) Bulk Load
 The ``topadpd`` daemon manages the bulk load of new ADP resources into the
 Toll Outlet Portal ``agent`` table.
 
-Support file types include:
+.. note::
+
+    As of *version 0.38*, ``topadpd`` supports updates
+
+Supported file types include:
 
 * Excel ``*.xlsx``
 
@@ -38,7 +42,7 @@ automatically loaded into the ``agent`` table.
 
     Refer to :ref:`ftp_drop_box` for how to set up the FTP drop box
 
-Alternatively, a ADP bulk insert file can be provide on the command line
+Alternatively, an ADP bulk insert file can be provide on the command line
 using the ``-f`` switch:: 
 
     $ topadpd -f /var/tmp/ADP-Bulk-Load.xlsx
@@ -61,6 +65,15 @@ At this time, the structure of the ADP bulk load file format is managed
 by the Toll Outlet Portal support team.  Should new headers be added
 to the ADP bulk insert file then the configuration must be updated to
 reflect the change.  Otherwise, the new column will be ignored.
+
+
+ADP Updates
+-----------
+
+*New in version 0.30*
+
+If run in update mode, ``topadpd`` will parse the source files and attempt
+to update the associated database table columns.
 
 ``topadpd`` Logging
 -------------------
@@ -86,6 +99,7 @@ On Delivery comms trigger process::
                             override default config
                             "/home/npprod/.top/top.conf"
       -f FILE, --file=FILE  file to process inline (start only)
+      -u, --update          update the ADP details
 
 ADP Insert
 ----------
