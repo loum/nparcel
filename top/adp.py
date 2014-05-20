@@ -176,6 +176,10 @@ class Adp(top.Service):
     def update(self, code, values):
         """Update the *values* into the database.
 
+        Will attempt to filter the *values* as per
+        :method:`filter_update_fields` and group per table before
+        applying the udpates.
+
         **Args:**
             *code*: value that typically relates to the ``agent.code``
             column
@@ -191,7 +195,18 @@ class Adp(top.Service):
         """
         status = True
 
-        log.debug('Update values: %s' % values)
+        # agent table updates.
+        agent_values = self.filter_update_fields(values, key='agent')
+        if agent_values.get('agent.status') is not None:
+            value = agent_values.get('agent.status')
+            agent_values['agent.status'] = self.sanitise_agent_status(value)
+
+        if agent_values.get('agent.parcel_size_code') is not None:
+            value = agent_values.get('agent.parcel_size_code')
+            sanitised_val = self.sanitise_agent_parcel_size_code(value)
+            agent_values['agent.parcel_size_code'] = sanitised_val
+
+        log.debug('agent update values: %s' % agent_values)
 
         return status
 
@@ -215,8 +230,8 @@ class Adp(top.Service):
         return filtered_dict
 
     def sanitise(self, values):
-        """Hardwired sanitiser rules that need to be applied to bulk
-        insert data before being inserted into the database.
+        """Hardwired sanitiser rules that need to be applied to bulk ADP
+        data before being inserted into the database.
 
         .. note::
 
@@ -253,87 +268,37 @@ class Adp(top.Service):
         """
         sanitised_values = copy.deepcopy(values)
 
-        # agent.status
-        status = values.get('agent.status')
-        if status is not None:
-            log.debug('Sanitising "status" value: "%s" ...' % status)
-            try:
-                status = int(status)
-            except ValueError, err:
-                if status.lower() == 'no':
-                    status = 2
-                elif status.lower() == 'yes':
-                    status = 1
-                log.debug('"status" is text.  New value: "%s"' % status)
+        column = values.get('agent.status')
+        if column is not None:
+            sanitised_value = self.sanitise_agent_status(column)
+            sanitised_values['agent.status'] = sanitised_value
 
-            sanitised_values['agent.status'] = status
+        column = values.get('agent.parcel_size_code')
+        ag_parcel_size_code = self.sanitise_agent_parcel_size_code(column)
+        sanitised_values['agent.parcel_size_code'] = ag_parcel_size_code
 
-        # Delivery partner.
-        column = 'delivery_partner.id'
-        dp = values.get(column)
-        if dp is not None:
-            log.debug('Sanitising delivery_partner "%s" value: "%s" ...' %
-                      (column, dp))
-            index = None
-            try:
-                index = self.delivery_partners.index(dp) + 1
-                log.debug('Found "%s" value index at %d' % (dp, index))
-            except ValueError, err:
-                log.error('"%s" lookup failed' % dp)
-
-            if index is not None:
-                sanitised_values[column] = index
-                sanitised_values['agent.dp_id'] = index
+        delivery_partner = values.get('delivery_partner.id')
+        if 'delivery_partner.id' in values:
+            dp_id = self.sanitise_delivery_partner_id(delivery_partner)
+            if dp_id is not None:
+                sanitised_values['delivery_partner.id'] = dp_id
+                sanitised_values['agent.dp_id'] = dp_id
             else:
-                sanitised_values.pop(column)
+                sanitised_values.pop('delivery_partner.id')
 
         # Password.
-        log.debug('Sanitising password ...')
-        if dp is not None:
-            pw = self.default_passwords.get(dp.lower())
+        log.debug('Sanitising login_account.password ...')
+        if delivery_partner is not None:
+            pw = self.default_passwords.get(delivery_partner.lower())
             if pw is not None:
                 sanitised_values['login_account.password'] = pw
 
         if sanitised_values.get('login_account.password') is None:
-            self.set_alerts('Password lookup failed')
+            self.set_alerts('login_account.password lookup failed')
 
-        # login_account.status
-        log.debug('Sanitising login_account.status ...')
         la_status = values.get('login_account.status')
-        if la_status is not None:
-            try:
-                la_status = int(la_status)
-            except ValueError, err:
-                if (la_status.lower() == 'no' or
-                    la_status.lower() == 'n'):
-                    la_status = 0
-                elif (la_status.lower() == 'yes' or
-                      la_status.lower() == 'y'):
-                    la_status = 1
-                log.debug('"login_account.status": %s new value: "%s"' %
-                          (values.get('login_account.status'), la_status))
-        else:
-            # Enable by default.
-            la_status = 1
-
-        sanitised_values['login_account.status'] = la_status
-
-        # agent.parcel_size_code
-        log.debug('Sanitising agent.parcel_size_code ...')
-        ag_parcel_size_code = values.get('agent.parcel_size_code')
-        if (ag_parcel_size_code is None or
-            not len(ag_parcel_size_code)):
-            log.info('%s missing. Setting to "S"' %
-                     'agent.parcel_size_code')
-            ag_parcel_size_code = 'S'
-
-        if (ag_parcel_size_code != 'S' and
-            ag_parcel_size_code != 'L'):
-            log.info('%s value "%s" unknown. Setting to "S"' %
-                     ('agent.parcel_size_code', ag_parcel_size_code))
-            ag_parcel_size_code = 'S'
-
-        sanitised_values['agent.parcel_size_code'] = ag_parcel_size_code
+        conv_la_status = self.sanitise_login_account_status(la_status)
+        sanitised_values['login_account.status'] = conv_la_status
 
         return sanitised_values
 
@@ -385,9 +350,8 @@ class Adp(top.Service):
                     is_valid = False
 
         # Delivery partner.
-        dp = values.get('delivery_partner.id')
-        if dp is None:
-            self.set_alerts('Deliver partner invalid value')
+        if values.get('delivery_partner.id') is None:
+            self.set_alerts('deliver_partner.id not defined')
             is_valid = False
 
         # Username / password.
@@ -419,3 +383,208 @@ class Adp(top.Service):
             log.info('Rolling back transaction state to the DB ...')
             self.db.rollback()
             log.info('Rollback OK')
+
+    def sanitise_agent_status(self, value):
+        """Prepares the agent.status value for further table column
+        adjustment.
+
+        ``agent.status`` stores its value as an integer value as per:
+
+        * ``0`` for *no/inactive*
+        * ``1`` for *yes/active*
+        * ``2`` for *test*.
+
+        This was a database design constraint.  We're
+        simply adhering to the design, regardless of how bad it is.
+
+        To be more intuitive to the user preparing the ADP input file, we
+        need to translate the user values to their corresponding table
+        column values.  Currently, this method supports the following
+        case-insentive values:
+
+        * *no/inactive* is transposed to the integer value 0
+
+        * *yes/active* is transposed to the integer value 1
+
+        * *test* is transposed to the integer value 2
+
+        .. note:: if you think you know what you are doing, you can pass
+        through the actual integer values and the method won't complain.
+        However, this is strongly discouraged.
+
+        **Args:**
+            *value*: the agent.status value to transpose
+
+        **Returns**:
+            The transposed agent.status value or None otherwise
+
+        """
+        log.debug('Sanitising agent.status "%s" ...' % value)
+        agent_status = value
+
+        if agent_status is not None:
+            try:
+                agent_status = int(agent_status)
+            except ValueError, err:
+                if (agent_status.lower() == 'no' or
+                    agent_status.lower() == 'inactive'):
+                    agent_status = 0
+                elif (agent_status.lower() == 'yes' or
+                      agent_status.lower() == 'active'):
+                    agent_status = 1
+                elif (agent_status.lower() == 'test'):
+                    agent_status = 2
+
+        log.debug('agent.status "%s" conversion produced "%s"' %
+                  (value, agent_status))
+
+        return agent_status
+
+    def sanitise_agent_parcel_size_code(self, value):
+        """Prepares the ``agent.parcel_size_code`` value for further table
+        column adjustment.
+
+        ``agent.parcel_size_code`` stores its value as a charcter value that
+        directly relates to the agent ``parcel_size.code`` column.  The
+        supported ``parcel_size.code`` values are "L" for large and "S"
+        for standard (but is standard bigger than large ??? -- anyway).
+
+        *value* will be taken literally if it is a case-insensitive
+        "S" or "L" (converted to upper case if required).  If *value*
+        is neither case-insensitive "S", "L" or ``None`` then it will
+        default to "S"
+
+        **Args:**
+            *value*: the agent.parcel_size_code value to transpose
+
+        **Returns**:
+            The transposed agent.parcel_size_code value or "S" on failure
+
+        """
+        log.debug('Sanitising agent.parcel_size_code "%s" ...' % value)
+        ag_parcel_size_code = value
+
+        if (ag_parcel_size_code is None or
+            not len(ag_parcel_size_code)):
+            log.info('agent.parcel_size_code missing. Setting to "S"')
+            ag_parcel_size_code = 'S'
+        elif (ag_parcel_size_code.upper() != 'S' and
+              ag_parcel_size_code.upper() != 'L'):
+            log.info('%s value "%s" unknown. Setting to "S"' %
+                     ('agent.parcel_size_code', ag_parcel_size_code))
+            ag_parcel_size_code = 'S'
+        else:
+            log.info('agent.parcel_size_code set to "%s"' %
+                     ag_parcel_size_code)
+            ag_parcel_size_code = ag_parcel_size_code.upper()
+
+        return ag_parcel_size_code
+
+    def filter_update_fields(self, values, key=None):
+        """Remove keys from *values* dictionary if the value meet the
+        following criteria:
+
+        * is not ``None``
+
+        * is not an empty string
+
+        If *key* is provided, will further filter the dictionary keys to
+        those key values that match
+
+        **Args:**
+            *values*: key, value pair (dictionary) data structure that is
+            to be filtered
+
+        **Kwargs:**
+            *key*: filter the dictionary against *key*
+
+        **Returns:**
+            the filtered key, value pairs
+
+        """
+        filtered_values = {}
+
+        for k, v in values.iteritems():
+            if v is not None and len(v):
+                if key is None:
+                    filtered_values[k] = v
+                elif key == k.split('.')[0]:
+                    filtered_values[k] = v
+
+        return filtered_values
+
+    def sanitise_delivery_partner_id(self, value):
+        """Converts the string *value* to the equivalent
+        ``delivery_partner.id`` value for further table column adjustment.
+
+        ``delivery_partner.id`` is a foreign key to the ``agent.dp_id``
+        column.  The ``delivery_partner`` table itself is a simple lookup.
+
+        *value* must the Delivery Partner name as identified by the
+        ``delivery_partner.name`` table column.  For example, *Nparcel*,
+        *ParcelPoint*, *Toll* or *Woolworths*.
+
+        **Args:**
+            *value*: the ``delivery_partner.name`` value to transpose
+
+        **Returns**:
+            The transposed agent.parcel_size_code value or "S" on failure
+
+        """
+        log.debug('Sanitising delivery_partner.id "%s" ...' % value)
+        dp_id = value
+
+        index = None
+        try:
+            index = self.delivery_partners.index(dp_id) + 1
+            log.debug('Found "%s" value index at %d' % (dp_id, index))
+        except ValueError, err:
+            log.error('"%s" lookup failed' % dp_id)
+
+        return index
+
+    def sanitise_login_account_status(self, value):
+        """Prepares the login_account.status value for further table column
+        adjustment.
+
+        ``login_account.status`` stores its value as an integer value as
+        per:
+
+        * ``0`` for *no/inactive*
+        * ``1`` for *yes/active*
+
+
+        * *no/inactive* is transposed to the integer value 0
+
+        * *yes/active* is transposed to the integer value 1
+
+        **Args:**
+            *value*: the login_account.status value to transpose
+
+        **Returns**:
+            The transposed login_account.status value or None otherwise
+
+        """
+        log.debug('Sanitising login_account.status "%s" ...' % value)
+        la_status = value
+
+        if la_status is not None:
+            try:
+                la_status = int(la_status)
+            except ValueError, err:
+                if (la_status.lower() == 'no' or
+                    la_status.lower() == 'inactive' or
+                    la_status.lower() == 'n'):
+                    la_status = 0
+                elif (la_status.lower() == 'yes' or
+                      la_status.lower() == 'active' or
+                      la_status.lower() == 'y'):
+                    la_status = 1
+        else:
+            # Enable by default.
+            la_status = 1
+
+        log.debug('login_account.status: "%s" conversion produced: %d' %
+                  (value, la_status))
+
+        return la_status

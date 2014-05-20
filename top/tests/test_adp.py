@@ -121,30 +121,9 @@ class TestAdp(unittest2.TestCase):
         # Clean up.
         self._adp.set_headers(old_headers)
 
-    def test_sanitise_status(self):
-        """Sanitise the "agent.status" column.
+    def test_sanitise(self):
+        """Sanitise the ADP data.
         """
-        received = self._adp.sanitise({'agent.status': '1'})
-        expected = {'agent.status': 1,
-                    'agent.parcel_size_code': 'S',
-                    'login_account.status': 1}
-        msg = 'Sanitise status "1" error'
-        self.assertEqual(received, expected, msg)
-
-        received = self._adp.sanitise({'agent.status': 'NO'})
-        expected = {'agent.status': 2,
-                    'agent.parcel_size_code': 'S',
-                    'login_account.status': 1}
-        msg = 'Sanitise status "NO" error'
-        self.assertEqual(received, expected, msg)
-
-        received = self._adp.sanitise({'agent.status': 'YES'})
-        expected = {'agent.status': 1,
-                    'agent.parcel_size_code': 'S',
-                    'login_account.status': 1}
-        msg = 'Sanitise status "YES" error'
-        self.assertEqual(received, expected, msg)
-
         received = self._adp.sanitise({'banana': 'YES'})
         expected = {'banana': 'YES',
                     'agent.parcel_size_code': 'S',
@@ -184,7 +163,7 @@ class TestAdp(unittest2.TestCase):
         self.assertEqual(received, expected, msg)
 
     def test_sanitise_delivery_partner(self):
-        """Sanitise the "delivery_partner.id" column.
+        """Sanitise ADP data structure with delivery_partner.id adjustments.
         """
         old_delivery_partners = self._adp.delivery_partners
 
@@ -192,7 +171,8 @@ class TestAdp(unittest2.TestCase):
                                          'ParcelPoint',
                                          'Toll',
                                          'National Storage'])
-        received = self._adp.sanitise({'delivery_partner.id': 'Nparcel'})
+        vals = {'delivery_partner.id': 'Nparcel'}
+        received = self._adp.sanitise(vals)
         expected = {'delivery_partner.id': 1,
                     'agent.parcel_size_code': 'S',
                     'login_account.status': 1,
@@ -369,18 +349,236 @@ class TestAdp(unittest2.TestCase):
         """Bulk ADP update.
         """
         code = {}
-        code['V010'] = {'TP Code': 'V010',
-                        'DP Code': 'VCLA005',
-                        'ADP Name': 'Clayton Newsagency',
-                        'Address': '345 Clayton Road',
-                        'Suburb': 'CLAYTON',
-                        'State': 'VIC',
-                        'Postcode': '3168',
-                        'DP Id': 'Nparcel',
-                        'Username': 'VCLA005'}
+        code['V010'] = {'agent.code': 'V010',
+                        'agent.dp_code': 'VCLA005',
+                        'agent.name': None,
+                        'agent.address': '',
+                        'agent.suburb': 'CLAYTON',
+                        'agent.state': 'VIC',
+                        'agent.postcode': '3168',
+                        'agent.status': 'no',
+                        'agent.parcel_size_code': 's',
+                        'delivery_partner.dp_id': 'Nparcel',
+                        'login_account.username': 'VCLA005'}
         received = self._adp.update(code='V0101', values=code['V010'])
         msg = 'ADP update should return True'
         self.assertTrue(received, msg)
+
+    def test_sanitise_agent_status(self):
+        """Sanitise agent status.
+        """
+        received = self._adp.sanitise_agent_status('1')
+        expected = 1
+        msg = 'Sanitise agent.status "1" error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise_agent_status('NO')
+        expected = 0
+        msg = 'Sanitise agent.status "NO" error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise_agent_status('YES')
+        expected = 1
+        msg = 'Sanitise agent.status "YES" error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise_agent_status('no')
+        expected = 0
+        msg = 'Sanitise agent.status "no" error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise_agent_status('yes')
+        expected = 1
+        msg = 'Sanitise agent.status "yes" error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise_agent_status('inactive')
+        expected = 0
+        msg = 'Sanitise agent.status "inactive" error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise_agent_status('active')
+        expected = 1
+        msg = 'Sanitise agent.status "active" error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise_agent_status(None)
+        msg = 'Sanitise agent.status None error'
+        self.assertIsNone(received, msg)
+
+    def test_sanitise_agent_parcel_size_code(self):
+        """Sanitise agent parcel size code.
+        """
+        received = self._adp.sanitise_agent_parcel_size_code('S')
+        expected = 'S'
+        msg = 'Sanitise agent.parcel_size_code "S" error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise_agent_parcel_size_code('L')
+        expected = 'L'
+        msg = 'Sanitise agent.parcel_size_code "L" error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise_agent_parcel_size_code('l')
+        expected = 'L'
+        msg = 'Sanitise agent.parcel_size_code "l" error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise_agent_parcel_size_code('x')
+        expected = 'S'
+        msg = 'Sanitise agent.parcel_size_code "x" error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise_agent_parcel_size_code(None)
+        expected = 'S'
+        msg = 'Sanitise agent.parcel_size_code None error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise_agent_parcel_size_code('')
+        expected = 'S'
+        msg = 'Sanitise agent.parcel_size_code "" error'
+        self.assertEqual(received, expected, msg)
+
+    def test_filter_update_fields(self):
+        """Filter the fields to update.
+        """
+        values = {'agent.code': 'V010',
+                  'agent.dp_code': 'VCLA005',
+                  'agent.name': 'Clayton Newsagency',
+                  'agent.address': '345 Clayton Road',
+                  'agent.suburb': 'CLAYTON',
+                  'agent.state': 'VIC',
+                  'agent.postcode': '3168',
+                  'delivery_partner.id': 'Nparcel',
+                  'login_account.username': 'VCLA005'}
+        received = self._adp.filter_update_fields(values)
+        expected = {'agent.code': 'V010',
+                    'agent.dp_code': 'VCLA005',
+                    'agent.name': 'Clayton Newsagency',
+                    'agent.address': '345 Clayton Road',
+                    'agent.suburb': 'CLAYTON',
+                    'agent.state': 'VIC',
+                    'agent.postcode': '3168',
+                    'delivery_partner.id': 'Nparcel',
+                    'login_account.username': 'VCLA005'}
+        msg = 'Filtered fields to update error'
+        self.assertDictEqual(received, expected, msg)
+
+    def test_filter_update_fields_set_key(self):
+        """Filter the fields to update -- set key value.
+        """
+        values = {'agent.code': 'V010',
+                  'agent.dp_code': 'VCLA005',
+                  'agent.name': 'Clayton Newsagency',
+                  'agent.address': '345 Clayton Road',
+                  'agent.suburb': 'CLAYTON',
+                  'agent.state': 'VIC',
+                  'agent.postcode': '3168',
+                  'delivery_partner.id': 'Nparcel',
+                  'login_account.username': 'VCLA005'}
+        received = self._adp.filter_update_fields(values, key='agent')
+        expected = {'agent.code': 'V010',
+                    'agent.dp_code': 'VCLA005',
+                    'agent.name': 'Clayton Newsagency',
+                    'agent.address': '345 Clayton Road',
+                    'agent.suburb': 'CLAYTON',
+                    'agent.state': 'VIC',
+                    'agent.postcode': '3168'}
+        msg = 'Filtered fields to update error - agent key value'
+        self.assertDictEqual(received, expected, msg)
+
+    def test_filter_blank_update_fields(self):
+        """Filter the blank fields to update.
+        """
+        values = {'agent.code': 'V010',
+                  'agent.dp_code': 'VCLA005',
+                  'ADP Name': '',
+                  'agent.address': None,
+                  'agent.suburb': 'CLAYTON',
+                  'agent.state': 'VIC',
+                  'agent.sostcode': '3168',
+                  'delivery_partner.id': 'Nparcel',
+                  'login_account.username': 'VCLA005'}
+        received = self._adp.filter_update_fields(values)
+        expected = {'agent.code': 'V010',
+                    'agent.dp_code': 'VCLA005',
+                    'agent.suburb': 'CLAYTON',
+                    'agent.state': 'VIC',
+                    'agent.sostcode': '3168',
+                    'delivery_partner.id': 'Nparcel',
+                    'login_account.username': 'VCLA005'}
+        msg = 'Filtered blank fields to update error'
+        self.assertDictEqual(received, expected, msg)
+
+    def test_filter_blank_update_fields_set_key(self):
+        """Filter the blank fields to update -- set key value.
+        """
+        values = {'agent.code': 'V010',
+                  'agent.dp_code': 'VCLA005',
+                  'ADP Name': '',
+                  'agent.address': None,
+                  'agent.suburb': 'CLAYTON',
+                  'agent.state': 'VIC',
+                  'agent.sostcode': '3168',
+                  'delivery_partner.id': 'Nparcel',
+                  'login_account.username': 'VCLA005'}
+        received = self._adp.filter_update_fields(values, key='agent')
+        expected = {'agent.code': 'V010',
+                    'agent.dp_code': 'VCLA005',
+                    'agent.suburb': 'CLAYTON',
+                    'agent.state': 'VIC',
+                    'agent.sostcode': '3168'}
+        msg = 'Filtered blank fields to update error'
+        self.assertDictEqual(received, expected, msg)
+
+    def test_sanitise_delivery_partner_id(self):
+        """Sanitise the "delivery_partner.id" column.
+        """
+        old_delivery_partners = self._adp.delivery_partners
+
+        self._adp.set_delivery_partners(['Nparcel',
+                                         'ParcelPoint',
+                                         'Toll',
+                                         'National Storage'])
+        received = self._adp.sanitise_delivery_partner_id('Nparcel')
+        expected = 1
+        msg = 'Sanitise delivery_partner "Nparcel" error'
+        self.assertEqual(received, expected, msg)
+
+        # Unknown delivery partner.
+        received = self._adp.sanitise_delivery_partner_id('banana')
+        self.assertIsNone(received, msg)
+
+        # Clean up.
+        self._adp.set_delivery_partners(old_delivery_partners)
+
+    def test_sanitise_login_account_status(self):
+        """Sanitise login account status.
+        """
+        received = self._adp.sanitise_login_account_status('No')
+        expected = 0
+        msg = 'Sanitise login_account.status "No" error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise_login_account_status('Yes')
+        expected = 1
+        msg = 'Sanitise login_account.status "Yes" error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise_login_account_status('inactive')
+        expected = 0
+        msg = 'Sanitise login_account.status "inactive" error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise_login_account_status('ACTIVE')
+        expected = 1
+        msg = 'Sanitise login_account.status "ACTIVE" error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise_login_account_status(None)
+        expected = 1
+        msg = 'Sanitise login_account.status None error'
+        self.assertEqual(received, expected, msg)
 
     @classmethod
     def tearDownClass(cls):
