@@ -33,7 +33,9 @@ class Agent(top.Table):
                 "username TEXT(10)",
                 "status INTEGER",
                 "created_ts TIMESTAMP",
-                "parcel_size_code INTEGER"]
+                "parcel_size_code INTEGER",
+                "latitude REAL",
+                "longitude REAL"]
 
     def check_agent_id(self, agent_code):
         """SQL wrapper to return return the "agent.id" value for a

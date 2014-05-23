@@ -206,6 +206,22 @@ class Adp(top.Service):
             sanitised_val = self.sanitise_agent_parcel_size_code(value)
             agent_values['agent.parcel_size_code'] = sanitised_val
 
+        column = values.get('agent.latitude')
+        if column is not None:
+            lat = self.sanitise_latitude(column)
+            if lat is not None:
+                agent_values['agent.latitude'] = lat
+            else:
+                agent_values.pop('agent.latitude')
+
+        column = values.get('agent.longitude')
+        if column is not None:
+            long = self.sanitise_longitude(column)
+            if long is not None:
+                agent_values['agent.longitude'] = long
+            else:
+                agent_values.pop('agent.longitude')
+
         log.debug('agent update values: %s' % agent_values)
 
         tmp_agent_values = {}
@@ -272,6 +288,9 @@ class Adp(top.Service):
 
           * ``NO`` or ``2`` to integer 2
 
+        * The ``agent.latitude`` and ``agent.longitude`` need to be
+          float and within range
+
         * ``delivery_partner.id`` must convert the delivery partner name
           to the ``delivery_partner.id`` column value
 
@@ -303,6 +322,22 @@ class Adp(top.Service):
         column = values.get('agent.parcel_size_code')
         ag_parcel_size_code = self.sanitise_agent_parcel_size_code(column)
         sanitised_values['agent.parcel_size_code'] = ag_parcel_size_code
+
+        column = values.get('agent.latitude')
+        if column is not None:
+            lat = self.sanitise_latitude(column)
+            if lat is not None:
+                sanitised_values['agent.latitude'] = lat
+            else:
+                sanitised_values.pop('agent.latitude')
+
+        column = values.get('agent.longitude')
+        if column is not None:
+            long = self.sanitise_longitude(column)
+            if long is not None:
+                sanitised_values['agent.longitude'] = long
+            else:
+                sanitised_values.pop('agent.longitude')
 
         delivery_partner = values.get('delivery_partner.id')
         if 'delivery_partner.id' in values:
@@ -616,3 +651,55 @@ class Adp(top.Service):
                   (value, la_status))
 
         return la_status
+
+    def sanitise_latitude(self, latitude):
+        """Sanitise *latitude* by checking that it is within the
+        acceptable decimal range set for latitudes of -90 and 90.
+
+        **Args:**
+            *latitude*: decimal latitude value to santise
+
+        **Returns:**
+            sanitised latitude value on success or None otherwise
+
+        """
+        log.debug('Sanitising agent.latitude %s ...' % latitude)
+        lat = None
+
+        if (latitude is not None and len(str(latitude))):
+            lat = float(latitude)
+
+            if lat < -90 or lat > 90:
+                log.error('Latitude value %s outside range' % str(latitude))
+                lat = None
+
+        log.debug('Latitude %s sanitised to %s' % (str(latitude), str(lat)))
+
+        return lat
+
+    def sanitise_longitude(self, longitude):
+        """Sanitise *longitude* by checking that it is within the
+        acceptable decimal range set for longitudes of -90 and 90.
+
+        **Args:**
+            *longitude*: decimal longitude value to santise
+
+        **Returns:**
+            sanitised longitude value on success or None otherwise
+
+        """
+        log.debug('Sanitising agent.longitude %s ...' % longitude)
+        lng = None
+
+        if (longitude is not None and len(str(longitude))):
+            lng = float(longitude)
+
+            if lng < -180 or lng > 180:
+                log.error('Longitude value %s outside range' %
+                          str(longitude))
+                lng = None
+
+        log.debug('Longitude %s sanitised to %s' %
+                  (str(longitude), str(lng)))
+
+        return lng

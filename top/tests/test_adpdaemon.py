@@ -25,6 +25,8 @@ class TestAdpDaemon(unittest2.TestCase):
                    'agent.postcode': 'Postcode',
                    'agent.opening_hours': 'Opening Hours',
                    'agent.notes': 'Notes',
+                   'agent.latitude': 'Latitude',
+                   'agent.longitude': 'Longitude',
                    'agent.parcel_size_code': 'ADP Accepts Parcel Size',
                    'agent.phone_nbr': 'Phone',
                    'agent.contact_name': 'Contact',
@@ -156,7 +158,13 @@ class TestAdpDaemon(unittest2.TestCase):
         self._adpd._start(self._adpd.exit_event)
 
         # And check the results.
-        sql = """SELECT dp_code, username, name, address, suburb
+        sql = """SELECT dp_code,
+       username,
+       name,
+       address,
+       suburb,
+       latitude,
+       longitude
 FROM agent WHERE code = 'V001'"""
         self._adpd._adp.db(sql)
         received = list(self._adpd.adp.db.rows())
@@ -164,7 +172,9 @@ FROM agent WHERE code = 'V001'"""
                      'VHAW050',
                      'New Auburn Newsagency',
                      '100 New Auburn Road',
-                     'HAWTHORN EAST ')]
+                     'HAWTHORN EAST ',
+                     -35.822864000000003,
+                     155.045278)]
         msg = 'Updated ADP for code "V001" error'
         self.assertListEqual(received, expected, msg)
 

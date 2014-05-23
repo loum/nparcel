@@ -602,6 +602,60 @@ WHERE code = 'N031'"""
         msg = 'Sanitise login_account.status None error'
         self.assertEqual(received, expected, msg)
 
+    def test_sanitise_agent_latitude(self):
+        """Sanitise agent.latitude status.
+        """
+        received = self._adp.sanitise_latitude('-37.822864')
+        expected = -37.822864
+        msg = 'Sanitise agent.latitude error'
+        self.assertEqual(received, expected, msg)
+
+    def test_sanitise_agent_latitude_outside_ranges(self):
+        """Sanitise agent.latitude status -- outside ranges.
+        """
+        received = self._adp.sanitise_latitude('-97.822864')
+        msg = 'Sanitise agent.latitude below range error'
+        self.assertIsNone(received, msg)
+
+        received = self._adp.sanitise_latitude('97.822864')
+        msg = 'Sanitise agent.latitude above range error'
+        self.assertIsNone(received, msg)
+
+    def test_sanitise_agent_longitude(self):
+        """Sanitise agent.longitude status.
+        """
+        received = self._adp.sanitise_longitude('145.045278')
+        expected = 145.045278
+        msg = 'Sanitise agent.longitude error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._adp.sanitise_latitude(None)
+        msg = 'Sanitise agent.latitude None error'
+        self.assertIsNone(received, msg)
+
+        received = self._adp.sanitise_latitude('')
+        msg = 'Sanitise agent.latitude empty error'
+        self.assertIsNone(received, msg)
+
+    def test_sanitise_agent_longitude_outside_ranges(self):
+        """Sanitise agent.longitude status -- outside ranges.
+        """
+        received = self._adp.sanitise_longitude('-185.045278')
+        msg = 'Sanitise agent.longitude below range error'
+        self.assertIsNone(received, msg)
+
+        received = self._adp.sanitise_longitude('185.045278')
+        msg = 'Sanitise agent.longitude above range error'
+        self.assertIsNone(received, msg)
+
+        received = self._adp.sanitise_longitude(None)
+        msg = 'Sanitise agent.longitude None error'
+        self.assertIsNone(received, msg)
+
+        received = self._adp.sanitise_longitude('')
+        msg = 'Sanitise agent.longitude empty error'
+        self.assertIsNone(received, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._adp = None
