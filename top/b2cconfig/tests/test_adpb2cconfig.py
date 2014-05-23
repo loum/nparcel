@@ -68,6 +68,8 @@ class TestAdpB2CConfig(unittest2.TestCase):
                     'agent.contact_name': 'Contact',
                     'agent.email': 'Email',
                     'agent.fax_nbr': 'Fax',
+                    'agent.latitude': 'Latitude',
+                    'agent.longitude': 'Longitude',
                     'agent.status': 'Active',
                     'delivery_partner.id': 'DP Id',
                     'login_account.username': 'Username'}
