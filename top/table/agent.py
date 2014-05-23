@@ -68,9 +68,29 @@ class Agent(top.Table):
        %(alias)s.suburb,
        %(alias)s.postcode,
        dp.name AS DP_NAME
-FROM agent AS ag, delivery_partner AS dp
+FROM agent AS %(alias)s, delivery_partner AS dp
 WHERE %(alias)s.id=%(id)d
 AND ag.dp_id = dp.id""" % {'id': id,
                       'alias': alias}
+
+        return sql
+
+    def agent_code_sql(self, code, alias='ag'):
+        """SQL wrapper to return the id associated with the ``agent.code``
+        field.
+
+        **Args:**
+            *id*: the Agent's "agent.id" private key
+
+        **Kwargs:**
+            *alias*: override the table alias (default ``ag``)
+
+        **Returns:**
+            the SQL command
+
+        """
+        sql = """SELECT %(alias)s.id
+FROM agent AS %(alias)s
+WHERE %(alias)s.code='%(code)s'""" % {'code': code, 'alias': alias}
 
         return sql

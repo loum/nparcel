@@ -174,10 +174,10 @@ class Adp(top.Service):
         return status
 
     def update(self, code, values):
-        """Update the *values* into the database.
+        """Update *values* into the database.
 
         Will attempt to filter the *values* as per
-        :method:`filter_update_fields` and group per table before
+        :meth:`filter_update_fields` and group per table before
         applying the udpates.
 
         **Args:**
@@ -207,6 +207,33 @@ class Adp(top.Service):
             agent_values['agent.parcel_size_code'] = sanitised_val
 
         log.debug('agent update values: %s' % agent_values)
+
+        tmp_agent_values = {}
+        for k, v in agent_values.iteritems():
+            new_key = k.replace('agent.', '')
+            tmp_agent_values[new_key] = v
+
+        agent_values.clear()
+        agent_values = dict(tmp_agent_values)
+
+        # Get the current agent.code id
+        sql = self.db.agent.agent_code_sql(code)
+        self.db(sql)
+        rows = list(self.db.rows())
+        update_ids = tuple([x[0] for x in rows])
+        log.debug('agent table IDs to update: "%s"' % str(update_ids))
+
+        if len(update_ids):
+            dml = self.db.agent.update_sql(agent_values, keys=update_ids)
+            try:
+                self.db(dml)
+            except Exception, e:
+                log.error('agent table update for code "%s" failed: %s' %
+                        (code, e))
+        else:
+            log.error('No agent.id values provided. Update ignored')
+
+            status = False
 
         return status
 
@@ -292,9 +319,8 @@ class Adp(top.Service):
             pw = self.default_passwords.get(delivery_partner.lower())
             if pw is not None:
                 sanitised_values['login_account.password'] = pw
-
-        if sanitised_values.get('login_account.password') is None:
-            self.set_alerts('login_account.password lookup failed')
+            else:
+                self.set_alerts('login_account.password lookup failed')
 
         la_status = values.get('login_account.status')
         conv_la_status = self.sanitise_login_account_status(la_status)
@@ -408,9 +434,11 @@ class Adp(top.Service):
 
         * *test* is transposed to the integer value 2
 
-        .. note:: if you think you know what you are doing, you can pass
-        through the actual integer values and the method won't complain.
-        However, this is strongly discouraged.
+        .. note::
+
+            if you think you know what you are doing, you can pass
+            through the actual integer values and the method won't complain.
+            However, this is strongly discouraged.
 
         **Args:**
             *value*: the agent.status value to transpose

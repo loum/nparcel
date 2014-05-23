@@ -345,8 +345,8 @@ class TestAdp(unittest2.TestCase):
         msg = 'Validate missing username/password should be False'
         self.assertFalse(received, msg)
 
-    def test_update(self):
-        """Bulk ADP update.
+    def test_update_agent_code_not_in_agent_table(self):
+        """Bulk ADP update - agent code not in agent table.
         """
         code = {}
         code['V010'] = {'agent.code': 'V010',
@@ -361,8 +361,30 @@ class TestAdp(unittest2.TestCase):
                         'delivery_partner.dp_id': 'Nparcel',
                         'login_account.username': 'VCLA005'}
         received = self._adp.update(code='V0101', values=code['V010'])
-        msg = 'ADP update should return True'
+        msg = 'ADP update for missing agent should return False'
+        self.assertFalse(received, msg)
+
+    def test_update_agent_code_in_agent_table(self):
+        """Bulk ADP update - agent code not agent table.
+        """
+        values = {'agent.code': 'N031',
+                  'agent.name': None,
+                  'agent.address': '',
+                  'agent.suburb': 'Doreen',
+                  'agent.postcode': '3754'}
+        received = self._adp.update(code='N031', values=values)
+        msg = 'ADP update for existing agent should return True'
         self.assertTrue(received, msg)
+
+        # ... and check the update.
+        sql = """SELECT code, name, address, suburb, postcode
+FROM agent
+WHERE code = 'N031'"""
+        self._adp.db(sql)
+        received = self._adp.db.row
+        expected = ('N031', 'N031 Name', 'N031 Address', 'Doreen', '3754')
+        msg = 'agent table for "N031" error'
+        self.assertEqual(received, expected, msg)
 
     def test_sanitise_agent_status(self):
         """Sanitise agent status.

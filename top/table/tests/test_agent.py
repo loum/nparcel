@@ -58,6 +58,15 @@ class TestAgent(unittest2.TestCase):
         msg = 'Agent details not as expected'
         self.assertListEqual(received, expected, msg)
 
+    def test_agent_code_sql(self):
+        """Agent code id SQL check.
+        """
+        self._db(self._agent.agent_code_sql(code='N031'))
+        received = list(self._db.rows())
+        expected = [(1, )]
+        msg = 'Agent code "N031" code not as expected'
+        self.assertEqual(received, expected, msg)
+
     @classmethod
     def tearDownClass(cls):
         cls._db.disconnect()

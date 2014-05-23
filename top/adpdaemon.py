@@ -47,12 +47,17 @@ class AdpDaemon(top.DaemonService):
         but can also perform an "update"
 
     """
+    _adp = None
     _parser = top.AdpParser()
     _adp_in_dirs = None
     _adp_file_formats = []
     _archive_dir = None
     _code_header = 'TP Code'
     _mode = 'insert'
+
+    @property
+    def adp(self):
+        return self._adp
 
     @property
     def parser(self):
@@ -162,7 +167,8 @@ class AdpDaemon(top.DaemonService):
         """
         signal.signal(signal.SIGTERM, self._exit_handler)
 
-        adp = top.Adp(**(self.adp_kwargs))
+        if self.adp is None:
+            self._adp = top.Adp(**(self.adp_kwargs))
 
         commit = True
         if self.dry:
@@ -170,7 +176,7 @@ class AdpDaemon(top.DaemonService):
 
         while not event.isSet():
             files = []
-            if adp.db():
+            if self.adp.db():
                 if self.file is not None:
                     converted_file = xlsx_to_csv_converter(self.file)
                     if converted_file is not None:
@@ -192,16 +198,16 @@ class AdpDaemon(top.DaemonService):
                 self.parser.read()
 
             for code, v in self.parser.adps.iteritems():
-                self.reporter(adp.process(code, v, self.mode))
+                self.reporter(self.adp.process(code, v, self.mode))
 
             alerts = []
             if len(files):
                 files_str = ', '.join(files)
                 self.send_table(recipients=self.support_emails,
-                                table_data=list(adp.alerts),
+                                table_data=list(self.adp.alerts),
                                 identifier=files_str,
                                 dry=self.dry)
-                adp.reset(commit=commit)
+                self.adp.reset(commit=commit)
 
                 # Archive the files.
                 for f in files:

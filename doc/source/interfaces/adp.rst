@@ -19,9 +19,8 @@ Toll Outlet Portal ``agent`` table.
 
 Supported file types include:
 
-* Excel ``*.xlsx``
-
-* CSV
+    * Excel ``*.xlsx``
+    * CSV
 
 .. note::
 

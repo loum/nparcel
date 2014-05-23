@@ -50,6 +50,7 @@ class AdpParser(object):
             *files*: override the list of files to parse
 
         """
+        self.adps.clear()
         files_to_parse = []
 
         if files is not None:

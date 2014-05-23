@@ -394,33 +394,39 @@ def xlsx_to_csv_converter(xlsx_file):
     file, extension = os.path.splitext(xlsx_file)
     target_file = None
 
-    if (os.path.exists(xlsx_file) and extension == '.xlsx'):
-        wb = top.openpyxl.load_workbook(xlsx_file)
-        sh = wb.get_active_sheet()
+    if os.path.exists(xlsx_file):
+        if extension == '.xlsx':
+            wb = top.openpyxl.load_workbook(xlsx_file)
+            sh = wb.get_active_sheet()
 
-        target_file = os.path.join(os.path.dirname(xlsx_file),
-                                   "%s.csv" % os.path.basename(file))
+            target_file = os.path.join(os.path.dirname(xlsx_file),
+                                       "%s.csv" % os.path.basename(file))
 
-        fh = None
-        try:
-            fh = open(target_file, 'wb')
-        except IOError, err:
-            log.error('Unable to open file: "%s" - %s' % (target_file, err))
+            fh = None
+            try:
+                fh = open(target_file, 'wb')
+            except IOError, err:
+                log.error('Unable to open file: "%s" - %s' %
+                          (target_file, err))
 
-        if fh is not None:
-            c = csv.writer(fh)
-            for r in sh.rows:
-                try:
-                    c.writerow([cell.value for cell in r])
-                except UnicodeEncodeError, e:
-                    log.error('%s: %s' % (e, str([cell.value for cell in r])))
+            if fh is not None:
+                c = csv.writer(fh)
+                for r in sh.rows:
+                    try:
+                        c.writerow([cell.value for cell in r])
+                    except UnicodeEncodeError, e:
+                        log.error('%s: %s' %
+                                  (e, str([cell.value for cell in r])))
 
             fh.close()
             log.info('Conversion produced file: "%s"' % target_file)
-    elif extension == '.csv':
-        target_file = xlsx_file
+        elif extension == '.csv':
+            # Nothing to do.  Just pass the filename through.
+            target_file = xlsx_file
+        else:
+            log.error('"%s" is not a valid file' % xlsx_file)
     else:
-        log.info('"%s" is not an xlsx file' % xlsx_file)
+        log.error('"%s" does not exist' % xlsx_file)
 
     return target_file
 
