@@ -244,8 +244,9 @@ class Adp(top.Service):
             try:
                 self.db(dml)
             except Exception, e:
-                log.error('agent table update for code "%s" failed: %s' %
-                        (code, e))
+                msg = ('agent table update for code "%s" failed: %s' %
+                       (code, e))
+                self.set_alerts(msg)
         else:
             log.error('No agent.id values provided. Update ignored')
 
