@@ -365,7 +365,7 @@ class TestAdp(unittest2.TestCase):
         self.assertFalse(received, msg)
 
     def test_update_agent_code_in_agent_table(self):
-        """Bulk ADP update - agent code not agent table.
+        """Bulk ADP update - agent code agent table.
         """
         values = {'agent.code': 'N031',
                   'agent.name': None,

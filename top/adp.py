@@ -197,6 +197,11 @@ class Adp(top.Service):
 
         # agent table updates.
         agent_values = self.filter_update_fields(values, key='agent')
+
+        # We don't want to update the agent.code
+        # field value as this is our mandatory lookup key
+        agent_values.pop('agent.code')
+
         if agent_values.get('agent.status') is not None:
             value = agent_values.get('agent.status')
             agent_values['agent.status'] = self.sanitise_agent_status(value)

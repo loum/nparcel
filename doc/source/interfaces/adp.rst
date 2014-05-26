@@ -69,10 +69,26 @@ reflect the change.  Otherwise, the new column will be ignored.
 ADP Updates
 -----------
 
-*New in version 0.30*
+*New in version 0.38*
 
 If run in update mode, ``topadpd`` will parse the source files and attempt
-to update the associated database table columns.
+to update the ``agent`` table columns.
+
+.. note::
+
+    only the ``agent`` table value updates are supported at this time
+
+To invoke ``topadpd`` in update mode you must provide the ``-u`` switch
+on the command line::
+
+    $ topadpd -u start
+
+The ``topadpd`` updater has been design so that the same ADP bulk load
+Excel spreadsheet can be used.  With this in mind, there are a few
+conditions that need to be met:
+
+* The column associated with the ``agent.code`` table column is mandatory
+* Only fields with data will be updated (empty cells will be skipped)
 
 ``topadpd`` Logging
 -------------------
