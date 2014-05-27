@@ -54,6 +54,25 @@ class Exporter(top.Service):
         token used to identify the item number column in the Exporter report
         file
 
+    .. attribute:: pickup_time_header
+
+        token used to identify the pickup time column in the Exporter report
+        file
+
+    .. attribute:: pickup_pod_header
+
+        token used to identify the pickup POD column in the Exporter report
+        file
+
+    .. attribute:: identity_data_header
+
+        token used to identify the identity data column in the
+        Exporter report file
+
+    .. attribute:: identity_data_value
+
+        value to used to populate the identity_type.id table column
+
     """
     _signature_dir = None
     _staging_dir = None
@@ -62,6 +81,10 @@ class Exporter(top.Service):
     _exporter_file_formats = []
     _connote_header = 'REF1'
     _item_nbr_header = 'ITEM_NBR'
+    _pickup_time_header = None
+    _pickup_pod_header = None
+    _identity_data_header = None
+    _identity_data_value = None
     _time_fmt = "%Y-%m-%d %H:%M:%S"
     _time_tz_fmt = "%Y-%m-%d %H:%M:%S %Z%z"
     _out_dir = None
@@ -162,6 +185,38 @@ class Exporter(top.Service):
         pass
 
     @property
+    def pickup_time_header(self):
+        return self._pickup_time_header
+
+    @set_scalar
+    def set_pickup_time_header(self, value=None):
+        pass
+
+    @property
+    def pickup_pod_header(self):
+        return self._pickup_pod_header
+
+    @set_scalar
+    def set_pickup_pod_header(self, value=None):
+        pass
+
+    @property
+    def identity_data_header(self):
+        return self._identity_data_header
+
+    @set_scalar
+    def set_identity_data_header(self, value=None):
+        pass
+
+    @property
+    def identity_data_value(self):
+        return self._identity_data_value
+
+    @set_scalar
+    def set_identity_data_value(self, value=None):
+        pass
+
+    @property
     def header(self):
         return self._header
 
@@ -191,6 +246,14 @@ class Exporter(top.Service):
             self.set_connote_header(kwargs.get('connote_header'))
         if kwargs.get('item_nbr_header') is not None:
             self.set_item_nbr_header(kwargs.get('item_nbr_header'))
+        if kwargs.get('pickup_time_header') is not None:
+            self.set_pickup_time_header(kwargs.get('pickup_time_header'))
+        if kwargs.get('pickup_pod_header') is not None:
+            self.set_pickup_pod_header(kwargs.get('pickup_pod_header'))
+        if kwargs.get('identity_data_header') is not None:
+            self.set_identity_data_header(kwargs.get('identity_data_header'))
+        if kwargs.get('identity_data_value') is not None:
+            self.set_identity_data_value(kwargs.get('identity_data_value'))
 
     def get_collected_items(self, business_unit_id, ignore_pe=False):
         """Query DB for recently collected items.
@@ -656,8 +719,8 @@ class Exporter(top.Service):
         return files
 
     def parse_report_file(self, file):
-        """Parse the contents of a report file and extract the connote
-        and item number fields.
+        """Parse the contents of a report file and extract the required
+        fields that will eventually close-off the job_item record.
 
         **Args:**
             *file*: the absolute path to the report file to parse.
@@ -689,6 +752,7 @@ class Exporter(top.Service):
                     log.debug('Trying connote lookup as per title: "%s"' %
                               title)
                     connote = rowdict.get(title)
+
                 item_nbr = rowdict.get(self.item_nbr_header)
                 row = (connote, item_nbr)
                 values.append(row)

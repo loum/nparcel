@@ -66,6 +66,31 @@ class TestExporterB2CConfig(unittest2.TestCase):
         msg = 'exporter.connote_header error'
         self.assertEqual(received, expected, msg)
 
+        received = self._c.item_nbr_header
+        expected = 'ITEM_NBR'
+        msg = 'exporter.item_nbr_header error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.pickup_time_header
+        expected = 'PICKUP_TIME'
+        msg = 'exporter.pickup_time_header error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.pickup_pod_header
+        expected = 'PICKUP_POD'
+        msg = 'exporter.pickup_pod_header error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.identity_data_header
+        expected = 'IDENTITY_DATA'
+        msg = 'exporter.identity_data_header error'
+        self.assertEqual(received, expected, msg)
+
+        received = self._c.identity_data_value
+        expected = 9
+        msg = 'exporter.identity_data_value error'
+        self.assertEqual(received, expected, msg)
+
         received = self._c.exporter_file_formats
         expected = ['.*_RE[PIF]_\d{14}\.txt$']
         msg = 'exporter.file_formats error'
@@ -77,11 +102,6 @@ class TestExporterB2CConfig(unittest2.TestCase):
                     'toli': '0,1,2,3,4,5,6,7'}
         msg = 'exporter_fields error'
         self.assertDictEqual(received, expected, msg)
-
-        received = self._c.item_nbr_header
-        expected = 'ITEM_NBR'
-        msg = 'exporter.item_nbr header error'
-        self.assertEqual(received, expected, msg)
 
         received = self._c.business_units
         expected = {'priority': 1, 'fast': 2, 'ipec': 3}

@@ -170,7 +170,7 @@ class CommsDaemon(top.DaemonService):
         try:
             kwargs['db'] = self.config.db_kwargs()
         except AttributeError, err:
-            log.debug('%s TPP DB kwargs not in config: %s ' %
+            log.debug('%s DB kwargs not in config: %s ' %
                       (self._facility, err))
 
         try:

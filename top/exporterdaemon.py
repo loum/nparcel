@@ -48,43 +48,74 @@ class ExporterDaemon(top.DaemonService):
         try:
             kwargs['db'] = self.config.db_kwargs()
         except AttributeError, err:
-            log.debug('DB kwargs not in config: %s ' % err)
+            log.debug('%s db not in config: %s ' % (self.facility, err))
 
         try:
             kwargs['signature_dir'] = self.config.signature_dir
         except AttributeError, err:
-            log.debug('DB kwargs not in config: %s ' % err)
+            log.debug('%s dirs.signature not in config: %s ' %
+                      (self.facility, err))
 
         try:
             kwargs['staging_dir'] = self.config.staging_base
         except AttributeError, err:
-            log.debug('Staging directory not in config: %s ' % err)
+            log.debug('%s dirs.staging_base not in config: %s ' %
+                      (self.facility, err))
 
         try:
             kwargs['archive_dir'] = os.path.join(self.config.archive_dir,
                                                  'signature')
         except AttributeError, err:
-            log.debug('Staging directory not in config: %s ' % err)
+            log.debug('%s dirs.archive not in config: %s ' %
+                      (self.facility, err))
 
         try:
             kwargs['exporter_dirs'] = self.config.exporter_dirs
         except AttributeError, err:
-            log.debug('Exporter dirs not in config: %s ' % err)
+            log.debug('%s dirs.exporter_in not in config: %s ' %
+                      (self.facility, err))
 
         try:
             kwargs['exporter_file_formats'] = self.config.exporter_file_formats
         except AttributeError, err:
-            log.debug('Exporter file formats not in config: %s ' % err)
+            log.debug('%s exporter.file_formats not in config: %s ' %
+                      (self.facility, err))
 
         try:
             kwargs['connote_header'] = self.config.connote_header
         except AttributeError, err:
-            log.debug('Connote header not in config: %s ' % err)
+            log.debug('%s exporter.connote_header not in config: %s ' %
+                      (self.facility, err))
 
         try:
             kwargs['item_nbr_header'] = self.config.item_nbr_header
         except AttributeError, err:
-            log.debug('Item number header not in config: %s' % err)
+            log.debug('%s exporter.item_nbr_header not in config: %s' %
+                      (self.facility, err))
+
+        try:
+            kwargs['pickup_time_header'] = self.config.pickup_time_header
+        except AttributeError, err:
+            log.debug('%s exporter.pickup_time_header not in config: %s' %
+                      (self.facility, err))
+
+        try:
+            kwargs['pickup_pod_header'] = self.config.pickup_pod_header
+        except AttributeError, err:
+            log.debug('%s exporter.pickup_pod_header not in config: %s' %
+                      (self.facility, err))
+
+        try:
+            kwargs['identity_data_header'] = self.config.identity_data_header
+        except AttributeError, err:
+            log.debug('%s exporter.identity_data_header not in config: %s' %
+                      (self.facility, err))
+
+        try:
+            kwargs['identity_data_value'] = self.config.identity_data_value
+        except AttributeError, err:
+            log.debug('%s exporter.identity_data_value not in config: %s' %
+                      (self.facility, err))
 
         return kwargs
 

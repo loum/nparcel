@@ -45,6 +45,25 @@ class ExporterB2CConfig(top.B2CConfig):
         token used to identify the item number column in the Exporter report
         file
 
+    .. attribute:: pickup_time_header
+
+        token used to identify the pickup time column in the Exporter report
+        file
+
+    .. attribute:: pickup_pod_header
+
+        token used to identify the pickup POD column in the Exporter report
+        file
+
+    .. attribute:: identity_data_header
+
+        token used to identify the identity data column in the
+        Exporter report file
+
+    .. attribute:: identity_data_value
+
+        value to used to populate the identity_type.id table column
+
     .. attribute:: business_units (exporter)
 
         the list of business units to query for collected items
@@ -54,9 +73,13 @@ class ExporterB2CConfig(top.B2CConfig):
     _signature_dir = None
     _exporter_dirs = []
     _connote_header = None
+    _item_nbr_header = None
+    _pickup_time_header = None
+    _pickup_pod_header = None
+    _identity_data_header = None
+    _identity_data_value = None
     _exporter_file_formats = []
     _exporter_fields = {}
-    _item_nbr_header = None
     _business_units = {}
 
     @property
@@ -116,6 +139,38 @@ class ExporterB2CConfig(top.B2CConfig):
         pass
 
     @property
+    def pickup_time_header(self):
+        return self._pickup_time_header
+
+    @set_scalar
+    def set_pickup_time_header(self, value=None):
+        pass
+
+    @property
+    def pickup_pod_header(self):
+        return self._pickup_pod_header
+
+    @set_scalar
+    def set_pickup_pod_header(self, value=None):
+        pass
+
+    @property
+    def identity_data_header(self):
+        return self._identity_data_header
+
+    @set_scalar
+    def set_identity_data_header(self, value=None):
+        pass
+
+    @property
+    def identity_data_value(self):
+        return self._identity_data_value
+
+    @set_scalar
+    def set_identity_data_value(self, value=None):
+        pass
+
+    @property
     def business_units(self):
         return self._business_units
 
@@ -165,7 +220,16 @@ class ExporterB2CConfig(top.B2CConfig):
                   {'section': 'exporter',
                    'option': 'connote_header'},
                   {'section': 'exporter',
-                   'option': 'item_nbr_header'}]
+                   'option': 'item_nbr_header'},
+                  {'section': 'exporter',
+                   'option': 'pickup_time_header'},
+                  {'section': 'exporter',
+                   'option': 'pickup_pod_header'},
+                  {'section': 'exporter',
+                   'option': 'identity_data_header'},
+                  {'section': 'exporter',
+                   'cast_type': 'int',
+                   'option': 'identity_data_value'}]
         for kw in kwargs:
             self.parse_scalar_config(**kw)
 
