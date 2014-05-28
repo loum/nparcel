@@ -25,6 +25,14 @@ class TestExporter(unittest2.TestCase):
         cls._e = top.Exporter()
         cls._e.reset()
 
+        cls._e.set_exporter_headers({'connote_nbr': ['REF1', 'Ref1'],
+                                     'item_nbr': ['ITEM_NBR'],
+                                     'pickup_ts': ['PICKUP_TIME'],
+                                     'pod_name': ['PICKUP_POD'],
+                                     'identity_type_id': ['IDENTITY_TYPE'],
+                                     'identity_type_data': ['IDENTITY_DATA']})
+        cls._e.set_exporter_defaults({'identity_type_id': '9'})
+
         db = cls._e.db
         # Prepare some sample data.
         fixture_dir = os.path.join('top', 'tests', 'fixtures')
@@ -109,7 +117,10 @@ class TestExporter(unittest2.TestCase):
                      'pickup_ts': '%s' % cls._now,
                      'pod_name': 'pod_name primary_elect',
                      'identity_type_id': id_type_id,
-                     'identity_type_data': 'identity pe'}]
+                     'identity_type_data': 'identity pe'},
+                    {'connote_nbr': 'pp_connote',
+                     'item_nbr': 'pp_item_nbr',
+                     'job_id': pe_job_id}]
         for jobitem in jobitems:
             sql = cls._e.db.jobitem.insert_sql(jobitem)
             jobitem_id = cls._e.db.insert(sql=sql)
@@ -680,11 +691,48 @@ WHERE id = 1"""
 
         received = self._e.parse_report_file(os.path.join(test_file_dir,
                                                           file))
-        expected = [('8473420000130', '6827668473420000130001'),
-                    ('8473420000131', '6827668473420000131001'),
-                    ('8473420000131', '6827668473420000131002'),
-                    ('8473420000131', '6827668473420000131003')]
+        expected = [{'identity_type_id': 9,
+                     'identity_type_data': 'a1234',
+                     'item_nbr': '6827668473420000130001',
+                     'pod_name': 'Test Line1',
+                     'pickup_ts': '2013-11-08 14:50:11',
+                     'connote_nbr': '8473420000130'},
+                    {'identity_type_id': 9,
+                     'identity_type_data': 'b1234',
+                     'item_nbr': '6827668473420000131001',
+                     'pod_name': 'Test Line2',
+                     'pickup_ts': '2013-11-08 14:50:42',
+                     'connote_nbr': '8473420000131'},
+                    {'identity_type_id': 9,
+                     'identity_type_data': 'c1234',
+                     'item_nbr': '6827668473420000131002',
+                     'pod_name': 'Test Line3',
+                     'pickup_ts': '2013-11-08 14:50:42',
+                     'connote_nbr': '8473420000131'},
+                    {'identity_type_id': 9,
+                     'identity_type_data': 'd1234',
+                     'item_nbr': '6827668473420000131003',
+                     'pod_name': 'Test Line4',
+                     'pickup_ts': '2013-11-08 14:50:42',
+                     'connote_nbr': '8473420000131'}]
         msg = 'Exporter report files parsed values error'
+        self.assertListEqual(received, expected, msg)
+
+    def test_parse_report_file_parcelpoint_ref1(self):
+        """Extract connote/item number from report file - PP Ref1.
+        """
+        test_file_dir = os.path.join('top', 'tests', 'files')
+        file = 'VIC_VANA_REI_20131108145147.txt'
+
+        received = self._e.parse_report_file(os.path.join(test_file_dir,
+                                                          file))
+        expected = [{'identity_type_id': 9,
+                     'identity_type_data': 'a1234',
+                     'item_nbr': '6827668473420000130001',
+                     'pod_name': 'Test Line1',
+                     'pickup_ts': '2013-11-08 14:50:11',
+                     'connote_nbr': '8473420000130'}]
+        msg = 'Exporter report files parsed values error - ParcelPoint Ref1'
         self.assertListEqual(received, expected, msg)
 
     def test_parse_missing_report_file(self):

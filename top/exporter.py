@@ -15,7 +15,8 @@ from top.utils.files import (create_dir,
                              get_directory_files_list,
                              gen_digest_path)
 from top.utils.setter import (set_scalar,
-                              set_list)
+                              set_list,
+                              set_dict)
 from top.timezone import convert_timezone
 
 STATES = ['NSW', 'VIC', 'QLD', 'SA', 'WA', 'ACT']
@@ -44,34 +45,21 @@ class Exporter(top.Service):
         list of regular expressions that represent the type of files that
         can be parsed by the exporter
 
-    .. attribute:: connote_header
+    .. attribute:: exporter_headers
 
-        token used to identify the connote column in the Exporter report
-        file
+        dictionary of agent table columns and their associated
+        report file column headers
 
-    .. attribute:: item_nbr_header
+    .. attribute:: exporter_defaults
 
-        token used to identify the item number column in the Exporter report
-        file
+        dictionary of agent table columns and the default values to
+        use to populate the agent table
 
-    .. attribute:: pickup_time_header
+    .. attribute:: required_keys
 
-        token used to identify the pickup time column in the Exporter report
-        file
-
-    .. attribute:: pickup_pod_header
-
-        token used to identify the pickup POD column in the Exporter report
-        file
-
-    .. attribute:: identity_data_header
-
-        token used to identify the identity data column in the
-        Exporter report file
-
-    .. attribute:: identity_data_value
-
-        value to used to populate the identity_type.id table column
+        List of agent table columns that are required to be parsed from
+        the exporter report file.
+        Default is``['connote_nbr', 'item_nbr']``
 
     """
     _signature_dir = None
@@ -79,17 +67,14 @@ class Exporter(top.Service):
     _archive_dir = None
     _exporter_dirs = []
     _exporter_file_formats = []
-    _connote_header = 'REF1'
-    _item_nbr_header = 'ITEM_NBR'
-    _pickup_time_header = None
-    _pickup_pod_header = None
-    _identity_data_header = None
-    _identity_data_value = None
+    _exporter_headers = {}
+    _exporter_defaults = {}
     _time_fmt = "%Y-%m-%d %H:%M:%S"
     _time_tz_fmt = "%Y-%m-%d %H:%M:%S %Z%z"
     _out_dir = None
     _collected_items = []
     _header = []
+    _required_keys = []
 
     @property
     def signature_dir(self):
@@ -169,51 +154,19 @@ class Exporter(top.Service):
         pass
 
     @property
-    def connote_header(self):
-        return self._connote_header
+    def exporter_headers(self):
+        return self._exporter_headers
 
-    @set_scalar
-    def set_connote_header(self, value):
+    @set_dict
+    def set_exporter_headers(self, value):
         pass
 
     @property
-    def item_nbr_header(self):
-        return self._item_nbr_header
+    def exporter_defaults(self):
+        return self._exporter_defaults
 
-    @set_scalar
-    def set_item_nbr_header(self, value):
-        pass
-
-    @property
-    def pickup_time_header(self):
-        return self._pickup_time_header
-
-    @set_scalar
-    def set_pickup_time_header(self, value=None):
-        pass
-
-    @property
-    def pickup_pod_header(self):
-        return self._pickup_pod_header
-
-    @set_scalar
-    def set_pickup_pod_header(self, value=None):
-        pass
-
-    @property
-    def identity_data_header(self):
-        return self._identity_data_header
-
-    @set_scalar
-    def set_identity_data_header(self, value=None):
-        pass
-
-    @property
-    def identity_data_value(self):
-        return self._identity_data_value
-
-    @set_scalar
-    def set_identity_data_value(self, value=None):
+    @set_dict
+    def set_exporter_defaults(self, value=None):
         pass
 
     @property
@@ -222,6 +175,14 @@ class Exporter(top.Service):
 
     @set_list
     def set_header(self, values=None):
+        pass
+
+    @property
+    def required_keys(self):
+        return self._required_keys
+
+    @set_list
+    def set_required_keys(self, values=None):
         pass
 
     @property
@@ -730,6 +691,7 @@ class Exporter(top.Service):
             tuple structure in the form (<connote>, <item_number>).  If
             either connote and item number is not defined then field
             is substituted with ``None``
+
         """
         values = []
 
@@ -744,19 +706,34 @@ class Exporter(top.Service):
             reader = csv.DictReader(fh, delimiter='|')
 
             for rowdict in reader:
-                connote = rowdict.get(self.connote_header)
-                if connote is None:
-                    # We need this because ParcelPoint return the 'REF1'
-                    # column as 'Ref1' (just to be different ...)
-                    title = self.connote_header.lower().title()
-                    log.debug('Trying connote lookup as per title: "%s"' %
-                              title)
-                    connote = rowdict.get(title)
+                tmp_dict = {}
 
-                item_nbr = rowdict.get(self.item_nbr_header)
-                row = (connote, item_nbr)
-                values.append(row)
-                log.info('Parsed (connote|item_nbr): %s' % str(row))
+                for k, v_list in self.exporter_headers.iteritems():
+                    for v in v_list:
+                        tmp_val = rowdict.get(v)
+                        if tmp_val is None:
+                            continue
+
+                        if self.exporter_defaults.get(k) is not None:
+                            # Override the parsed value.
+                            tmp_val = self.exporter_defaults.get(k)
+                            if k == 'identity_type_id':
+                                tmp_val = int(tmp_val)
+                            log.debug('Key %s value "%s" override "%s"' %
+                                        (k, v, tmp_val))
+
+                        log.debug('Report header "%s" value "%s"' %
+                                    (v, tmp_val))
+                        tmp_dict[k] = tmp_val
+
+                required_keys_set = set(self.required_keys)
+                actual_keys_set = set(tmp_dict.keys())
+                if required_keys_set.issubset(actual_keys_set):
+                    log.info('Parsed report items "%s"' % str(tmp_dict))
+                    values.append(tmp_dict)
+                else:
+                    log.error('Required headers "%s" not parsed from "%s"' %
+                              (str(self.required_keys), actual_keys_set))
 
         return values
 
@@ -765,16 +742,21 @@ class Exporter(top.Service):
 
         **Kwargs:**
             *dry*: only report, do not execute.
+
         """
         for file in self.get_files():
             records = []
             records.extend(self.parse_report_file(file))
 
             for r in records:
-                log.info('Closing off (connote|item_nbr): %s' % str(r))
+                connote = r.get('connote_nbr')
+                item_nbr = r.get('item_nbr')
+                log.info('Closing off "connote|item_nbr": "%s|%s"' %
+                         (connote, item_nbr))
 
                 # Check that the record exists in the table.
-                sql = self.db.jobitem.connote_item_nbr_sql(*r)
+                sql = self.db.jobitem.connote_item_nbr_sql(connote,
+                                                           item_nbr)
                 self.db(sql)
                 rows = list(self.db.rows())
                 if not len(rows):
@@ -785,10 +767,13 @@ class Exporter(top.Service):
                     self.set_alerts(err)
                     continue
 
-                sql = self.db.jobitem.upd_file_based_collected_sql(*r)
-                self.db(sql)
-                if not dry:
-                    self.db.commit()
+                ids = [x[0] for x in rows]
+                log.info('job_item.id values pending closure: %s' %
+                          ', '.join(map(str, ids)))
+                #sql = self.db.jobitem.upd_file_based_collected_sql(*r)
+                #self.db(sql)
+                #if not dry:
+                #    self.db.commit()
 
             log.info('Deleting file: "%s"' % file)
             if not dry:

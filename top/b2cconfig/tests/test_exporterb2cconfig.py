@@ -61,35 +61,20 @@ class TestExporterB2CConfig(unittest2.TestCase):
         msg = 'dir.exporter_in error'
         self.assertListEqual(received, expected, msg)
 
-        received = self._c.connote_header
-        expected = 'REF1'
-        msg = 'exporter.connote_header error'
-        self.assertEqual(received, expected, msg)
+        received = self._c.exporter_headers
+        expected = {'connote_nbr': ['REF1', 'Ref1'],
+                    'item_nbr': ['ITEM_NBR'],
+                    'pickup_ts': ['PICKUP_TIME'],
+                    'pod_name': ['PICKUP_POD'],
+                    'identity_type_id': ['IDENTITY_TYPE'],
+                    'identity_type_data': ['IDENTITY_DATA']}
+        msg = 'exporter_headers error'
+        self.assertDictEqual(received, expected, msg)
 
-        received = self._c.item_nbr_header
-        expected = 'ITEM_NBR'
-        msg = 'exporter.item_nbr_header error'
-        self.assertEqual(received, expected, msg)
-
-        received = self._c.pickup_time_header
-        expected = 'PICKUP_TIME'
-        msg = 'exporter.pickup_time_header error'
-        self.assertEqual(received, expected, msg)
-
-        received = self._c.pickup_pod_header
-        expected = 'PICKUP_POD'
-        msg = 'exporter.pickup_pod_header error'
-        self.assertEqual(received, expected, msg)
-
-        received = self._c.identity_data_header
-        expected = 'IDENTITY_DATA'
-        msg = 'exporter.identity_data_header error'
-        self.assertEqual(received, expected, msg)
-
-        received = self._c.identity_data_value
-        expected = 9
-        msg = 'exporter.identity_data_value error'
-        self.assertEqual(received, expected, msg)
+        received = self._c.exporter_defaults
+        expected = {'identity_type_id': '9'}
+        msg = 'exporter_defaults error'
+        self.assertDictEqual(received, expected, msg)
 
         received = self._c.exporter_file_formats
         expected = ['.*_RE[PIF]_\d{14}\.txt$']

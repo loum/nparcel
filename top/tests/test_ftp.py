@@ -110,7 +110,9 @@ class TestFtp(unittest2.TestCase):
         for file in self._ftp.get_report_file(self._test_dir, filter):
             received.append(file)
         expected = [os.path.join(self._test_dir,
-                                 'VIC_VANA_REI_20131108145146.txt')]
+                                 'VIC_VANA_REI_20131108145146.txt'),
+                    os.path.join(self._test_dir,
+                                 'VIC_VANA_REI_20131108145147.txt')]
         msg = 'Ipec report file should be found in listing'
         self.assertListEqual(received, expected, msg)
 

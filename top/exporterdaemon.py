@@ -82,39 +82,15 @@ class ExporterDaemon(top.DaemonService):
                       (self.facility, err))
 
         try:
-            kwargs['connote_header'] = self.config.connote_header
+            kwargs['exporter_headers'] = self.config.exporter_headers
         except AttributeError, err:
-            log.debug('%s exporter.connote_header not in config: %s ' %
+            log.debug('%s exporter_headers not in config: %s ' %
                       (self.facility, err))
 
         try:
-            kwargs['item_nbr_header'] = self.config.item_nbr_header
+            kwargs['exporter_defaults'] = self.config.exporter_defaults
         except AttributeError, err:
-            log.debug('%s exporter.item_nbr_header not in config: %s' %
-                      (self.facility, err))
-
-        try:
-            kwargs['pickup_time_header'] = self.config.pickup_time_header
-        except AttributeError, err:
-            log.debug('%s exporter.pickup_time_header not in config: %s' %
-                      (self.facility, err))
-
-        try:
-            kwargs['pickup_pod_header'] = self.config.pickup_pod_header
-        except AttributeError, err:
-            log.debug('%s exporter.pickup_pod_header not in config: %s' %
-                      (self.facility, err))
-
-        try:
-            kwargs['identity_data_header'] = self.config.identity_data_header
-        except AttributeError, err:
-            log.debug('%s exporter.identity_data_header not in config: %s' %
-                      (self.facility, err))
-
-        try:
-            kwargs['identity_data_value'] = self.config.identity_data_value
-        except AttributeError, err:
-            log.debug('%s exporter.identity_data_value not in config: %s' %
+            log.debug('%s exporter_defaults not in config: %s' %
                       (self.facility, err))
 
         return kwargs
