@@ -204,18 +204,8 @@ class Exporter(top.Service):
         self.set_archive_dir(kwargs.get('archive_dir'))
         self.set_exporter_dirs(kwargs.get('exporter_dirs'))
         self.set_exporter_file_formats(kwargs.get('exporter_file_formats'))
-        if kwargs.get('connote_header') is not None:
-            self.set_connote_header(kwargs.get('connote_header'))
-        if kwargs.get('item_nbr_header') is not None:
-            self.set_item_nbr_header(kwargs.get('item_nbr_header'))
-        if kwargs.get('pickup_time_header') is not None:
-            self.set_pickup_time_header(kwargs.get('pickup_time_header'))
-        if kwargs.get('pickup_pod_header') is not None:
-            self.set_pickup_pod_header(kwargs.get('pickup_pod_header'))
-        if kwargs.get('identity_data_header') is not None:
-            self.set_identity_data_header(kwargs.get('identity_data_header'))
-        if kwargs.get('identity_data_value') is not None:
-            self.set_identity_data_value(kwargs.get('identity_data_value'))
+        self.set_exporter_headers(kwargs.get('exporter_headers'))
+        self.set_exporter_defaults(kwargs.get('exporter_defaults'))
 
     def get_collected_items(self, business_unit_id, ignore_pe=False):
         """Query DB for recently collected items.
@@ -739,7 +729,17 @@ class Exporter(top.Service):
         return values
 
     def file_based_updates(self, dry=False):
-        """Close off records based on file input.
+        """Close off records based on file input by attempting to parse
+        the columns defined by the :attr:`top.exporter.exporter_headers`
+        attribute and map them to the ``job_item`` table.
+
+        To successfully close off the job_item record and prevent the
+        :class:`top.exporter` extraction, the method will set the
+        ``job_item.pickup_ts`` and ``job_item.extract_ts`` fields.
+
+        ``job_item`` closure will only occur if the file input contains
+        an associated ``job_item.connote_nbr`` and ``job_item.item_nbr``
+        field value that can be identified in the ``job_item`` table.
 
         **Kwargs:**
             *dry*: only report, do not execute.
@@ -755,11 +755,16 @@ class Exporter(top.Service):
                 log.info('Closing off "connote|item_nbr": "%s|%s"' %
                          (connote, item_nbr))
 
-                # Check that the record exists in the table.
-                sql = self.db.jobitem.connote_item_nbr_sql(connote,
-                                                           item_nbr)
-                self.db(sql)
-                rows = list(self.db.rows())
+                rows = []
+                if connote is not None and item_nbr is not None:
+                    # Check that the record exists in the table.
+                    sql = self.db.jobitem.connote_item_nbr_sql(connote,
+                                                            item_nbr)
+                    self.db(sql)
+                    rows = list(self.db.rows())
+                else:
+                    log.error('Invalid connote_nbr|item_nbr provided')
+
                 if not len(rows):
                     err_file = os.path.basename(file)
                     err = ('File-based record closure in file "%s"' %
@@ -780,6 +785,9 @@ class Exporter(top.Service):
                         update_keys.pop(k)
                 except KeyError, e:
                     log.error('Preparing keys for update: "%s"' % e)
+
+                # ... and set the extract_ts.
+                update_keys['extract_ts'] = self.db.date_now()
                 dml = self.db.jobitem.update_sql(update_keys,
                                                  keys=tuple(ids))
                 self.db(dml)
