@@ -768,11 +768,32 @@ WHERE id = 1"""
 
         self._e.file_based_updates(dry=False)
 
+        # Verify update.
+        sql = """SELECT connote_nbr,
+       item_nbr,
+       identity_type_data,
+       identity_type_id,
+       pickup_ts,
+       pod_name
+FROM job_item
+WHERE connote_nbr='pp_connote' AND item_nbr = 'pp_item_nbr'"""
+        self._e.db(sql)
+        received = list(self._e.db.rows())
+        expected = [('pp_connote',
+                     'pp_item_nbr',
+                     '0602',
+                     9,
+                     '2013-11-08 14:47:25',
+                     'Tester')]
+        msg = 'File-based record closure update error'
+        self.assertListEqual(received, expected, msg)
+
         # Clean up.
         self._e.set_exporter_dirs(old_exporter_dirs)
         self._e.set_exporter_file_formats(old_exporter_file_formats)
         remove_files(get_directory_files_list(dir))
         os.removedirs(dir)
+        self._e.db.rollback()
 
     @classmethod
     def tearDownClass(cls):

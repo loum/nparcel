@@ -6,6 +6,7 @@ import os
 import datetime
 import operator
 import csv
+import copy
 
 import top
 from top.utils.log import log
@@ -770,10 +771,20 @@ class Exporter(top.Service):
                 ids = [x[0] for x in rows]
                 log.info('job_item.id values pending closure: %s' %
                           ', '.join(map(str, ids)))
-                #sql = self.db.jobitem.upd_file_based_collected_sql(*r)
-                #self.db(sql)
-                #if not dry:
-                #    self.db.commit()
+
+                # Strip connote and item_nbr from the data structure
+                # before the update.
+                update_keys = copy.deepcopy(r)
+                try:
+                    for k in ['connote_nbr', 'item_nbr']:
+                        update_keys.pop(k)
+                except KeyError, e:
+                    log.error('Preparing keys for update: "%s"' % e)
+                dml = self.db.jobitem.update_sql(update_keys,
+                                                 keys=tuple(ids))
+                self.db(dml)
+                if not dry:
+                    self.db.commit()
 
             log.info('Deleting file: "%s"' % file)
             if not dry:
