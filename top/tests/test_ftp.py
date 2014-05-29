@@ -114,7 +114,7 @@ class TestFtp(unittest2.TestCase):
                     os.path.join(self._test_dir,
                                  'VIC_VANA_REI_20131108145147.txt')]
         msg = 'Ipec report file should be found in listing'
-        self.assertListEqual(received, expected, msg)
+        self.assertListEqual(sorted(received), sorted(expected), msg)
 
     def test_get_report_file_ids(self):
         """Check directory for report files -- valid file defined.
