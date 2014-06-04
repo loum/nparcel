@@ -9,7 +9,7 @@ import datetime
 import top
 from top.utils.log import log
 from top.utils.files import (remove_files,
-                                 move_file)
+                             move_file)
 from top.timezone import convert_timezone
 
 
@@ -113,7 +113,7 @@ class Comms(top.Service):
         if the corresponding ``job_item.id``.
 
         **Args:**
-            *comms_file*: the name of the comms file to process.
+            *comms_file*: absolute path to the comms file to process.
 
         **Kwargs:**
             *dry*: only report, do not execute (default ``False``)
@@ -136,8 +136,7 @@ class Comms(top.Service):
             (action, id, template) = self.parse_comms_filename(filename)
         except ValueError, err:
             log.error('%s processing error: %s' % (comms_file, err))
-            if not dry:
-                move_file(comms_file, comms_file_err)
+            move_file(comms_file, comms_file_err, err=True, dry=dry)
             comms_status = False
 
         if comms_status:
@@ -145,8 +144,7 @@ class Comms(top.Service):
             if not template_items.keys():
                 log.error('%s processing error: %s' %
                           (comms_file, 'no agent details'))
-                if not dry:
-                    move_file(comms_file, comms_file_err)
+                move_file(comms_file, comms_file_err, err=True, dry=dry)
                 comms_status = False
             elif template_items.get('pickup_ts'):
                 log.warn('%s pickup_ts has been set -- not sending comms' %
@@ -195,18 +193,21 @@ class Comms(top.Service):
                 log.error('Unknown action: "%s"' % action)
                 comms_status = False
 
+            # Send failed comms status
             if not comms_status:
-                if not dry:
-                    move_file(comms_file, comms_file_err)
-                bad_email = template_items['email_addr']
-                template_items['bad_email_addr'] = bad_email
-                template_items['error_comms'] = action.upper()
-                for addr in self._emailer.support:
-                    template_items['email_addr'] = addr
-                    email_status = self.send_email(template_items,
-                                                   template=template,
-                                                   err=True,
-                                                   dry=dry)
+                if self.group_comms_failures(comms_file):
+                    # Only send a comms failure message if all
+                    # previous comms attempts fail.
+                    bad_email = template_items['email_addr']
+                    template_items['bad_email_addr'] = bad_email
+                    template_items['error_comms'] = action.upper()
+                    for addr in self._emailer.support:
+                        template_items['email_addr'] = addr
+                        email_status = self.send_email(template_items,
+                                                       template=template,
+                                                       err=True,
+                                                       dry=dry)
+                move_file(comms_file, comms_file_err, err=True, dry=dry)
             else:
                 if recipient is not None and recipient:
                     if template == 'rem':
@@ -482,3 +483,52 @@ class Comms(top.Service):
         log.debug('Comms filename produced: "%s"' % str(comm_parse))
 
         return comm_parse
+
+    def group_comms_failures(self, comms_file):
+        """In this context, a grouping of failed comms messages resolves
+        to ``True`` if *comms_file* has a corresponding failed facility
+        already present in the :attr:`top.comms.comms_dir` directory.
+
+        For example, if *comms_file* provided is
+        ``<comms_dir>/email.123456.body`` then a successful failed grouping
+        will only occur if the file ``<comms_dir>/sms.123456.body.err``
+        exists.
+
+        **Args:**
+            *comms_file*: absolute path to the comms event file to process.
+            For example, ``<comms_dir>/email.<job_item.id>.body``
+
+        **Returns:**
+            boolean ``True`` if the failed notification grouping
+            is matched.  Boolean ``False`` otherwise
+
+        """
+        log.debug('Grouping comms file "%s" with failed comms ...' %
+                  comms_file)
+        status = False
+
+        err_file = None
+        try:
+            dir = os.path.dirname(comms_file)
+            filename = os.path.basename(comms_file)
+            (action, id, template) = self.parse_comms_filename(filename)
+            if action == 'email':
+                err_file = os.path.join(dir, 'sms.%s.%s.err' %
+                                        (id, template))
+            else:
+                err_file = os.path.join(dir, 'email.%s.%s.err' %
+                                        (id, template))
+        except ValueError, err:
+            log.error('%s processing error: %s' % (comms_file, err))
+
+        if err_file is not None:
+            if os.path.exists(err_file):
+                log.debug('Errored comms file "%s" exists' % err_file)
+                status = True
+            else:
+                log.debug('err_file does not exist')
+
+        log.debug('Comms file "%s" grouping status: %s' %
+                  (comms_file, status))
+
+        return status

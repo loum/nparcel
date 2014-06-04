@@ -22,8 +22,7 @@ class TestComms(unittest2.TestCase):
                            scheme=conf.proxy_scheme,
                            sms_api=conf.sms_api_kwargs,
                            email_api=conf.email_api_kwargs)
-        cls._c._emailer.set_template_base(os.path.join('top',
-                                                       'templates'))
+        cls._c._emailer.set_template_base(os.path.join('top', 'templates'))
         cls._c._smser.set_template_base(os.path.join('top',
                                                      'templates'))
         cls._c.set_template_tokens(['body',
@@ -743,6 +742,86 @@ WHERE id = 6"""
         expected = ('sms', 333, 'ret')
         msg = 'Filename "sms.333.ret" incorrect'
         self.assertTupleEqual(received, expected, msg)
+
+    def test_group_comms_failures_sms_missing_err_file(self):
+        """Group comms failures - SMS missing error file.
+        """
+        dir = tempfile.mkdtemp()
+        file = 'sms.1.body'
+        comms_file = os.path.join(dir, file)
+
+        received = self._c.group_comms_failures(comms_file)
+        msg = 'Group comms failures error - SMS missing error file'
+        self.assertFalse(received, msg)
+
+        # Clean up.
+        os.removedirs(dir)
+
+    def test_group_comms_failures_sms_with_err_file(self):
+        """Group comms failures - SMS missing error file.
+        """
+        dir = tempfile.mkdtemp()
+        file = 'sms.1.body'
+        comms_file = os.path.join(dir, file)
+        err_file = os.path.join(dir, 'email.1.body.err')
+
+        fh = open(os.path.join(dir, comms_file), 'w')
+        fh.close()
+
+        fh = open(os.path.join(dir, err_file), 'w')
+        fh.close()
+
+        received = self._c.group_comms_failures(comms_file)
+        msg = 'Group comms failures error - SMS with error file'
+        self.assertTrue(received, msg)
+
+        # Clean up.
+        remove_files([comms_file, err_file])
+        os.removedirs(dir)
+
+    def test_group_comms_failures_email_with_err_file(self):
+        """Group comms failures - email missing error file.
+        """
+        dir = tempfile.mkdtemp()
+        file = 'email.1.body'
+        comms_file = os.path.join(dir, file)
+        err_file = os.path.join(dir, 'sms.1.body.err')
+
+        fh = open(os.path.join(dir, comms_file), 'w')
+        fh.close()
+
+        fh = open(os.path.join(dir, err_file), 'w')
+        fh.close()
+
+        received = self._c.group_comms_failures(comms_file)
+        msg = 'Group comms failures error - SMS with error file'
+        self.assertTrue(received, msg)
+
+        # Clean up.
+        remove_files([comms_file, err_file])
+        os.removedirs(dir)
+
+    def test_group_comms_failures_sms_with_err_file(self):
+        """Group comms failures - SMS missing error file.
+        """
+        dir = tempfile.mkdtemp()
+        file = 'sms.1.body'
+        comms_file = os.path.join(dir, file)
+        err_file = os.path.join(dir, 'email.1.body.err')
+
+        fh = open(os.path.join(dir, comms_file), 'w')
+        fh.close()
+
+        fh = open(os.path.join(dir, err_file), 'w')
+        fh.close()
+
+        received = self._c.group_comms_failures(comms_file)
+        msg = 'Group comms failures error - email with error file'
+        self.assertTrue(received, msg)
+
+        # Clean up.
+        remove_files([comms_file, err_file])
+        os.removedirs(dir)
 
     @classmethod
     def tearDownClass(cls):

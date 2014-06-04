@@ -341,3 +341,9 @@ follows:
     .. image:: ../_static/comms_failure.png
         :align: center
         :alt: Toll Outlet Point Comms Failure Alert Email
+
+.. note::
+
+    As of *version 0.38* a failed comms notification is only sent
+    to the support email address if both, the SMS and e-mail comms
+    failed.

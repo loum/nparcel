@@ -4,9 +4,6 @@ import os
 import inspect
 
 import top
-from top.utils.log import (log,
-                           set_console,
-                           set_log_level)
 
 
 def main():

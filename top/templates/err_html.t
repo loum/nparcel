@@ -1,4 +1,4 @@
-<p style="color:red;font-weight:normal;font-style:italic">The following ${error_comms} notification message failed.</p>
+<p style="color:red;font-weight:bold">The following comms notifications failed.</p>
 
 <table style="width:45%;background-color:#f4f4f4">
     <tr style="border:1px solid white">
