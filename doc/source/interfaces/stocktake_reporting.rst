@@ -54,6 +54,10 @@ parcel and have not performed a stocktake within the last 7 days.
     :align: center
     :alt: Compliance Stocktake Sample report
 
+If the **Last completed stocktake** header value is blank, this means
+that the Alternate Delivery Point agent is in possesion of an aged
+parcel but has not as yet performed a stocktake.
+
 .. note::
 
     The Compliance report takes the longest time to complete and should
