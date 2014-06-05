@@ -101,7 +101,10 @@ class Adp(top.Service):
         if mode == 'insert':
             status = self.insert(code, filtered_values)
         elif mode == 'update':
-            status = self.update(code, filtered_values)
+            if len(code):
+                status = self.update(code, filtered_values)
+            else:
+                log.error('Incorrect code provided: "%s"' % code)
         else:
             log.error('Unknown mode: "%s"' % self.mode)
 
@@ -216,16 +219,12 @@ class Adp(top.Service):
             lat = self.sanitise_latitude(column)
             if lat is not None:
                 agent_values['agent.latitude'] = lat
-            else:
-                agent_values.pop('agent.latitude')
 
         column = values.get('agent.longitude')
         if column is not None:
             long = self.sanitise_longitude(column)
             if long is not None:
                 agent_values['agent.longitude'] = long
-            else:
-                agent_values.pop('agent.longitude')
 
         log.debug('agent update values: %s' % agent_values)
 
@@ -669,7 +668,7 @@ class Adp(top.Service):
             sanitised latitude value on success or None otherwise
 
         """
-        log.debug('Sanitising agent.latitude %s ...' % latitude)
+        log.debug("Sanitising agent.latitude '%s' ..." % latitude)
         lat = None
 
         if (latitude is not None and len(str(latitude))):
@@ -694,7 +693,7 @@ class Adp(top.Service):
             sanitised longitude value on success or None otherwise
 
         """
-        log.debug('Sanitising agent.longitude %s ...' % longitude)
+        log.debug("Sanitising agent.longitude '%s' ..." % longitude)
         lng = None
 
         if (longitude is not None and len(str(longitude))):
